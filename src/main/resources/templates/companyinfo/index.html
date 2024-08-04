@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="admin-layout">
+    <div layout:fragment = "main_content">
+
+
+        <div class="card">
+            <div class="card-header">
+                <div class="row">  <div class="col-sm-5">  <h4> News</h4></div>
+                    <div class="col-sm-7 "> <a class="btn btn-success btn-sm float-right" th:href="@{/news/create}"> Add News</a></div>
+                </div>
+            </div>
+            <div class="card-body">
+                
+                <span th:text="${message}"></span>
+                
+                <table class="table table-bordered">
+                    <thead class="thead-light">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Title</th>
+
+                            <th scope="col"> Image </th>
+                            <th scope="col"> Created </th>
+                            <th scope="col"> Updated </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="newslists,status:${newslist}">
+
+                            <th th:text="${status.count}">1</th>
+
+                            <td> <a th:href="@{/news/details/{id}(id=${newslists.id})}" th:text="${newslists.title}">    </a></td>
+
+                            <td>
+                                <span th:if="${ not #strings.isEmpty(newslists.imageName)}" class="badge bg-green pull-right"> 
+                                    <img  class="img-responsive" th:src="@{/files/}+${newslists.imageName}" width="100px"  height="100px"/>
+                                </span>
+
+                                <span th:if="${#strings.isEmpty(newslists.imageName)}" > Image Not Found </span>
+
+                            </td>
+
+                            <td th:text="${newslists.created}">Otto</td>
+
+                            <td th:text="${newslists.modified}">@mdo</td>
+
+                        </tr>
+                    </tbody>
+                </table>
+
+
+            </div><!--  Card body end-->
+
+            <div class="card-footer">
+            </div> <!--  Card footer end-->
+        </div><!--  Card  end-->
+
+
+    </div><!--  Main Content  end-->
+</div>   <!--  Layout end-->

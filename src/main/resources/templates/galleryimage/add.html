@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="admin-layout">
+    <div layout:fragment = "main_content">
+
+
+        <div> <h4> Gallery <small>Home > Gallery Image > Add</small></h4>
+        </div>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-12">
+
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">  <div class="col-sm-5 font-weight-bold text-danger"><i class="fas fa-list"></i> Images </div>
+                            <div class="col-sm-7 "> <a class="btn btn-danger btn-sm float-right" th:href="@{/images/index}">Close</a></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/images/save}" th:object="${imageGallery}" enctype="multipart/form-data" method="post" >
+
+                            <div class="alert alert-danger alert-dismissible" th:if="${#fields.hasErrors('*')}">
+                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                                <h4><i class="icon fa fa-ban"></i> Error </h4>
+                                <ul th:if="${#fields.hasErrors('*')}">
+                                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
+                                </ul>
+                            </div>
+
+                            <div class="row" th:if="${!#strings.isEmpty(success)}"> 
+                                <span  class="text-success"th:text="success"> </span>
+                            </div> 
+
+                            <div class="form-group">
+                                <input type="hidden" class="form-control"  th:field="*{id}" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Image Title :<span class="text-danger"> </span></label>
+                                <input type="text"  minlength=" 5 "class="form-control col-sm-5" th:field="*{name}" aria-describedby="emailHelp" placeholder="">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Gallery Name:<span class="text-danger"> *</span></label>
+                                <select id="inputState" class="form-control col-sm-3"  th:field="*{gallery}">
+                                    <option value=" "> Select one</option>              
+                                    <option th:each =" gallerylists : ${gallerylist}"
+                                            th:value="${gallerylists.id} " 
+                                            th:text="${gallerylists.name}"> Select one</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Image<span class="text-danger"> </span></label>
+                                <input type="hidden"  th:value="${imageGallery.imageName}">
+                                <input type="file"  minlength=" 5 "class="form-control col-sm-5" name="pic" aria-describedby="emailHelp" placeholder="Enter your name">
+                                <span  class="help-block "> Image Size 800px x 450px </span>
+                            </div>
+                            <button type="submit" class="btn btn-success">Submit</button>
+                        </form>
+                    </div>
+
+                    <div class="card-footer">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div></div>

@@ -1,0 +1,108 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment = "main_content">
+        <div> <h4> Home <small>Home> Users> Role </small></h4>
+        </div>
+        <hr/>
+
+
+
+        <div class="card">
+            <div class="card-header">
+                <div class="row">  <div class="col-sm-5"> <strong>  <i class="fas fa-list"></i> Role</strong></div>
+                    <div class="col-sm-7 text-end">  
+                        <div class="btn-group ">
+                         
+                            <a th:href="@{/users/index}" type="button" class="btn  btn-danger btn-sm">Close</a>
+                        </div></div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="">
+                    <form action="#" th:action="@{/role/save}" th:object="${role}" method="post"  class="">
+                        <input type="hidden" class="form-control"  th:field="*{id}" /> 
+                        <div class="form-group row mb-3">
+                            <label for="colFormLabel" class="col-sm-2 col-form-label text-right">Name<span class="text-danger">*</span>:</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control col-sm-3" id="colFormLabel" placeholder="Name" th:field="*{name}">
+                                <span  class="help-block text-danger col-sm-8" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">First Name Error</span>
+                            </div>
+                        </div>
+                        <div class="form-group row mb-3">
+                            <label for="colFormLabel" class="col-sm-2 col-form-label  text-right">Slug<span class="text-danger">*</span>:</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control col-sm-3" id="colFormLabel" placeholder="Slug" th:field="*{slug}" >
+                                <span  class="help-block text-danger col-sm-8" th:if="${#fields.hasErrors('slug')}" th:errors="*{slug}">First Name Error</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group row mb-3">
+                            <label for="colFormLabel" class="col-sm-2 col-form-label  text-right">Privilege<span class="text-danger">*</span>:</label>
+                            <div class="col-sm-10">
+                                <span  class="help-block text-danger col-sm-8" th:if="${#fields.hasErrors('privilege')}" th:errors="*{privilege}">First Name Error</span>
+                                <table class="table table-bordered ">
+                                    <tr class="bg-success text-white">
+                                        <th style="width: 10px">#</th>
+                                        <th>Module Name</th>
+
+                                        <th>Privilege Name</th>
+
+                                    </tr>
+                                    <tr th:each="modulelists,status:${modulelist}">
+                                        <td th:text="${status.count}">2.</td>
+                                        <td th:text="${modulelists.name}">Chakma</td>
+
+                                        <td>
+                                            Total Privilege :  <span th:text="${modulelists.privilege.size()}">2.</span>
+                                            <ul>
+                                                <li th:each="privilegelists :${modulelists.privilege}">
+                                                    <input class="form-check-input" type="checkbox"   id="gridCheck" th:field="*{privilege}"  th:value="${privilegelists.id}" >
+                                                    <label class="form-check-label" for="customCheck1"><span  th:text="${privilegelists.name}">Admin</span></label>
+
+                                                </li>
+                                            </ul>
+
+                                        </td>
+
+                                    </tr>                              
+                                </table> 
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 col-1 mx-auto  mb-3">
+
+                            <button type="button" class="btn btn-success btn-sm">Submit</button>
+
+                        </div> 
+                    </form>
+
+                    <table class="table table-bordered table-hover table-striped ">
+                        <tr>
+                            <th style="width: 10px">#</th>
+                            <th>Role Name</th>
+                            <th>Slug</th>
+                            <th>Privilege Name</th>
+                            <th>Edit</th>
+
+                            <th >Delete</th>
+                        </tr>
+                        <tr th:each="list,status:${list}">
+                            <td th:text="${status.count}">2.</td>
+                            <td th:text="${list.name}">Chakma</td>
+                            <td th:text="${list.slug}">Chakma</td>
+                            <td>
+
+                                <span th:each="listprivilege :${list.privilege}">
+                                    <span th:text="${listprivilege.name}+' ,'">  </span>
+                                </span>
+
+                            </td>
+                            <td>
+                                <a type="button" class="btn  btn-success btn-sm"  th:href="@{/role/edit/{id} (id=${list.id})}" > Edit</a>
+                            </td>
+                            <td> <a type="button" class="btn  btn-danger btn-sm" th:href="@{/role/delete/{id} (id=${list.id})}" > Delete </a></td>
+                        </tr>                              
+                    </table>
+                </div>   </div>
+
+        </div>
+    </div>

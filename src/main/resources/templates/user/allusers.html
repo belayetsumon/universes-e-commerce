@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment = "main_content">
+
+        <div> 
+            <h4> Users <small>Home> Users </small></h4>
+        </div>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">  <div class="col-sm-5"> <strong>  <i class="fas fa-list"></i> User  List   Total Employee :  <span th:text="${alluser.size()}"></span></strong></div>
+                            <div class="col-sm-7 text-end">  
+                                <div class="btn-group ">
+                                    <a th:href="@{/users/registrations}" type="button" class="btn  btn-success btn-sm bg-green">New Employee Registration</a>
+                                    <a th:href="@{/users/index}" type="button" class="btn  btn-danger btn-sm">Close</a>
+                                </div></div>
+                        </div>
+                    </div>
+                    <div class="card-body table-responsive">
+                    <table id="example" class="table table-bordered table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th style="width: 10px">#</th>
+                                    <th>Name</th>
+                                    <th>Mobile</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Remark</th>
+
+                                    <th>Edit</th>
+                                    <th style="width: 40px">Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="alluser,status:${alluser}">
+                                    <td th:text="${status.count}">2.</td>
+                                    <td th:text="${alluser.name}">Chakma</td>
+                                    <td th:text="${alluser.mobile}">Chakma</td>
+                                    <td th:text="${alluser.email}">Chakma</td>
+                                    <td> <span th:each="role :${alluser.role}">
+                                            <span th:text="${role.name}+' ,'">  </span>
+                                        </span>
+                                    </td>
+                                    <td th:text="${alluser.status}">Chakma</td> 
+                                    <td th:text="${alluser.remarks}">Chakma</td>
+                                    <td>
+                                        <a type="button" class="btn  btn-success btn-sm" th:href="@{/users/edit/{id} (id=${alluser.id})}" > Edit</a>
+                                    </td>
+                                    <td> <a  type="button" class="btn  btn-danger btn-sm" th:href="@{/users/delete/{id} (id=${alluser.id})}" > Delete </a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div id="example_info" class="dataTables_info" role="status" aria-live="polite"></div>
+                            <div id="example_paginate" class="dataTables_paginate paging_simple_numbers"></div>
+                        </div>
+
+                    </div>
+
+                    <div class="card-footer">
+
+                    </div>
+                </div>
+
+
+            </div><!--  Main Content  end-->
+        </div>   <!--  Layout end-->
+    </div></div>

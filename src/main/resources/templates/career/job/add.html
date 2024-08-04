@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="admin-layout">
+    <div layout:fragment = "main_content">
+
+
+        <div> <h4> Jobs <small>Home> Jobs > Add</small></h4>
+        </div>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">  <div class="col-sm-5 font-weight-bold text-danger"><i class="fas fa-list"></i> Jobs Add</div>
+                            <div class="col-sm-7 "> <a class="btn btn-danger btn-sm float-right" th:href="@{/jobs/index}">Close</a></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/jobs/save}" th:object="${job}" enctype="multipart/form-data" method="post" >
+
+                            <div class="alert alert-danger alert-dismissible" th:if="${#fields.hasErrors('*')}">
+                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                                <h4><i class="icon fa fa-ban"></i> Error </h4>
+                                <ul th:if="${#fields.hasErrors('*')}">
+                                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
+                                </ul>
+                            </div>
+
+                            <div class="row" th:if="${!#strings.isEmpty(success)}"> 
+                                <span  class="text-success"th:text="success"> </span>
+                            </div> 
+
+                            <div class="form-group">
+                                <input type="hidden" class="form-control"  th:field="*{id}" />
+                            </div>
+
+                           <div class="form-group">
+                                <label for="exampleInputEmail1">Job Category <span class="text-danger"> *</span></label>
+                                <select id="inputState" class="form-control col-sm-3"  th:field="*{jobcategory}">
+                                    <option value=" "> Select one</option>              
+                                    <option th:each =" jobcategorylists : ${jobcategorylist}"
+                                            th:value="${jobcategorylists.id} " 
+                                            th:text="${jobcategorylists.name}"> Select one</option>
+                                </select>
+                            </div>
+
+
+                        <div class="form-group">
+                                <label for="exampleInputEmail1"> Job Title :<span class="text-danger"> *</span></label>
+                                <input type="text"  minlength=" 2 "class="form-control col-sm-5" th:field="*{title}" aria-describedby="emailHelp" placeholder="Enter Title">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">Book Name</span>
+                            </div>
+
+                             <div class="form-group">
+                                <label for="exampleInputEmail1">Vacancy :<span class="text-danger"> *</span></label>
+                                <input type="number"  minlength=" 1"class="form-control col-sm-5" th:field="*{vacancy}" aria-describedby="emailHelp" placeholder="Enter slug">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('vacancy')}" th:errors="*{vacancy}">Book Name</span>
+                            </div>
+
+                         <div class="form-group">
+                                <label for="exampleInputEmail1"> Job Responsibilities:<span class="text-danger"> * </span></label>
+                                <textarea type="text"  rows="10" class="form-control col-sm-5" th:field="*{responsibilities}" aria-describedby="emailHelp" placeholder="Enter Responsibilities"></textarea>
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('responsibilities')}" th:errors="*{responsibilities}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Employment Status:<span class="text-danger"> *</span></label>
+                               <input type="text"  minlength=" 2 "class="form-control col-sm-5" th:field="*{employmentstatus}" aria-describedby="emailHelp" placeholder="Enter Employment Status.">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('employmentstatus')}" th:errors="*{employmentstatus}">Book Name</span>
+                            </div>
+
+                             
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Educational Requirements:<span class="text-danger"> * </span></label>
+                                <textarea type="text"  rows="10" class="form-control col-sm-5" th:field="*{educationalrequirements}" aria-describedby="emailHelp" placeholder="Enter Educational Requirements"></textarea>
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('educationalrequirements')}" th:errors="*{educationalrequirements}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Experience Requirements:<span class="text-danger">* </span></label>
+                                <textarea type="text"  rows="10" class="form-control col-sm-5" th:field="*{experiencerequirements}" aria-describedby="emailHelp" placeholder="Enter Experience Requirements"></textarea>
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('experiencerequirements')}" th:errors="*{experiencerequirements}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Additional Requirements:<span class="text-danger"> *</span></label>
+                                <textarea type="text"  rows="10" class="form-control col-sm-5" th:field="*{additionalrequirements}" aria-describedby="emailHelp" placeholder="Enter Additional Requirements"></textarea>
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('additionalrequirements')}" th:errors="*{additionalrequirements}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Job location:<span class="text-danger"> * </span></label>
+                                <textarea type="text"  rows="10" class="form-control col-sm-5" th:field="*{joblocation}" aria-describedby="emailHelp" placeholder="Enter Job location"></textarea>
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('joblocation')}" th:errors="*{joblocation}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Salary:<span class="text-danger"> * </span></label>
+                              
+                                 <input type="text"  minlength=" 2 "class="form-control col-sm-5" th:field="*{salary}" aria-describedby="emailHelp" placeholder="Enter Salary.">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('salary')}" th:errors="*{salary}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Benefits:<span class="text-danger"> *</span></label>
+                                <textarea type="text"  rows="10" class="form-control col-sm-5" th:field="*{benefits}" aria-describedby="emailHelp" placeholder="Enter Benefits"></textarea>
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('benefits')}" th:errors="*{benefits}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Read Before Apply:<span class="text-danger">* </span></label>
+                                <textarea type="text"  rows="10" class="form-control col-sm-5" th:field="*{readbeforeapply}" aria-describedby="emailHelp" placeholder=""></textarea>
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('readbeforeapply')}" th:errors="*{readbeforeapply}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Apply Procedure :<span class="text-danger"> * </span></label>
+                                <textarea type="text"  rows="10" class="form-control col-sm-5" th:field="*{applyprocedure}" aria-describedby="emailHelp" placeholder="Enter Apply Procedure"></textarea>
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('applyprocedure')}" th:errors="*{applyprocedure}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1"> Application Deadline :<span class="text-danger"> *</span></label>
+                                <input type="text"  minlength=" 2 "class="form-control col-sm-5" th:field="*{applicationdeadline}" aria-describedby="emailHelp" placeholder="Enter Application Deadline">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('applicationdeadline')}" th:errors="*{applicationdeadline}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Status<span class="text-danger"> *</span></label>
+                                <select id="inputState" class="form-control col-sm-3"  th:field="*{status}">
+                                    <option value=" "> Select one</option>              
+                                    <option th:each =" status : ${statuslist}"
+                                            th:value="${status} " 
+                                            th:text="${status}"> Select one</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-success">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div></div>

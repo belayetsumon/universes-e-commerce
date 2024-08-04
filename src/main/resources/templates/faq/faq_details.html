@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="admin-layout">
+    <div layout:fragment = "main_content">
+
+
+        <div> <h4> Contact <small>Home>Contact</small></h4>
+        </div>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">   <div class="col-sm-5 font-weight-bold text-danger"><i class="fas fa-list"></i> Contact Details</div>
+                            <div class="col-sm-7 "> <a class="btn btn-success btn-sm float-right" th:href="@{/contact/index}">Close</a></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+                        <table class="table table-bordered">
+                            <tr>
+                                <td>Question:</td>
+                                <td>:</td>
+                                <td th:text="${faq_details.question}">Name:</td>
+                            </tr>
+                            <tr>
+                                <td> Answer: </td>
+                                <td>:</td>
+                                <td th:text="${faq_details.answer}"> </td>
+                            </tr>
+
+                            <tr>
+                                <td> Status: </td>
+                                <td>:</td>
+                                <td th:text="${faq_details.status}"> </td>
+                            </tr>
+
+                            <tr>
+                                <td> Created </td>
+                                <td>:</td>
+                                <td><span th:text="${faq_details.created}"> </span> </td>
+                            </tr>
+                            <tr>
+                                <td> Created By </td>
+                                <td>:</td>
+                                <td><span th:text="${faq_details.createdBy}"> </span> </td>
+                            </tr>
+                            <tr>
+                                <td> Updated </td>
+                                <td>:</td>
+                                <td><span th:text="${faq_details.modified}"> </span> </td>
+                            </tr>
+                            <tr>
+                                <td> Updated By </td>
+                                <td>:</td>
+                                <td><span th:text="${faq_details.modifiedBy}"> </span> </td>
+                            </tr>
+                            <tr>
+                            </tr>
+                            <tr>
+                                <td><a th:href="@{/faq/edit/{id}(id=${faq_details.id})}"> Edit</a></td>
+                                <td><a th:href="@{/faq/delete/{id}(id=${faq_details.id})}"> Delete </a></td>
+                                <td></td>
+
+                            </tr>
+                        </table>
+
+                    </div><!--  Card body end-->
+
+                    <div class="card-footer">
+                    </div> <!--  Card footer end-->
+                </div><!--  Card  end-->
+
+            </div>   </div>
+    </div><!--  Main Content  end-->
+</div>   <!--  Layout end-->

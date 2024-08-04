@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="admin-layout">
+    <div layout:fragment = "main_content">
+
+        <div class="border rounded bg-white" >
+            <!--            Box title-->
+            <div class="border-bottom" style="padding: 5px">  
+                <h4> User Registrations </h4>
+
+
+            </div>
+
+            <!--            Box Body-->
+            <div class="" style="padding: 5px">
+
+
+                <form  th:action="@{/users/save}"   th:object="${users}"  method="post" >
+                    <div class="box-body">
+                        <div class="row"> 
+                            <div th:text="${message}"> </div>
+                        </div>
+
+
+                        <div class="form-group row">
+                            <label for="colFormLabel" class="col-sm-2 col-form-label text-right">Name<span class="text-danger">*</span>:</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control col-sm-3" th:required="required" id="colFormLabel" placeholder="Name" th:field="*{name}">
+                                <span  class="help-block text-danger col-sm-8" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">First Name Error</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="colFormLabel" class="col-sm-2 col-form-label text-right">Mobile Number<span class="text-danger">*</span>:</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control col-sm-3" th:required="required" id="colFormLabel" placeholder="Mobile" th:field="*{mobile}">
+                                <span  class="help-block text-danger col-sm-8" th:if="${#fields.hasErrors('mobile')}" th:errors="*{mobile}">First Name Error</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="colFormLabel" class="col-sm-2 col-form-label text-right">Email<span class="text-danger">*</span>:</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control col-sm-3" th:required="required" id="colFormLabel" placeholder="Email" th:field="*{email}">
+                                <span  class="help-block text-danger col-sm-8" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">First Name Error</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="colFormLabel" class="col-sm-2 col-form-label text-right">Password<span class="text-danger">*</span>:</label>
+                            <div class="col-sm-10">
+                                <input type="password" th:required="required" minlength=8 maxlength="100" class="form-control col-sm-3" id="colFormLabel" placeholder="Password" name="password"  th:value="${users.password}">
+                                <span  class="help-block text-danger col-sm-8" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">First Name Error</span>
+                                <small id="passwordHelpBlock" class="form-text text-muted">
+                                    Your password must be 8-20 characters long, contain letters and numbers, and must not contain spaces, special characters, or emoji.
+                                </small>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label  class="col-sm-2 col-form-label text-right " for="inputState">Role<span class="text-danger">*</span>:</label>
+                            <select id="inputState" class="form-control col-sm-3"  th:field="*{role}">
+                                <option value=" "> Select one</option>              
+                                <option th:each =" role: ${role}"
+                                        th:value="${role.id} " 
+                                        th:text="${role.name}"> Select one</option>
+                            </select>
+                        </div>
+                        <div class="form-group row">
+                            <label  class="col-sm-2 col-form-label text-right " for="inputState">Status<span class="text-danger">*</span>:</label>
+                            <select id="inputState" class="form-control col-sm-3"  th:field="*{status}">
+                                <option value=" "> Select one</option>          
+                                <option th:each =" status :${status}"
+                                        th:value=" ${status}" 
+                                        th:text="${status}"> Select one</option>
+                            </select>
+                            <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('status')}" th:errors="*{status}">First Name Error</span>
+                        </div>
+                        <div class="form-group row">
+                            <label for="colFormLabel" class="col-sm-2 col-form-label text-right">Remark<span class="text-danger"></span>:</label>
+                            <div class="col-sm-10">
+                                <textarea class="form-control col-sm-7" rows="5"  cols="" id="colFormLabel" placeholder="Remark" th:field="*{remarks}"></textarea>
+                                <span  class="help-block text-danger col-sm-8" th:if="${#fields.hasErrors('remarks')}" th:errors="*{remarks}">First Name Error</span>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success">Save</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <!--Box footer-->
+            <div class="border-top" style="padding: 5px">  
+                <h1 > </h1>
+            </div>
+        </div></div></div>
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="admin-layout">
+
+    <div layout:fragment = "main_content">
+
+        <div class="content-wrapper">
+            <!-- Content Header (Page header) -->
+            <section class="content-header">
+                <h1>
+                    Users/Employee
+                </h1>
+            </section>
+            <!-- Main content -->
+            <section class="content">
+                <!-- Default box -->
+                <div class="box box-warning">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">  Employee Registrations</h3>
+                        <div class="box-tools pull-right">
+                            <div class="btn-group">
+
+                                <a th:href="@{/users/index}" type="button" class="btn  btn-warning btn-xs">Close</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="box-body">
+                        <form  th:action="@{/users/save}"   th:object="${users}"  method="post"  class="form-horizontal">
+                            <div class="box-body">
+                                <div class="row"> 
+                                    <div th:text="${message}"> </div>
+                                </div>
+
+                                <div class="row"> 
+                                    <div class="form-group">
+                                        <label  class="col-sm-3 control-label" for="name"> Government ID/File No <span class="text-red"> *</span> :</label>
+                                        <div class="col-sm-5">
+                                            <input type="hidden" class="form-control"  th:field="*{id}" />
+                                            <input type="text" class="form-control"    th:field="*{governmentId}"   />
+
+                                            <span  class="help-block has-error text-red" th:if="${#fields.hasErrors('governmentId')}" th:errors="*{governmentId}">Book Name</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row"> 
+                                    <div class="form-group">
+                                        <label  class="col-sm-3 control-label" for="name">Name<span class="text-red"> *</span> :</label>
+                                        <div class="col-sm-5">
+                                            <input type="text" class="form-control"    th:field="*{name}"   />
+                                            <span  class="help-block has-error text-red" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Book Name</span>
+                                        </div>
+                                    </div>
+                                </div> 
+                                <div class="row"> 
+                                    <div class="form-group ">
+                                        <label for="name" class="col-sm-3 control-label"> Department<span class="text-red"> * </span> </label>
+                                        <div class="col-sm-5">                   
+                                            <select class="form-control  "   th:field="*{department}" >
+                                                <option value=" "> Select one</option>
+                                                <option th:each =" department: ${department}"
+                                                        th:value="${department.id} " 
+                                                        th:text="${department.name}"> Select one</option>
+
+                                            </select>
+                                            <span  class="help-block has-error text-red" th:if="${#fields.hasErrors('department')}" th:errors="*{department}">First Name Error</span>
+                                        </div>                            
+                                    </div>
+                                </div>
+                                <div class="row"> 
+
+                                    <div class="form-group ">
+                                        <label for="name" class="col-sm-3 control-label"> Sub Department<span class="text-red"> * </span> </label>
+                                        <div class="col-sm-5">                   
+                                            <select class="form-control  "   th:field="*{subDepartment}" >
+                                                <option value=" "> Select one</option>
+                                                <option th:each =" subDepartment : ${subDepartment}"
+                                                        th:value="${subDepartment.id} " 
+                                                        th:text="${subDepartment.name}"> Select one</option>
+                                            </select>
+                                            <span  class="help-block has-error text-red" th:if="${#fields.hasErrors('subDepartment')}" th:errors="*{subDepartment}">First Name Error</span>
+                                        </div>                            
+                                    </div>
+                                </div>
+                                <div class="row"> 
+
+                                    <div class="form-group ">
+                                        <label for="name" class="col-sm-3 control-label">Role<span class="text-red"> * </span> </label>
+                                        <div class="col-sm-5">     
+                                            <!--                                             <select class="form-control  "   th:field="*{role}" multiple="multiple" >-->
+                                            <select class="form-control  "   th:field="*{role}" >
+                                                <option value=" "> Select one</option>
+                                                <option th:each =" role: ${role}"
+                                                        th:value="${role.id} " 
+                                                        th:text="${role.name}"> Select one</option>
+                                            </select>
+                                            <span  class="help-block has-error text-red" th:if="${#fields.hasErrors('role')}" th:errors="*{role}">First Name Error</span>
+                                        </div>                            
+                                    </div>
+
+
+                                </div>
+                                <div class="row"> 
+                                    <div class="form-group">
+                                        <label  class="col-sm-3 control-label" for="name">Email<span class="text-red"> </span> :</label>
+                                        <div class="col-sm-5">
+                                            <input type="text" class="form-control"    th:field="*{email}"   />
+                                            <span  class="help-block has-error text-red" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Book Name</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row"> 
+                                    <div class="form-group">
+                                        <label  class="col-sm-3 control-label" for="mobile">Mobile Number<span class="text-red"> </span> :</label>
+                                        <div class="col-sm-5">
+                                            <input type="text" class="form-control"   th:field="*{mobile}" />
+                                            <span  class="help-block has-error text-red" th:if="${#fields.hasErrors('mobile')}" th:errors="*{mobile}">Book Name</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row"> 
+                                    <div class="form-group">
+                                        <label  class="col-sm-3 control-label" for="password">Password<span class="text-red"> *</span> :</label>
+                                        <div class="col-sm-5">
+                                            <!--                                            <input type="password" class="form-control"   th:field="*{password}" />-->
+
+                                            <input type="password" class="form-control"   th:required="required" minlength=8 maxlength="100" name="password"  th:value="${users.password}"/>
+
+                                            <span  class="help-block has-error  text-red" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Book Name</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="form-group">
+
+                                        <div class="col-sm-5">
+
+
+                                            <input type="hidden"
+                                                   class="form-control" maxlength="100" name="password2"
+                                                   th:value="${users.password}" /> <span
+                                                   class="help-block has-error  text-red"
+                                                   th:if="${#fields.hasErrors('password')}"
+                                                   th:errors="*{password}">Book Name</span>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                                <div class="row"> 
+                                    <div class="form-group ">
+                                        <label for="name" class="col-sm-3 control-label">Status<span class="text-red"> * </span> </label>
+                                        <div class="col-sm-5">    
+                                            <select class="form-control  "   th:field="*{status}" >
+                                                <option value=" "> Select one</option>
+                                                <option th:each =" status :${status}"
+                                                        th:value=" ${status}" 
+                                                        th:text="${status}"> Select one</option>
+                                            </select>
+                                            <span  class="help-block has-error text-red" th:if="${#fields.hasErrors('status')}" th:errors="*{status}">First Name Error</span>
+                                        </div>                            
+                                    </div>
+                                </div>
+
+                                <div class="row"> 
+                                    <div class="form-group ">
+                                        <label for="name" class="col-sm-3 control-label">Remark<span class="text-red">  </span> </label>
+                                        <div class="col-sm-5">
+                                            <textarea class="form-control"   th:field="*{remarks}" ></textarea>
+                                        </div>
+                                    </div>                            
+                                </div>
+
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-success">Save</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- /.box-body -->
+                    <div class="box-footer">
+                        <div class="box-tools pull-right">
+
+                        </div>
+                    </div>
+                    <!-- /.box-footer-->
+                </div>
+                <!-- /.box -->
+
+            </section>
+            <!-- /.content -->
+        </div> 
+
+
+
+    </div>
+
+</div>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorator="front-layout-inner-page">
+    <div layout:fragment="main_content">
+
+            <section class="d-none d-sm-block">
+        
+        <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #992337;">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-7">  <h3 class="font-weight-bold" style="color: #fff;"> Instructor Exam List </h3></div>
+                    <div class="col-sm-5 text-right" style="color: #ffffff">Home/ Instructor Exam List  </div>
+                </div>
+            </div>
+        </section>
+        <section>
+            <div class="container-fluid">
+                <div class="row mt-4">
+                    <div class="col-sm-3">
+
+
+                        <div class="card p-3">
+
+                            <span th:if="${#strings.isEmpty(instructor_details.profileImage)}" > 
+
+                                <img  class="mx-auto rounded-circle border border-secondary m-auto" th:src="@{/img/image-not-available.png}"  width="150" height="150"/> 
+
+                            </span>  
+                            <span th:if="${ not #strings.isEmpty(instructor_details.profileImage)}" class="badge bg-green pull-right"> 
+                                <img  class="img-thumbnail" th:src="@{/files/}+${instructor_details.profileImage.imageName}" width="200px"  height="250px"/>
+                            </span>
+
+                            <div class="card-body">
+                                <h5  class="font-weight-bold  text-center">           <a    class="textMaroon" th:href="@{/front-view/instructor-details/{iid}(iid=${instructor_details.id})}" > <span  th:text="${instructor_details.name}">  </span></a>
+                                </h5>  
+                                
+                                <p>
+                                   <div class=" mb-4" th:if="${ not #strings.isEmpty(instructor_details.vendorprofile)}"  th:text="${instructor_details.vendorprofile.designation}"></div> 
+                                   <div class="text-justify"  th:if="${ not #strings.isEmpty(instructor_details.vendorprofile)}"  th:utext="${instructor_details.vendorprofile.description}"></div> 
+                                    
+                                    
+                                </p>
+                                
+                            </div>
+                            
+                            
+                            
+                            
+                        </div>
+                    </div>
+
+                        <div class="col-sm-9">
+                            <div class="card mb-4 borderColorr">
+
+                                <div class="card-header bgMaroon">
+                                    <h5 class="font-weight-bold text-white"> <i class="fas fa-list"></i> Exam Instructor Name : <span th:text="${instructor_details.name}"></span></h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+
+                                
+                                    <ul class="list-group list-group-flush">
+
+                                        <li   class="list-group-item" th:if="${  #lists.isEmpty(examlist)}" >
+
+                                            Sorry, no matching data found.
+                                        </li>
+
+
+
+                                        <li class="list-group-item" th:if="${ not #lists.isEmpty(examlist)}"  th:each="examlists,status:${examlist}">
+
+                                            <div class="media">
+
+                                                <span th:if="${ not #strings.isEmpty(examlists.imageName)}" class=""> 
+                                                    <img  class="img-responsive img-thumbnail" th:src="@{/files/}+${examlists.imageName}" width="150" height="150" />
+                                                </span>
+                                                <span  class="" th:if="${#strings.isEmpty(examlists.imageName)}" > <img  class="mr-3 rounded-circle border border-secondary" th:src="@{/img/image-not-available.png}"  width="80" height="80"/>  </span>
+
+
+                                                <div class="media-body pl-4">
+                                                    <h5 class="mt-0"><a    class="text-muted" th:href="@{/front-view/exam-details/{examid}(examid=${examlists.id})}" > 
+                                                            <span  th:text="${examlists.title}">    </span>  <span  class="float-right badge badge-danger"> <span  th:text="${examlists.test.size()}">    </span> </span></a></h5>
+
+                                                    <h6>
+                                                        Instructor: <span  th:text="${examlists.userId.name}">    </span> 
+
+                                                        Designation : <span   th:if="${ not #strings.isEmpty(examlists.userId.vendorprofile)}" th:text="${examlists.userId.vendorprofile.designation}">    </span> 
+
+                                                        Total Student: <span  th:text="${examlists.orderItem.size()}">    </span></h6>
+                                                </div>
+                                            </div>
+
+
+                                        </li>
+                                    </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        </section>
+                
+            </section>
+        
+        
+        
+            <!--        mobile-->
+        
+         <section class=" mobile d-block d-sm-none">
+   <div th:replace="mobile-top-nav"></div>
+            
+            <div class="row mt-5"> </div>
+            <div class="row mt-3"> </div>
+        
+    
+        <section>
+            <div class="container-fluid">
+                <div class="row mt-2">
+                    <div class="col-12">
+
+
+                        <div class="card p-2">
+
+                            <span th:if="${#strings.isEmpty(instructor_details.profileImage)}" > 
+
+                                <img  class="mx-auto rounded-circle border border-secondary m-auto" th:src="@{/img/image-not-available.png}"  width="150" height="150"/> 
+
+                            </span>  
+                            <span th:if="${ not #strings.isEmpty(instructor_details.profileImage)}" class="badge bg-green pull-right"> 
+                                <img  class="img-thumbnail" th:src="@{/files/}+${instructor_details.profileImage.imageName}" width="200px"  height="250px"/>
+                            </span>
+
+                            <div class="card-body">
+                                <h4  class="font-weight-bold  text-center">           <a    class="textMaroon" th:href="@{/front-view/instructor-details/{iid}(iid=${instructor_details.id})}" > <span  th:text="${instructor_details.name}">  </span></a>
+                                </h4>  
+                                
+                                <p>
+                                   <div class=" mb-4" th:if="${ not #strings.isEmpty(instructor_details.vendorprofile)}"  th:text="${instructor_details.vendorprofile.designation}"></div> 
+                                   <div class="text-justify"  th:if="${ not #strings.isEmpty(instructor_details.vendorprofile)}"  th:utext="${instructor_details.vendorprofile.description}"></div> 
+                                    
+                                    
+                                </p>
+                                
+                            </div>
+                            
+                            
+                            
+                            
+                        </div>
+                    </div>
+
+                        <div class="col-12">
+                            <div class="card mb-4 borderColorr ">
+
+                                <div class="card-header bgMaroon">
+                                    <h5 class="font-weight-bold text-white"> <i class="fas fa-list"></i> Exam List</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+
+                                
+                                    <ul class="list-group list-group-flush">
+
+                                        <li   class="list-group-item" th:if="${  #lists.isEmpty(examlist)}" >
+
+                                            Sorry, no matching data found.
+                                        </li>
+
+
+
+                                        <li class="list-group-item" th:if="${ not #lists.isEmpty(examlist)}"  th:each="examlists,status:${examlist}">
+
+                                            <div class="media">
+
+                                                <span th:if="${ not #strings.isEmpty(examlists.imageName)}" class=""> 
+                                                    <img  class="img-responsive img-thumbnail" th:src="@{/files/}+${examlists.imageName}" width="150" height="150" />
+                                                </span>
+                                                <span  class="" th:if="${#strings.isEmpty(examlists.imageName)}" > <img  class="mr-3 rounded-circle border border-secondary" th:src="@{/img/image-not-available.png}"  width="80" height="80"/>  </span>
+
+
+                                                <div class="media-body pl-4">
+                                                    <h5 class="mt-0"><a    class="text-muted" th:href="@{/front-view/exam-details/{examid}(examid=${examlists.id})}" > 
+                                                            <span  th:text="${examlists.title}">    </span>  <span  class="float-right badge badge-danger"> <span  th:text="${examlists.test.size()}">    </span> </span></a></h5>
+
+                                                    <h6>
+                                                        Instructor: <span  th:text="${examlists.userId.name}">    </span> 
+
+                                                        Designation : <span   th:if="${ not #strings.isEmpty(examlists.userId.vendorprofile)}" th:text="${examlists.userId.vendorprofile.designation}">    </span> 
+
+                                                        Total Student: <span  th:text="${examlists.orderItem.size()}">    </span></h6>
+                                                </div>
+                                            </div>
+
+
+                                        </li>
+                                    </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        </section>
+                
+                     <section class="mb-5"></section>
+            
+               <div th:replace="bottom-nav">
+
+            <!-- Header  -->
+
+        </div>
+            
+            </section>
+        
+        
+        
+    </div>
+</div>

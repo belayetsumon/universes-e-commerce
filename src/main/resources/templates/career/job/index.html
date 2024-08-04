@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="admin-layout">
+    <div layout:fragment = "main_content">
+        <div> <h4> Jobs <small>Home>Jobs</small></h4>
+        </div>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">  <div class="col-sm-5 font-weight-bold text-danger"><i class="fas fa-list"></i> Jobs List </div>
+                            <div class="col-sm-7 "> <a class="btn btn-success btn-sm float-right" th:href="@{/jobs/create}"> Add Jobs </a></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+                        <span th:if="${ not #strings.isEmpty(message)}">
+
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <span th:text="${message}" > </span>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        </span>
+
+                        <table class="table table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col"> Category </th>
+                                    <th scope="col">Title</th>
+                                    <th scope="col"> Vacancy </th>
+                                    <th scope="col"> Application Deadline </th>
+                                    <th scope="col"> Created </th>
+                                    <th scope="col"> Updated </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="joblists,status:${joblist}">
+                                    <th th:text="${status.count}">1</th>
+                                    <td th:text="${joblists.jobcategory.name}">Otto</td>
+
+                                    <td> <a th:href="@{/jobs/details/{id}(id=${joblists.id})}" th:text="${joblists.title}">    </a></td>
+
+                                    <td th:text="${joblists.vacancy}">Otto</td>
+
+                                    <td th:text="${joblists.applicationdeadline}">Otto</td>
+
+                                    <td th:text="${joblists.created}">Otto</td>
+
+                                    <td th:text="${joblists.modified}">@mdo</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+
+                    </div><!--  Card body end-->
+
+
+                </div><!--  Card  end-->
+
+
+            </div><!--  Main Content  end-->
+        </div>   <!--  Layout end-->

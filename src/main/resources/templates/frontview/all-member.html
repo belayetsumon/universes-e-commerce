@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="front-layout-inner-page">
+    <div layout:fragment = "main_content">
+
+
+        <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #ffc107;">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-7">  <h1 class="font-weight-bold" style="color: #fff;">    All Member </h1></div>
+                    <div class="col-sm-5 text-right" style="color: #ffffff">Home/Member/All Member</div>
+                </div>
+            </div>
+        </section>
+
+        <section style="padding: 40px 0px 100px 0px">
+            <div class="container">
+                <div class="row">
+
+
+                    <table class="table table-bordered table-responsive table-hover" >
+                        <thead class="thead-light">
+                            <tr>
+                                <th> No </th>
+                                <th> Name</th>
+                                <th> Image </th>
+                                <th> Batch</th>
+                               <th> Blood Group</th>
+                                <th> Occupation</th>
+                               <th> Present Country</th>
+                               <th> Present City</th>
+                                <th> Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="members,status:${allmember}">
+                                <td th:text="${status.count}"> No </td>
+                                <td th:text="${members.name}"> Name</td>
+                                <td> 
+                                    <span th:if="${ not #strings.isEmpty(members.profileImage)}">
+                                        <img  class="img-responsive img-thumbnail" th:src="@{/files/}+${members.profileImage.imageName}" width="100px"  height="100px"/>
+                                    </span>
+                                    <span th:if="${#strings.isEmpty(members.profileImage)}"> No Image </span>
+                                </td>
+                                <td  th:text="${members.batchNo.name}"> Batch</td>
+                                <td> 
+                                    <span th:if="${ not #strings.isEmpty(members.profile)}" th:text="${members.profile.bloodGroup.name}"></span></td>
+                                <td> 
+                                    <span th:if="${ not #strings.isEmpty(members.profile)}" th:text="${members.profile.occupation}"></span>
+                                </td>
+                                <td> 
+                                    <span th:if="${ not #strings.isEmpty(members.profile)}" th:text="${members.profile.presentCountry}"></span></td>
+                                <td>
+                                    <span th:if="${ not #strings.isEmpty(members.profile)}" th:text="${members.profile.presentCity}"></span>
+                                </td>
+                                <td> <a type="button" class="btn badge-success btn-sm ">Details</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+
+                </div>  
+            </div>
+        </section>
+    </div>
+</div>

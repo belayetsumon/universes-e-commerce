@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorator="front-layout-inner-page">
+    <div layout:fragment="main_content">
+
+        <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #992337;">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-7">  <h3 class="font-weight-bold" style="color: #fff;"> Blog </h3></div>
+                    <div class="col-sm-5 text-right" style="color: #ffffff">Home/Blog </div>
+                </div>
+            </div>
+        </section>
+        <section>
+            <div class="container-fluid">
+                <div class="row mt-4">
+                    <div class="col-sm-3 d-none d-sm-block">
+
+                        <div class="card borderColor" >
+                            <div class="card-header borderColor bgMaroon">
+                                <h5 class="font-weight-bold text-white"> <i class="fas fa-list"></i> Category </h5>
+                            </div>
+
+                            <ul class="list-group list-group-flush ">
+                                <li class="list-group-item list-group-item-action"th:each="blogcategorylists,status:${blogcategorylist}" >
+
+                                    <div class="media">
+                                        <div class="media-left media-">
+
+                                            <div class="media-body ml-3">
+                                                <a    class=" textMaroon" th:href="@{/front-view/blog-by-cat/{catid}(catid=${blogcategorylists.id})}" > <span  th:text="${blogcategorylists.name}">    </span> </a> 
+                                            </div>
+                                        </div> 
+                                </li>
+                            </ul>
+
+                        </div> 
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="card mb-4 borderColor">
+
+                            <div class="card-header  bgMaroon">
+                                <h5 class="font-weight-bold text-white " th:text="${bloglist.title}">   </h5>
+                                <p class="text-white"> <i class="far fa-user"></i> Author: <span th:text="${bloglist.userId.name}"> </span> <i class="far fa-calendar-alt"></i> Date: <span th:text="${bloglist.created}"> </span> <i class="fas fa-tags"></i> Category: <span th:text="${bloglist.blogcategory.name}"> </span> </p>
+                            </div>
+                            <div class="card-body">
+                                <div class="row ">
+                                    
+                                    
+                                    
+
+                                    <table class="table">
+                                        <tr>
+                                            <td>
+                                                <span th:if="${ not #strings.isEmpty(bloglist.imageName)}" class="badge bg-green pull-right"> 
+                                                    <img  class="img-fluid" th:src="@{/files/}+${bloglist.imageName}" />
+                                                </span>
+
+                                                <span th:if="${#strings.isEmpty(bloglist.imageName)}" > Image Not Found </span></td>
+                                        </tr>
+                                        <tr>
+                                            <td th:utext="${bloglist.description}">Otto</td>
+                                        </tr>
+                                        
+                                             <tr>
+                                            <td><div class="sharethis-inline-share-buttons"></div></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

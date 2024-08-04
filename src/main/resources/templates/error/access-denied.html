@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="error-layout">
+    <div layout:fragment = "main_content">
+        <section style="padding: 40px 0px 100px 0px">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-5">
+                    <div class="alert alert-danger text-center" role="alert">
+                        <strong>Something Wrong !!</strong>  Access Restricted.
+                    </div>
+                    
+                    <a type="button"  onclick="window.history.go(-1);" class="btn btn-success btn-sm"> Go Back</a>
+
+                    </div>
+                </div>  
+            </div>
+        </section>
+    </div>
+</div>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+
+    <div layout:fragment = "main_content">
+
+        <div class="content-wrapper">
+            <!-- Content Header (Page header) -->
+            <section class="content-header">
+                <h1>
+                    Users/Employee
+                </h1>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+
+                <!-- Default box -->
+                <div class="box box-warning">
+                    <div class="box-header with-border">
+                        <h3 class="box-title"> Detail View </h3>
+                        <div class="box-tools pull-right">
+                            <div class="btn-group">
+                              
+                                <a th:href="@{/users/index}" type="button" class="btn  btn-warning">Close</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="box-body col-md-6 col-sm-offset-3">
+
+                        <table class="table table-bordered ">
+                            <tr>
+                                <th style="width: 10px">#</th>
+                                <th>Field Name</th>
+                                <th>Value</th>
+                            </tr>
+                            <tr>
+                                <td>1.</td>
+                                <td>Id</td>
+                                <td>
+                                    <span th:inline="text"> [[${users.id}]]</span>   
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <td>2.</td>
+                                <td>Government ID/File No</td>
+                                <td>
+                                    <span th:inline="text"> [[${users.governmentId}]]</span>
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <td>3.</td>
+                                <td>Name </td>
+                                <td>
+                                    <span th:inline="text"> [[${users.name}]]</span>
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <td>4.</td>
+                                <td>Department</td>
+                                <td>
+                                    <span th:inline="text"> [[${users.department.name}]]</span>
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <td>4.</td>
+                                <td>Sub Department</td>
+                                <td>
+                                    <span th:inline="text"> [[${users.subDepartment.name}]]</span>
+                                </td>
+
+                            </tr>         <tr>
+                                <td>5.</td>
+                                <td>Role</td>
+                                <td>
+                                    <!--                                    <span th:inline="text"> [[${users.role.name}]]</span>-->
+                                </td>
+
+                            </tr>         <tr>
+                                <td>6.</td>
+                                <td>Email </td>
+                                <td>
+                                    <span th:inline="text"> [[${users.email}]]</span>
+                                </td>
+
+                            </tr>         <tr>
+                                <td>7.</td>
+                                <td>Mobile Number</td>
+                                <td>
+                                    <span th:inline="text"> [[${users.mobile}]]</span>
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <td>8.</td>
+                                <td>Password</td>
+                                <td>
+                                    <!--                                    <span th:inline="text"> [[${users.password}]]</span>-->
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <td>9.</td>
+                                <td>Remark</td>
+                                <td>
+                                    <span th:inline="text"> [[${users.remarks}]]</span>
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <td>10.</td>
+                                <td>Status</td>
+                                <td>
+                                    <span th:inline="text"> [[${users.id}]]</span>
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <td>11.</td>
+                                <td>Created On</td>
+                                <td>
+                                    <span th:inline="text"> [[${users.createdOn}]]</span>
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <td>12.</td>
+                                <td>Created By</td>
+                                <td>
+                                    <span th:inline="text"> [[${users.createdBy}]]</span>
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <td>13.</td>
+                                <td>Updated On</td>
+
+                                <td>   <span th:inline="text"> [[${users.updatedOn}]]</span></td>
+                            </tr>
+                            <tr>
+                                <td>14.</td>
+                                <td>Updated By</td>
+
+                                <td>   <span th:inline="text"> [[${users.updatedBy}]]</span></td>
+                            </tr>
+
+                            <tr>
+                                <td>15.</td>
+                                <td>lastLogin</td>
+                                <td>
+                                    <span th:inline="text"> [[${users.lastLogin}]]</span>
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <td>16.</td>
+                                <td>lastLogOut</td>
+                                <td>
+                                    <span th:inline="text"> [[${users.lastLogOut}]]</span>
+                                </td>
+
+                            </tr>
+          <tr>
+                                <td></td>
+                                <td>   <a type="button" class="btn  btn-warning bg-maroon" th:href="@{/users/edit/{id} (id=${users.id})}" > Edit</a></td>
+                                <td>
+                                    <a  type="button" class="btn  btn-warning  bg-red " th:href="@{/users/delete/{id} (id=${users.id})}" > Delete </a>
+                                </td>
+
+                            </tr>
+                        </table>     
+
+                    </div>
+
+                    <!-- /.box-body -->
+                    <div class="box-footer">
+                        <div class="box-tools pull-right">
+
+                        </div>
+                    </div>
+                    <!-- /.box-footer-->
+                </div>
+                <!-- /.box -->
+
+            </section>
+            <!-- /.content -->
+        </div> 
+
+
+
+    </div>
+
+</div>

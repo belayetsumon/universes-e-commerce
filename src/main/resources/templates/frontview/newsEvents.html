@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="front-layout-inner-page">
+    <div layout:fragment = "main_content">
+
+
+        <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #ffc107;">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-7">  <h1 class="font-weight-bold" style="color: #fff;">    NEWS & EVENT </h1></div>
+                    <div class="col-sm-5 text-right" style="color: #ffffff">Home/News & Events </div>
+                </div>
+            </div>
+        </section>
+
+        <section style="padding: 40px 0px 100px 0px">
+            <div class="container">
+                <div class="row">
+                    <!--                    <div class="col-sm-12 col-md-12 ">
+                                            <h1 class="text-center">News And Events </h1>
+                                            <div class=" row justify-content-center" style="padding: 20px 0px 80px 0px">
+                                                <div class="col-md-7 text-center"> Unify creative technology company providing key digital services. Focused on helping our clients to build a successful business on web and mobile.
+                                                </div>
+                                            </div>
+                                        </div>-->
+
+                    <div class="col-sm-12 col-md-12 ">
+                        <div class="card border-warning">
+                      <div class="card-header border-warning">
+                                <h5 class="font-weight-bold text-warning"> <i class="fas fa-list"></i> News And Event List</h5>
+                            </div>
+                            <div class="card-body">
+                                <div  class="" th:each="pagelists,status:${pagelist.content}">
+                                    <div  class=" row ">
+
+                                        <hr class="bg-danger">
+                                        <div class="col-sm-5">
+
+                                            <span th:if="${ not #strings.isEmpty(pagelists.imageName)}" class="badge bg-green pull-right"> 
+                                                <img  class="img-responsive img-fluid" th:src="@{/files/}+${pagelists.imageName}" />
+                                            </span>
+
+                                            <span th:if="${#strings.isEmpty(pagelists.imageName)}" > Image Not Found </span>
+                                        </div>  
+                                        <div class="col-sm-7 mb-3">
+                                            <h2  class="text-left" th:text="${pagelists.title}"></h2>
+                                            <hr class="bg-danger">
+                                            <h6 class="text-left"><span class="font-weight-bold"> Author:</span><span th:text="${pagelists.createdBy}"></span> <span class="font-weight-bold">Publish Date:</span><span th:text="${pagelists.created}"> </span> </h6>
+
+                                            <div class="" th:text="${pagelists.description}"></div>
+                                            
+                                            <a th:href="@{/front-view/news-details/{newsid}(newsid=${pagelists.id})}" class="btn btn-md btn-dark"> Details</a>
+
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                            </div>
+<!--                            <div class="card-footer">
+                                <nav aria-label="Page navigation example">
+                                    <ul class="pagination justify-content-center">
+                                        <li class="page-item ">
+                                            <a class="page-link" href="#" tabindex="-1">Previous</a>
+                                        </li>
+
+                                        <li class="page-item">
+                                            <a class="page-link" href="#">Next</a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>-->
+                        </div>
+
+
+                    </div>
+
+
+
+
+                </div>  
+            </div>
+        </section>
+    </div>
+</div>

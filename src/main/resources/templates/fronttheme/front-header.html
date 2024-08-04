@@ -1,0 +1,132 @@
+<div  style="background-color: #FFF; min-height: 120px"> 
+    <div class="col-sm-1 col-xs-12"> <h1>  <img  class="img-responsive " th:src="@{/images/logo.png}" /></h1></div>
+    <div class="col-sm-7">   
+
+        <h1><b> IT Garden Corporate Web Site </b></h1>
+        <h3> Education | Discipline | Character </h3>  
+    </div>
+    <div class="col-sm-4">   
+        <h4 class="text-center"> Code (Board) : 1250 | EIIN : 107843  </h4>
+        <h4 class="text-center"> Foundation Year: 2000 </h4>
+    </div>
+</div>
+
+<nav class="navbar navbar-static-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a href="../../index2.html" class="navbar-brand"><b><i class="fa fa-home" aria-hidden="true"></i></b>
+            </a>
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse">
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li> <a th:href="@{/}">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">About Us <span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a th:href="@{/frontend/history}">History</a></li>
+                        <li class="divider"></li>
+                        <li><a th:href="@{/frontend/why-study-at-our-school}">Why study at Our School</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/infrastructure}">Infrastructure</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/achievements}">Achievements</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Administrations <span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a  th:href="@{/frontend/governing_body}">Governing Body</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/message_chairman}">Message from Chairman</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/message_principal}">Message from Principal</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/teacher_information}">School Teacher Information</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/staff_information}">School Staff Information</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Academic <span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a  th:href="@{/frontend/academiccalendar}">Academic Calendar</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/staff_information}">Class Routine</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/staff_information}">School Exam Routine</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/staff_information}">Exam Result</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/staff_information}">NOTICE</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admission <span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a  th:href="@{/frontend/admissioncircular}">Admission Circular</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/school_prospectus}">School Prospectus</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/admissionform}">Admission Form</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/admission_result}">Admission Result</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/waitinglist}">Waiting List</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/courses}">Courses/Programs</a></li>
+                    </ul>
+                </li>
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Co-curriculum<span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a  th:href="@{/frontend/sports}">Sports </a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/tours}">Tours</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/scout}">Scout</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/bncc}">BNCC</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/ictclub}">ICT Club </a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/scienceclub}">Science Club</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/debateclub}">Debate Club</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/photographyclub}">Photography Club</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/culturalclub}">Cultural Club</a></li>
+                        <li class="divider"></li>
+                        <li><a  th:href="@{/frontend/languageclub}">Language Club</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a  th:href="@{/frontend/digital-content}">Digital content</a>
+                </li>
+
+                <li class="dropdown">
+                    <a  th:href="@{/frontend/digital-content}">News and Events</a>
+                </li>
+
+                <li class="dropdown">
+                    <a  th:href="@{/frontend/gallery}">Gallery</a>
+                </li>
+                <li class="dropdown">
+                    <a  th:href="@{/frontend/contact}">Contact Us</a>
+                </li>
+
+            </ul>
+
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container-fluid -->
+</nav>
+
+

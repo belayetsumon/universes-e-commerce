@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <link rel="icon" href="../../../../favicon.ico">
+
+        <title> IT Garden</title>
+
+        <!-- Bootstrap core CSS -->
+         <link rel="stylesheet" th:href="@{/bootstrap/dist/css/bootstrap.min.css}"/>
+<!--        <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>-->
+        <link rel="stylesheet" th:href="@{/css/signin.css}"/>
+
+
+    </head>
+
+    <body class="text-center">
+        <form class="form-signin" th:action="@{/users/login}"  method="post">
+            <img  class="mb-4 " th:src="@{/img/logo.png}" alt="" width="72" height="72" />
+
+            <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+            <label for="inputEmail" class="sr-only">Email address</label>
+            <input type="email" name="username" id="inputEmail" class="form-control" placeholder="Email address" value="sumon@yahoo.com" required autofocus>
+            <label for="inputPassword" class="sr-only">Password</label>
+            <input type="password" name="password"  id="inputPassword" class="form-control"  value="1234567890" placeholder="Password" required>
+            <div class="checkbox mb-3">
+                <label>
+                    <input type="checkbox" value="remember-me"> Remember me
+                </label>
+            </div>
+            
+            <button class="btn btn-lg btn-primary btn-block form-control" type="submit">Sign in</button>
+            <a class="" >Sign in</a>
+            <p class="mt-5 mb-3 "><a class="" th:href="@{/forgotpassword/userforgotpassword}">Forgot Password</a></p>
+            <p class="mt-5 mb-3 text-muted">&copy; 2017-2018</p>
+        </form>
+    </body>
+</html>

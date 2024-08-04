@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="admin-layout">
+    <div layout:fragment = "main_content">
+
+
+        <div> <h4> Clients <small>Home>Clients</small></h4>
+        </div>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">   <div class="col-sm-5 font-weight-bold text-danger"><i class="fas fa-list"></i> Clients Details</div>
+                            <div class="col-sm-7 "> <a class="btn btn-success btn-sm float-right" th:href="@{/clients/index}">Close</a></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+                        <table class="table table-bordered">
+                            <tr>
+                                <td th:text="${clients_details.name}">Otto</td>
+                                <td th:text="${clients_details.url}"> </td>
+                            </tr>
+                            <tr>
+                                <td> 
+                                    <span th:if="${ not #strings.isEmpty(clients_details.imageName)}" class="badge bg-green pull-right"> 
+                                        <img  class="" th:src="@{/files/}+${clients_details.imageName}" width="300px"  height="250px"/>
+                                    </span>
+
+                                    <span th:if="${#strings.isEmpty(clients_details.imageName)}" > Image Not Found </span></td>
+
+                                <td th:text="${clients_details.description}"> </td>
+
+                            </tr>
+                            <tr>
+                                <td> Created: <span th:text="${clients_details.created}"> </span> </td>
+                                <td> Created By: <span th:text="${clients_details.createdBy}"> </span> </td>
+                            </tr>
+
+                            <tr>
+                                <td> Updated: <span th:text="${clients_details.modified}"> </span></td>
+
+                                <td>Updated By: <span th:text="${clients_details.modifiedBy}"> </span></td>
+                            </tr>
+
+                            <tr>
+                                <td> <a th:href="@{/clients/edit/{id}(id=${clients_details.id})}"> Edit  </a></td>
+
+                                <td><a th:href="@{/clients/delete/{id}(id=${clients_details.id})}"> Delete </a></td>
+                            </tr>
+                        </table>
+
+                    </div><!--  Card body end-->
+
+                    <div class="card-footer">
+                    </div> <!--  Card footer end-->
+                </div><!--  Card  end-->
+
+            </div>   </div>
+    </div><!--  Main Content  end-->
+</div>   <!--  Layout end-->

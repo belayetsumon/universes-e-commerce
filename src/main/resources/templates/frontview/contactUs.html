@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-page">
+    <div layout:fragment = "main_content">
+
+
+        <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #992337;">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-7">  <h1 class="font-weight-bold" style="color: #fff;">    CONTACT US </h1></div>
+                    <div class="col-sm-5 text-right" style="color: #ffffff">Home/Contact Us</div>
+                </div>
+            </div>
+        </section>
+
+        <section >
+            <div class="container-fluid">
+       
+
+                    <!--Section: Contact v.2-->
+                    <section class="mb-4">
+
+                        <!--Section heading-->
+                        <h2 class="h1-responsive font-weight-bold text-center my-4 text-danger">Contact us</h2>
+                        <!--Section description-->
+                        <p class="text-center w-responsive mx-auto mb-5">Do you have any questions? Please do not hesitate to contact us directly. Our team will come back to you within
+                            a matter of hours to help you.</p>
+
+                        <div class="row">
+
+                            <!--Grid column-->
+                            <div class="col-md-9 mb-md-0 mb-5">
+                                <form id="contact-form" name="contact-form" action="" method="POST">
+
+                                    <!--Grid row-->
+                                    <div class="row">
+
+                                        <!--Grid column-->
+                                        <div class="col-md-6">
+                                            <div class="md-form mb-0">
+                                                <input type="text" id="name" name="name" class="form-control">
+                                                <label for="name" class="">Your name</label>
+                                            </div>
+                                        </div>
+                                        <!--Grid column-->
+
+                                        <!--Grid column-->
+                                        <div class="col-md-6">
+                                            <div class="md-form mb-0">
+                                                <input type="text" id="email" name="email" class="form-control">
+                                                <label for="email" class="">Your email</label>
+                                            </div>
+                                        </div>
+                                        <!--Grid column-->
+
+                                    </div>
+                                    <!--Grid row-->
+
+                                    <!--Grid row-->
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="md-form mb-0">
+                                                <input type="text" id="subject" name="subject" class="form-control">
+                                                <label for="subject" class="">Subject</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--Grid row-->
+
+                                    <!--Grid row-->
+                                    <div class="row">
+
+                                        <!--Grid column-->
+                                        <div class="col-md-12">
+
+                                            <div class="md-form">
+                                                <textarea type="text" id="message" name="message" rows="2" class="form-control md-textarea"></textarea>
+                                                <label for="message">Your message</label>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <!--Grid row-->
+
+                                </form>
+
+                                <div class="text-center text-md-left">
+                                    <a class="btn btn-primary" onclick="document.getElementById('contact-form').submit();">Send</a>
+                                </div>
+                                <div class="status"></div>
+
+
+                                <!--                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="font-weight-bold text-muted"> Feel Free To Ask Any Query</h5>
+                            </div>
+                            
+                            <div class="card-body">
+                                <form   th:object="${contact}"  method="post" th:action="@{/front-view/home-contact-save}">
+
+                                    <div class="alert alert-danger alert-dismissible" th:if="${#fields.hasErrors('*')}">
+                                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                                        <h4><i class="icon fa fa-ban"></i> Error </h4>
+                                        <ul th:if="${#fields.hasErrors('*')}">
+                                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="row" th:if="${!#strings.isEmpty(success)}"> 
+                                        <span  class="text-success"th:text="success"> </span>
+                                    </div> 
+
+                                    <div class="form-group">
+                                        <input type="hidden" class="form-control"  th:field="*{id}" />
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="exampleInputEmail1">Your Name :<span class="text-danger"> *</span></label>
+                                        <input type="text"  required="true" minlength=" 5 "class="form-control " th:field="*{name}" aria-describedby="emailHelp" placeholder="Enter your name">
+
+                                    </div>
+                                    
+                                           <div class="form-group">
+                                        <label for="exampleInputEmail1">Your Email :<span class="text-danger"> *</span></label>
+                                        <input type="email" required="true" minlength=" 5 "class="form-control " th:field="*{email}" aria-describedby="emailHelp" placeholder="Enter your email">
+
+                                    </div>
+                                    
+                                           <div class="form-group">
+                                        <label for="exampleInputEmail1">Subject :<span class="text-danger"> *</span></label>
+                                        <input type="text" required="true" minlength=" 5" size="100" class="form-control " th:field="*{subject}" aria-describedby="emailHelp" placeholder="Enter subject">
+
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="exampleInputEmail1">Description:<span class="text-danger"> *</span></label>
+                                        <textarea type="text" required="true" rows="5"   class="form-control " th:field="*{description}" aria-describedby="emailHelp" placeholder="Enter description"></textarea>
+                                        <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Book Name</span>
+                                    </div>
+
+
+                                    <button type="submit" class="btn btn-success">Submit</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>-->
+                            </div>
+                            <!--Grid column-->
+
+                            <!--Grid column-->
+                            <div class="col-md-3 text-center">
+                                <ul class="list-unstyled mb-0">
+                                    <li><i class="fas fa-map-marker-alt fa-2x textR"></i>
+                                        <p>118(1st floor) Lake Circus, Kalabagan , Dhaka-1205 </p>
+                                    </li>
+
+                                    <li><i class="fas fa-phone mt-4 fa-2x textR"></i>
+                                        <p>+880-1714-117032</p>
+                                    </li>
+
+                                    <li><i class="fas fa-envelope mt-4 fa-2x textR"></i>
+                                        <p>itgarden2007@gmail.com</p>
+                                    </li>
+                                </ul>
+                            </div>
+                            <!--Grid column-->
+
+                        </div>
+
+                    </section>
+
+             
+            </div>
+        </section>
+    </div>
+</div>

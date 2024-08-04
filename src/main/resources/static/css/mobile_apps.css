@@ -1,0 +1,144 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : Aug 8, 2020, 1:36:10 PM
+    Author     : User
+*/
+
+
+
+
+.body{font-family:'Roboto', sans-serif;
+      font-size: 11px;}
+
+
+.apps_title{height:48px;
+            padding: 5px;
+            margin-bottom: 10px;
+
+            position: fixed; /* Set the navbar to fixed position */
+            top: 0; /* Position the navbar at the top of the page */
+            width: 100%; /* Full width */
+
+            z-index: 100;
+}
+
+
+.apps_bottom_nav{
+
+    height:48px;
+    padding: 5px;
+    position: fixed; /* Set the navbar to fixed position */
+    bottom: 0; /* Position the navbar at the top of the page */
+    width: 100%; /* Full width */
+
+    z-index: 100; 
+    font-size: 12px;
+
+}
+.mobile{
+    
+/*    //*/
+    
+}
+.mobile h1{font-size: 24px;}
+
+.mobile h2{font-size: 20px;}
+
+.mobile h3{font-size: 16px;}
+.mobile h4{font-size: 14px;}
+.mobile h5{font-size: 12px;}
+
+.mobile h6{font-size: 9px;}
+
+.mobile p{font-size: 14px;}
+
+
+.mobile_home_box_effect_count{
+
+    -webkit-box-shadow:0 1px 6px 0 rgba(32,33,36,0.28) ;
+    -moz-box-shadow:0 1px 6px 0 rgba(32,33,36,0.28) ;
+    box-shadow:0 1px 6px 0 rgba(32,33,36,0.28) ;
+
+
+}
+
+
+.mobile_home_box_effect{
+
+    -webkit-box-shadow:0 1px 6px 0 rgba(32,33,36,0.28) ;
+    -moz-box-shadow:0 1px 6px 0 rgba(32,33,36,0.28) ;
+    box-shadow:0 1px 6px 0 rgba(32,33,36,0.28) ;
+    min-height: 80px;
+    padding: 5px;
+
+}
+
+
+.mobile_effect7
+{
+    position:relative;
+    -webkit-box-shadow:0 1px 6px 0 rgba(32,33,36,0.28) ;
+    -moz-box-shadow:0 1px 6px 0 rgba(32,33,36,0.28) ;
+    box-shadow:0 1px 6px 0 rgba(32,33,36,0.28) ;
+    min-height: 300px;
+}
+
+
+
+.front_side_menu{
+/*    visibility:hidden;*/
+    height: 100%; /* 100% Full-height */
+    width: 0px; /* 0 width - change this with JavaScript */
+    position: fixed; /* Stay in place */
+    z-index: 300; /* Stay on top */
+    top: 0; /* Stay at the top */
+    left: 0;
+    background-color: #fff; /* Black*/
+    overflow-x: hidden; /* Disable horizontal scroll */
+    padding-top: 60px; /* Place content 60px from the top */
+    transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+}
+
+
+
+
+.front_side_menu .closebtn {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+}
+
+
+
+.student_menu{
+    height: 100%; /* 100% Full-height */
+    width: 0px; /* 0 width - change this with JavaScript */
+    position: fixed; /* Stay in place */
+    z-index: 400; /* Stay on top */
+    top: 0; /* Stay at the top */
+    right: 0;
+    background-color: #fff; /* Black*/
+    overflow-x: hidden; /* Disable horizontal scroll */
+    padding-top: 60px; /* Place content 60px from the top */
+    transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+}
+
+
+
+
+.student_menu .student_closebtn {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+}
+
+
+

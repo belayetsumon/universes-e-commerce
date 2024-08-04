@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="admin-layout">
+    <div layout:fragment = "main_content">
+        <div> <h4> Vendor Profile  <small>Home> Vendor profile </small></h4>
+        </div>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-header bgMaroon text-white">
+                        Add   Your Profile
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin-vendor/save}" th:object="${vendorprofile}" enctype="multipart/form-data" method="post" >
+                            <div class="form-group">
+                                <input type="hidden" class="form-control"  th:field="*{id}" />
+                                <input type="hidden" class="form-control"  th:field="*{userId}" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">First Name</label>
+                                <input type="text" class="form-control" th:field="*{firstName}" aria-describedby="emailHelp" placeholder="">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Last Name</label>
+                                <input type="text" class="form-control" th:field="*{lastName}" aria-describedby="emailHelp" placeholder="">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Designation</label>
+                                <input type="text" class="form-control" th:field="*{designation}" aria-describedby="emailHelp" placeholder="">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('designation')}" th:errors="*{designation}">Book Name</span>
+                            </div>
+
+
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Description</label>
+                                 <textarea type="text"  rows="10" class="form-control col-sm-8" th:field="*{description}" aria-describedby="emailHelp" placeholder="Enter Description"></textarea>
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Book Name</span>
+                            </div>
+
+
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+
+                    </div>
+                </div>
+
+            </div><!--  Main Content  end-->
+        </div>   <!--  Layout end-->
+    </div></div>

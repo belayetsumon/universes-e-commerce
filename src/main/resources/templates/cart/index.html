@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="front-layout-inner-page">
+    <div layout:fragment="main_content">
+
+        <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #faa619;">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-7">  <h1 class="font-weight-bold" style="color: #fff;">    Cart </h1></div>
+                    <div class="col-sm-5 text-right" style="color: #ffffff">Home/cart</div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="container pt-5 pb-5">
+                <div class="row ">
+                    <div class="col-sm-8">
+
+                        <div class="card row" >
+                            <div class="card-header">
+                                <i class="fas fa-shopping-cart text-warning"></i>  Your cart
+<!--                                <span th:text="${session.sessioncart.size()}"></span>-->
+                            </div>
+
+                            <div class="card-body">
+
+                                <div class="" th:if="${session.sessioncart==null}" >
+                                    <h1>  Your Cart is Currently Empty</h1>
+                                    Before proceed to checkout you must add some products to your shopping cart.
+                                    You will find a lot of interesting products on our "PRODUCT" page.
+                                </div>
+
+
+                                <div class="table-responsive" th:if="${session.sessioncart!=null}" >
+                                    <table class="table table-bordered  table-striped t">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">#</th>
+                                                <th scope="col">Product</th>
+                                                <th scope="col">Photo</th>
+                                                <th scope="col">price</th>
+                                                <th scope="col">Quantity</th>
+                                                <th scope="col">Total</th>
+                                                <th scope="col">Remove</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="cart,status:${session.sessioncart}">
+                                                <th>1</th>
+                                                <td><a    class="card-link text-warning" th:href="@{/front-view/single-product/{prodid}(prodid=${cart.exam.id})}" >  <span  th:text="${cart.exam.title}">    </span> </a></td>
+
+                                                <td> <span th:if="${ not #strings.isEmpty(cart.exam.imageName)}" class="badge bg-green pull-right"> 
+                                                        <img  class="img-responsive" th:src="@{/files/}+${cart.exam.imageName}" width="100px"  height="100px"/>
+                                                    </span>
+
+                                                    <span th:if="${#strings.isEmpty(cart.exam.imageName)}" > Image Not Found </span></td>
+
+                                                <td th:text="${cart.exam.price}">Otto</td>
+
+                                                <td th:text="${cart.quantity}">Otto</td>
+                                                <td>
+                                                    <div th:with="result=${cart.exam.price * cart.quantity}">
+
+                                                        <span th:text="${#numbers.formatDecimal(result, 0, 'COMMA', 2, 'POINT')}">10.00</span> 
+
+                                                    </div>
+                                                </td>
+
+                                                <td class="text-center"><a th:href="@{/cart/remove/{id}(id=${cart.exam.id})}" > <i class="far fa-trash-alt text-danger"></i> </a></td>
+
+                                            </tr>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div> 
+                            <div class="card-footer"> 
+                                <a th:href="@{/front-view/all-exam}" type="button" class="btn btn-sm btn-success"> Continue Shopping</a>
+
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-money-check text-warning"></i>  Order   Summary
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">Sub Total:<span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">10.00</span> /-</li>
+
+                                <li class="list-group-item">Order Total: <span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">10.00</span>/-</li>
+                                <!--                                <li class="list-group-item">
+                                                                    <a type="button" class="btn btn-block btn-sm btn-warning">Update Shopping  Cart</a> 
+                                                                </li>-->
+                                <li class="list-group-item">
+                                    <a type="button" class="btn btn-block btn-sm btn-warning" th:href="@{/order/create}">Proceed To Checkout</a> 
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

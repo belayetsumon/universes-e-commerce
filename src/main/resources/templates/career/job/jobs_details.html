@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="admin-layout">
+    <div layout:fragment = "main_content">
+
+        <div> <h4> Jobs <small>Home>Jobs Details</small></h4>
+        </div>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row"> <div class="col-sm-5 font-weight-bold text-danger"><i class="fas fa-list"></i> Jobs Details</div>
+                            <div class="col-sm-7 "> <a class="btn btn-danger btn-sm float-right" th:href="@{/jobs/index}">Close</a></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+                        <table class="table table-bordered">
+                        <tr>
+                                <td> Name</td>
+                                <td> :</td>
+                                <td th:text="${job_details.title}">Otto</td>
+
+                            </tr>
+
+                            <tr>
+                                <td> Vacancy No</td>
+                                <td>: </td>
+                                <td th:text="${job_details.vacancy}">Otto</td>
+
+                            </tr>
+
+
+
+                            <tr> <td> Job Responsibilities</td>
+                                <td> :</td>
+                                <td th:text="${job_details.responsibilities}"> </td>
+
+                            </tr>
+
+                            <tr> <td> Employment Status</td>
+                                <td> :</td>
+                                <td th:text="${job_details.employmentstatus}"> </td>
+
+                            </tr>
+                            <tr> <td> Educational Requirements</td>
+                                <td> :</td>
+                                <td th:text="${job_details.educationalrequirements}"> </td>
+
+                            </tr>
+                            <tr> <td> Experience Requirements</td>
+                                <td> :</td>
+                                <td th:text="${job_details.experiencerequirements}"> </td>
+
+                            </tr>
+                            <tr> <td> Additional Requirements</td>
+                                <td> :</td>
+                                <td th:text="${job_details.additionalrequirements}"> </td>
+
+                            </tr>
+                            <tr> <td> Job location</td>
+                                <td> :</td>
+                                <td th:text="${job_details.joblocation}"> </td>
+
+                            </tr>
+                            <tr> <td> Salary</td>
+                                <td> :</td>
+                                <td th:text="${job_details.salary}"> </td>
+
+                            </tr>
+                            <tr> <td> Benefits</td>
+                                <td> :</td>
+                                <td th:text="${job_details.benefits}"> </td>
+
+                            </tr>
+                            <tr> <td> Read Before Apply</td>
+                                <td> :</td>
+                                <td th:text="${job_details.readbeforeapply}"> </td>
+
+                            </tr>
+                            <tr> <td> Apply Procedure</td>
+                                <td> :</td>
+                                <td th:text="${job_details.applyprocedure}"> </td>
+
+                            </tr>
+                            <tr> <td> Application Deadline</td>
+                                <td> :</td>
+                                <td th:text="${job_details.applicationdeadline}"> </td>
+
+                            </tr>
+
+                            <tr> <td>Status</td>
+                                <td> :</td>
+                                <td th:text="${job_details.status}"> </td>
+
+                            </tr>
+
+                            <tr> <td> Created</td>
+                                <td> :</td>
+                                <td>  <span th:text="${job_details.created}"> </span> </td>
+
+                            </tr>
+
+                            <tr> <td> Created By</td>
+                                <td> :</td>
+                                <td>  <span th:text="${job_details.createdBy}"> </span> </td>
+                            </tr>
+
+                            <tr> <td>Updated </td>
+                                <td> :</td>
+                                <td>  <span th:text="${job_details.modified}"> </span></td>
+                            </tr>
+
+                            <tr> <td> Updated By</td>
+                                <td> :</td>
+                                <td> <span th:text="${job_details.modifiedBy}"> </span></td>
+                            </tr>
+
+                            <tr> 
+                                <td> <a th:href="@{/jobs/edit/{id}(id=${job_details.id})}"> Edit  </a></td>
+
+                                <td> </td>
+
+                                <td><a th:href="@{/jobs/delete/{id}(id=${job_details.id})}"> Delete </a></td>
+                            </tr>
+                        </table>
+
+                    </div><!--  Card body end-->
+
+                    <div class="card-footer">
+                    </div> <!--  Card footer end-->
+                </div><!--  Card  end-->
+
+
+            </div>
+        </div>
+    </div></div>

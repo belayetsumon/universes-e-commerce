@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="admin-layout">
+
+    <div layout:fragment = "main_content">
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
+            <!-- Content Header (Page header) -->
+            <section class="content-header">
+                <h1>
+                    Employee  List  
+                </h1>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+
+                <!-- Default box -->
+                <div class="box box-primary">
+                    <div class="box-header with-border">
+                        <h3 class="box-title"> Total Employee : <!-- <span th:text="${alluser.size()}"></span> --> </h3>
+                        <div class="box-tools pull-right">
+                            <div class="btn-group">
+
+                                <a th:href="@{/users/index}" type="button" class="btn  btn-warning btn-default">Close</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box-body">
+                        <form class=" text-center forrm-inline"  th:action="@{/users/userbystatus}" >
+                           
+                                <div class="form-group ">
+                                    <label for="name" class="col-sm-5 control-label"> Search By Status<span class="text-red">  </span> </label>
+                                    <div class="col-sm-3">    
+                                        <select class="form-control  "  name ="status">
+                                            <option value=" "> Select one</option>
+                                            <option th:each =" status :${status}"
+                                                    th:value=" ${status}" 
+                                                    th:text="${status}"> Select one</option>
+                                        </select>
+
+                                                         
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-flat bg-maroon">Search</button>
+                        </form> 
+                        </div>
+                        <div class="box-body">
+                        <table class="table table-bordered">
+                            <tr>
+                                <th style="width: 10px">#</th>
+                                <th>Govt Id</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Mobile</th>
+                                <th>Department</th>
+                                <th>SubDepartment</th>
+                                <!--                                <th>Role</th>-->
+                                <th>Status</th>
+                                <th>View</th>
+                                <th>Edit</th>
+                                <th style="width: 40px">Delete</th>
+                            </tr>
+                            <tr th:each="alluser,status:${alluser}">
+                                <td th:text="${status.count}">2.</td>
+                                <td th:text="${alluser.governmentId}">Chakma</td>
+                                <td th:text="${alluser.name}">Chakma</td>
+                                <td th:text="${alluser.email}">Chakma</td>
+                                <td th:text="${alluser.mobile}">Chakma</td>
+                                <td th:text="${alluser.department.name}">Chakma</td>
+                                <td th:text="${alluser.subDepartment.name}">Chakma</td>
+                                <!--                                <td th:text="${alluser.role.name}">Chakma</td>-->
+                                <td th:text="${alluser.status}">Chakma</td>  
+                                <td>
+                                    <a type="button" class="btn  btn-success btn-xs bg-green" th:href="@{/users/view/{uid} (uid=${alluser.id})}" > View</a>
+                                </td>
+                                <td>
+                                    <a type="button" class="btn  btn-warning btn-xs bg-maroon" th:href="@{/users/edit/{id} (id=${alluser.id})}" > Edit</a>
+                                </td>
+                                <td> <a  type="button" class="btn  btn-warning btn-xs bg-red " th:href="@{/users/delete/{id} (id=${alluser.id})}" > Delete </a></td>
+                            </tr>                                
+                        </table>
+
+
+                    </div>
+                    <!-- /.box-body -->
+                    <div class="box-footer">
+                        <div class="box-tools pull-right">
+
+                        </div>
+                    </div>
+                    <!-- /.box-footer-->
+                </div>
+                <!-- /.box -->
+
+            </section>
+            <!-- /.content -->
+        </div>
+        <!-- /.content-wrapper -->
+    </div>
+</div>

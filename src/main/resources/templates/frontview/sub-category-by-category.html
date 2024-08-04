@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorator="front-layout-inner-page">
+    <div layout:fragment="main_content">
+
+        <section class="d-none d-sm-block">
+
+            <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #992337;">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-7">  <h3 class="font-weight-bold" style="color: #fff;">   <span th:text="${category.name}"> </span>: Model Test </h3></div>
+                        <div class="col-sm-5 text-right d-none d-sm-block" style="color: #ffffff" >Home/Exam By Sub Category </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <section>
+
+                <div class="container-fluid">
+                    <div class="row mt-4">
+                        <div class="col-sm-3 d-none d-sm-block">
+                            <div class="card borderColor" >
+                                <div class="card-header bgMaroon">
+                                    <h5 class="font-weight-bold text-white"> <i class="fas fa-list"></i> Exam Category </h5>
+                                </div>
+                                <ul class="list-group list-group-flush ">
+                                    <li class="list-group-item  list-group-item-action"th:each="categorylists,status:${categorylist}" >
+                                        <div class="media">
+                                            <div class="media-left media-">
+                                                <span th:if="${ not #strings.isEmpty(categorylists.imageName)}" class="badge bg-green pull-right"> 
+                                                    <img  class=" align-self-center img-thumbnail" th:src="@{/files/}+${categorylists.imageName}" width="40px"  height="40px"/>
+                                                </span>
+
+                                                <span th:if="${#strings.isEmpty(categorylists.imageName)}" > 
+
+                                                    <img  class="align-self-center img-thumbnail" th:src="@{/img/no_image.png}" width="40px"  height="40px"/>
+                                                </span>
+                                            </div>
+                                            <div class="media-body ml-3">
+                                                <a    class=" textMaroon" th:href="@{/front-view/sub-category-by-category/{catid}(catid=${categorylists.id})}" > <span  th:text="${categorylists.name}">    </span>  <span  class="float-right badge badge-danger " th:text="${categorylists.productsubcategory.size()}" ></span></a> 
+
+                                            </div>
+                                        </div></li>
+                                </ul>
+                            </div> 
+                        </div>
+                        <div class="col-sm-9">
+                            <div class="card mb-4 borderColor">
+
+                                <div class="card-header bgMaroon">
+                                    <h5 class="font-weight-bold text-white"> <i class="fas fa-list"></i> <span th:text="${category.name}"> </span> List </h5>
+                                </div>
+                                <div class="card-body">
+
+                                    <div class="row">
+                                        <ul class="list-group list-group-flush w-100">
+                                            <li   class="list-group-item" th:if="${  #lists.isEmpty(subcategorylist)}" >
+
+                                                Sorry, no matching data found.
+                                            </li>
+
+
+                                            <li class="list-group-item list-group-item-action"  th:if="${ not #lists.isEmpty(subcategorylist)}" th:each="subcategorylists,status:${subcategorylist}">
+
+
+                                                <div class="media">
+                                                    <div class="media-left media-">
+                                                        <span th:if="${ not #strings.isEmpty(subcategorylists.imageName)}" class="badge bg-green pull-right"> 
+                                                            <img  class=" align-self-center img-thumbnail" th:src="@{/files/}+${subcategorylists.imageName}" width="100px"  height="75px"/>
+                                                        </span>
+
+                                                        <span th:if="${#strings.isEmpty(subcategorylists.imageName)}" > 
+
+                                                            <img  class="align-self-center img-thumbnail" th:src="@{/img/no_image.png}" width="40px"  height="40px"/>
+                                                        </span>
+                                                    </div>
+                                                    <div class="media-body ml-3">
+                                                        <a    class="textMaroon" th:href="@{/front-view/exam-by-sub-category/{subcatid}(subcatid=${subcategorylists.id})}" > 
+                                                            <span  th:text="${subcategorylists.name}">    </span> <span  class="float-right badge badge-danger m-1">  <span  th:text="${subcategorylists.exams.size()}">    </span> </span></a>
+
+                                                    </div>
+                                                </div>
+
+
+
+
+                                            </li>
+
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+
+        </section>
+
+
+
+
+
+
+        <section class="mobile d-block d-sm-none">
+
+            <div th:replace="mobile-top-nav"></div>
+
+            <div class="row mt-5"> </div>
+            <div class="row mt-3"> </div> 
+
+
+            <section>
+
+                <div class="container-fluid">
+                    <div class="row mt-4">
+                        <div class="col-sm-3 d-none d-sm-block">
+                            <div class="card borderColor" >
+                                <div class="card-header bgMaroon">
+                                    <h5 class="font-weight-bold text-white"> <i class="fas fa-list"></i> Exam Category </h5>
+                                </div>
+                                <ul class="list-group list-group-flush ">
+                                    <li class="list-group-item  list-group-item-action"th:each="categorylists,status:${categorylist}" >
+                                        <div class="media">
+                                            <div class="media-left media-">
+                                                <span th:if="${ not #strings.isEmpty(categorylists.imageName)}" class="badge bg-green pull-right"> 
+                                                    <img  class=" align-self-center img-thumbnail" th:src="@{/files/}+${categorylists.imageName}" width="40px"  height="40px"/>
+                                                </span>
+
+                                                <span th:if="${#strings.isEmpty(categorylists.imageName)}" > 
+
+                                                    <img  class="align-self-center img-thumbnail" th:src="@{/img/no_image.png}" width="40px"  height="40px"/>
+                                                </span>
+                                            </div>
+                                            <div class="media-body ml-3">
+                                                <a    class=" textMaroon" th:href="@{/front-view/sub-category-by-category/{catid}(catid=${categorylists.id})}" > <span  th:text="${categorylists.name}">    </span>  <span  class="float-right badge badge-danger " th:text="${categorylists.productsubcategory.size()}" ></span></a> 
+
+                                            </div>
+                                        </div></li>
+                                </ul>
+                            </div> 
+                        </div>
+                        <div class="col-sm-9">
+                            <div class="card mb-4 borderColor">
+
+                                <div class="card-header bgMaroon">
+                                    <h5 class="font-weight-bold text-white"> <i class="fas fa-list"></i> <span th:text="${category.name}"> </span> List </h5>
+                                </div>
+                                <div class="card-body">
+
+                                    <div class="row">
+                                        <ul class="list-group list-group-flush w-100">
+                                            <li   class="list-group-item" th:if="${  #lists.isEmpty(subcategorylist)}" >
+
+                                                Sorry, no matching data found.
+                                            </li>
+
+
+                                            <li class="list-group-item list-group-item-action"  th:if="${ not #lists.isEmpty(subcategorylist)}" th:each="subcategorylists,status:${subcategorylist}">
+
+
+                                                <div class="media">
+                                                    <div class="media-left media-">
+                                                        <span th:if="${ not #strings.isEmpty(subcategorylists.imageName)}" class="badge bg-green pull-right"> 
+                                                            <img  class=" align-self-center img-thumbnail" th:src="@{/files/}+${subcategorylists.imageName}" width="100px"  height="75px"/>
+                                                        </span>
+
+                                                        <span th:if="${#strings.isEmpty(subcategorylists.imageName)}" > 
+
+                                                            <img  class="align-self-center img-thumbnail" th:src="@{/img/no_image.png}" width="40px"  height="40px"/>
+                                                        </span>
+                                                    </div>
+                                                    <div class="media-body ml-3">
+                                                        <a    class="textMaroon" th:href="@{/front-view/exam-by-sub-category/{subcatid}(subcatid=${subcategorylists.id})}" > 
+                                                            <span  th:text="${subcategorylists.name}">    </span> <span  class="float-right badge badge-danger m-1">  <span  th:text="${subcategorylists.exams.size()}">    </span> </span></a>
+
+                                                    </div>
+                                                </div>
+
+
+
+
+                                            </li>
+
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <section class="mb-5"></section>
+
+            <div th:replace="bottom-nav">
+
+                <!-- Header  -->
+
+            </div>
+
+
+        </section>
+
+
+    </div>
+</div>

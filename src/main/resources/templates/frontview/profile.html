@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="front-layout-inner-customar-page">
+    <div layout:fragment = "main_content">
+        
+        <div class="card">
+            <div class="card-header bg-danger ">
+                <div class="row">  <div class="col-sm-5">  <h4 class="font-weight-bold text-white"> Profile</h4></div>
+                    <div class="col-sm-7 "> 
+
+                        <span th:if="${ #strings.isEmpty(userinfo.profile)}">
+                            <a class="btn btn-success btn-sm float-right" th:href="@{/profile/create}"> Add Profile Info</a>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+
+                <table class="table table-bordered" th:if="${ not #strings.isEmpty(userinfo.profile)}">
+                    <tr>
+                        <td> Name:</td>
+                        <td th:text="${userinfo.profile.name}">Otto</td>
+
+                    </tr>
+
+                    <tr>
+                        <td> Last Education Qualification:</td>
+                        <td th:text="${userinfo.profile.lastEducationQualification}">Otto</td>
+
+                    </tr>
+                    <tr>
+                        <td> Occupations:</td>
+                        <td th:text="${userinfo.profile.occupation}">Otto</td>
+
+                    </tr>
+                    <tr>
+                        <td> Designation:</td>
+                        <td th:text="${userinfo.profile.designation}">Otto</td>
+
+                    </tr>
+                    <tr>
+                        <td> Organization:</td>
+                        <td th:text="${userinfo.profile.organization}">Otto</td>
+
+                    </tr>
+                    <tr>
+                        <td> Gender:</td>
+                        <td th:text="${userinfo.profile.gender}">Otto</td>
+
+                    </tr>
+                    <tr>
+                        <td> Blood Group:</td>
+                        <td th:text="${userinfo.profile.bloodGroup.name}">Otto</td>
+
+                    </tr>
+                    <tr>
+                        <td> Mobile Number:</td>
+                        <td th:text="${userinfo.profile.mobile}">Otto</td>
+
+                    </tr>
+                    <tr>
+                        <td> Present Address:</td>
+                        <td th:text="${userinfo.profile.presentAddress}">Otto</td>
+
+                    </tr>
+                    <tr>
+                        <td> Present City:</td>
+                        <td th:text="${userinfo.profile.presentCity}">Otto</td>
+
+                    </tr>
+                    <tr>
+                        <td> Present Country:</td>
+                        <td th:text="${userinfo.profile.presentCountry}">Otto</td>
+
+                    </tr>
+                    <tr>
+                        <td> Facebook Id:</td>
+                        <td th:text="${userinfo.profile.facebookUrl}">Otto</td>
+
+                    </tr>   <tr>
+                        <td> LinkdinUrl:</td>
+                        <td th:text="${userinfo.profile.linkdinUrl}">Otto</td>
+
+                    </tr>
+                    <tr>
+                        <td> Whats up no:</td>
+                        <td th:text="${userinfo.profile.whatupNo}">Otto</td>
+
+                    </tr>                             
+
+
+                    <tr>
+                        <!--                                        <td> 
+                                                                    <span th:if="${ not #strings.isEmpty(news_details.imageName)}" class="badge bg-green pull-right"> 
+                                                                        <img  class="img-responsive" th:src="@{/files/}+${news_details.imageName}" width="300px"  height="250px"/>
+                                                                    </span>
+                        
+                                                                    <span th:if="${#strings.isEmpty(news_details.imageName)}" > Image Not Found </span></td>-->
+
+                        <!--                                        <td th:text="${news_details.description}"> </td>-->
+
+                    </tr>
+
+                    <tr>
+                        <td> Created: <span th:text="${userinfo.profile.created}"> </span> </td>
+                        <td> Created By: <span th:text="${userinfo.profile.createdBy}"> </span> </td>
+                    </tr>
+
+                    <tr>
+                        <td> Updated: <span th:text="${userinfo.profile.modified}"> </span></td>
+
+                        <td>Updated By: <span th:text="${userinfo.profile.modifiedBy}"> </span></td>
+                    </tr>
+
+                    <tr>
+                        <td> <a  type="button"  class="btn btn-sm btn-success" th:href="@{/profile/edit/{id}(id=${userinfo.profile.id})}"> Edit  </a></td>
+
+                        <td><a  class="btn btn-sm btn-danger" type="button" th:href="@{/profile/delete/{id}(id=${userinfo.profile.id})}"> Delete </a></td>
+                    </tr>
+                </table>
+
+                <table class="table table-bordered" th:if="${ #strings.isEmpty(userinfo.profile)}">
+                    <tr>
+                        <td> Sorry no data found . Please add your profile info </td>
+                    </tr>
+
+
+                </table>
+
+
+
+            </div>
+        </div>
+
+
+
+
+    </div>
+</div>

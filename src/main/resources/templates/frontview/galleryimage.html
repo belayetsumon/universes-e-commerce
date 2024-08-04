@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="front-layout-inner-page">
+    <div layout:fragment = "main_content">
+
+
+        <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #ffc107;">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-7">  <h1 class="font-weight-bold" style="color: #fff;">    GALLERY </h1></div>
+                    <div class="col-sm-5 text-right" style="color: #ffffff">Home/Gallery</div>
+                </div>
+            </div>
+        </section>
+
+        <section style="padding: 40px 0px 100px 0px">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-12 col-md-12 ">
+                        <h1 class="text-center font-weight-bold text-warning">Our Photo Gallery</h1>
+                        <div class=" row justify-content-center" style="padding: 20px 0px 80px 0px">
+                            <div class="col-md-7 text-center font-weight-bold text-muted"> Our Memorable Moments
+                            </div>
+                        </div>
+                    </div>
+                </div><div class="row">
+                    <ul  class="d-flex" th:each="galleryimagelists,status:${galleryimagelist}">
+
+                        <li class=" d-inline-flex">
+
+                            <div class="card m-1">
+                                <span th:if="${ not #strings.isEmpty(galleryimagelists.imageName)}" class=""> 
+                                    <img  class="img-responsive img-thumbnail" th:src="@{/files/}+${galleryimagelists.imageName}" width="500" height="337" />
+                                </span>
+                                <span th:if="${#strings.isEmpty(galleryimagelists.imageName)}" > Image Not Found </span>
+                                <div class="card-body">
+                                <h5 class="card-title" th:text="${galleryimagelists.name}">Card title</h5>
+
+                                </div>
+                            </div>
+                        </li> 
+
+                    </ul>
+
+                </div>  
+            </div>
+        </section>
+    </div>
+</div>

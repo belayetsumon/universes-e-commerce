@@ -1,0 +1,57 @@
+<div class="apps_bottom_nav bgMaroon ">
+    <div class="row">
+        <div class="col-2 text-white text-center">  <a class="text-white" th:href="@{/}"><i class="fas fa-home"></i>Home </a>  </div>
+        
+        
+        <div class="col-3 text-white text-center" >    <div id="sidemenu_open" onclick="studentMenuopenNav()">
+                <a class="text-white" th:href="@{/customer/index}"> <i class="fas fa-user-circle"></i><br>My Account</a>
+            </div>
+        </div>
+        <div class="col-2 text-white text-center"> 
+            
+            <div sec:authorize="!isAuthenticated()">
+                <a class="text-white" th:href="@{/front-view/front-registration}"> <i class="fab fa-wpforms"></i> Registration</a> </div>
+                
+                   <div sec:authorize="isAuthenticated()">
+                <a class="text-white" th:href="@{/customer/index}"> <i class="fab fa-wpforms"></i>Customer </a> </div>
+                
+        </div> </div>   
+</div> 
+
+
+
+
+
+<div class="student_menu" id="student_menu">
+    <a href="javascript:void(0)" class="student_closebtn" onclick="studentMenucloseNav()"><i class="far fa-window-close textMaroon"></i></a>
+
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+            <a class=""  th:href="@{/}"> <i class="fas fa-home"></i> Home</a>
+        </li>
+
+        <li sec:authorize="!isAuthenticated()" class="list-group-item">
+            <a class="textMaroon" th:href="@{/front-view/front-registration}"> <i class="fab fa-wpforms"></i> Registration</a>
+        </li>      
+
+        <li class="list-group-item">
+            <a class="textMaroon" th:href="@{/front-view/contactUs}"> <i class="fas fa-id-card-alt"></i> Contact Us</a>
+        </li>
+
+        <li class="list-group-item">
+            <div sec:authorize="isAuthenticated()">
+                <a class="textMaroon" th:href="@{/users/logout}"><i class="fas fa-sign-out-alt"></i>Log Out</a>
+            </div>
+
+            <div sec:authorize="!isAuthenticated()">
+                <a class="textMaroon"
+                   th:href="@{/front-view/member-login}"><i class="fas fa-sign-in-alt"></i> Login</a>
+            </div>
+        </li>
+
+        <li class="list-group-item">
+            <a class="textMaroon" th:href="@{/front-view/contactUs}"> <i class="fas fa-info-circle"></i> Help</a>
+        </li>
+
+    </ul>
+</div>

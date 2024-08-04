@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport"
+              content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="google-site-verification" content="heb7DbEV8OfK4Hk0PVraKZ2WTOSS4um_zW9s_9lH2mI" />
+
+        <!-- Google Tag Manager -->
+        <script>(function (w, d, s, l, i) {
+                w[l] = w[l] || [];
+                w[l].push({'gtm.start':
+                            new Date().getTime(), event: 'gtm.js'});
+                var f = d.getElementsByTagName(s)[0],
+                        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+                j.async = true;
+                j.src =
+                        'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+                f.parentNode.insertBefore(j, f);
+            })(window, document, 'script', 'dataLayer', 'GTM-P293DXV');</script>
+
+
+        <!-- End Google Tag Manager -->
+        <link rel="stylesheet" th:href="@{/bootstrap/dist/css/bootstrap.min.css}"/>
+        
+         <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+
+        <!--  Font Awsome  -->
+        <link rel="stylesheet" th:href="@{/fontawesome/css/all.css}">
+
+        <!-- wol carousel -->
+        <link rel="stylesheet" th:href="@{/plugin/owlcarousel/assets/owl.carousel.min.css}">
+        <link rel="stylesheet" th:href="@{/plugin/owlcarousel/assets/owl.theme.green.min.css}">
+
+        <!--        Hover css-->
+        <link rel="stylesheet" th:href="@{/css/hover-min.css}">
+        <!-- Custom css -->
+        <link rel="stylesheet" th:href="@{/css/app.css}"/> 
+        
+          <link rel="stylesheet" th:href="@{/css/mobile_apps.css}"/> 
+
+        <title> Universes E-commerce</title>
+
+    </head>
+    <body>
+        <header>
+            <!-- Site wrapper -->
+            <div th:replace="front-header">
+
+                <!-- Header  -->
+
+            </div>
+            <!-- =============================================== -->
+        </header>
+        
+        
+         <section class="mt-4 mb-4"> <!-- main -->
+                       <div layout:fragment="main_content">main Content</div>
+        </section>
+        
+        <div class="row ma"></div>
+        <!-- /.content-wrapper -->
+        <footer>
+
+            <div  th:replace="front-footer">
+                footer
+            </div>
+        </footer>
+
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script th:src="@{/js/jquery-3.2.1.slim.min.js}"></script>
+
+        <!-- Bootstrap -->
+        <script th:src="@{/bootstrap/popper.min.js}"></script>
+        <script th:src="@{/bootstrap/dist/js/bootstrap.min.js}"></script>
+
+        <!--owlcarousel-->
+
+        <script th:src="@{/plugin/owlcarousel/owl.carousel.min.js}"></script>
+
+
+        <!-- Form Validation -->
+        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-form-validator/2.3.26/jquery.form-validator.min.js"></script>
+        
+<!--        <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>-->
+
+         <script th:src="@{/webjars/tinymce/5.0.9/tinymce.min.js}" referrerpolicy="origin"></script>
+         
+        <!--        All Custom Js-->
+        <script th:src="@{/js/app.js}"></script>
+
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-155733577-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag('js', new Date());
+
+            gtag('config', 'UA-155733577-1');
+        </script>
+
+
+
+        <!-- Facebook Pixel Code -->
+        <script>
+            !function (f, b, e, v, n, t, s)
+            {
+                if (f.fbq)
+                    return;
+                n = f.fbq = function () {
+                    n.callMethod ?
+                            n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+                };
+                if (!f._fbq)
+                    f._fbq = n;
+                n.push = n;
+                n.loaded = !0;
+                n.version = '2.0';
+                n.queue = [];
+                t = b.createElement(e);
+                t.async = !0;
+                t.src = v;
+                s = b.getElementsByTagName(e)[0];
+                s.parentNode.insertBefore(t, s)
+            }(window, document, 'script',
+                    'https://connect.facebook.net/en_US/fbevents.js');
+            fbq('init', '2549642021961257');
+            fbq('track', 'PageView');
+        </script>
+        <noscript><img height="1" width="1" style="display:none"
+                       src="https://www.facebook.com/tr?id=2549642021961257&ev=PageView&noscript=1"
+                       /></noscript>
+        <!-- End Facebook Pixel Code -->
+    </body>
+</html>

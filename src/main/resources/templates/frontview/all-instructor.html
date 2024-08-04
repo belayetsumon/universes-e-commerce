@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorator="front-layout-inner-page">
+    <div layout:fragment="main_content">
+
+        <section class="d-none d-sm-block">
+
+            <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #992337;">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-7">  <h3 class="font-weight-bold" style="color: #fff;"> All Instructor</h3></div>
+                        <div class="col-sm-5 text-right" style="color: #ffffff">Home/All Instructor </div>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <div class="container-fluid">
+                    <div class="row mt-4">
+
+                        <div class="col-sm-12">
+                            <div class="card mb-4 borderColor">
+
+                                <div class="card-header bgMaroon">
+                                    <h5 class="font-weight-bold text-white"> <i class="fas fa-list"></i> Our All Instructor </h5>
+                                </div>
+                                <div class="card-body">
+
+                                    <div class="row">
+                                        <div  class="row" th:if="${#lists.isEmpty(instructorlist)}"> 
+                                            <div class="col-sm-12 col-md-12 ">
+                                                <h2 class="text-center text-muted"> Sorry! No  Information Are Found. </h2>
+                                            </div>
+                                        </div>
+
+                                        <div class=" col-sm-3" th:each="instructorlists,status:${instructorlist}">
+
+                                            <div class="card p-3">
+
+                                                <span th:if="${#strings.isEmpty(instructorlists.profileImage)}" > 
+
+                                                    <img  class="mr-3 rounded-circle border border-secondary rounded mx-auto d-block" th:src="@{/img/image-not-available.png}"  width="150" height="150"/> 
+
+                                                </span>  
+
+
+                                                <span th:if="${ not #strings.isEmpty(instructorlists.profileImage)}" class="badge bg-green pull-right"> 
+                                                    <img  class="img-thumbnail" th:src="@{/files/}+${instructorlists.profileImage.imageName}" width="200px"  height="250px"/>
+
+
+                                                </span>
+                                                <div class="card-body">
+                                                    <h5  class="font-weight-bold "> <a    class="textMaroon" th:href="@{/front-view/instructor-details/{iid}(iid=${instructorlists.id})}" > <span  th:text="${instructorlists.name}">  </span></a>
+                                                    </h5>  
+                                                    <p  th:if="${ not #strings.isEmpty(instructorlists.vendorprofile)}" class="" >  <span  th:text="${instructorlists.vendorprofile.designation}">  </span>
+                                                    </p>
+                                                    <p>  Total Exam  <span  class="float-right badge badge-danger"> <span  th:text="${instructorlists.exam.size()}">    </span>  </span> 
+                                                    </p>                                          
+                                                    <div class="card-body">
+                                                        <a  type=" button"  class=" btn btn-block btn-danger"  th:href="@{/front-view/instructor-details/{iid}(iid=${instructorlists.id})}"  > Exam List </a> 
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </section>
+
+        </section>
+
+
+        <!--        mobile-->
+
+        <section class=" mobile d-block d-sm-none">
+            <div th:replace="mobile-top-nav"></div>
+
+            <div class="row mt-5"> </div>
+            <div class="row mt-3"> </div>
+
+                <section>
+                <div class="container-fluid">
+                    <div class="row mt-1">
+
+                        <div class="col-12">
+                            <div class="card mb-4 borderColor">
+
+                                <div class="card-header bgMaroon mb-3">
+                                    <h5 class="font-weight-bold text-white"> <i class="fas fa-list"></i> Our All Instructor </h5>
+                                </div>
+                                <div class="card-body">
+
+                                    <div class="row">
+                                        <div  class="row" th:if="${#lists.isEmpty(instructorlist)}"> 
+                                            <div class="col-sm-12 col-md-12 ">
+                                                <h2 class="text-center text-muted"> Sorry! No  Information Are Found. </h2>
+                                            </div>
+                                        </div>
+
+                                        <div class=" col-6 col-sm-3" th:each="instructorlists,status:${instructorlist}">
+
+                                            <div class="card mb-3">
+
+                                                <span th:if="${#strings.isEmpty(instructorlists.profileImage)}" > 
+
+                                                    <img  class="mr-3 rounded-circle border border-secondary rounded mx-auto d-block" th:src="@{/img/image-not-available.png}"  width="75" height="75"/> 
+
+                                                </span>  
+
+
+                                                <span th:if="${ not #strings.isEmpty(instructorlists.profileImage)}" class="badge bg-green pull-right"> 
+                                                    <img  class="img-thumbnail" th:src="@{/files/}+${instructorlists.profileImage.imageName}" width="75px"  height="75px"/>
+
+
+                                                </span>
+                                                <div class="card-body row">
+                                                    
+                                                    <h5  class="font-weight-bold "> <a    class="textMaroon" th:href="@{/front-view/instructor-details/{iid}(iid=${instructorlists.id})}" > <span  th:text="${instructorlists.name}">  </span></a>
+                                                    </h5>  
+                                                    <p  th:if="${ not #strings.isEmpty(instructorlists.vendorprofile)}" class="" >  <span  th:text="${instructorlists.vendorprofile.designation}">  </span>
+                                                    </p>
+                                                    <p>  Total Exam  <span  class="float-right badge badge-danger"> <span  th:text="${instructorlists.exam.size()}">    </span>  </span> 
+                                                    </p>                                          
+                                                    <div class="card-body row">
+                                                        <a  type=" button"  class=" btn btn-block btn-danger  btn-sm"  th:href="@{/front-view/instructor-details/{iid}(iid=${instructorlists.id})}"  > Exam List </a> 
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </section>
+
+            <section class="mb-5"></section>
+
+            <div th:replace="bottom-nav">
+
+                <!-- Header  -->
+
+            </div>
+
+        </section>
+
+    </div>
+</div>

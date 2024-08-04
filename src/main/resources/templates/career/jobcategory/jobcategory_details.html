@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="admin-layout">
+    <div layout:fragment = "main_content">
+
+        <div> <h4> Product Category <small>Home>Product Category</small></h4>
+        </div>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row"> <div class="col-sm-5 font-weight-bold text-danger"><i class="fas fa-list"></i> Product Category Details</div>
+                            <div class="col-sm-7 "> <a class="btn btn-danger btn-sm float-right" th:href="@{/productcategory/index}">Close</a></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+                        <table class="table table-bordered">
+                            <tr>
+                                <td> Name</td>
+                                <td> :</td>
+                                <td th:text="${jobcategory_details.name}">Otto</td>
+
+                            </tr>
+
+                            <tr>
+                                <td> Slug</td>
+                                <td>: </td>
+                                <td th:text="${jobcategory_details.slug}">Otto</td>
+
+                            </tr>
+
+                         
+
+                            <tr> <td> Description</td>
+                                <td> :</td>
+                                <td th:text="${jobcategory_details.description}"> </td>
+
+                            </tr>
+
+                            <tr> <td> Created</td>
+                                <td> :</td>
+                                <td>  <span th:text="${jobcategory_details.created}"> </span> </td>
+
+                            </tr>
+
+                            <tr> <td> Created By</td>
+                                <td> :</td>
+                                <td>  <span th:text="${jobcategory_details.createdBy}"> </span> </td>
+                            </tr>
+
+                            <tr> <td>Updated </td>
+                                <td> :</td>
+                                <td>  <span th:text="${jobcategory_details.modified}"> </span></td>
+                            </tr>
+
+                            <tr> <td> Updated By</td>
+                                <td> :</td>
+                                <td> <span th:text="${jobcategory_details.modifiedBy}"> </span></td>
+                            </tr>
+
+                            <tr> 
+                                <td> <a th:href="@{/jobcategory/edit/{id}(id=${jobcategory_details.id})}"> Edit  </a></td>
+
+                                <td> </td>
+
+                                <td><a th:href="@{/jobcategory/delete/{id}(id=${jobcategory_details.id})}"> Delete </a></td>
+                            </tr>
+                        </table>
+
+                    </div><!--  Card body end-->
+
+                    <div class="card-footer">
+                    </div> <!--  Card footer end-->
+                </div><!--  Card  end-->
+
+
+            </div>
+        </div>
+    </div></div>

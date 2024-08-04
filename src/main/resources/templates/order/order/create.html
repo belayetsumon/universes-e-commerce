@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="front-layout-inner-page">
+    <div layout:fragment="main_content">
+
+        <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #faa619;">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-7">  <h1 class="font-weight-bold" style="color: #fff;">    Cart:Checkout</h1></div>
+                    <div class="col-sm-5 text-right" style="color: #ffffff">Home/cart/checkout</div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="container pt-5 pb-5">
+                <div class="row ">
+                    <div class="col-sm-8">
+                        <div class="accordion" id="accordionExample">
+                            <div class="card">
+                                <div class="card-header" id="headingOne">
+                                    <h2 class="mb-0">
+                                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                           Checkout Options : Order Summary 
+                                        </button>
+                                    </h2>
+                                </div>
+
+                                <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+                                    <div class="card-body">
+                                        <div class="row">
+
+                                            <div class="table-responsive" th:if="${session.sessioncart!=null}" >
+                                                <table class="table table-bordered  table-striped t">
+                                                    <thead>
+                                                        <tr>
+                                                            <th scope="col">#</th>
+                                                            <th scope="col">Product</th>
+                                                            <th scope="col">Photo</th>
+                                                            <th scope="col">price</th>
+                                                            <th scope="col">Quantity</th>
+                                                            <th scope="col">Total</th>
+
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr th:each="cart,status:${session.sessioncart}">
+                                                            <th>1</th>
+                                                            <td><a    class="card-link text-warning" th:href="@{/front-view/single-product/{prodid}(prodid=${cart.exam.id})}" >  <span  th:text="${cart.exam.title}">    </span> </a></td>
+
+                                                            <td> <span th:if="${ not #strings.isEmpty(cart.exam.imageName)}" class="badge bg-green pull-right"> 
+                                                                    <img  class="img-responsive" th:src="@{/files/}+${cart.exam.imageName}" width="100px"  height="100px"/>
+                                                                </span>
+
+                                                                <span th:if="${#strings.isEmpty(cart.exam.imageName)}" > Image Not Found </span></td>
+
+                                                            <td th:text="${cart.exam.price}">Otto</td>
+
+                                                            <td th:text="${cart.quantity}">Otto</td>
+                                                            <td>
+                                                                <div th:with="result=${cart.exam.price * cart.quantity}">
+
+                                                                    <span th:text="${#numbers.formatDecimal(result, 0, 'COMMA', 2, 'POINT')}">10.00</span> 
+
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+
+                                                    </tbody>
+                                                </table>
+
+                                             
+
+                                                <div class="card">
+                                                    <div class="card-header">
+                                                        <i class="fas fa-money-check text-warning"></i>  Order   Summary
+                                                    </div>
+                                                    <ul class="list-group list-group-flush">
+                                                        <li class="list-group-item">Sub Total:<span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">10.00</span> /-</li>
+
+                                                        <li class="list-group-item">Order Total: <span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">10.00</span>/-</li>
+                                                        <!--                                <li class="list-group-item">
+                                                                                            <a type="button" class="btn btn-block btn-sm btn-warning">Update Shopping  Cart</a> 
+                                                                                        </li>-->
+                                                        <li class="list-group-item">
+                                                            <a type="button" class="btn btn-block btn-sm btn-warning" th:href="@{/customer-order/save}"> Confirm Order</a> 
+                                                        </li>
+                                                    </ul>
+                                                </div>
+
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-sm-4">
+
+
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

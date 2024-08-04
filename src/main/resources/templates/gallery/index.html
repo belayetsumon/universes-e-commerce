@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="admin-layout">
+    <div class="bg-light" layout:fragment = "main_content">
+
+        <div> <h4> Gallery <small>Home>Gallery</small></h4>
+        </div>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">  <div class="col-sm-5 font-weight-bold text-danger"><i class="fas fa-list"></i> Gallery List</div>
+                            <div class="col-sm-7 "> <a class="btn btn-success btn-sm float-right" th:href="@{/gallery/create}"> Add Gallery</a></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+                        <span th:text="${message}"></span>
+
+                        <table class="table table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Name</th>
+
+                                    <th scope="col">Image</th>
+
+                                    <th scope="col"> Created </th>
+
+                                    <th scope="col"> Updated </th>
+                                    <th scope="col"> Edit</th>
+                                    <th scope="col"> Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                <tr th:each="gallerylists,status:${gallerylist}">
+
+                                    <th th:text="${status.count}">1</th>
+
+                                    <th th:text="${gallerylists.name}">1</th>
+                                    <td>
+                                        <span th:if="${ not #strings.isEmpty(gallerylists.imageName)}" class="badge bg-green pull-right"> 
+                                            <img  class="img-responsive" th:src="@{/files/}+${gallerylists.imageName}" width="300"  height="168"/>
+                                        </span>
+                                        <span th:if="${#strings.isEmpty(gallerylists.imageName)}" > Image Not Found </span>
+                                    </td>
+
+
+                                    <td th:text="${gallerylists.created}">Otto</td>
+
+                                    <td th:text="${gallerylists.modified}">@mdo</td>
+
+                                    <td> <a th:href="@{/gallery/edit/{id}(id=${gallerylists.id})}"> Edit</a></td>
+
+                                    <td> <a th:href="@{/gallery/delete/{id}(id=${gallerylists.id})}">Delete</a></td>
+
+                                </tr>
+
+                            </tbody>
+                        </table>
+
+
+                    </div><!--  Card body end-->
+
+                </div><!--  Card  end-->
+            </div>
+        </div>
+    </div><!--  Main Content  end-->
+</div>   <!--  Layout end-->

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorator="front-layout-inner-page">
+    <div layout:fragment="main_content">
+
+        <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #faa619;">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-7">  <h1 class="font-weight-bold" style="color: #fff;">Cart: Payment </h1></div>
+                    <div class="col-sm-5 text-right" style="color: #ffffff">Home/cart/payment</div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-8">
+                        <div class="table-responsive">
+                            <table class="table table-bordered  table-striped t">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Product</th>
+                                        <th scope="col">price</th>
+                                        <th scope="col">Quantity</th>
+                                        <th scope="col">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row">1</th>
+                                        <td>Mark</td>
+                                        <td>Otto</td>
+                                        <td>@mdo</td>
+                                        <td>@mdo</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">2</th>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>@fat</td>
+                                        <td>@mdo</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">3</th>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>@twitter</td>
+                                        <td>@mdo</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row"> 
+                                            <a type="button" class="btn btn-block btn-sm btn-warning"> Continue Shoping </a> </th>
+                                        <td>Larry</td>
+                                        <td>the Bird</td>
+                                        <td>@twitter</td>
+                                        <td>@mdo</td>
+                                    </tr>
+                                </tbody>
+
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+
+                        <div class="card" style="width: 18rem;">
+                            <div class="card-header">
+                                Summary
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">Sub Total: 777777/-</li>
+                                <li class="list-group-item">Order Total: 99999/-</li>
+
+                                <li class="list-group-item">
+                                    <a type="button" class="btn btn-block btn-sm btn-warning">Update Shopping  Cart</a> 
+                                </li>
+                                <li class="list-group-item">
+                                    <a type="button" class="btn btn-block btn-sm btn-warning"> Confirm </a> 
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

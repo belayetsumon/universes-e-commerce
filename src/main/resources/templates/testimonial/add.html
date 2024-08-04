@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="admin-layout">
+    <div layout:fragment = "main_content">
+
+        <div> <h4> Testimonial <small>Home>Services> Add</small></h4>
+        </div>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">  <div class="col-sm-5 font-weight-bold text-danger"><i class="fas fa-list"></i> Testimonial Add</div>
+                            <div class="col-sm-7 "> <a class="btn btn-danger btn-sm float-right" th:href="@{/testimonial/index}">Close</a></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/testimonial/save}" th:object="${testimonial}" enctype="multipart/form-data" method="post" >
+
+                            <div class="alert alert-danger alert-dismissible" th:if="${#fields.hasErrors('*')}">
+                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                                <h4><i class="icon fa fa-ban"></i> Error </h4>
+                                <ul th:if="${#fields.hasErrors('*')}">
+                                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
+                                </ul>
+                            </div>
+
+                            <div class="row" th:if="${!#strings.isEmpty(success)}"> 
+                                <span  class="text-success"th:text="success"> </span>
+                            </div> 
+
+                            <div class="form-group">
+                                <input type="hidden" class="form-control"  th:field="*{id}" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Name:<span class="text-danger"> *</span></label>
+                                <input type="text"  minlength=" 5 "class="form-control col-sm-5" th:field="*{name}" aria-describedby="emailHelp" placeholder="Enter  name">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Designation:<span class="text-danger"> </span></label>
+                                <input type="text"  minlength=" 2 "class="form-control col-sm-5" th:field="*{designation}" aria-describedby="emailHelp" placeholder="Enter  designation">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('designation')}" th:errors="*{designation}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Description:<span class="text-danger"> *</span></label>
+                                <textarea type="text"  rows="10" class="form-control col-sm-5" th:field="*{description}" aria-describedby="emailHelp" placeholder="Enter Description"></textarea>
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Company Name:<span class="text-danger"> *</span></label>
+                                <input type="text" class=" form-control col-sm-5" th:field="*{companyname}" aria-describedby="emailHelp" placeholder="Enter company name"/>
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('companyname')}" th:errors="*{companyname}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Country Name:<span class="text-danger"> *</span></label>
+                                <input type="text"  rows="10" class="form-control col-sm-5" th:field="*{country}" aria-describedby="emailHelp" placeholder="Enter country name" />
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('country')}" th:errors="*{country}">Book Name</span>
+                            </div>
+
+                          <div class="form-group">
+                                <label for="exampleInputEmail1">Image<span class="text-danger"> </span></label>
+                                <input type="hidden"  th:value="${testimonial.imageName}">
+                                <input type="file"  minlength=" 5 "class="form-control col-sm-5" name="pic" aria-describedby="emailHelp" placeholder="Enter your name">
+                                <span  class="help-block "> Image Size 800px x 450px </span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Status<span class="text-danger"> *</span></label>
+                                <select id="inputState" class="form-control col-sm-3"  th:field="*{status}">
+                                    <option value=" "> Select one</option>              
+                                    <option th:each =" statuss : ${statuslist}"
+                                            th:value="${statuss} " 
+                                            th:text="${statuss}"> Select one</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-success">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div></div>

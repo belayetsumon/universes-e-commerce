@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="admin-layout">
+    <div layout:fragment = "main_content">
+        <div> <h4> Admin Instructor Exam  <small>Home> Instructor Exam </small></h4>
+        </div>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">  <div class="col-sm-5 font-weight-bold text-danger"><i class="fas fa-list"></i> Exam  List Total Exam <span th:text="${examlist.size()}"> </span></div>
+                            <div class="col-sm-7 "> </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+                        <span th:if="${ not #strings.isEmpty(message)}">
+
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <span th:text="${message}" > </span>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        </span>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">#</th>
+
+                                        <th scope="col">Name</th>
+                                        <th scope="col">Total Question </th>
+
+                                        <th scope="col"> Exam Sub Category </th>
+                                        <th scope="col"> Order no </th>
+                                        <th scope="col"> Image </th>
+                                        <th scope="col"> Price </th>
+                                        <th scope="col"> Status </th>
+                                        <th scope="col"> Created </th>
+                                        <th scope="col"> Updated </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="examlists,status:${examlist}">
+
+                                        <th th:text="${status.count}">1</th>
+
+
+                                        <td> <a th:href="@{/exam/details/{id}(id=${examlists.id})}" th:text="${examlists.title}">    </a></td>
+
+                                        <td> <span th:text="${examlists.question.size()}"></span><a th:href="@{/exam/question-by-exam/{examid}(examid=${examlists.id})}">  Question List  </a> </td>
+
+                                      <td >
+                                          <span th:each="subcategory,status:${examlists.productsubcategory}" >
+
+                                                <span th:text="${subcategory.name+','}">  
+                                      
+                                      
+                                      </td>
+
+                                        <td th:text="${examlists.orderno}">Otto</td>
+
+                                        <td>
+                                            <span th:if="${ not #strings.isEmpty(examlists.imageName)}" class="badge bg-green pull-right"> 
+                                                <img  class="img-responsive" th:src="@{/files/}+${examlists.imageName}" width="100px"  height="100px"/>
+                                            </span>
+
+                                            <span th:if="${#strings.isEmpty(examlists.imageName)}" > Image Not Found </span>
+                                        </td>
+                                        <td th:text="${examlists.price}">Otto</td>
+                                        <td th:text="${examlists.status}">Otto</td>
+
+                                        <td th:text="${examlists.created}">Otto</td>
+
+                                        <td th:text="${examlists.modified}">@mdo</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div><!--  Card body end-->
+
+
+                </div><!--  Card  end-->
+
+
+            </div><!--  Main Content  end-->
+        </div>   <!--  Layout end-->
+    </div></div>

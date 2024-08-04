@@ -1,0 +1,222 @@
+<header>
+    <nav class="navbar navbar-expand-md navbar-light  bg-white shadow-sm  bg-body">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Universes E-commerce </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Home</a>
+                    </li>
+                    
+                       <li  class="nav-item">
+                        <a class= "nav-link"  th:href="@{/admin/index}">Admin Panel</a> </li>
+
+                    <li  class="nav-item">
+                        <a class= "nav-link"  th:href="@{/customer/index}">My Account</a> </li>
+
+                    <li  class="nav-item">
+                        <a class= "nav-link"
+                           th:href="@{/public/member-login}">Login</a>
+                    </li>
+
+                    <li  class="nav-item">
+                        <a class= "nav-link"
+                           th:href="@{/public/front-registration}">Registration</a>
+                    </li>
+                </ul>
+                  </div>
+        </div>
+    </nav>
+</header>
+
+
+
+<!--<section  class="d-none d-sm-block"style="background-color: #992337;color: #ffffff;">
+    <div class="container-fluid" >
+        <div class="row">
+            <div class="col-sm-6  d-none d-sm-block">
+                <ul class="list-inline">
+                    <li  
+                        class="list-inline-item"><a class="text-white"
+                                                th:href="@{/}"
+                                                aria-current="page">Home</a></li>                    
+                    <li class="list-inline-item"></li>
+
+                    <li sec:authorize="isAuthenticated()" class="list-inline-item">
+                        <a class="text-white" th:href="@{/customer/index}">My Account</a> </li>
+
+
+                                        <li sec:authorize="hasAuthority('admin')" class="list-inline-item">
+                                            <a class="text-white" th:href="@{/admin/index}"> Admin Account</a> </li>
+
+                    <li class="list-inline-item"  >
+
+                        <div sec:authorize="isAuthenticated()">
+                            <a class="text-white" th:href="@{/users/logout}">Log Out</a>
+                        </div>
+
+                        <div sec:authorize="!isAuthenticated()">
+                            <a class="text-white"
+                               th:href="@{/public/member-login}">Login</a>
+                        </div>
+
+                    </li>
+
+                    <li class="list-inline-item">
+                        <a class="text-white" th:href="@{/cart/index}">Cart <span class="badge badge-pill badge-warning" th:text="${totaltest}">4</span></a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class=" col-xs-12 text-center d-block d-sm-none">
+                <ul class="list-inline">
+                    
+                    <li  
+                        class="list-inline-item"><a class="text-white"
+                                                th:href="@{/}"
+                                                aria-current="page">Home</a></li>                    
+                    <li class="list-inline-item"></li>
+
+                    <li sec:authorize="isAuthenticated()" class="list-inline-item">
+                        <a class="text-white" th:href="@{/customer/index}">My Account</a> </li>
+
+
+                                        <li sec:authorize="hasAuthority('admin')" class="list-inline-item">
+                                            <a class="text-white" th:href="@{/admin/index}"> Admin Account</a> </li>
+
+                    <li class="list-inline-item"  >
+
+                        <div sec:authorize="isAuthenticated()">
+                            <a class="text-white" th:href="@{/users/logout}">Log Out</a>
+                        </div>
+
+                        <div sec:authorize="!isAuthenticated()">
+                            <a class="text-white"
+                               th:href="@{/public/member-login}">Login</a>
+                        </div>
+
+                    </li>
+
+                    <li class="list-inline-item">
+                        <a class="text-white" th:href="@{/cart/index}">Cart <span class="badge badge-pill badge-warning" th:text="${totaltest}">4</span></a>
+                    </li>
+                    <li class="list-inline-item"><a th:class="text-white"  th:href="@{/front-view/exam-category}">Exam Category</a></li>
+                    <li class="list-inline-item"><a th:class="text-white"  th:href="@{/front-view/all-exam}">All Exam</a></li>
+                    <li class="list-inline-item"><a th:class="text-white"  th:href="@{/front-view/all-instructor}">All Instructor</a></li>
+                    <li sec:authorize="!isAuthenticated()" class="list-inline-item">
+                        <a class="text-white" th:href="@{/public/front-registration}">Registration</a>
+                    </li>
+
+                    <li class="list-inline-item">
+                        <a class="text-white" th:href="@{/front-view/contactUs}">Contact Us</a>
+                    </li>
+
+
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+<nav class=" d-none d-sm-block navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <div class="d-flex flex-grow-">
+            <span class="w-100 d-lg-none d-block"> hidden spacer to center brand on mobile </span>
+            <a  class="display-5 textMaroon d-none d-lg-inline-block  font-weight-bold" th:href="@{/}">
+               Ajmaeen  General Trading LLC 
+            </a>
+
+            <a class="navbar-brand-two mx-auto d-lg-none d-inline-block" th:href="@{/}">
+
+                <i class="fas fa-home textMaroon"></i>
+            </a>
+                        <div class="w-100 text-right">
+                            <button class="navbar-toggler float-xs-right" type="button" data-toggle="collapse" data-target="#myNavbar">
+                                <span class="navbar-toggler-icon"></span>
+                            </button>
+                        </div>
+
+        </div>
+
+        <div class="collapse navbar-collapse flex-grow-1 text-right" id="myNavbar">
+            <ul class="navbar-nav ml-auto flex-nowrap">
+
+                <li class="nav-item active">
+                    <a class="nav-link textMaroon" th:href="@{/}">Home<span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link  textMaroon dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        About Us
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" th:href="@{/front-view/about-us}">About Us</a>
+                                                    <a class="dropdown-item" th:href="@{/front-view/mission-vision}">Mission & Vision</a>
+                                                    <a class="dropdown-item" th:href="@{/front-view/advisory-council}">Advisory Council</a>
+                                                    <a class="dropdown-item" th:href="@{/front-view/executive-committee}">Executive committee</a>
+                                                    <a class="dropdown-item" th:href="@{/front-view/constitution}">Constitution</a>
+                                                    <div class="dropdown-divider"></div>
+                                                <a class="dropdown-item" th:href="@{/front-view/ceo-message}">CEO Message</a> 
+                                                <a class="dropdown-item" th:href="@{/front-view/agent-division}">Agent Division</a> 
+                                                <a class="dropdown-item" th:href="@{/front-view/trade-division}">Trading Division</a>
+                                                <a class="dropdown-item" th:href="@{/front-view/corporate-value}">Corporate Values</a>
+                                                <a class="dropdown-item" th:href="@{/front-view/code-conduct}">Code of Conduct</a>
+                        <a class="dropdown-item" th:href="@{/front-view/clients}">Our Clients</a>
+
+                    </div>
+                </li>
+
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            Member
+                                        </a>
+                                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                            <a class="dropdown-item" th:href="@{/front-view/all-member}">All Member</a>
+                                            <a class="dropdown-item" th:href="@{/front-view/member-login}">Member Login</a>
+                                            <a class="dropdown-item" th:href="@{/front-view/member-registration}">Member Registration</a>
+                                            <a class="dropdown-item" th:href="@{/front-view/batch-modaretor}">Batch Moderator</a>
+                                            <div class="dropdown-divider"></div>
+                
+                                        </div>
+                                    </li>
+                                <li class="nav-item"><a th:class="'nav-link '+${resourses}"  th:href="@{/front-view/resourses}">Resources</a></li>
+                                <li class="nav-item"><a th:class="'nav-link '+${wholesale}"  th:href="@{/front-view/wholesale}">Wholesale</a></li>
+
+
+ <li class="nav-item"><a th:class="'nav-link '+${wholesale}"  th:href="@{/front-view/exam-category}">Exam Category</a></li>
+                <li class="nav-item"><a th:class="'nav-link '+${wholesale}"  th:href="@{/front-view/all-exam}">All Exam</a></li>
+                <li class="nav-item"><a th:class="nav-link"  th:href="@{/front-view/all-instructor}">All Instructor</a></li>
+
+     <li sec:authorize="!isAuthenticated()" class="nav-item">
+          <a class="nav-link"  th:href="@{/public/about-us}">About Us</a>
+                  
+                </li>
+
+
+                <li sec:authorize="!isAuthenticated()" class="nav-item">
+                    <a class="nav-link" th:href="@{/public/front-registration}">Registration</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/public/contactUs}">Contact Us</a>
+                </li>
+
+                <li class="list-inline-item">
+                    <a class="nav-link" th:href="@{/cart/index}">Cart <span class="badge badge-pill badge-warning" th:text="${totaltest}">4</span></a>
+                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link" th:href="@{/cart/}"><div class="" th:if="${session.sessioncart==null}" >                                   
+                                            <i class="fas fa-shopping-cart text-danger"></i>   Cart  0 
+                                        </div> 
+                
+                                        <div class="" th:if="${session.sessioncart!=null}" >
+                                            <i class="fas fa-shopping-cart text-warning"></i> Cart <span th:text="${session.sessioncart.size()}"></span>
+                                        </div></a>
+                                </li>
+
+            </ul>
+        </div>
+    </div>
+</nav>-->

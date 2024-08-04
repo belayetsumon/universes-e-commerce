@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-page">
+    <div layout:fragment = "main_content">
+
+        <section class="d-none d-sm-block">
+
+            <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #992337;">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-7">  <h1 class="font-weight-bold" style="color: #fff;">     Login </h1></div>
+                        <div class="col-sm-5 text-right" style="color: #ffffff">Home/User/User Login</div>
+                    </div>
+                </div>
+            </section>
+
+            <section style="padding: 40px 0px 100px 0px">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-6 col-md-6 ">
+                            <div class="card">
+
+                                <div class="card-body text-center">
+                                    <img  class="img-fluid img-thumbnail " th:src="@{/img/login.png}" />
+                                </div>
+                            </div>
+                        </div> 
+                        <div class="col-sm-6 col-md-6 ">
+                            <div class="card">
+                                <div class="card-header">
+                                    Login
+                                </div>
+                                <div class="card-body">
+                                    <form th:action="@{/public/member-login}"  method="post">
+
+                                        <div class="alert alert-danger" th:if="${param.error}">
+                                            Invalid User Name or Password. Please try again.   
+                                        </div>
+                                        <div class="alert alert-warning" th:if="${param.logout}">
+                                            You have been logged out.
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="exampleInputEmail1">Email address</label>
+                                            <input type="email"  name="username" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" value="" placeholder="Enter email">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="exampleInputPassword1">Password</label>
+                                            <input type="text" name="password" class="form-control" id="exampleInputPassword1" value="" placeholder="Password">
+                                        </div>
+                                        
+                                        <div class="form-group mt-2">
+                                            
+                                            <button type="submit" class="btn  btn-sm btn-info ">Submit</button>
+                                        </div>
+                                    </form>
+                                    <a th:href="@{/public/forgot-password}" class="btn btn-primary btn-sm m-1 btn-block btn-info">Forgot Password</a>
+                                    <a  th:href="@{/public/front-registration}"class="btn btn-primary btn-sm m-1 btn-block  btn-success">New Registration</a>
+
+                                </div>
+                            </div>
+                        </div>  
+                    </div>  
+                </div>
+            </section>
+
+        </section>
+
+
+
+        <section class="mobile d-block d-sm-none">
+
+            <div th:replace="mobile-top-nav"></div>
+
+            <div class="row mt-5"> </div>
+            <div class="row mt-3"> </div>
+
+
+
+
+            <div class="container">
+                <div class="row">
+
+                    <div class="col-sm-6 col-md-6 ">
+                        <div class="card">
+                            <div class="card-header">
+                                Login
+                            </div>
+                            <div class="card-body">
+                                <form th:action="@{/public/member-login}"  method="post">
+
+                                    <div class="alert alert-danger" th:if="${param.error}">
+                                        Invalid User Name or Password. Please try again.   
+                                    </div>
+                                    <div class="alert alert-warning" th:if="${param.logout}">
+                                        You have been logged out.
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="exampleInputEmail1">Email address</label>
+                                        <input type="email"  name="username" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" value="" placeholder="Enter email">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="exampleInputPassword1">Password</label>
+                                        <input type="password" name="password" class="form-control" id="exampleInputPassword1" value="" placeholder="Password">
+                                    </div>
+
+                                    <button type="submit" class="btn  btn-sm btn-warning">Submit</button>
+                                </form>
+                                <a th:href="@{/public/forgot-password}" class="btn btn-primary btn-sm m-1 btn-block btn-info">Forgot Password</a>
+                                <a  th:href="@{/public/front-registration}"class="btn btn-primary btn-sm m-1 btn-block  btn-success">New Member Registration</a>
+
+                            </div>
+                        </div>
+                    </div>  
+                </div>  
+            </div>
+
+
+            <section class="mb-5"></section>
+
+            <div th:replace="bottom-nav">
+
+                <!-- Header  -->
+
+            </div>
+
+
+        </section>
+
+    </div>
+</div>

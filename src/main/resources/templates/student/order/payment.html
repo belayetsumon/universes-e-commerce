@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="front-layout-inner-customar-page">
+    <div layout:fragment = "main_content">
+        <div> <h4> Order <small>Home>Order Payment</small></h4>
+        </div>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="card">
+                    <div class="card-header bgMaroon text-white">
+                        <div class="row">  <div class="col-sm-5 font-weight-bold "><i class="fas fa-list"></i> Payment</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form action="http://secure.aamarpay.com/index.php"  enctype="multipart/form-data" method="post" >
+                            <input type="hidden"  class="form-control" name="store_id" value="oxfordmodeltest" />
+                            <input type="hidden" name="signature_key" value="367d2c37233a43601f2f430ad057dd3b">
+                            <input type="hidden"  class="form-control" name="amount" th:value="${orderinfo.total}" />
+                            <input type="hidden" name="currency" value="BDT">
+
+                            <input type="hidden"  class="form-control" name="tran_id" th:value="${orderinfo.id}" />
+
+                            <input type="hidden"  class="form-control" name="cus_name" th:value="${orderinfo.customer.name}" />
+                            <input type="hidden"  class="form-control" name="cus_email" th:value="${orderinfo.customer.email}" />
+
+                            <input type="hidden" name="cus_add1" value="Dhaka"/>
+                            <input type="hidden" name="cus_add2" value="Dhaka"/>
+                            <input type="hidden" name="cus_city" value="Dhaka"/>
+                            <input type="hidden" name="cus_state" value="Dhaka"/>
+                            <input type="hidden" name="cus_postcode" value="1206">
+                            <input type="hidden" name="cus_country" value="Bangladesh"/>
+                            <input type="hidden" name="cus_phone" value="010000000"/>
+                            <input type="hidden" name="cus_fax" value="010000000"/>
+
+                            <input type="hidden" name="amount_vatratio" value="0"/>
+                            <input type="hidden" name="amount_vat" value="0"/>
+                            <input type="hidden" name="amount_taxratio" value="0"/>
+                            <input type="hidden" name="amount_tax" value="0"/>
+                            <input type="hidden" name="amount_processingfee_ratio" value="0"/>
+                            <input type="hidden" name="amount_processingfee" value="0"/>
+
+                            <input type="hidden"  class="form-control" name="desc" value="exam" />
+
+
+                            <input type="hidden" name="success_url"  th:value="@{http://oxfordmodeltest.com/customer-order/payment_success/{orderid}(orderid=${orderinfo.id})}"/>
+                            <input type="hidden" name="fail_url"   th:value="@{http://oxfordmodeltest.com/customer-order/payment_failed/{orderid}(orderid=${orderinfo.id})}"/>
+                            <input type="hidden" name="cancel_url"  th:value="@{http://oxfordmodeltest.com/customer-order/payment_cancelled/{orderid}(orderid=${orderinfo.id})}"/>
+
+
+                            <h5> Name : <span th:text="${orderinfo.customer.name}"> </span>    </h5>
+                            <h5> Email : <span th:text="${orderinfo.customer.email}"> </span>    </h5>
+                            <h5> Total Amount : <span th:text="${orderinfo.total}"> </span>
+
+                            </h5>
+                            <button type="submit" class="btn btn-success">Check Out</button>
+                        </form>
+                    </div><!--  Card body end-->
+                </div><!--  Card  end-->
+            </div><!--  Main Content  end-->
+        </div>
+    </div>
+</div>   <!--  Layout end-->

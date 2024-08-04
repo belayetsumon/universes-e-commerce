@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorator="front-layout-inner-page">
+    <div layout:fragment="main_content">
+
+        <section class="d-none d-sm-block">
+
+            <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #992337;">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-7">  <h3 class="font-weight-bold" style="color: #fff;"> Blog </h3></div>
+                        <div class="col-sm-5 text-right" style="color: #ffffff">Home/Blog </div>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <div class="container-fluid">
+                    <div class="row mt-4">
+                        <div class="col-sm-3 d-none d-sm-block">
+
+                            <div class="card borderColor" >
+                                <div class="card-header borderColor bgMaroon">
+                                    <h5 class="font-weight-bold text-white"> <i class="fas fa-list"></i> Category </h5>
+                                </div>
+
+                                <ul class="list-group list-group-flush ">
+                                    <li class="list-group-item list-group-item-action"th:each="blogcategorylists,status:${blogcategorylist}" >
+
+                                        <div class="media">
+                                            <div class="media-left media-">
+
+                                                <div class="media-body ml-3">
+                                                    <a    class=" textMaroon" th:href="@{/front-view/blog-by-cat/{catid}(catid=${blogcategorylists.id})}" > <span  th:text="${blogcategorylists.name}">    </span> </a> 
+                                                </div>
+                                            </div> 
+                                    </li>
+                                </ul>
+
+                            </div> 
+                        </div>
+                        <div class="col-sm-9">
+                            <div class="card mb-4 borderColor">
+
+                                <div class="card-header  bgMaroon">
+                                    <h5 class="font-weight-bold text-white "> <i class="fas fa-list"></i> Blog List:  <span  th:text="${bloglist.size()}">    </span>   </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row ">
+
+                                        <ul class="list-unstyled row">
+
+                                            <li   class="list-group-item" th:if="${  #lists.isEmpty(bloglist)}" >
+
+                                                Sorry, no matching data found.
+                                            </li>
+
+
+
+                                            <li class="col-sm-4 mb-2" th:if="${ not #lists.isEmpty(bloglist)}"  th:each="bloglists,status:${bloglist}">
+
+                                                <span th:if="${ not #strings.isEmpty(bloglists.imageName)}" class=""> 
+                                                    <img  class="img-fluid" th:src="@{/files/}+${bloglists.imageName}" />
+                                                </span>
+                                                <span  class="" th:if="${#strings.isEmpty(bloglists.imageName)}" > <img  class="mr-3 rounded-circle border border-secondary" th:src="@{/img/image-not-available.png}"  width="80" height="80"/>  </span>
+
+                                                <h6 class="mt-2 bg-light">
+
+                                                    <a    class="text-muted" th:href="@{/front-view/blogdetails/{blogid}(blogid=${bloglists.id})}" > 
+                                                        <span  th:text="${bloglists.title}">   </span></a>
+
+                                                </h6>
+
+                                                <h6>
+                                                    <!--                                                        <b class="textMaroon">Instructor: </b><span  th:text="${bloglists.userId.name}">    </span> -->
+                                                    <!--                                                        <b class="textMaroon"> Designation : </b><span   th:if="${ not #strings.isEmpty(bloglists.userId.vendorprofile)}" th:text="${bloglists.userId.vendorprofile.designation}">    </span> -->
+
+
+
+
+
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <section class="mobile d-block d-sm-none">
+
+            <div th:replace="mobile-top-nav"></div>
+
+            <div class="row mt-5"> </div>
+            <div class="row mt-3"> </div> 
+
+            <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #992337;">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-7">  <h3 class="font-weight-bold" style="color: #fff;"> Blog </h3></div>
+                        <div class="col-sm-5 text-right" style="color: #ffffff">Home/Blog </div>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <div class="container-fluid">
+                    <div class="row mt-4">
+                        <div class="col-sm-3 d-none d-sm-block">
+
+                            <div class="card borderColor" >
+                                <div class="card-header borderColor bgMaroon">
+                                    <h5 class="font-weight-bold text-white"> <i class="fas fa-list"></i> Category </h5>
+                                </div>
+
+                                <ul class="list-group list-group-flush ">
+                                    <li class="list-group-item list-group-item-action"th:each="blogcategorylists,status:${blogcategorylist}" >
+
+                                        <div class="media">
+                                            <div class="media-left media-">
+
+                                                <div class="media-body ml-3">
+                                                    <a    class=" textMaroon" th:href="@{/front-view/blog-by-cat/{catid}(catid=${blogcategorylists.id})}" > <span  th:text="${blogcategorylists.name}">    </span> </a> 
+                                                </div>
+                                            </div> 
+                                    </li>
+                                </ul>
+
+                            </div> 
+                        </div>
+                        <div class="col-sm-9">
+                            <div class="card mb-4 borderColor">
+
+                                <div class="card-header  bgMaroon">
+                                    <h5 class="font-weight-bold text-white "> <i class="fas fa-list"></i> Blog List:  <span  th:text="${bloglist.size()}">    </span>   </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row ">
+
+                                        <ul class="list-unstyled row">
+
+                                            <li   class="list-group-item" th:if="${  #lists.isEmpty(bloglist)}" >
+
+                                                Sorry, no matching data found.
+                                            </li>
+
+
+
+                                            <li class="col-sm-4 mb-2" th:if="${ not #lists.isEmpty(bloglist)}"  th:each="bloglists,status:${bloglist}">
+
+                                                <span th:if="${ not #strings.isEmpty(bloglists.imageName)}" class=""> 
+                                                    <img  class="img-fluid" th:src="@{/files/}+${bloglists.imageName}" />
+                                                </span>
+                                                <span  class="" th:if="${#strings.isEmpty(bloglists.imageName)}" > <img  class="mr-3 rounded-circle border border-secondary" th:src="@{/img/image-not-available.png}"  width="80" height="80"/>  </span>
+
+                                                <h6 class="mt-2 bg-light">
+
+                                                    <a    class="text-muted" th:href="@{/front-view/blogdetails/{blogid}(blogid=${bloglists.id})}" > 
+                                                        <span  th:text="${bloglists.title}">   </span></a>
+
+                                                </h6>
+
+                                                <h6>
+                                                    <!--                                                        <b class="textMaroon">Instructor: </b><span  th:text="${bloglists.userId.name}">    </span> -->
+                                                    <!--                                                        <b class="textMaroon"> Designation : </b><span   th:if="${ not #strings.isEmpty(bloglists.userId.vendorprofile)}" th:text="${bloglists.userId.vendorprofile.designation}">    </span> -->
+
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <section class="mb-5"></section>
+                <div th:replace="bottom-nav">
+
+                    <!-- Header  -->
+                </div>
+            </section>
+    </div>
+</div>

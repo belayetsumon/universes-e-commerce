@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorator="front-layout-inner-page">
+    <div layout:fragment="main_content">
+        <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #ffc107;">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-7">  <h1 class="font-weight-bold" style="color: #fff;"> Product Details </h1></div>
+                    <div class="col-sm-5 text-right" style="color: #ffffff">Home/Product Details</div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+
+            <div class="container">
+                <div class="row mt-4">
+                    <div class="col-sm-12">
+                        <div class="card mb-4 border-warning">
+
+                            <div class="card-header border-warning ">
+                                <h5 class="font-weight-bold text-warning"> <i class="fas fa-list"></i> Product Details </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <span th:if="${ not #strings.isEmpty(product_details.imageName)}" class=""> 
+                                            <img  class="img-fluid" th:src="@{/files/}+${product_details.imageName}" />
+                                        </span>
+                                        <span th:if="${#strings.isEmpty(product_details.imageName)}" > 
+                                            <img  class="img-fluid" th:src="@{/img/image-not-available.png}" /> 
+                                        </span>
+                                    </div> 
+                                    
+                                    <div class="col-sm-6">
+
+                                        <h3 class=" border-bottom border-warning">  <span  th:text="${product_details.title}">    </span></h3>
+
+                                        <h5>  Category: <span  th:text="${product_details.title}">    </span></h5>
+
+                                        <h6>  Price: <span  th:text="${product_details.price}">    </span></h6>
+
+                                        <!--                                        <h6>  Discount: <span  th:text="${product_details.discount}">    </span></h6>-->
+
+                                        <form th:action="@{/cart/add}"  enctype="multipart/form-data" method="post" >
+
+                                            <div class="form-group row">
+                                                <input type="hidden" class="form-control" th:name ="product_id" th:value="${product_details.id}" />
+
+                                                <label  class="col-sm-3" for="exampleInputEmail1">Quantity:<span class="text-danger"> </span></label>
+                                                <input  type="number" min="1"   class="form-control col-sm-3 " th:name="quantity" value="1" />
+                                            </div>
+
+                                            <button class="btn btn-block btn-warning" >Add to Cart</button>
+                                        </form>
+                                        <!--                                        <a class="btn btn-block btn-warning" th:href="@{/cart/add/{prodid}(prodid=${product_details.id})}">Add to Cart</a>-->
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <h3 class="mt-4 border-bottom border-warning"> Details : </h3>
+                                        <h6>  <span  th:text="${product_details.description}"> </span></h6>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <h3 class="mt-4 border-bottom border-warning"> Video : </h3>
+                                        <h1 class="text-center"> No Video Available </h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

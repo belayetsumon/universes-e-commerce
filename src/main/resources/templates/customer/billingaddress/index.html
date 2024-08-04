@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="front-layout-inner-customar-page">
+    <div layout:fragment = "main_content">
+
+        <div class="card">
+            <div class="card-header bgMaroon ">
+                <div class="row">  <div class="col-sm-12">    <h5 class="font-weight-bold text-white"><i class="fas fa-list"></i> Customer Dashboards . <small>Welcome Mr.<span th:text="${username}"> </span></small></h5></div>
+
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-12">
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <i class="fas fa-cart-plus"></i> Order List
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-bordered" th:if="${ not #lists.isEmpty(orderlist)}">
+
+                                    <tr>
+                                        <td>#</td>
+                                        <td>Order Date</td>
+                                        <td>Status</td>
+                                        <td>Payment</td>
+                                    </tr>
+                                    <tr th:each="orderlists,status:${orderlist}">
+                                        <td th:text="${orderlists.id}"></td>
+                                        <td th:text="${orderlists.created}"></td>
+                                        <td th:text="${orderlists.status}"></td>
+                                        <td> Pay Now</td>
+                                    </tr>
+                                </table>
+                                <table class="table table-bordered" th:if="${ #lists.isEmpty(orderlist)}">
+                                    <tr>
+                                        <td> Sorry no order found ! </td>
+                                    </tr>
+
+
+                                </table>
+
+                            </div>
+                            <div class="card-footer ">
+
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-list"></i>  Exam List
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-bordered" th:if="${ not #lists.isEmpty(examlist)}">
+
+                                    <tr>
+                                        <td>#</td>
+                                        <td>Image</td>
+                                        <td>Name</td>
+
+                                    </tr>
+                                    <tr th:each="examlists,status:${examlist}">
+                                        <td th:text="${status.count}"></td>
+                                        <td>
+                                            <span th:if="${ not #strings.isEmpty(examlists.exam.imageName)}" class="badge bg-green pull-right"> 
+                                                <img  class="img-responsive" th:src="@{/files/}+${examlists.exam.imageName}" width="100px"  height="100px"/>
+                                            </span>
+
+                                            <span th:if="${#strings.isEmpty(examlists.exam.imageName)}" > Image Not Found </span></td>
+
+
+                                        <td>
+                                            <a th:href="@{/student-exam/details/{id}(id=${examlists.exam.id})}" th:text="${examlists.exam.title}">    </a>
+                                        </td>
+
+
+                                    </tr>
+                                </table>
+                                <table class="table table-bordered" th:if="${ #lists.isEmpty(examlist)}">
+                                    <tr>
+                                        <td> Sorry Data Found ! </td>
+                                    </tr>
+
+
+                                </table>
+                            </div>
+                            <div class="card-footer ">
+
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                </div>    </div>
+        </div>
+    </div>
+</div>

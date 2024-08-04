@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="admin-layout">
+    <div layout:fragment = "main_content">
+        <div> <h4> Jobs Category <small>Home>Jobs Category</small></h4>
+        </div>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">  <div class="col-sm-5 font-weight-bold text-danger"><i class="fas fa-list"></i> Jobs Category List </div>
+                            <div class="col-sm-7 "> <a class="btn btn-success btn-sm float-right" th:href="@{/jobcategory/create}"> Add Jobs Category</a></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+                        <span th:if="${ not #strings.isEmpty(message)}">
+
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <span th:text="${message}" > </span>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        </span>
+
+                        <table class="table table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col"> Slug </th>
+                                    <th scope="col"> Jobs Qnt. </th>
+                                    <th scope="col"> Created </th>
+                                    <th scope="col"> Updated </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                               <tr th:each="jobcategorylists,status:${jobcategorylist}">
+
+                                    <th th:text="${status.count}">1</th>
+
+                                    <td> <a th:href="@{/jobcategory/details/{id}(id=${jobcategorylists.id})}" th:text="${jobcategorylists.name}">    </a></td>
+
+                                    <td th:text="${jobcategorylists.slug}">Otto</td>
+
+                                    <td th:text="${jobcategorylists.job.size()}">Otto</td>
+
+                                    <td th:text="${jobcategorylists.created}">Otto</td>
+
+                                    <td th:text="${jobcategorylists.modified}">@mdo</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+
+                    </div><!--  Card body end-->
+
+
+                </div><!--  Card  end-->
+
+
+            </div><!--  Main Content  end-->
+        </div>   <!--  Layout end-->

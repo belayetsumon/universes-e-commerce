@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="front-layout-inner-page">
+    <div layout:fragment = "main_content">
+
+
+        <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #ffc107;">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-7">  <h1 class="font-weight-bold" style="color: #fff;"> Services </h1></div>
+                    <div class="col-sm-5 text-right" style="color: #ffffff">Home/Services</div>
+                </div>
+            </div>
+        </section>
+
+        <section style="padding: 40px 0px 100px 0px">
+            <div class="container">
+                <div class="row">
+                    <div  class="col-sm-4 " th:each="servicelists,status:${servicelist}">
+                        <div class="card mb-4  shadow-lg   rounded">
+                            <div class="card-body row">
+                                <span th:if="${ not #strings.isEmpty(servicelists.imageName)}" class="badge bg-green pull-right"> 
+                                    <img  class="img-fluid " th:src="@{/files/}+${servicelists.imageName}" />
+                                </span>
+                                <span th:if="${#strings.isEmpty(servicelists.imageName)}" > 
+                                    <img  class="img-responsive" th:src="@{/img/image-not-available.png}" /> 
+                                </span>
+                                <h6 class="font-weight-bold"> <a class="" th:href="@{/front-view/product-by-category/{prodcatid}(prodcatid=${servicelists.id})}" > <span  th:text="${servicelists.title}">    </span></a></h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        </section>
+    </div>
+</div>
