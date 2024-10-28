@@ -26,38 +26,38 @@ public class SalesOrder {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    public Long id;
 
     @NotNull(message = "User cannot be blank.")
     @ManyToOne(optional = true, fetch = FetchType.LAZY)
-    private Users customer;
+    public Users customer;
 
-    private double total;
+    public double total;
 
     @NotNull(message = "Status is required.")
     @Enumerated(EnumType.STRING)
-    private OrderStatus status;
+    public OrderStatus status;
 
     /// Audit /// 
     @CreatedBy
     @Column(nullable = false, updatable = false)
-    private String createdBy;
+    public String createdBy;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
-    private LocalDateTime created;
+    public LocalDateTime created;
 
     @LastModifiedBy
     @Column(insertable = false)
-    private String modifiedBy;
+    public String modifiedBy;
 
     @LastModifiedDate
     @Column(insertable = false)
-    private LocalDateTime modified;
+    public LocalDateTime modified;
 
     
     @OneToMany(mappedBy = "salesOrder", fetch = FetchType.LAZY)
-    private Set<OrderItem> orderItem;
+    public Set<OrderItem> orderItem;
 
     /// End Audit //// 
     public SalesOrder() {
@@ -147,5 +147,6 @@ public class SalesOrder {
         this.orderItem = orderItem;
     }
 
+    
   
 }

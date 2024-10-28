@@ -205,7 +205,7 @@ public class UsersController {
         }
 
         Set<Role> customerRole = new HashSet<Role>();
-        Role role = roleRepository.findBySlug("custome");
+        Role role = roleRepository.findBySlug("customer");
         customerRole.add(role);
         
         users.setRole(customerRole);

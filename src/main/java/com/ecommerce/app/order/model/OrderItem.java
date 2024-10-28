@@ -33,7 +33,7 @@ public class OrderItem {
 
     @NotNull(message = "Exam cannot be blank.")
     @ManyToOne(optional = true)
-    private Product exam;
+    private Product product;
 
     private int quantity;
 
@@ -60,10 +60,10 @@ public class OrderItem {
     public OrderItem() {
     }
 
-    public OrderItem(Long id, SalesOrder salesOrder, Product exam, int quantity, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
+    public OrderItem(Long id, SalesOrder salesOrder, Product product, int quantity, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
         this.id = id;
         this.salesOrder = salesOrder;
-        this.exam = exam;
+        this.product = product;
         this.quantity = quantity;
         this.createdBy = createdBy;
         this.created = created;
@@ -87,12 +87,12 @@ public class OrderItem {
         this.salesOrder = salesOrder;
     }
 
-    public Product getExam() {
-        return exam;
+    public Product getProduct() {
+        return product;
     }
 
-    public void setExam(Product exam) {
-        this.exam = exam;
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public int getQuantity() {
@@ -135,4 +135,5 @@ public class OrderItem {
         this.modified = modified;
     }
 
+    
 }

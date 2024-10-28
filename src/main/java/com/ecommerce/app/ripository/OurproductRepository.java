@@ -6,8 +6,8 @@
 package com.ecommerce.app.ripository;
 
 import com.ecommerce.app.model.Ourproduct;
-import com.ecommerce.app.model.Productcategory;
 import com.ecommerce.app.model.enumvalue.Status;
+import com.ecommerce.app.product.model.Productcategory;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 

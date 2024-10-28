@@ -1,8 +1,9 @@
 @charset "ISO-8859-1";
 
-body{font-family: 'Roboto', sans-serif;}
-
-
+body{
+    font-family: 'Roboto', sans-serif;
+    font-size: 12px;
+}
 
 
 

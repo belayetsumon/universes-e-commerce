@@ -1,27 +1,67 @@
 /* ---------------------------------------------------
     SIDEBAR STYLE
 ----------------------------------------------------- */
+
+
+#header {
+    border-bottom: 1px solid #d8d8d8;
+    box-shadow: 0 0 3px #ccc;
+    z-index: 1000;
+    margin: 0;
+    padding: 0;
+
+}
+
+#page-header{
+    vertical-align: middle;
+    margin: 20px 0 15px;
+    padding: 0;
+    padding-bottom: 0px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #e9e9e9;
+}
 #sidebar {
-    /*    min-width: 250px;
-        max-width: 250px;*/
-    /*    background: #242d37;*/
     background: #19222e;
     color: #fff;
     transition: all 0.3s;
 }
+
+.menu-item{
+    border: #9900cc!important;
+
+
+}
+.accordion-header a:hover {
+    background-color: #fff; /* Hover color */
+}
+.menu-item{
+    background-color:#242d37!important;
+    border-bottom: 1px solid #2b3642;
+    color: #b3cbdd;
+    padding: 10px;
+    font-size: 1em;
+    display: block;
+}
+.menu-header{
+    background-color:#242d37!important;
+    border-bottom: 1px solid #2b3642;
+    color: #b3cbdd;
+    padding: 10px;
+    font-size: 1em;
+    display: block;
+}
+
+
+
 
 #sidebar.active {
     margin-left: -250px;
 }
 
 #sidebar .sidebar-header {
-      background:#19222e;
+    background:#19222e;
 }
 
-#sidebar ul.components {
-    padding: 20px 0;
-    border-bottom: 1px solid #47748b;
-}
 
 #sidebar ul p {
     color: #fff;
@@ -29,7 +69,7 @@
 }
 
 #sidebar ul li  {
-    background-color:#242d37; 
+    background-color:#242d37;
     border-bottom: 1px solid #2b3642;
 }
 
@@ -97,7 +137,6 @@ a.download {
 
 
 
-
 /*
  * Navbar
  */
@@ -107,13 +146,19 @@ a.download {
  * Utilities
  */
 
-.border-top { border-top: 1px solid #e5e5e5; }
-.border-bottom { border-bottom: 1px solid #e5e5e5; }
+.border-top {
+    border-top: 1px solid #e5e5e5;
+}
+.border-bottom {
+    border-bottom: 1px solid #e5e5e5;
+}
 
-.textMaroon{ color:#992337; }
+.textMaroon{
+    color:#992337;
+}
 .bgMaroon {
-  background-color: #992337;    
+    background-color: #992337;
 }
 .borderColor{
-    border-color: #992337;    
+    border-color: #992337;
 }

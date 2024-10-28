@@ -5,10 +5,18 @@ To change this template file, choose Tools | Templates
 and open the template in the editor.
 -->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
-    <div  class="bg-light" layout:fragment = "main_content">
-
-        <div> <h4> Dashboard <small>Home>Dashboard</small></h4>
-        </div>
+    <div    layout:fragment = "main_content">
+            <section> 
+            <div class="row">
+                <div class="col-sm-2"><h4> Dashboard</h4></div>
+             <div class="col-sm-3">   <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                    </ol>
+                </nav>
+            </div></div>
+        </section>
         <hr/>
         <div class="row">
 

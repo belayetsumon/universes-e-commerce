@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
+    <div layout:fragment = "main_content">
+        <section class=" d-none d-sm-block">
+            <div class="row">
+
+                <div class="col-sm-3">
+
+                    <div   th:replace="vendor-left-menu">
+                        Left side column. contains the sidebar 
+
+                        Left Side 
+                        =============================================== 
+                    </div>
+                </div>
+                <div class="col-sm-9">
+
+                    <div class="card borderColor">
+                        <div class="card-header bgMaroon text-white ">
+                            <div class="row">  <div class="col-sm-5 font-weight-bold "><i class="fas fa-list"></i> Welcome   </div>
+                                <div class="col-sm-7 "> <span class="float-right">Your Total Earning: <b th:text="${totalincome}">1xxxxx/-</b>.00/- Taka</span></div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="card mb-1">
+                                        <div class="card-header bg-danger text-white">
+                                            Total Income
+                                        </div>
+                                        <div class="card-body">
+                                            <blockquote class="blockquote mb-0">
+                                                <p>   <span th:text="${totalincome}"></span>.00/- Taka </p>
+                                                <footer class="footer"> </footer>
+                                            </blockquote>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="card mb-1">
+                                        <div class="card-header bg-primary text-white">
+                                            Total  withdraw 
+                                        </div>
+                                        <div class="card-body">
+                                            <blockquote class="blockquote mb-0">
+                                                <p></p>
+                                                <footer class="blockquote-footer"> <cite title="Source Title"> </cite></footer>
+                                            </blockquote>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="card mb-1">
+                                        <div class="card-header bg-secondary text-white">
+                                            Current Balance 
+                                        </div>
+                                        <div class="card-body">
+                                            <blockquote class="blockquote mb-0">
+                                                <p></p>
+                                                <footer class="blockquote-footer"> <cite title="Source Title"> </cite></footer>
+                                            </blockquote>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="card mb-1">
+                                        <div class="card-header bg-success text-white">
+                                            Today Sale
+                                        </div>
+                                        <div class="card-body">
+                                            <blockquote class="blockquote mb-0">
+                                                <p></p>
+                                                <footer class="blockquote-footer"> <cite title="Source Title"> </cite></footer>
+                                            </blockquote>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="card mb-1">
+                                        <div class="card-header bg-success text-white">
+                                            Current Month Sale
+                                        </div>
+                                        <div class="card-body">
+                                            <blockquote class="blockquote mb-0">
+                                                <p></p>
+                                                <footer class="blockquote-footer"> <cite title="Source Title"> </cite></footer>
+                                            </blockquote>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="card mb-1">
+                                        <div class="card-header bg-warning text-white">
+                                            Current Year Sale
+                                        </div>
+                                        <div class="card-body">
+                                            <blockquote class="blockquote mb-0">
+                                                <p></p>
+                                                <footer class="blockquote-footer"> <cite title="Source Title"> </cite></footer>
+                                            </blockquote>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div><!--  Card body end-->
+                </div>
+        </section>
+
+
+
+    </div></div>

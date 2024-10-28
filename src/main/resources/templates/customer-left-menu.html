@@ -5,143 +5,150 @@
     </div>
 
     <div class="card-body">
-        
-        
+
+
         <ul class="list-group fa-ul  list-group-flush">
 
             <li class="list-group-item"><a class="textMaroon " th:href="@{/customer/}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>Home</a></li>
 
 
-            <li class="list-group-item"  >
-                <a class="dropdown-toggle btn-toggle-nav " type="button" data-bs-toggle="collapse" data-bs-target="#sms" aria-expanded="false" aria-controls="sms"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>SMS</a>
-
-                <div class="collapse" id="sms">
-                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small"  >
-
-                        <li >
-                            <a class="nav-link" th:href="@{/customer_contactsno/index}">
-                                <i class="far fa-file"></i>
-                                Manage Contacts
-                            </a>
+            <!--            <li class="list-group-item"  >
+                            <a class="dropdown-toggle btn-toggle-nav " type="button" data-bs-toggle="collapse" data-bs-target="#sms" aria-expanded="false" aria-controls="sms"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>SMS</a>
+            
+                            <div class="collapse" id="sms">
+                                <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small"  >
+            
+                                    <li >
+                                        <a class="nav-link" th:href="@{/customer_contactsno/index}">
+                                            <i class="far fa-file"></i>
+                                            Manage Contacts
+                                        </a>
+                                    </li>
+                                    <li >
+                                        <a class="nav-link" th:href="@{/customer_contactgroup/index}">
+                                            <i class="far fa-file"></i>
+                                            Manage Contacts Group
+                                        </a>
+                                    </li>
+            
+            
+                                    <li >
+                                        <a class="nav-link" th:href="@{/customer_plan/index}">
+                                            <i class="far fa-file"></i>
+                                            Manage SMS Price Plan
+                                        </a>
+                                    </li>
+            
+                                    <li>
+                                        <a class="nav-link" th:href="@{/gatewaycustomer/index}">
+                                            <i class="far fa-file"></i>
+                                            Gateway List
+                                        </a>
+                                    </li>
+            
+            
+                                    <li>
+                                        <a class="nav-link" th:href="@{/devicecustomer/index}">
+                                            <i class="far fa-file"></i>
+                                            Device List
+                                        </a>
+                                    </li>
+            
+            
+                                    <li >
+                                        <a class="nav-link" th:href="@{/customer_smssend/index}">
+                                            <i class="far fa-file"></i>
+                                            Manage SMS
+                                        </a>
+                                    </li>
+            
+                                    <li >
+                                        <a class="nav-link" th:href="@{/customer_smstemplate/index}">
+                                            <i class="far fa-file"></i>
+                                            Manage SMS Template
+                                        </a>
+                                    </li>
+            
+                                    <li >
+                                        <a class="nav-link" th:href="@{/}">
+                                            <i class="far fa-file"></i>
+                                            Send Schedule SMS
+                                        </a>
+                                    </li> 
+                                </ul>
+                            </div>
+            
+            
                         </li>
-                        <li >
-                            <a class="nav-link" th:href="@{/customer_contactgroup/index}">
-                                <i class="far fa-file"></i>
-                                Manage Contacts Group
+            
+                        <li class="list-group-item"  >
+            
+                            <a class="textMaroon "type="button" data-bs-toggle="collapse" 
+                               data-bs-target="#whatsapp" aria-expanded="false" aria-controls="whatsapp">
+                                <span class="fa-li"><i class="fas fa-cart-plus"></i></span> Whatsapp
                             </a>
-                        </li>
+            
+                            <div class="collapse" id="whatsapp">
+                                <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small"  >
+            
+                                    <li>
+                                        <a class="nav-link" th:href="@{/customerwhatsappcontactgroup/index}">
+                                            <i class="far fa-file"></i>
+                                            Manage Whatsapp Contacts Group
+                                        </a>
+                                    </li>
+            
+                                    <li >
+                                        <a class="nav-link" th:href="@{/customerwhatsappcontactsno/index}">
+                                            <i class="far fa-file"></i>
+                                            Manage Whatsapp Contacts
+                                        </a>
+                                    </li>
+            
+            
+            
+                                    <li >
+                                        <a class="nav-link" th:href="@{/customerwhatsapppriceplan/index}">
+                                            <i class="far fa-file"></i>
+                                            Manage Whatsapp Price Plan
+                                        </a>
+                                    </li>
+            
+            
+            
+                                    <li >
+                                        <a class="nav-link" th:href="@{/customersendwhatsappmessage/index}">
+                                            <i class="far fa-file"></i>
+                                            Manage Whatsapp Message
+                                        </a>
+                                    </li>
+            
+                                    <li >
+                                        <a class="nav-link" th:href="@{/customerwhatsapptemplate/index}">
+                                            <i class="far fa-file"></i>
+                                            Manage Whatsapp Template
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>-->
 
-
-                        <li >
-                            <a class="nav-link" th:href="@{/customer_plan/index}">
-                                <i class="far fa-file"></i>
-                                Manage SMS Price Plan
-                            </a>
-                        </li>
-
-                        <li>
-                            <a class="nav-link" th:href="@{/gatewaycustomer/index}">
-                                <i class="far fa-file"></i>
-                                Gateway List
-                            </a>
-                        </li>
-
-
-                        <li>
-                            <a class="nav-link" th:href="@{/devicecustomer/index}">
-                                <i class="far fa-file"></i>
-                                Device List
-                            </a>
-                        </li>
-
-
-                        <li >
-                            <a class="nav-link" th:href="@{/customer_smssend/index}">
-                                <i class="far fa-file"></i>
-                                Manage SMS
-                            </a>
-                        </li>
-
-                        <li >
-                            <a class="nav-link" th:href="@{/customer_smstemplate/index}">
-                                <i class="far fa-file"></i>
-                                Manage SMS Template
-                            </a>
-                        </li>
-
-                        <li >
-                            <a class="nav-link" th:href="@{/}">
-                                <i class="far fa-file"></i>
-                                Send Schedule SMS
-                            </a>
-                        </li> 
-                    </ul>
-                </div>
-
-
-            </li>
-
-            <li class="list-group-item"  >
-
-                <a class="textMaroon "type="button" data-bs-toggle="collapse" 
-                   data-bs-target="#whatsapp" aria-expanded="false" aria-controls="whatsapp">
-                    <span class="fa-li"><i class="fas fa-cart-plus"></i></span> Whatsapp
-                </a>
-
-                <div class="collapse" id="whatsapp">
-                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small"  >
-
-                        <li>
-                            <a class="nav-link" th:href="@{/customerwhatsappcontactgroup/index}">
-                                <i class="far fa-file"></i>
-                                Manage Whatsapp Contacts Group
-                            </a>
-                        </li>
-
-                        <li >
-                            <a class="nav-link" th:href="@{/customerwhatsappcontactsno/index}">
-                                <i class="far fa-file"></i>
-                                Manage Whatsapp Contacts
-                            </a>
-                        </li>
-
-
-
-                        <li >
-                            <a class="nav-link" th:href="@{/customerwhatsapppriceplan/index}">
-                                <i class="far fa-file"></i>
-                                Manage Whatsapp Price Plan
-                            </a>
-                        </li>
-
-
-
-                        <li >
-                            <a class="nav-link" th:href="@{/customersendwhatsappmessage/index}">
-                                <i class="far fa-file"></i>
-                                Manage Whatsapp Message
-                            </a>
-                        </li>
-
-                        <li >
-                            <a class="nav-link" th:href="@{/customerwhatsapptemplate/index}">
-                                <i class="far fa-file"></i>
-                                Manage Whatsapp Template
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-            <!--            <li class="list-group-item"><a class="textMaroon " th:href="@{/instructor/}"> <span class="fa-li"><i class="fas fa-wallet"></i></span> Instructor Dashboards</a></li>-->
-
+            <li class="list-group-item"><a class="textMaroon " th:href="@{/vendor/}"> <span class="fa-li"><i class="fas fa-wallet"></i></span> Vendor Dashboards</a></li>
+            <li class="list-group-item"><a class="textMaroon " th:href="@{/customer_registration/registration}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>New User Registration</a></li>
+            <li class="list-group-item"><a class="textMaroon " th:href="@{/customer-team/index}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>Your Team</a></li>
             <li class="list-group-item"><a class="textMaroon " th:href="@{/customer-profile/index}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>Profile</a></li>
             <li class="list-group-item"><a class="textMaroon " th:href="@{/customerprofileimage/index}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>Profile Image</a></li>
-            <li class="list-group-item"><a class="textMaroon " th:href="@{/customer-team/index}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>Team</a></li>
+                 <li class="list-group-item"><a class="textMaroon " th:href="@{/customerprofileimage/index}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>Address</a></li>
+
             <!--            <li class="list-group-item"><a class="textMaroon " th:href="@{/customerblog/index}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>Blog</a></li>
                         <li class="list-group-item"><a class="textMaroon " th:href="@{/customerexamcomment/index}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>Comments</a></li>
                         <li class="list-group-item"><a class="textMaroon " th:href="@{/customerrate/index}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>Rate</a></li>-->
             <!--            <li class="list-group-item"><a class="textMaroon" th:href="@{/customer}"> <span class="fa-li"><i class="far fa-heart"></i> </span>Wishlist</a></li>-->
+
             <li class="list-group-item"><a class="textMaroon " th:href="@{/customerorder/index}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Your Orders</a></li>
+                        <li class="list-group-item"><a class="textMaroon " th:href="@{/customerorder/index}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Downloadable Product</a></li>
+                                                <li class="list-group-item"><a class="textMaroon " th:href="@{/customerorder/index}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Reviews</a></li>
+                                                                                                <li class="list-group-item"><a class="textMaroon " th:href="@{/customerorder/index}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Wishlist</a></li>
             <li class="list-group-item"><a class="textMaroon " th:href="@{/customer-bonus/index}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Your bonus</a></li>
             <li class="list-group-item"><a class="textMaroon " th:href="@{/customer-transaction/index}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Transaction</a></li>
             <li class="list-group-item"><a class="textMaroon " th:href="@{/users/logout}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Logout</a></li>

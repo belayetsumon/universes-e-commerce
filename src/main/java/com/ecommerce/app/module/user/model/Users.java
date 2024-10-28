@@ -13,7 +13,7 @@ import org.springframework.data.jpa.domain.support.*;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 
-@Table(name = "users")
+@Table(name = "usermodule_users")
 public class Users implements Serializable {
 
     @Id
@@ -42,7 +42,7 @@ public class Users implements Serializable {
     private String referralcode;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "user_role",
+    @JoinTable(
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     private Set<Role> role = new HashSet<>();

@@ -16,7 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-import com.ecommerce.app.order.repository.OrderRepository;
+import com.ecommerce.app.order.repository.SalesOrderRepository;
 
 /**
  *
@@ -40,7 +40,7 @@ public class CustomerBonusController {
     UsersRepository usersRepository;
 
     @Autowired
-    OrderRepository salesOrderRepository;
+    SalesOrderRepository salesOrderRepository;
 
     @RequestMapping(value = {"", "/", "/index", "dashboards"})
     public String index(Model model, Profile profile) {

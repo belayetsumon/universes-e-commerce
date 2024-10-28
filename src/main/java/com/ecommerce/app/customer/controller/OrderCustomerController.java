@@ -23,10 +23,10 @@ import java.util.List;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
-import com.ecommerce.app.order.repository.OrderRepository;
 import jakarta.servlet.http.*;
 import com.ecommerce.app.product.ripository.ProductRepository;
 import java.util.Optional;
+import com.ecommerce.app.order.repository.SalesOrderRepository;
 
 /**
  *
@@ -41,7 +41,7 @@ public class OrderCustomerController {
     LoggedUserService loggedUserService;
 
     @Autowired
-    OrderRepository salesOrderRepository;
+    SalesOrderRepository salesOrderRepository;
 
     @Autowired
     ProductRepository examRepository;
@@ -106,7 +106,7 @@ public class OrderCustomerController {
           OrderItem orderitem = new OrderItem();  
             
             orderitem.setSalesOrder(lastid);
-            orderitem.setExam(cartitem.get(i).getExam());
+            orderitem.setProduct(cartitem.get(i).getProduct());
             orderitem.setQuantity(cartitem.get(i).getQuantity());
              orderitems.add(orderitem);
         }
@@ -124,7 +124,7 @@ public class OrderCustomerController {
 
             for (int i = 0; i < cartitem.size(); i++) {
 
-                total += cartitem.get(i).getExam().getPrice() * cartitem.get(i).getQuantity();
+                total += cartitem.get(i).getProduct().getPrice() * cartitem.get(i).getQuantity();
             }
             return total;
         }

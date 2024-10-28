@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <div xmlns:th="http://www.thymeleaf.org"
      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-     layout:decorator="front-layout-inner-page">
+     layout:decorate="front-layout-inner-page">
     <div layout:fragment="main_content">
-        <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #ffc107;">
+        <section  class="breadcrumb_section">
             <div class="container">
-                <div class="row">
-                    <div class="col-sm-7">  <h1 class="font-weight-bold" style="color: #fff;"> Product List </h1></div>
-                    <div class="col-sm-5 text-right" style="color: #ffffff">Home/Product List</div>
-                </div>
-            </div>
+                <nav aria-label="breadcrumb" class="pt-3 pb-1">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/" class="nav-link">  <i class="bi bi-house"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Product List</li>
+                    </ol>
+                </nav>
+            </div> 
         </section>
 
         <section>
@@ -18,26 +20,97 @@
                 <div class="row mt-4">
                     <div class="col-sm-3">
 
-                        <div class="card border-warning" >
-                            <div class="card-header border-warning">
-                                <h5 class="font-weight-bold text-warning"> <i class="fas fa-list"></i> Product Category</h5>
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="font-weight-bold "> <i class="fas fa-list"></i> Product Category</h5>
                             </div>
-                            <ul class="list-group list-group-flush ">
-                                <li class="list-group-item"th:each="productcategorylists,status:${productcategorylist}" >
+                            <div class="categorySidebar">
 
-                                    <a   class="text-muted"  th:href="@{/front-view/product-by-category/{prodcatid}(prodcatid=${productcategorylists.id})}" >  
+                                <div class="accordion accordion-flush" 
+                                     id="parentmenu">
+
+                                    <div class=""  th:each="category, iterStat : ${productcategorylist}">
+
+                                        <div class="categorySidebarmenu" 
+                                             id=""
+                                             data-bs-toggle="collapse" 
+                                             th:data-bs-target="'#collapse' + ${iterStat.index}" 
+                                             aria-expanded="false"
+                                             aria-controls="collapseOne">
+                                            <a th:href="@{/front-view/product-by-category/{prodcatid}(prodcatid=${category.id})}">                                
+                                                [[${category.name}]]
+                                            </a>
+                                            <span th:if="${!#lists.isEmpty(category.children)}"> *</span>
+                                        </div>
 
 
-                                        <span th:text="${productcategorylists.name}" ></span> <span  class="float-right badge badge-warning " th:text="${productcategorylists.ourproduct.size()}" ></span>
-                                    </a></li>
-                            </ul>
-                        </div> 
+                                        <div th:if="${!#lists.isEmpty(category.children)}"
+                                             th:id="'collapse' + ${iterStat.index}" 
+                                             class="accordion-collapse collapse " 
+                                             aria-labelledby="headingOne" 
+                                             data-bs-parent="#parentmenu">
+                                            <div class="accordion-body">
+
+                                                <div class="accordion" id="childMenu">
+
+                                                    <div class="" th:each="child, childStat : ${category.children}">
+
+                                                        <div class="" id="subHeadingOne"
+                                                             data-bs-toggle="collapse"
+                                                             th:data-bs-target="'#collapse' + ${childStat.index}" 
+                                                             aria-expanded="false" 
+                                                             th:aria-controls="'collapse' + ${childStat.index}" >
+
+                                                            <a th:href="@{/front-view/product-by-category/{prodcatid}(prodcatid=${child.id})}" >
+
+                                                                [[${child.name}]]
+
+                                                            </a>
+                                                            <span  style=" text-align: right;" th:if="${!#lists.isEmpty(child.children)}"> *</span>
+                                                        </div>
+
+                                                        <div  th:if="${!#lists.isEmpty(child.children)}" 
+                                                              th:id="'collapse' + ${childStat.index}" 
+                                                              class="accordion-collapse collapse" 
+                                                              aria-labelledby="subHeadingOne"
+                                                              data-bs-parent="#childMenu">
+
+                                                            <div class="accordion-body">
+
+                                                                <div th:each="grandChild, childStat : ${child.children}">
+                                                                    [[${grandChild.name}]]
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>   
+                                    </div>     
+                                </div>  
+
+
+                                <!--                            <ul class="list-group list-group-flush ">
+                                                                <li class="list-group-item" th:each="productcategorylists,status:${productcategorylist}" >
+                                                                    <a   class="text-muted"  th:href="@{/front-view/product-by-category/{prodcatid}(prodcatid=${productcategorylists.id})}" >  
+                                                                        <span th:text="${productcategorylists.name}" ></span> <span  class="float-right badge badge-warning " th:text="${productcategorylists.ourproduct.size()}" ></span>
+                                                                    </a></li>
+                                                            </ul>-->
+
+
+
+                            </div>
+
+
+                        </div>
+
                     </div>
                     <div class="col-sm-9">
-                        <div class="card mb-4 border-warning">
+                        <div class="card  ">
 
-                            <div class="card-header border-warning ">
-                                <h5 class="font-weight-bold text-warning"> <i class="fas fa-list"></i> Product List</h5>
+                            <div class="card-header">
+                                <span th:text="${productlist.size()}"> </span>   Products found
                             </div>
                             <div class="card-body">
 
@@ -54,7 +127,7 @@
 
                                             <div class="card-body">
                                                 <div class="card-title">
-                                                    <h6 class="font-weight-bold text-warning text-center "><a    class="card-link text-warning" th:href="@{/front-view/single-product/{prodid}(prodid=${productlists.id})}" >  <span  th:text="${productlists.title}">    </span> </a></h6>
+                                                    <h6 class="font-weight-bold text-warning text-center "><a    class="card-link text-warning" th:href="@{/public/single-product/{prodid}(prodid=${productlists.id})}" >  <span  th:text="${productlists.title}">    </span> </a></h6>
                                                     <h6 class=""> <span class="font-weight-bold">Price:</span> <span  th:text="${productlists.price}">    </span> /-</h6>
                                                 </div>
                                             </div>
@@ -64,9 +137,9 @@
                             </div>
                         </div>
                     </div>
-                    </div>
-                    </div>
-
-                    </section>
                 </div>
             </div>
+
+        </section>
+    </div>
+</div>

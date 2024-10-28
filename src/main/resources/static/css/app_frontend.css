@@ -1,0 +1,66 @@
+
+
+.breadcrumb_section{
+    background-color: #F1F1F1;
+}
+
+.categorySidebar .categorySidebarmenu{
+    font-size: 14px;
+    padding: 5px;
+    cursor: pointer;
+}
+
+.categorySidebar .categorySidebarmenu:hover{
+    background-color:#F1F1F1;
+    cursor: pointer;
+}
+
+.categorySidebar a{
+    color: #41464b;
+    text-decoration: none;
+
+}
+.right-align {
+    text-align: right;
+}
+
+.categorySidebar a:hover{
+
+
+
+}
+
+
+.text-reds{
+    color: #E21B1F;
+}
+
+
+.product-card {
+    border: none; /* No border on the card */
+    transition: transform 0.2s, box-shadow 0.2s; /* Smooth hover effect */
+}
+.product-card:hover {
+    border: 1px solid #007bff; /* Border color on hover */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow effect */
+}
+.badge-custom {
+    font-size: 0.75rem;
+}
+.badge-container {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px; /* Space between badges */
+}
+.badge-hot {
+    transform: rotate(45deg); /* Rotate badge */
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background-color: #f00; /* Red color for Hot badge */
+    color: white; /* Text color */
+    padding: 0.5rem 1rem; /* Padding for the badge */
+}

@@ -1,35 +1,158 @@
+
+<section>
+    <div class="container"> 
+        <div class="row" style="font-size: 12px;"> 
+
+            <div class=" col-xs-12 col-sm-6 col-md-6">Welcome to Universes Online Shopping Store !</div>
+
+            <div class=" col-xs-12 col-sm-6 col-md-6">
+
+                <div class="row">
+                    <div class="col-xs-6 col-sm-2 col-md-2">
+
+                        <div class="dropdown">
+                            <a href="#" class="dropdown-toggle text-decoration-none nav-link" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-translate"></i> Language</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Action 1</a></li>
+                                <li><a class="dropdown-item" href="#">Action 2</a></li>
+                                <li><a class="dropdown-item" href="#">Action 3</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class=" col-xs-6 col-sm-2 col-md-2 ">
+                        <div class="dropdown">
+                            <a href="#" class="dropdown-toggle text-decoration-none nav-link" data-bs-toggle="dropdown" aria-expanded="false"> 
+                                <i class="bi bi-currency-exchange"></i> Currency </a>
+
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Action 1</a></li>
+                                <li><a class="dropdown-item" href="#">Action 2</a></li>
+                                <li><a class="dropdown-item" href="#">Action 3</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-6 col-sm-3 col-md-3">
+                        <i class="bi bi-binoculars"></i>  Track Your Order
+                    </div>
+                    <div class="col-xs-6 col-sm-3 col-md-3">
+                        <i class="bi bi-geo-alt"></i>  Store Location
+                    </div>
+                </div>
+            </div></div>
+    </div> 
+
+
+</section>
 <header>
+
     <nav class="navbar navbar-expand-md navbar-light  bg-white shadow-sm  bg-body">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Universes E-commerce </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarCollapse">
-                <ul class="navbar-nav me-auto mb-2 mb-md-0">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#">Home</a>
-                    </li>
-                    
-                       <li  class="nav-item">
-                        <a class= "nav-link"  th:href="@{/admin/index}">Admin Panel</a> </li>
 
-                    <li  class="nav-item">
-                        <a class= "nav-link"  th:href="@{/customer/index}">My Account</a> </li>
+            <div class=" col-xs-8 col-sm-2 col-md-2 ">
+                <a class="fs-5 nav-link" href="/">Universes E-commerce </a>
 
-                    <li  class="nav-item">
+            </div>
+            <div class="col-xs-2 col-sm-1 col-md-1 d-none">
+
+
+                <div class="dropdown">
+                    <button class="btn  dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <li><a class="dropdown-item" href="#">Item 1</a></li>
+                        <li><a class="dropdown-item" href="#">Item 2</a></li>
+                        <li><a class="dropdown-item" href="#">Item 3</a></li>
+                        <li><a class="dropdown-item" href="#">Item 4</a></li>
+                    </ul>
+                </div>
+            </div> 
+
+            <div class="col-xs-12 col-sm-5 col-md-5 m-2 m-sm-0">
+
+
+                <div class="input-group">
+
+                    <div class="dropdown d-block d-sm-none">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <li><a class="dropdown-item" href="#">Action 1</a></li>
+                            <li><a class="dropdown-item" href="#">Action 2</a></li>
+                            <li><a class="dropdown-item" href="#">Action 3</a></li>
+                        </ul>
+                    </div>
+                    <select class="form-select d-none d-sm-block" style="width: 10%;" aria-label="Default select example">
+                        <option selected>All</option>
+                        <option value="1">One</option>
+                        <option value="2">Two</option>
+                        <option value="3">Three</option>
+                    </select>
+                    <input type="text" class="form-control " placeholder="Search" aria-label="Username" aria-describedby="basic-addon1">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+            </div>
+
+            <div class="col-xs-12 col-sm-4 col-md-4 ">
+                <div class="row">
+                    <div class="col text-center">
+                        <i class="bi bi-suit-heart bi-4x text-reds" style="font-size: 2rem;"> </i>
+                    </div>
+                    <div class="col text-center">
+                        <i class="bi bi-cart4 text-reds" style="font-size: 2rem;  "></i>
+                    </div>
+                    <div class="col text-center">
+                        <i class="bi bi-person" style="font-size: 2rem;"></i>
+
+                    </div>
+                    <div class="col text-center">
+
                         <a class= "nav-link"
                            th:href="@{/public/member-login}">Login</a>
-                    </li>
-
-                    <li  class="nav-item">
+                    </div>
+                    <div class="col text-center">
                         <a class= "nav-link"
-                           th:href="@{/public/front-registration}">Registration</a>
-                    </li>
-                </ul>
-                  </div>
+                           th:href="@{/public/front-registration}">Register</a>
+
+                    </div>
+                </div>
+
+            </div>
+
         </div>
     </nav>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-lg-12 text-center">
+
+
+            <ul class=" list-inline">
+                <li class="list-inline-item">
+                    <a class="nav-link active" aria-current="page" href="/">Home</a>
+                </li>
+
+                <li  class="list-inline-item">
+                    <a class= "nav-link"  th:href="@{/public/product}">Product</a> </li>
+
+
+                <li  class="list-inline-item">
+                    <a class= "nav-link"  th:href="@{/admin/index}">Admin Panel</a> </li>
+
+                <li  class="list-inline-item">
+                    <a class= "nav-link"  th:href="@{/customer/index}">My Account</a> </li>
+
+                <li  class="list-inline-item">
+                    <a class= "nav-link"  th:href="@{/customer/index}">Vendor</a> </li>
+
+
+            </ul>
+
+        </div>
+    </div>
 </header>
 
 
