@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorator="admin-layout">
+    <div layout:fragment = "main_content">
+
+        <div> <h4> Product <small>Home>Product </small></h4>
+        </div>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row"> <div class="col-sm-5 font-weight-bold text-danger"><i class="fas fa-list"></i> Product Details</div>
+                            <div class="col-sm-7 "> <a class="btn btn-danger btn-sm float-right" th:href="@{/ourproduct/index}">Close</a></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+                        <table class="table table-bordered">
+                            <tr>
+                                <td> Name</td>
+                                <td> :</td>
+                                <td th:text="${product_details.title}">Otto</td>
+
+                            </tr>
+
+                            <tr>
+                                <td> Slug</td>
+                                <td>: </td>
+                                <td th:text="${product_details.slug}">Otto</td>
+
+                            </tr>
+
+                            <tr> <td> Image</td>
+                                <td> :</td>
+                                <td> 
+                                    <span th:if="${ not #strings.isEmpty(product_details.imageName)}" class="badge bg-green pull-right"> 
+                                        <img  class="img-responsive" th:src="@{/files/}+${product_details.imageName}" width="300px"  height="250px"/>
+                                    </span>
+
+                                    <span th:if="${#strings.isEmpty(product_details.imageName)}" > Image Not Found </span></td>
+                            </tr>
+
+                            <tr> <td> Description</td>
+                                <td> :</td>
+                                <td th:text="${product_details.description}"> </td>
+
+                            </tr>
+
+                            <tr> <td> Created</td>
+                                <td> :</td>
+                                <td>  <span th:text="${product_details.created}"> </span> </td>
+
+                            </tr>
+
+                            <tr> <td> Created By</td>
+                                <td> :</td>
+                                <td>  <span th:text="${product_details.createdBy}"> </span> </td>
+                            </tr>
+
+                            <tr> <td>Updated </td>
+                                <td> :</td>
+                                <td>  <span th:text="${product_details.modified}"> </span></td>
+                            </tr>
+
+                            <tr> <td> Updated By</td>
+                                <td> :</td>
+                                <td> <span th:text="${product_details.modifiedBy}"> </span></td>
+                            </tr>
+                            <tr> 
+                                <td> <a th:href="@{/ourproduct/edit/{id}(id=${product_details.id})}"> Edit  </a></td>
+
+                                <td> </td>
+
+                                <td><a th:href="@{/ourproduct/delete/{id}(id=${product_details.id})}"> Delete </a></td>
+                            </tr>
+                        </table>
+
+                    </div><!--  Card body end-->
+
+                    <div class="card-footer">
+                    </div> <!--  Card footer end-->
+                </div><!--  Card  end-->
+
+
+            </div>
+        </div>
+    </div></div>

@@ -32,31 +32,39 @@ and open the template in the editor.
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
-
-<!--                                                <table class="table table-bordered" th:if="${ not #lists.isEmpty(orderlist_panding)}">
-
-                                                    
-
-                                                    <tr>
-                                                        <td>#</td>
-                                                        <td>Order Date</td>
-                                                        <td>Status</td>
-                                                        <td>Payment</td>
-                                                    </tr>
-                                                    <tr th:each="orderlists,status:${orderlist_panding}">
-                                                        <td th:text="${orderlists.id}"></td>
-                                                        <td th:text="${orderlists.created}"></td>
-                                                        <td th:text="${orderlists.status}"></td>
-                                                        <td> <a  type=" button"  class=" btn btn-sm btn-success" th:href="@{/customer-order/payment/{orderid}(orderid=${orderlists.id})}"> Pay Now </a> </td>
-                                                    </tr>
-                                                </table>-->
-                                                <table class="table table-bordered" th:if="${ #lists.isEmpty(orderlist_panding)}">
-                                                    <tr>
-                                                        <td> Sorry no team member is found ! </td>
-                                                    </tr>
-
-
+                                                <table id="example" class="table table-bordered table-hover table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 10px">#</th>
+                                                            <th>Name</th>
+                                                            <th>Mobile</th>
+                                                            <th>Email</th>
+                                                            <th>Referral Code</th>
+                                                            <th>Status</th>
+                                                            <th>Remark</th>
+                                                             <th>Created Date</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr th:each="alluser,status:${alluser}">
+                                                            <td th:text="${status.count}">2.</td>
+                                                            <td th:text="${alluser.name}">Chakma</td>
+                                                            <td th:text="${alluser.mobile}">Chakma</td>
+                                                            <td th:text="${alluser.email}">Chakma</td>
+                                                            <td th:text="${alluser.referralcode}">Chakma</td>
+                                                            <td th:text="${alluser.status}">Chakma</td> 
+                                                            <td th:text="${alluser.remarks}">Chakma</td>
+                                                            <td th:text="${alluser.createdOn}">Chakma</td>
+                                                        </tr>
+                                                    </tbody>
                                                 </table>
+                                                <!--                                                <table class="table table-bordered" th:if="${ #lists.isEmpty(orderlist_panding)}">
+                                                                                                    <tr>
+                                                                                                        <td> Sorry no team member is found ! </td>
+                                                                                                    </tr>
+                                                
+                                                
+                                                                                                </table>-->
                                             </div>
                                         </div>
                                         <div class="card-footer ">
@@ -64,7 +72,7 @@ and open the template in the editor.
                                         </div>
                                     </div>
 
-                 
+
 
                                 </div>      </div>
                         </div>
@@ -123,7 +131,7 @@ and open the template in the editor.
 
                                                 <table class="table table-bordered" th:if="${ not #lists.isEmpty(orderlist_panding)}">
 
-                                                    
+
 
                                                     <tr>
                                                         <td>#</td>
@@ -152,14 +160,14 @@ and open the template in the editor.
                                         </div>
                                     </div>
 
-              
+
 
                                 </div>      </div>
                         </div>
 
                     </div></div></div>
-            
-            
+
+
             <section class="mb-5"></section>
 
             <div th:replace="bottom-nav"> </div>

@@ -93,8 +93,21 @@ public class SecurityConfig {
 
     @Bean
     public WebSecurityCustomizer ignoringCustomizer() {
-        return web -> web.ignoring().requestMatchers(
-                "/resources/**", "/static/**", "/css/**", "/bootstrap/**", "/bootstrap-5.2.3-dist/css/**", "/bootstrap-5.2.3-dist/js/**", "/plugin/owlcarousel/**", "/fontawesome/css/**", "/fontawesome/webfonts/**", "/plugin/owlcarousel/assets/**", "/js/**", "/img/**", "/webjars/**", "/files/**"
+    return web -> web.ignoring().requestMatchers(
+                "/resources/**", 
+                "/static/**",
+                "/css/**", 
+//                "/bootstrap/**", 
+//                "/bootstrap-5.2.3-dist/css/**", 
+//                "/bootstrap-5.2.3-dist/js/**", 
+//                "/plugin/owlcarousel/**", 
+//                "/fontawesome/css/**",
+//                "/fontawesome/webfonts/**", 
+//                "/plugin/owlcarousel/assets/**",
+                "/js/**", 
+                "/img/**", 
+                "/webjars/**", 
+                "/files/**"
         );
     }
 

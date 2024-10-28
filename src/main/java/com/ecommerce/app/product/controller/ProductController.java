@@ -5,15 +5,14 @@
  */
 package com.ecommerce.app.product.controller;
 
-import com.ecommerce.app.product.model.Product;
-
 import com.ecommerce.app.model.enumvalue.Status;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.services.LoggedUserService;
+import com.ecommerce.app.product.model.Product;
+import com.ecommerce.app.product.model.ProductTypeEnum;
 
-import com.ecommerce.app.model.Productcategory;
-import com.ecommerce.app.ripository.ProductcategoryRepository;
-import com.ecommerce.app.ripository.ProductsubcategoryRepository;
+import com.ecommerce.app.product.ripository.ProductcategoryRepository;
+import com.ecommerce.app.product.ripository.ProductsubcategoryRepository;
 import com.ecommerce.app.services.StorageProperties;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -30,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.ecommerce.app.product.ripository.ProductRepository;
+import com.ecommerce.app.product.ripository.UnitsRepository;
 import jakarta.validation.Valid;
 
 /**
@@ -37,7 +37,7 @@ import jakarta.validation.Valid;
  * @author User
  */
 @Controller
-@RequestMapping("/exam")
+@RequestMapping("/product")
 //@PreAuthorize("hasAuthority('exam')")
 public class ProductController {
 
@@ -54,50 +54,47 @@ public class ProductController {
     ProductsubcategoryRepository productsubcategoryRepository;
 
     @Autowired
-    ProductRepository examRepository;
+    ProductRepository productRepository;
+
+    @Autowired
+    UnitsRepository unitsRepository;
 
     @RequestMapping(value = {"", "/", "/index"})
     public String index(Model model) {
-        model.addAttribute("examlist", examRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
-        return "catalog/exam/index";
+        model.addAttribute("productlist", productRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
+        return "product/index";
     }
 
-    @RequestMapping("/categorylist")
-    public String categorylist(Model model, Productcategory productcategory) {
-
-        model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(Status.Active));
-
-        return "catalog/exam/categorylist";
-    }
-
-    @RequestMapping("/create/{cid}")
-    public String create(Model model, @PathVariable Long cid, Product exam) {
+    @RequestMapping("/create")
+    public String create(Model model, Product product) {
         model.addAttribute("statuslist", Status.values());
-
-        Productcategory productcategory = new Productcategory();
-        productcategory.setId(cid);
-        model.addAttribute("productsubcategorylist", productsubcategoryRepository.findByProductcategory(productcategory));
+        model.addAttribute("producttype", ProductTypeEnum.values());
+        model.addAttribute("uoms", unitsRepository.findAll());
+        model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(Status.Active));
 
         Users userss = new Users();
         userss.setId(loggedUserService.activeUserid());
-        exam.setUserId(userss);
+        product.setUserId(userss);
 
-        return "catalog/exam/add";
+        return "product/add";
     }
 
     @RequestMapping("/save")
-    public String create(Model model, @Valid Product exam, BindingResult bindingResult, RedirectAttributes redirectAttributes,
+    public String create(Model model, @Valid Product product, BindingResult bindingResult, RedirectAttributes redirectAttributes,
             @RequestParam("pic") MultipartFile pic
     ) {
 
         if (bindingResult.hasErrors()) {
+            model.addAttribute("statuslist", Status.values());
+            model.addAttribute("producttype", ProductTypeEnum.values());
+            model.addAttribute("uoms", unitsRepository.findAll());
+            model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(Status.Active));
 
             Users userss = new Users();
             userss.setId(loggedUserService.activeUserid());
-            exam.setUserId(userss);
-            model.addAttribute("statuslist", Status.values());
-            model.addAttribute("productsubcategorylist", productsubcategoryRepository.findByStatus(Status.Active));
-            return "catalog/exam/add";
+            product.setUserId(userss);
+
+            return "product/add";
         }
 
         if (!pic.isEmpty()) {
@@ -123,90 +120,87 @@ public class ProductController {
 
                 originalImage = ImageIO.read(pic.getInputStream());
 
-                Thumbnails.of(originalImage).forceSize(1040, 576).toFile(serverFile);
+                Thumbnails.of(originalImage).forceSize(800, 600).toFile(serverFile);
 
                 model.addAttribute("message", "You successfully uploaded");
 
-                exam.setImageName(filename);
+                product.setImageName(filename);
 
-                examRepository.save(exam);
+                productRepository.save(product);
 
                 redirectAttributes.addFlashAttribute("message", "Successfully saved.");
-                return "redirect:/exam/index";
+                return "redirect:/product/index";
             } catch (Exception e) {
 
                 model.addAttribute("statuslist", Status.values());
+                model.addAttribute("producttype", ProductTypeEnum.values());
+                model.addAttribute("uoms", unitsRepository.findAll());
+                model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(Status.Active));
 
-                model.addAttribute("productsubcategorylist", productsubcategoryRepository.findByStatus(Status.Active));
+                Users userss = new Users();
+                userss.setId(loggedUserService.activeUserid());
+                product.setUserId(userss);
 
                 redirectAttributes.addFlashAttribute("message", pic.getOriginalFilename() + " => " + e.getMessage());
-                return "redirect:/exam/index";
+                return "redirect:/product/index";
             }
-        } else if (pic.isEmpty() && exam.getId() != null) {
+        } else if (pic.isEmpty() && product.getId() != null) {
 
-            Product exams = examRepository.getReferenceById(exam.getId());
+            Product products = productRepository.findById(product.getId()).orElse(null);
 
-            exam.setImageName(exams.getImageName());
+            products.setImageName(product.getImageName());
 
-            examRepository.save(exam);
+            productRepository.save(products);
 
             redirectAttributes.addFlashAttribute("message", "Successfully saved.");
 
-            return "redirect:/exam/index";
+            return "redirect:/product/index";
 
         } else {
-            examRepository.save(exam);
+            productRepository.save(product);
             redirectAttributes.addFlashAttribute("message", "File empty");
-            return "redirect:/exam/index";
+            return "redirect:/product/index";
         }
 //        newsRepository.save(news);
 //        return "redirect:/news/index";
     }
 
     @RequestMapping("/details/{id}")
-    public String details(Model model, @PathVariable Long id, Product exam) {
+    public String create(Model model, @PathVariable Long id, Product product) {
 
-        model.addAttribute("exam_details", examRepository.getReferenceById(id));
+        model.addAttribute("product_details", productRepository.findById(id));
 
-        Product examid = examRepository.getReferenceById(id);
-
-        return "catalog/exam/exam_details";
+        return "catalog/product/product_details";
 
     }
 
     @RequestMapping("/edit/{id}")
-    public String edit(Model model, @PathVariable Long id, Product exam) {
-        model.addAttribute("exam", examRepository.getReferenceById(id));
-
+    public String edit(Model model, @PathVariable Long id, Product product) {
+        model.addAttribute("ourproduct", productRepository.findById(id));
+        model.addAttribute("producttype", ProductTypeEnum.values());
+           model.addAttribute("uoms", unitsRepository.findAll());
         model.addAttribute("statuslist", Status.values());
-        model.addAttribute("productsubcategorylist", productsubcategoryRepository.findByStatus(Status.Active));
-        return "catalog/exam/add";
+        model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(Status.Active));
+        Users userss = new Users();
+        userss.setId(loggedUserService.activeUserid());
+        product.setUserId(userss);
+        return "catalog/product/add";
     }
 
     @RequestMapping("/delete/{id}")
 
-    public String delete(Model model, @PathVariable Long id, Product exam, RedirectAttributes redirectAttributes) {
+    public String delete(Model model, @PathVariable Long id, Product product, RedirectAttributes redirectAttributes) {
 
-        exam = examRepository.getReferenceById(id);
-        File file = new File(properties.getRootPath() + File.separator + exam.getImageName());
-
-        examRepository.deleteById(id);
+        product = productRepository.getOne(id);
+        File file = new File(properties.getRootPath() + File.separator + product.getImageName());
 
         file.delete();
 
+        productRepository.deleteById(id);
+
         redirectAttributes.addFlashAttribute("message", "Deleted successfully.");
 
-        return "redirect:/exam/index";
-    }
-
-    @RequestMapping("/question-by-exam/{examid}")
-    public String question_by_exam(Model model, @PathVariable Long examid, Product exam) {
-
-        exam.setId(examid);
-
-        model.addAttribute("examinfo", examRepository.getReferenceById(examid));
-
-        return "catalog/exam/question-by-exam";
+        return "redirect:/product/index";
     }
 
 }

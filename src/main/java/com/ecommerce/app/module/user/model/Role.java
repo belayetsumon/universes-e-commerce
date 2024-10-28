@@ -14,7 +14,7 @@ import java.util.Set;
  * @author Md Belayet Hossin
  */
 @Entity
-@Table(name = "usermodule_user_role")
+@Table(name = "usermodule_role")
 public class Role {
 
     @Id
@@ -31,7 +31,7 @@ public class Role {
     private Set<Users> users;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "role_privilege",
+    @JoinTable(name = "usermodule_role_privilege",
             joinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "privilege_id", referencedColumnName = "id"))
     private Set<Privilege> privilege;

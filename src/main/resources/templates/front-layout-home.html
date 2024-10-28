@@ -12,24 +12,29 @@
               content="  ">
         <meta name="author" content="">
 
-        <link rel="stylesheet" th:href="@{/bootstrap-5.2.3-dist/css/bootstrap.min.css}"/>
 
+        <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.1/css/bootstrap.min.css}">
+        <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.css}">
+        
         <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
 
         <!--  Font Awsome  -->
-        <!--        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">-->
-        <link rel="stylesheet" th:href="@{/fontawesome/css/all.css}">
+        <link rel="stylesheet" href="/webjars/font-awesome/6.5.1/css/all.min.css">
+
         <!-- wol carousel -->
         <!--        <link rel="stylesheet" th:href="@{/plugin/owlcarousel/assets/owl.carousel.min.css}">
                 <link rel="stylesheet" th:href="@{/plugin/owlcarousel/assets/owl.theme.green.min.css}">-->
 
         <!--        animate.min.css-->
+
         <link rel="stylesheet" th:href="@{/css/animate.css}">
 
         <!--        Hover css-->
         <link rel="stylesheet" th:href="@{/css/hover-min.css}">
         <!-- Custom css -->
         <link rel="stylesheet" th:href="@{/css/app.css}"/> 
+        
+        <link rel="stylesheet" th:href="@{/css/app_frontend.css}"/> 
 
         <link rel="stylesheet" th:href="@{/css/mobile_apps.css}"/> 
 
@@ -46,11 +51,11 @@
             </div>
             <!-- =============================================== -->
         </header>
-      <!-- main -->
-            <div layout:fragment="main_content">main Content</div>
+        <!-- main -->
+        <div layout:fragment="main_content">main Content</div>
 
 
-     
+
         <div class="row ma"></div>
         <!-- /.content-wrapper -->
 
@@ -66,7 +71,8 @@
         <script th:src="@{/js/jquery-3.2.1.slim.min.js}"></script>
 
         <!-- Bootstrap -->
-        <script th:src="@{/bootstrap-5.2.3-dist/js/bootstrap.bundle.min.js}"></script>
+        <!--        <script th:src="@{/bootstrap-5.2.3-dist/js/bootstrap.bundle.min.js}"></script>-->
+        <script th:src="@{/webjars/bootstrap/5.3.1/js/bootstrap.bundle.min.js}"></script>
 
 
 

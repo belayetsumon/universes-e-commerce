@@ -14,7 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import com.ecommerce.app.order.repository.OrderRepository;
+import com.ecommerce.app.order.repository.SalesOrderRepository;
 
 /**
  *
@@ -32,7 +32,7 @@ public class AdminCustomerController {
     RoleRepository roleRepository;
 
     @Autowired
-    OrderRepository salesOrderRepository;
+    SalesOrderRepository salesOrderRepository;
 
     @RequestMapping(value = {"", "/", "/index"})
     public String customerlist(Model model) {
@@ -40,8 +40,11 @@ public class AdminCustomerController {
         Role customer = roleRepository.findBySlug("customer");
 
         model.addAttribute("customerlist", usersRepository.findByRole(customer));
+        
         return "admin/customer/index";
     }
+    
+    
 
     @RequestMapping("/order-by-customer/{cid}")
     public String orderbycustomer(Model model, @PathVariable Long cid) {
@@ -54,6 +57,7 @@ public class AdminCustomerController {
 
         return "admin/customer/order-by-customer";
     }
+
 
     @RequestMapping("/order-details/{oid}")
     public String order_details(Model model, @PathVariable Long oid) {

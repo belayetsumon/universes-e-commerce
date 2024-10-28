@@ -17,24 +17,24 @@ import org.springframework.context.annotation.Scope;
 @Scope("session")
 public class CartItem implements Serializable {
 
-    private Product exam;
+    private Product product;
 
     private int quantity;
 
     public CartItem() {
     }
 
-    public CartItem(Product exam, int quantity) {
-        this.exam = exam;
+    public CartItem(Product product, int quantity) {
+        this.product = product;
         this.quantity = quantity;
     }
 
-    public Product getExam() {
-        return exam;
+    public Product getProduct() {
+        return product;
     }
 
-    public void setExam(Product exam) {
-        this.exam = exam;
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public int getQuantity() {

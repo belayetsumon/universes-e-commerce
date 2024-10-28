@@ -6,6 +6,7 @@
 package com.ecommerce.app.model;
 
 import com.ecommerce.app.model.enumvalue.Status;
+import com.ecommerce.app.product.model.Productcategory;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

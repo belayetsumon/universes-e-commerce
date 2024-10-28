@@ -2,119 +2,313 @@
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-home">
     <div layout:fragment = "main_content">
 
-            <div class="container-fluid  d-none d-sm-block banner" style="box-shadow: 0 1px 6px 0 rgba(32,33,36,0.28);">
-                <div  class="row"style="background: rgba(0, 0, 0, .5);  filter: alpha(opacity=50); /* For IE8 and earlier */ min-height: 500px">
-                    <div class="col-sm-12">
-                        <h1 class="display-3 font-weight-bold text-white text-center mt-5">Welcome </h1> 
-                        <h5 class="display-4 text-white text-center">SMS  Gateway
+        <div class="container-fluid">
+            <img th:src="@{/img/ebanner.jpg}" class="img-fluid" alt="Banner Image">
+        </div>
 
-                        </h5>
-                        <h5 class="text-white text-center font-weight-bold" style="line-height: 35px">    
+        <section class="pt-5 pb-5"> <!-- Latest Product  -->
+            <div class="container">
 
-                        </h5>
+                <div  class="row">
+                    Featured Category
 
-                        <p class="lead">&nbsp;</p>
-                        <p class="lead">&nbsp;</p>
-                    </div>
+
+
                 </div>
+
+       <div class="row">
+        <!-- Repeat this card for 6 images -->
+        <div class="col-md-2 mb-4">
+            <div class="card image-card">
+                <img th:src="@{/img/ebanner.jpg}" class="card-img-top" alt="Image 1">
             </div>
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <!--  ..........................................................................
-        ..                                                                            ..
-        ..                                                                            ..
-        ..                                                                            ..
-        
-        ..                       Mobile Section Start                                 ..   
-        ..                                                                            ..
-        ..                                                                            ..
-        .. .............................................................................-->
-
-        <section class="mobile d-block d-sm-none">
-
-            <div th:replace="mobile-top-nav"></div>
-
-            <div class="row mt-5"> </div>
-            <div class="row mt-3"> </div>
-
-            <section  class="mobile_home_box_effect_count d-block d-sm-none">
-                <div class="container-fluid" >
-                    <div class="row">
-
-                        <div class="col-3 border-right border-danger textMaroon text-center">
-
-                        </div>
-
-                        <div class="col-3  border-right border-danger textMaroon text-center">
-
-
-                        </div>
-                        <div class="col-3  border-right border-danger textMaroon text-center">
-
-
-                        </div>
-
-                        <div class="col-3 textMaroon text-center">
-
-
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="d-block d-sm-none">
-                <div class="container-fluid ">   
-
-                    <!--                Mobile -->
-
-                    <h1>Welcome </h1> 
-                    <h5>Ajmaeen General Trading LLC</h5>
-
-
-                        <!--   Mobile  -->
-                </div>
-
-
-
-            </section>
-
-
-
-
-
-
-            <!--Contact Start -->
-
-
-
-
-
-
-
-            <section class="mb-5"></section>
-
-            <div th:replace="bottom-nav">
-
-                <!-- Header  -->
-
+        </div>
+        <div class="col-md-2 mb-4">
+            <div class="card image-card">
+                <img src="https://via.placeholder.com/150" class="card-img-top" alt="Image 2">
             </div>
-
-
-        </section>
+        </div>
+        <div class="col-md-2 mb-4">
+            <div class="card image-card">
+                <img src="https://via.placeholder.com/150" class="card-img-top" alt="Image 3">
+            </div>
+        </div>
+        <div class="col-md-2 mb-4">
+            <div class="card image-card">
+                <img src="https://via.placeholder.com/150" class="card-img-top" alt="Image 4">
+            </div>
+        </div>
+        <div class="col-md-2 mb-4">
+            <div class="card image-card">
+                <img src="https://via.placeholder.com/150" class="card-img-top" alt="Image 5">
+            </div>
+        </div>
+        <div class="col-md-2 mb-4">
+            <div class="card image-card">
+                <img src="https://via.placeholder.com/150" class="card-img-top" alt="Image 6">
+            </div>
+        </div>
     </div>
-</div>
+
+
+
+            </div>
+        </section>
+
+        <section class="pt-5 pb-5"> <!-- Latest Product  -->
+            <div class="container">
+
+                <div  class="row">
+                    Flash sale
+
+
+
+                </div>
+
+           
+     
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card product-card  position-relative">
+                            <img src="https://via.placeholder.com/300" class="card-img-top" alt="Product Image">
+
+                            <div class="badge-container">
+                                <span class="badge rounded-pill bg-danger badge-custom">-20%</span>
+                                <span class="badge rounded-pill bg-info badge-custom">Featured</span>
+                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>
+                            </div>
+
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="#" class="text-decoration-none text-dark text-reds">Product Name</a>
+                                </h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted text-decoration-line-through">$59.99</h6>
+                                        <h6 class="text-success">$47.99</h6>
+                                    </div>
+                                    <div>
+                                        <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
+                                        <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
+                                    </div>
+                                </div>
+
+                                <div class="mt-2">
+                                    <span class="badge bg-warning text-dark">Rating: 4.5 <i class="fas fa-star"></i></span>
+                                    <span class="badge bg-secondary">Top</span>
+                                    <span class="badge bg-primary">Trend</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Repeat Card for More Products -->
+                    <div class="col-md-3">
+                        <div class="card position-relative">
+                            <img src="https://via.placeholder.com/300" class="card-img-top" alt="Product Image">
+
+                            <div class="badge-container">
+                                <span class="badge rounded-pill bg-danger badge-custom">-15%</span>
+                                <span class="badge rounded-pill bg-info badge-custom">Featured</span>
+                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>
+                            </div>
+
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="#" class="text-decoration-none text-dark">Another Product</a>
+                                </h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted text-decoration-line-through">$39.99</h6>
+                                        <h6 class="text-success">$33.99</h6>
+                                    </div>
+                                    <div>
+                                        <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
+                                        <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
+                                    </div>
+                                </div>
+
+                                <div class="mt-2">
+                                    <span class="badge bg-warning text-dark">Rating: 4.0 <i class="fas fa-star"></i></span>
+                                    <span class="badge bg-secondary">Top</span>
+                                    <span class="badge bg-primary">Trend</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card position-relative">
+                            <img src="https://via.placeholder.com/300" class="card-img-top" alt="Product Image">
+
+                            <div class="badge-container">
+                                <span class="badge rounded-pill bg-danger badge-custom">-10%</span>
+                                <span class="badge rounded-pill bg-info badge-custom">Featured</span>
+                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>
+                            </div>
+
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="#" class="text-decoration-none text-dark">Third Product</a>
+                                </h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted text-decoration-line-through">$29.99</h6>
+                                        <h6 class="text-success">$26.99</h6>
+                                    </div>
+                                    <div>
+                                        <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
+                                        <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
+                                    </div>
+                                </div>
+
+                                <div class="mt-2">
+                                    <span class="badge bg-warning text-dark">Rating: 4.2 <i class="fas fa-star"></i></span>
+                                    <span class="badge bg-secondary">Top</span>
+                                    <span class="badge bg-primary">Trend</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                                    <div class="col-md-3">
+                        <div class="card position-relative">
+                            <img src="https://via.placeholder.com/300" class="card-img-top" alt="Product Image">
+
+                            <div class="badge-container">
+                                <span class="badge rounded-pill bg-danger badge-custom">-10%</span>
+                                <span class="badge rounded-pill bg-info badge-custom">Featured</span>
+                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>
+                            </div>
+
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="#" class="text-decoration-none text-dark">Third Product</a>
+                                </h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted text-decoration-line-through">$29.99</h6>
+                                        <h6 class="text-success">$26.99</h6>
+                                    </div>
+                                    <div>
+                                        <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
+                                        <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
+                                    </div>
+                                </div>
+
+                                <div class="mt-2">
+                                    <span class="badge bg-warning text-dark">Rating: 4.2 <i class="fas fa-star"></i></span>
+                                    <span class="badge bg-secondary">Top</span>
+                                    <span class="badge bg-primary">Trend</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+   
+
+
+
+
+            </div>
+        </section>
+
+
+        <section class="pt-5 pb-5"> <!-- Latest Product  -->
+
+
+
+
+
+
+            <div class="container">
+
+                <div  class="row">
+                    Top Selling Products
+
+
+
+                </div>
+
+                <div  class="row">
+                    Top Selling Products
+
+
+
+                </div>
+
+
+
+            </div>
+        </section>
+
+
+
+        <section class="pt-5 pb-5">
+            <div class="container">
+
+                <div  class="row">
+
+                    <div class="col-sm-3 col-md-3">
+                        <div class="row">
+                            <div class="col-3">
+                                <i class="fas fa-rocket fs-1"></i>
+                            </div>
+                            <div class="col-9">
+                                <h4> Free Delivery</h4>
+                                For all oders over $99
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-3 col-md-3">
+
+                        <div class="row">
+                            <div class="col-3">
+                                <i class="fas fa-sync fs-1"></i>
+                            </div>
+                            <div class="col-9">
+                                <h4> 90 Days Return</h4>
+                                If goods have problems
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-sm-3 col-md-3">
+
+                        <div class="row ">
+                            <div class="col-3">
+                                <i class="fas fa-credit-card fs-1"></i>
+                            </div>
+                            <div class="col-9">
+                                <h4> Secure Payment</h4>
+                                100% secure payment
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-sm-3 col-md-3">
+
+                        <div class="row">
+                            <div class="col-3 text-center">
+
+                                <i class="fa-regular fa-comment-dots fs-1"></i>
+
+                            </div>
+                            <div class="col-9">
+                                <h4> 24/7 Support</h4>
+                                Dedicated support
+                            </div>
+                        </div>
+
+                    </div>
+
+
+
+                </div>
+
+            </div>
+        </section>
+
+    </div> <!-- End main Content -->
+</div> <!-- End fragment -->

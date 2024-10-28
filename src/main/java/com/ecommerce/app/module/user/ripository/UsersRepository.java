@@ -28,8 +28,9 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
     
     Users findByReferralcode(String referralcode);
     
-    
     List<Users> findByRole(Role role);
+    
+    List<Users> findByParent(Users users);
 
     List<Users> findByRoleAndStatusOrderByIdDesc(Role role, Status status);
 
