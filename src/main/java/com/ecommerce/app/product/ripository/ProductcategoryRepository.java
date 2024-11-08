@@ -6,7 +6,7 @@
 package com.ecommerce.app.product.ripository;
 
 import com.ecommerce.app.product.model.Productcategory;
-import com.ecommerce.app.model.enumvalue.Status;
+import com.ecommerce.app.product.model.ProductStatusEnum;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -16,9 +16,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface ProductcategoryRepository extends JpaRepository<Productcategory, Long> {
 
-    List<Productcategory> findByStatus(Status status);
+    List<Productcategory> findByStatus(ProductStatusEnum status);
     
-    List<Productcategory> findByStatusAndParentIsNull(Status status);
+    List<Productcategory> findByStatusAndParentIsNull(ProductStatusEnum status);
     
     Productcategory  findBySlug(String slug);
 

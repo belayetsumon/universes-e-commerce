@@ -8,6 +8,7 @@ package com.ecommerce.app.product.ripository;
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.model.enumvalue.Status;
 import com.ecommerce.app.module.user.model.Users;
+import com.ecommerce.app.product.model.ProductStatusEnum;
 
 import java.util.List;
 import org.springframework.data.domain.Pageable;
@@ -25,9 +26,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByUserIdOrderByIdDesc(Users userid, Pageable pageable);
 
-    List<Product> findByUserIdAndStatusOrderByIdDesc(Users userid, Status status);
+    List<Product> findByUserIdAndStatusOrderByIdDesc(Users userid, ProductStatusEnum status);
 
-    List<Product> findByStatusOrderByIdDesc(Status status);
+    List<Product> findByStatusOrderByIdDesc(ProductStatusEnum status);
 
 //    List<Product> findByUserIdAndOrderItemSalesOrderStatus(Pageable pageable, Users userId, OrderStatus orderStatus);
 

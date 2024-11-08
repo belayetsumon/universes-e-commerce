@@ -5,14 +5,11 @@
  */
 package com.ecommerce.app.product.model;
 
-import com.ecommerce.app.model.*;
-import com.ecommerce.app.model.enumvalue.Status;
 import jakarta.persistence.*;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.annotation.*;
@@ -34,7 +31,6 @@ public class Productcategory implements Serializable {
     @NotBlank(message = "Name  is required.")
     private String name;
 
-    @NotBlank(message = "slag  is required.")
     private String slug;
 
     private int orderno;
@@ -46,15 +42,17 @@ public class Productcategory implements Serializable {
 
     private double discount;
 
-    @DateTimeFormat(pattern = "dd-MM-yyyy")
-    private LocalDate discountStartDate;
+    private Boolean featuredCat;
 
-    @DateTimeFormat(pattern = "dd-MM-yyyy")
-    private LocalDate discountEndDate;
+    @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm:ss")
+    private LocalDateTime discountStartDate;
+
+    @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm:ss")
+    private LocalDateTime discountEndDate;
 
     @NotNull(message = "Status is required.")
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private ProductStatusEnum status;
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "parent")
@@ -78,16 +76,13 @@ public class Productcategory implements Serializable {
     private LocalDateTime modified;
 
     /// End Audit //// 
-    @OneToMany(mappedBy = "productcategory")
-    public List<Ourproduct> ourproduct;
-    
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "parent")
     private List<Productcategory> children;
 
     public Productcategory() {
     }
 
-    public Productcategory(Long id, String name, String slug, int orderno, String description, String imageName, double discount, LocalDate discountStartDate, LocalDate discountEndDate, Status status, Productcategory parent, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified, List<Ourproduct> ourproduct, List<Productcategory> children) {
+    public Productcategory(Long id, String name, String slug, int orderno, String description, String imageName, double discount, Boolean featuredCat, LocalDateTime discountStartDate, LocalDateTime discountEndDate, ProductStatusEnum status, Productcategory parent, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified, List<Productcategory> children) {
         this.id = id;
         this.name = name;
         this.slug = slug;
@@ -95,6 +90,7 @@ public class Productcategory implements Serializable {
         this.description = description;
         this.imageName = imageName;
         this.discount = discount;
+        this.featuredCat = featuredCat;
         this.discountStartDate = discountStartDate;
         this.discountEndDate = discountEndDate;
         this.status = status;
@@ -103,7 +99,6 @@ public class Productcategory implements Serializable {
         this.created = created;
         this.modifiedBy = modifiedBy;
         this.modified = modified;
-        this.ourproduct = ourproduct;
         this.children = children;
     }
 
@@ -163,27 +158,35 @@ public class Productcategory implements Serializable {
         this.discount = discount;
     }
 
-    public LocalDate getDiscountStartDate() {
+    public Boolean getFeaturedCat() {
+        return featuredCat;
+    }
+
+    public void setFeaturedCat(Boolean featuredCat) {
+        this.featuredCat = featuredCat;
+    }
+
+    public LocalDateTime getDiscountStartDate() {
         return discountStartDate;
     }
 
-    public void setDiscountStartDate(LocalDate discountStartDate) {
+    public void setDiscountStartDate(LocalDateTime discountStartDate) {
         this.discountStartDate = discountStartDate;
     }
 
-    public LocalDate getDiscountEndDate() {
+    public LocalDateTime getDiscountEndDate() {
         return discountEndDate;
     }
 
-    public void setDiscountEndDate(LocalDate discountEndDate) {
+    public void setDiscountEndDate(LocalDateTime discountEndDate) {
         this.discountEndDate = discountEndDate;
     }
 
-    public Status getStatus() {
+    public ProductStatusEnum getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(ProductStatusEnum status) {
         this.status = status;
     }
 
@@ -227,14 +230,6 @@ public class Productcategory implements Serializable {
         this.modified = modified;
     }
 
-    public List<Ourproduct> getOurproduct() {
-        return ourproduct;
-    }
-
-    public void setOurproduct(List<Ourproduct> ourproduct) {
-        this.ourproduct = ourproduct;
-    }
-
     public List<Productcategory> getChildren() {
         return children;
     }
@@ -242,4 +237,6 @@ public class Productcategory implements Serializable {
     public void setChildren(List<Productcategory> children) {
         this.children = children;
     }
+
+    
 }

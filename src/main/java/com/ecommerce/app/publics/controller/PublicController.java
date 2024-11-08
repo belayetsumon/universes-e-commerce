@@ -8,12 +8,12 @@ package com.ecommerce.app.publics.controller;
 import com.ecommerce.app.model.BlogCategory;
 import com.ecommerce.app.model.Contact;
 import com.ecommerce.app.model.Gallery;
-import com.ecommerce.app.model.Ourproduct;
-import com.ecommerce.app.model.enumvalue.Status;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.RoleRepository;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.user.services.LoginEventService;
+import com.ecommerce.app.product.model.Product;
+import com.ecommerce.app.product.model.ProductStatusEnum;
 import com.ecommerce.app.product.model.Productcategory;
 import com.ecommerce.app.ripository.BlogCategoryRepository;
 import com.ecommerce.app.ripository.BlogRepository;
@@ -23,7 +23,6 @@ import com.ecommerce.app.ripository.GalleryRepository;
 import com.ecommerce.app.ripository.ImageGalleryRepository;
 import com.ecommerce.app.ripository.NewsRepository;
 import com.ecommerce.app.ripository.OurclientsRepository;
-import com.ecommerce.app.ripository.OurproductRepository;
 import com.ecommerce.app.ripository.OurservicesRepository;
 import com.ecommerce.app.product.ripository.ProductcategoryRepository;
 import com.ecommerce.app.product.ripository.ProductsubcategoryRepository;
@@ -71,8 +70,7 @@ public class PublicController {
     @Autowired
     ProductcategoryRepository productcategoryRepository;
 
-    @Autowired
-    OurproductRepository ourproductRepository;
+
 
     @Autowired
     ProductRepository productRepository;
@@ -207,8 +205,8 @@ public class PublicController {
     @RequestMapping("/product")
     public String product(Model model) {
 
-        model.addAttribute("productlist", productRepository.findByStatusOrderByIdDesc(Status.Active));
-        model.addAttribute("productcategorylist", productcategoryRepository.findByStatusAndParentIsNull(Status.Active));
+        model.addAttribute("productlist", productRepository.findByStatusOrderByIdDesc(ProductStatusEnum.Active));
+        model.addAttribute("productcategorylist", productcategoryRepository.findByStatusAndParentIsNull(ProductStatusEnum.Active));
         return "frontview/product";
     }
 
@@ -217,7 +215,7 @@ public class PublicController {
 
         productcategory.setId(prodcatid);
 
-        model.addAttribute("productlist", ourproductRepository.findByProductcategoryOrderByIdDesc(productcategory));
+       // model.addAttribute("productlist", ourproductRepository.findByProductcategoryOrderByIdDesc(productcategory));
 
         //model.addAttribute("productcategorylist", productcategoryRepository.findByStatusAndOurproductStatus(com.ecommerce.app.model.enumvalue.Status.Active, com.ecommerce.app.model.enumvalue.Status.Active));
 
@@ -227,7 +225,7 @@ public class PublicController {
     }
 
     @RequestMapping("/single-product/{prodid}")
-    public String single_product(Model model, @PathVariable long prodid, Ourproduct ourproduct) {
+    public String single_product(Model model, @PathVariable long prodid, Product product) {
 
         model.addAttribute("product_details", productRepository.getReferenceById(prodid));
 

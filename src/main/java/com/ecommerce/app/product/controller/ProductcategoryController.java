@@ -5,7 +5,10 @@
  */
 package com.ecommerce.app.product.controller;
 
+import com.ecommerce.app.globalComponant.SlagGenerator;
 import com.ecommerce.app.model.enumvalue.Status;
+import com.ecommerce.app.product.model.ProductStatusEnum;
+import com.ecommerce.app.product.model.ProductTypeEnum;
 import com.ecommerce.app.product.model.Productcategory;
 import com.ecommerce.app.product.ripository.ProductcategoryRepository;
 import com.ecommerce.app.services.StorageProperties;
@@ -40,6 +43,9 @@ public class ProductcategoryController {
     @Autowired
     ProductcategoryRepository productcategoryRepository;
 
+    @Autowired
+    private SlagGenerator slagGenerator;
+
     @RequestMapping(value = {"", "/", "/index"})
     public String index(Model model) {
         model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
@@ -48,7 +54,8 @@ public class ProductcategoryController {
 
     @RequestMapping("/create")
     public String create(Model model, Productcategory productcategory) {
-        model.addAttribute("statuslist", Status.values());
+
+        model.addAttribute("statuslist",  ProductStatusEnum.values());
         model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
 
         return "product/productcategory/add";
@@ -60,7 +67,7 @@ public class ProductcategoryController {
     ) {
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("statuslist", Status.values());
+          model.addAttribute("statuslist",  ProductStatusEnum.values());
             model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
             return "product/productcategory/add";
         }
@@ -85,39 +92,37 @@ public class ProductcategoryController {
 //                stream.write(bytes);
 //                stream.close();
                 BufferedImage originalImage;
-
                 originalImage = ImageIO.read(pic.getInputStream());
-
                 Thumbnails.of(originalImage).forceSize(300, 225).toFile(serverFile);
-
                 model.addAttribute("message", "You successfully uploaded");
 
                 productcategory.setImageName(filename);
 
+                if (productcategory.getId() == null) {
+                    String slug = slagGenerator.generateSlug(productcategory.getName());
+                    productcategory.setSlug(slug);
+                }
                 productcategoryRepository.save(productcategory);
-
                 redirectAttributes.addFlashAttribute("message", "Successfully saved.");
                 return "redirect:/productcategory/index";
             } catch (Exception e) {
 
                 model.addAttribute("statuslist", Status.values());
-
                 redirectAttributes.addFlashAttribute("message", pic.getOriginalFilename() + " => " + e.getMessage());
                 return "redirect:/productcategory/index";
             }
         } else if (pic.isEmpty() && productcategory.getId() != null) {
-
-            Productcategory productcategorys = productcategoryRepository.getOne(productcategory.getId());
-
+            Productcategory productcategorys = productcategoryRepository.findById(productcategory.getId()).orElse(null);
             productcategory.setImageName(productcategorys.getImageName());
-
             productcategoryRepository.save(productcategory);
-
             redirectAttributes.addFlashAttribute("message", "Successfully saved.");
-
             return "redirect:/productcategory/index";
 
         } else {
+            if (productcategory.getId() == null) {
+                String slug = slagGenerator.generateSlug(productcategory.getName());
+                productcategory.setSlug(slug);
+            }
             productcategoryRepository.save(productcategory);
             redirectAttributes.addFlashAttribute("message", "File empty");
             return "redirect:/productcategory/index";
@@ -128,33 +133,27 @@ public class ProductcategoryController {
 
     @RequestMapping("/details/{id}")
     public String create(Model model, @PathVariable Long id, Productcategory productcategory) {
-
-        model.addAttribute("productcategory_details", productcategoryRepository.getOne(id));
-
+        model.addAttribute("productcategory_details", productcategoryRepository.findById(id).orElse(null));
         return "product/productcategory/productcategory_details";
 
     }
 
     @RequestMapping("/edit/{id}")
     public String edit(Model model, @PathVariable Long id, Productcategory productcategory) {
-        model.addAttribute("productcategory", productcategoryRepository.getOne(id));
-        model.addAttribute("statuslist", Status.values());
+        
+        model.addAttribute("productcategory", productcategoryRepository.findById(id).orElse(null));
+        model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
+        model.addAttribute("statuslist",  ProductStatusEnum.values());
         return "product/productcategory/add";
     }
 
     @RequestMapping("/delete/{id}")
-
     public String delete(Model model, @PathVariable Long id, Productcategory productcategory, RedirectAttributes redirectAttributes) {
-
-        productcategory = productcategoryRepository.getOne(id);
+        productcategory = productcategoryRepository.findById(id).orElse(null);
         File file = new File(properties.getRootPath() + File.separator + productcategory.getImageName());
-
         file.delete();
-
         productcategoryRepository.deleteById(id);
-
         redirectAttributes.addFlashAttribute("message", "Deleted successfully.");
-
         return "redirect:/productcategory/index";
     }
 

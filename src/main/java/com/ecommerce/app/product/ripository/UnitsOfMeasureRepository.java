@@ -11,6 +11,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  * @author libertyerp_local
  */
-public interface UnitsRepository extends JpaRepository<Unitofmeasurement, Long> {
+public interface UnitsOfMeasureRepository extends JpaRepository<Unitofmeasurement, Long> {
     
 }

@@ -6,97 +6,186 @@ and open the template in the editor.
 -->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
     <div    layout:fragment = "main_content">
-            <section> 
+        <section> 
             <div class="row">
                 <div class="col-sm-2"><h4> Dashboard</h4></div>
-             <div class="col-sm-3">   <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-                    </ol>
-                </nav>
-            </div></div>
+                <div class="col-sm-3">   <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                        </ol>
+                    </nav>
+                </div></div>
         </section>
         <hr/>
+        <div class="row">
+            <div class="col-sm-3">
+                <div class="card mb-3 bg-info text-white">
+                    <div class="card-header bg-info">
+                        Total Orders 
+                    </div>
+                    <div class="card-body">
+                        <h1>     <i class="bi bi-cart-fill"></i> 500000</h1>
+                    </div>
+                    <div class="card-footer">
+                        <a href="#" class="btn btn-p"></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="card mb-3 bg-info text-white">
+                    <div class="card-header bg-info">
+                        Total Sales 
+                    </div>
+                    <div class="card-body">
+                        <h1>     <i class="bi bi-credit-card"></i>70000</h1>
+                    </div>
+                    <div class="card-footer">
+                        <a href="#" class="btn btn-p"></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="card mb-3 bg-info text-white">
+                    <div class="card-header bg-info">
+                        Total Customers 
+                    </div>
+                    <div class="card-body">
+                        <h1>   <i class="bi bi-people-fill"></i> 50000</h1>
+                    </div>
+                    <div class="card-footer">
+                        <a href="#" class="btn btn-p"></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="card mb-3 bg-info text-white">
+                    <div class="card-header bg-info">
+                        People Online 
+                    </div>
+                    <div class="card-body">
+                        <h1> <i class="bi bi-people"></i> 5000</h1>
+                    </div>
+                    <div class="card-footer">
+                        <a href="#" class="btn btn-p"></a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
         <div class="row">
 
             <div class="col-sm-6">
                 <div class="card mb-3">
-                    <div class="card-header">
-                        <i class="fas fa-list"></i> SMS Statistics
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title"></h5>
-                        <p class="card-text"></p>
-                        <a href="#" class="btn btn-primary"></a>
-                    </div>
-                </div>
-            </div>
-
-
-
-
-            <div class="col-sm-6">
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <i class="fas fa-list"></i>  Whatsapp Statistics
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title"></h5>
-                        <p class="card-text"></p>
-                        <a href="#" class="btn btn-primary"></a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-6">
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <i class="fas fa-list"></i>  SMS Whatsapp & Emails Details Report
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title"></h5>
-                        <p class="card-text"></p>
-                        <a href="#" class="btn btn-primary"></a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-6">
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <i class="fas fa-list"></i>  New User
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title"></h5>
-                        <p class="card-text"></p>
-                        <a href="#" class="btn btn-primary"></a>
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="col-sm-6">
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <i class="fas fa-list"></i>  Latest Payment
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title"></h5>
-                        <p class="card-text"></p>
-                        <a href="#" class="btn btn-primary"></a>
+                    <div class="card-header"><i class="fa-solid fa-shopping-cart"></i> Latest Orders</div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <td class="text-end">Order ID</td>
+                                    <td>Customer</td>
+                                    <td>Status</td>
+                                    <td>Date Added</td>
+                                    <td class="text-end">Total</td>
+             
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-end">1138</td>
+                                    <td>kumar4 m</td>
+                                    <td>Pending</td>
+                                    <td>04/11/2024</td>
+                                    <td class="text-end">$130.00</td>
+                             </tr>
+                                <tr>
+                                    <td class="text-end">1137</td>
+                                    <td>kumar4 m</td>
+                                    <td>Pending</td>
+                                    <td>04/11/2024</td>
+                                    <td class="text-end">$131.20</td>
+                            </tr>
+                                <tr>
+                                    <td class="text-end">1135</td>
+                                    <td>Le Duy Quan</td>
+                                    <td>Pending</td>
+                                    <td>04/11/2024</td>
+                                    <td class="text-end">$106.00</td>
+                         </tr>
+                                <tr>
+                                    <td class="text-end">1134</td>
+                                    <td>Le Duy Quan</td>
+                                    <td>Pending</td>
+                                    <td>04/11/2024</td>
+                                    <td class="text-end">$106.00</td>
+                                  
+                                </tr>
+                                <tr>
+                                    <td class="text-end">1132</td>
+                                    <td>Hoang Dang</td>
+                                    <td>Pending</td>
+                                    <td>04/11/2024</td>
+                                    <td class="text-end">88.54€</td>
+                                  
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-
-
-            <div class="col-sm-6">
+                        <div class="col-sm-6">
                 <div class="card mb-3">
-                    <div class="card-header">
-                        <i class="fas fa-list"></i>  Amount
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title"></h5>
-                        <p class="card-text"></p>
-                        <a href="#" class="btn btn-primary"></a>
+                    <div class="card-header"><i class="fa-solid fa-shopping-cart"></i> Latest Orders</div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <td class="text-end">Order ID</td>
+                                    <td>Customer</td>
+                                    <td>Status</td>
+                                    <td>Date Added</td>
+                                    <td class="text-end">Total</td>
+                             
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-end">1138</td>
+                                    <td>kumar4 m</td>
+                                    <td>Pending</td>
+                                    <td>04/11/2024</td>
+                                    <td class="text-end">$130.00</td>
+                              </tr>
+                                <tr>
+                                    <td class="text-end">1137</td>
+                                    <td>kumar4 m</td>
+                                    <td>Pending</td>
+                                    <td>04/11/2024</td>
+                                    <td class="text-end">$131.20</td>
+                               </tr>
+                                <tr>
+                                    <td class="text-end">1135</td>
+                                    <td>Le Duy Quan</td>
+                                    <td>Pending</td>
+                                    <td>04/11/2024</td>
+                                    <td class="text-end">$106.00</td>
+                             </tr>
+                                <tr>
+                                    <td class="text-end">1134</td>
+                                    <td>Le Duy Quan</td>
+                                    <td>Pending</td>
+                                    <td>04/11/2024</td>
+                                    <td class="text-end">$106.00</td>
+                              </tr>
+                                <tr>
+                                    <td class="text-end">1132</td>
+                                    <td>Hoang Dang</td>
+                                    <td>Pending</td>
+                                    <td>04/11/2024</td>
+                                    <td class="text-end">88.54€</td>
+                              </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

@@ -66,7 +66,7 @@ public class VendorProductController {
     @RequestMapping("/categorylist")
     public String categorylist(Model model, Productcategory productcategory) {
 
-        model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(Status.Active));
+      //  model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(Status.Active));
 
         return "catalog/exam/categorylist";
     }

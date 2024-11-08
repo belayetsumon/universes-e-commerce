@@ -35,7 +35,7 @@ public class Users implements Serializable {
     private String password;
 
     @ManyToOne(optional = true)
-    @JoinColumn(name = "parent")
+    @JoinColumn(name = "parent_id")
     Users parent;
 
     @Column(length = 60)
@@ -46,7 +46,7 @@ public class Users implements Serializable {
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     private Set<Role> role = new HashSet<>();
-    ;
+    
 
     @Enumerated(EnumType.STRING)
     private Status status;

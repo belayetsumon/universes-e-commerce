@@ -13,8 +13,8 @@ and open the template in the editor.
                 <div class="col-sm-9">   
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="#">Home</a></li>
-                            <li class="breadcrumb-item"><a href="#">Product Category</a></li>
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Product Category</a></li>
                             <li class="breadcrumb-item active" aria-current="page">Add</li>
                         </ol>
                     </nav>
@@ -27,16 +27,16 @@ and open the template in the editor.
                 <div class="card">
                     <div class="card-header">
                         <div class="row"> 
-                            <div class="col-sm-5 font-weight-bold "><strong><i class="fas fa-list"></i> Product Category Add</strong></div>
+                            <div class="col-sm-5 font-weight-bold "><strong><i class="bi bi-list-task"></i> Product Category Add</strong></div>
                             <div class="col-sm-7 text-end ">
                                 <div class="btn-group ">
-                                    <a class="btn btn-danger btn-sm float-right" th:href="@{/productcategory/index}">Close</a></div>
+                                    <a class="btn btn-danger btn-sm float-right" th:href="@{/productcategory/index}"> <i class="bi bi-x-circle"></i> Close</a></div>
 
                             </div> </div>
                     </div>
                     <div class="card-body">
 
-                        <form th:action="@{/productcategory/save}" th:object="${productcategory}" enctype="multipart/form-data" method="post" >
+                        <form  id="catUploadForm"th:action="@{/productcategory/save}" th:object="${productcategory}" enctype="multipart/form-data" method="post" >
 
                             <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${#fields.hasErrors('*')}">
                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -54,6 +54,7 @@ and open the template in the editor.
 
                             <div class="form-group">
                                 <input type="hidden" class="form-control"  th:field="*{id}" />
+                                <input type="hidden"  minlength=" 2 " th:field="*{slug}" >
                             </div>
 
                             <div class="form-group col-sm-6">
@@ -62,15 +63,9 @@ and open the template in the editor.
                                 <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Book Name</span>
                             </div>     
 
-                            <div class="form-group col-sm-6">
-                                <label for="exampleInputEmail1">Slug :<span class="text-danger"> *</span></label>
-                                <input type="text"  minlength=" 2 "class="form-control col-sm-5" th:field="*{slug}" aria-describedby="emailHelp" placeholder="Enter slug">
-                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('slug')}" th:errors="*{slug}">Book Name</span>
-                            </div>
-
-                            <div class="form-group col-sm-6">
-                                <label for="exampleInputEmail1">Product Category <span class="text-danger"> *</span></label>
-                                <select id="inputState" class="form-control col-sm-3"  th:field="*{parent}">
+                            <div class="form-group col-sm-6 ">
+                                <label for="exampleInputEmail1"> Parent Category <span class="text-danger"> </span></label>
+                                <select id="inputState" class="form-control col-sm-6"  th:field="*{parent}">
                                     <option value=" "> Select one</option>              
                                     <option th:each =" productcategorylists : ${productcategorylist}"
                                             th:value="${productcategorylists.id} " 
@@ -78,7 +73,15 @@ and open the template in the editor.
                                 </select>
                             </div>
 
+                            <div class="form-group col-sm-6">
 
+                                <label for="accept">
+                                    <input type="checkbox" id="accept" th:field="*{featuredCat}" /> 
+
+                                    Featured Category
+
+                                </label>
+                            </div>
                             <div class="form-group col-sm-6">
                                 <label for="exampleInputEmail1 col-sm-5">Order Position No:<span class="text-danger"> </span></label>
                                 <input type="number"  class="form-control col-sm-5" th:field="*{orderno}" aria-describedby="emailHelp" placeholder="Enter no">
@@ -86,20 +89,21 @@ and open the template in the editor.
                             </div>
 
                             <div class="form-group col-sm-6">
-                                <label for="exampleInputEmail1 col-sm-5">Discount:<span class="text-danger"> </span></label>
+                                <label for="exampleInputEmail1 col-sm-5">Discount By Category(%):<span class="text-danger"> </span></label>
                                 <input type="number"   min="0"class="form-control col-sm-5" th:field="*{discount}" aria-describedby="emailHelp" placeholder="Enter no">
                                 <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('discount')}" th:errors="*{discount}">Book Name</span>
                             </div>
-                            
-                             <div class="form-group col-sm-6">
+
+                            <div class="form-group col-sm-6">
                                 <label for="exampleInputEmail1 col-sm-5">Discount Start Date:<span class="text-danger"> </span></label>
-                                <input type="text"   min="0"class="form-control col-sm-5" th:field="*{discountStartDate}" aria-describedby="emailHelp" placeholder="DD/MM/YYYY">
+                                <input  type="datetime-local"    min="0" class="form-control col-sm-5" th:field="*{discountStartDate}" aria-describedby="emailHelp" placeholder="DD/MM/YYYY">
                                 <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('discountStartDate')}" th:errors="*{discountStartDate}">Book Name</span>
                             </div>
-                            
-                             <div class="form-group col-sm-6">
+
+                            <div class="form-group col-sm-6">
                                 <label for="exampleInputEmail1 col-sm-5">Discount End Date:<span class="text-danger"> </span></label>
-                                <input type="text"   min="0"class="form-control col-sm-5" th:field="*{discountEndDate}" aria-describedby="emailHelp" placeholder="DD/MM/YYYY">
+                                <input type="text"   min="0"class="form-control col-sm-5" id="discountEndDate" th:field="*{discountEndDate}" aria-describedby="emailHelp" placeholder="DD/MM/YYYY">
+
                                 <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('discountEndDate')}" th:errors="*{discountEndDate}">Book Name</span>
                             </div>
 
@@ -109,12 +113,7 @@ and open the template in the editor.
                                 <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Book Name</span>
                             </div>
 
-                            <div class="form-group col-sm-6">
-                                <label for="exampleInputEmail1">Image<span class="text-danger"> </span></label>
-                                <input type="hidden"  th:value="${productcategory.imageName}">
-                                <input type="file"  minlength=" 5 "class="form-control col-sm-5" name="pic" aria-describedby="emailHelp" placeholder="Enter your name">
-                                <span  class="help-block "> Image Size 800px x 450px </span>
-                            </div>
+
 
                             <div class="form-group col-sm-6">
                                 <label for="exampleInputEmail1">Status<span class="text-danger"> *</span></label>
@@ -126,7 +125,25 @@ and open the template in the editor.
                                 </select>
                             </div>
 
-                            <button type="submit" class="btn btn-success">Submit</button>
+
+                            <div class="form-group col-sm-6">
+                                <label for="exampleInputEmail1">Image<span class="text-danger"> </span></label>
+                                <input type="hidden"  th:value="${productcategory.imageName}">
+
+                                <input type="file" id="catimagefile" minlength=" 5 "class="form-control col-sm-5" name="pic" aria-describedby="emailHelp">
+                                <img id="catimagePreview" alt="Image Preview" style="max-width: 300px; margin-top: 10px; display: none;" />                
+
+                                <div>   <button type="button" id="catDeleteImageBtn"  class="btn btn-danger btn-sm"style="display:none; margin-top: 10px;">Delete Preview</button></div>
+                                <div id="catimageInfo" style="margin-top: 10px;"></div>
+                                <div id="#catimage_error_message" style="color: red;"></div>
+                            </div>
+
+
+
+
+                            <div class=" col-sm-6 text-center">
+                                <button type="submit"  id="catSubmitBtn" class="btn btn-success m-4">  <i class="bi bi-check-circle"></i> Save </button>
+                            </div>
                         </form>
                     </div>
                 </div>

@@ -63,7 +63,7 @@ public class ProductVendorController {
     @RequestMapping("/create")
     public String create(Model model, Product product) {
         model.addAttribute("statuslist", Status.values());
-        model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(Status.Active));
+       // model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(Status.Active));
 
         Users userss = new Users();
         userss.setId(loggedUserService.activeUserid());
@@ -79,7 +79,7 @@ public class ProductVendorController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("statuslist", Status.values());
-            model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(Status.Active));
+          //  model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(Status.Active));
 
             Users userss = new Users();
             userss.setId(loggedUserService.activeUserid());
@@ -124,7 +124,7 @@ public class ProductVendorController {
             } catch (Exception e) {
 
                 model.addAttribute("statuslist", Status.values());
-                model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(Status.Active));
+              //  model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(Status.Active));
 
                 Users userss = new Users();
                 userss.setId(loggedUserService.activeUserid());
@@ -157,7 +157,7 @@ public class ProductVendorController {
     @RequestMapping("/details/{id}")
     public String create(Model model, @PathVariable Long id, Product product) {
 
-        model.addAttribute("product_details", productRepository.getOne(id));
+        model.addAttribute("product_details", productRepository.findById(id).orElse(null));
 
         return "vendor/product/product_details";
 
@@ -165,9 +165,9 @@ public class ProductVendorController {
 
     @RequestMapping("/edit/{id}")
     public String edit(Model model, @PathVariable Long id, Product product) {
-        model.addAttribute("ourproduct", productRepository.getOne(id));
+        model.addAttribute("ourproduct", productRepository.findById(id).orElse(null));
         model.addAttribute("statuslist", Status.values());
-        model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(Status.Active));
+       // model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(Status.Active));
          Users userss = new Users();
         userss.setId(loggedUserService.activeUserid());
         product.setUserId(userss);
@@ -178,7 +178,7 @@ public class ProductVendorController {
 
     public String delete(Model model, @PathVariable Long id, Product product, RedirectAttributes redirectAttributes) {
 
-        product = productRepository.getOne(id);
+        product = productRepository.findById(id).orElse(null);
         File file = new File(properties.getRootPath() + File.separator + product.getImageName());
 
         file.delete();

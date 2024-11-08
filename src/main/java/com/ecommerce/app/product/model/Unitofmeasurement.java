@@ -25,20 +25,20 @@ public class Unitofmeasurement implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    String unitAbbreviation;
+   private String name;
 
-    String descriptiveName;
+    private String symbol;
 
-    int decimalPlaces;
+    private String description;
 
     public Unitofmeasurement() {
     }
 
-    public Unitofmeasurement(Long id, String unitAbbreviation, String descriptiveName, int decimalPlaces) {
+    public Unitofmeasurement(Long id, String name, String symbol, String description) {
         this.id = id;
-        this.unitAbbreviation = unitAbbreviation;
-        this.descriptiveName = descriptiveName;
-        this.decimalPlaces = decimalPlaces;
+        this.name = name;
+        this.symbol = symbol;
+        this.description = description;
     }
 
     public Long getId() {
@@ -49,27 +49,29 @@ public class Unitofmeasurement implements Serializable {
         this.id = id;
     }
 
-    public String getUnitAbbreviation() {
-        return unitAbbreviation;
+    public String getName() {
+        return name;
     }
 
-    public void setUnitAbbreviation(String unitAbbreviation) {
-        this.unitAbbreviation = unitAbbreviation;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getDescriptiveName() {
-        return descriptiveName;
+    public String getSymbol() {
+        return symbol;
     }
 
-    public void setDescriptiveName(String descriptiveName) {
-        this.descriptiveName = descriptiveName;
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
     }
 
-    public int getDecimalPlaces() {
-        return decimalPlaces;
+    public String getDescription() {
+        return description;
     }
 
-    public void setDecimalPlaces(int decimalPlaces) {
-        this.decimalPlaces = decimalPlaces;
+    public void setDescription(String description) {
+        this.description = description;
     }
+
+   
 }

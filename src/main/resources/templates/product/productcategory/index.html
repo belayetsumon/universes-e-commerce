@@ -8,11 +8,11 @@ and open the template in the editor.
     <div layout:fragment = "main_content">
         <section> 
             <div class="row">
-                <div class="col-sm-3"><h4> Product Category</h4></div>
+                <div class="col-sm-3"><h4> Categories</h4></div>
                 <div class="col-sm-5">   
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="#">Home</a></li>
+                            <li class="breadcrumb-item"><a  class="nav-link" href="#">Home</a></li>
                             <li class="breadcrumb-item active" aria-current="page">Product Category</li>
                         </ol>
                     </nav>
@@ -23,112 +23,99 @@ and open the template in the editor.
         <div class="row">
             <div class="col-sm-12">
 
-<!--                <div class="card">
-                    <div class="card-header">
-                        Head 
-                    </div>
-                    <div class="card-body">
-
-                        <h1>Category Tree</h1>
-
-                        <ul>
-                            <div th:each="category : ${productcategorylist}">
-                                <li th:if="${category.parent == null}">
-                                    <span th:text="${category.name}"></span>
-                                    <ul>
-                                        <div>
-                                            <li th:each="child : ${category.children}">
-                                               ..... <span th:text="${child.name}"></span>
-                                                <ul>
-                                                    <li th:each="grandChild : ${child.children}">
-                                                        ...<span th:text="${grandChild.name}"></span>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                        </div>
-                                    </ul>
-                                </li>
-                            </div>
-                        </ul>
-
-                    </div>
-                </div>  Card  end-->
-
-
-
-
-
-                    <div class="card">
+                <!--                <div class="card">
                                     <div class="card-header">
-                                        <div class="row">  <div class="col-sm-5 font-weight-bold "><strong><i class="fas fa-list"></i> Product Category List </strong></div>
-                                            <div class="col-sm-7 text-end ">
-                                                <div class="btn-group ">
-                                                    <a class="btn btn-success btn-sm float-right" th:href="@{/productcategory/create}"> Add Product Category</a></div>
-                                            </div> </div>
+                                        Head 
                                     </div>
+                                    <div class="card-body">
                 
+                                        <h1>Category Tree</h1>
                 
-                                    <div class="card-body table-responsive">
-                                        <span th:if="${ not #strings.isEmpty(message)}">
-                                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                                <span th:text="${message}" > </span>
-                                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                                    <span aria-hidden="true">&times;</span>
-                                                </button>
+                                        <ul>
+                                            <div th:each="category : ${productcategorylist}">
+                                                <li th:if="${category.parent == null}">
+                                                    <span th:text="${category.name}"></span>
+                                                    <ul>
+                                                        <div>
+                                                            <li th:each="child : ${category.children}">
+                                                               ..... <span th:text="${child.name}"></span>
+                                                                <ul>
+                                                                    <li th:each="grandChild : ${child.children}">
+                                                                        ...<span th:text="${grandChild.name}"></span>
+                                                                    </li>
+                                                                </ul>
+                                                            </li>
+                                                        </div>
+                                                    </ul>
+                                                </li>
                                             </div>
-                                        </span>
-                                        <table id="example" class="table table-bordered table-hover table-striped">
-                                            <thead class="thead-light">
-                                                <tr>
-                                                    <th scope="col">#</th>
-                                                    <th scope="col">Name</th>
-                                                    <th scope="col">Parent</th>
-                                                    <th scope="col"> Slug </th>
-                
-                                                    <th scope="col"> Product Qnt. </th>
-                                                    <th scope="col"> Order no </th>
-                                                    <th scope="col"> Image </th>
-                                                    <th scope="col"> Status </th>
-                                                    <th scope="col"> Created </th>
-                                                    <th scope="col"> Updated </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr th:each="productcategorylists,status:${productcategorylist}">
-                
-                                                    <th th:text="${status.count}">1</th>
-                
-                                                    <td> <a th:href="@{/productcategory/details/{id}(id=${productcategorylists.id})}" th:text="${productcategorylists.name}">    </a></td>
-                                                    <td>
-                                                        <span th:if="${productcategorylists.parent!= null}" th:text="${productcategorylists.parent.name}"></span>
-                                                        <span th:unless="${productcategorylists.parent != null}">Null</span>
-                                                    </td>
-                                                    <td th:text="${productcategorylists.slug}">Otto</td>
-                
-                                                    <td th:text="${productcategorylists.ourproduct.size()}">Otto</td>
-                
-                                                    <td th:text="${productcategorylists.orderno}">Otto</td>
-                
-                                                    <td>
-                                                        <span th:if="${ not #strings.isEmpty(productcategorylists.imageName)}" class="badge bg-green pull-right"> 
-                                                            <img  class="img-responsive" th:src="@{/files/}+${productcategorylists.imageName}" width="100px"  height="100px"/>
-                                                        </span>
-                
-                                                        <span th:if="${#strings.isEmpty(productcategorylists.imageName)}" > Image Not Found </span>
-                
-                                                    </td>
-                
-                                                    <td th:text="${productcategorylists.status}">Otto</td>
-                
-                                                    <td th:text="${productcategorylists.created}">Otto</td>
-                
-                                                    <td th:text="${productcategorylists.modified}">@mdo</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                        </ul>
                 
                                     </div>
+                                </div>  Card  end-->
+
+
+
+
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row"> 
+
+                            <div class="col-sm-5 font-weight-bold "> <i class="bi bi-list-task"></i>  Category List </strong></div>
+                            <div class="col-sm-7 text-end ">
+                                <div class="btn-group ">
+                                    <a class="btn btn-success btn-sm " th:href="@{/productcategory/create}"> <i class="bi bi-plus-circle"></i> Add Product Category</a>
+                                    <a class="btn btn-danger btn-sm " th:href="@{/admin/index}"> <i class="bi bi-x-circle"></i> Close</a>
                                 </div>
+                            </div> 
+                        </div>
+                    </div>
+
+
+                    <div class="card-body table-responsive">
+                        <span th:if="${ not #strings.isEmpty(message)}">
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <span th:text="${message}" > </span>
+                    
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true"></span>
+                                </button>
+                            </div>
+                        </span>
+                        <table id="example" class="table table-bordered table-hover table-striped">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Parent</th>
+                                    <th scope="col"> Sort Order</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="productcategorylists,status:${productcategorylist}">
+
+                                    <th th:text="${status.count}">1</th>
+
+                                    <td> 
+                                        <span  th:text="${productcategorylists.name}">    </span>
+                                        <br>
+                                        <small><span th:text="${productcategorylists.status}">Otto</span></small>
+                                    </td>
+
+                                    <td th:text="${productcategorylists.orderno}">Otto</td>
+                                    <td th:text="${productcategorylists.orderno}">Otto</td>
+                                    <td>  
+                                        <a th:href="@{/productcategory/details/{id}(id=${productcategorylists.id})}" > <button class="btn btn-success btn-sm " > <i class="bi bi-eye-slash"></i> Details </button> 
+                                    </td>
+
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
 
                 <!--  Card  end-->
 

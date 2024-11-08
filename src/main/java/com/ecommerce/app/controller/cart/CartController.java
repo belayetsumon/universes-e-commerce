@@ -11,7 +11,6 @@ import com.ecommerce.app.product.ripository.ProductRepository;
 import jakarta.servlet.http.*;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -82,7 +81,7 @@ public class CartController {
 
             List<CartItem> shoppingcart_list = new ArrayList<CartItem>();
 
-            product = productRepository.getOne(id);
+            product = productRepository.findById(id).orElse(null);
 
             shoppingcart_list.add(new CartItem(product, quantity));
 
@@ -96,7 +95,7 @@ public class CartController {
 
             //System.out.println("indexxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" + index);
             if (index == -1) {
-                product= productRepository.getOne(id);
+                product= productRepository.findById(id).orElse(null);
                 shoppingcart_list.add(new CartItem(product, quantity));
             } else {
                 int quantity2 = shoppingcart_list.get(index).getQuantity() + quantity;

@@ -5,10 +5,12 @@
  */
 package com.ecommerce.app.product.controller;
 
-import com.ecommerce.app.model.enumvalue.Status;
+import com.ecommerce.app.globalComponant.SlagGenerator;
+import com.ecommerce.app.globalComponant.UnixTimeComponent;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.services.LoggedUserService;
 import com.ecommerce.app.product.model.Product;
+import com.ecommerce.app.product.model.ProductStatusEnum;
 import com.ecommerce.app.product.model.ProductTypeEnum;
 
 import com.ecommerce.app.product.ripository.ProductcategoryRepository;
@@ -29,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.ecommerce.app.product.ripository.ProductRepository;
-import com.ecommerce.app.product.ripository.UnitsRepository;
+import com.ecommerce.app.product.services.UnitsOfMeasureService;
 import jakarta.validation.Valid;
 
 /**
@@ -57,7 +59,13 @@ public class ProductController {
     ProductRepository productRepository;
 
     @Autowired
-    UnitsRepository unitsRepository;
+    UnitsOfMeasureService unitsOfMeasureService;
+
+    @Autowired
+    private SlagGenerator slagGenerator;
+
+    @Autowired
+    UnixTimeComponent unixTimeComponent;
 
     @RequestMapping(value = {"", "/", "/index"})
     public String index(Model model) {
@@ -67,14 +75,18 @@ public class ProductController {
 
     @RequestMapping("/create")
     public String create(Model model, Product product) {
-        model.addAttribute("statuslist", Status.values());
-        model.addAttribute("producttype", ProductTypeEnum.values());
-        model.addAttribute("uoms", unitsRepository.findAll());
-        model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(Status.Active));
+
+        int suk = (int) unixTimeComponent.unixTimeEpochSecond();
+        product.setSku(suk);
 
         Users userss = new Users();
         userss.setId(loggedUserService.activeUserid());
         product.setUserId(userss);
+
+        model.addAttribute("statuslist", ProductStatusEnum.values());
+        model.addAttribute("producttype", ProductTypeEnum.values());
+        model.addAttribute("uoms", unitsOfMeasureService.getAllUnits());
+        model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(ProductStatusEnum.Active));
 
         return "product/add";
     }
@@ -85,14 +97,13 @@ public class ProductController {
     ) {
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("statuslist", Status.values());
-            model.addAttribute("producttype", ProductTypeEnum.values());
-            model.addAttribute("uoms", unitsRepository.findAll());
-            model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(Status.Active));
-
             Users userss = new Users();
             userss.setId(loggedUserService.activeUserid());
             product.setUserId(userss);
+            model.addAttribute("statuslist", ProductStatusEnum.values());
+            model.addAttribute("producttype", ProductTypeEnum.values());
+            model.addAttribute("uoms", unitsOfMeasureService.getAllUnits());
+            model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(ProductStatusEnum.Active));
 
             return "product/add";
         }
@@ -126,20 +137,21 @@ public class ProductController {
 
                 product.setImageName(filename);
 
+                if (product.getId() == null) {
+                    String slug = slagGenerator.generateSlug(product.getTitle());
+                    product.setSlug(slug);
+                }
+
                 productRepository.save(product);
 
                 redirectAttributes.addFlashAttribute("message", "Successfully saved.");
                 return "redirect:/product/index";
             } catch (Exception e) {
 
-                model.addAttribute("statuslist", Status.values());
+                model.addAttribute("statuslist", ProductStatusEnum.values());
                 model.addAttribute("producttype", ProductTypeEnum.values());
-                model.addAttribute("uoms", unitsRepository.findAll());
-                model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(Status.Active));
-
-                Users userss = new Users();
-                userss.setId(loggedUserService.activeUserid());
-                product.setUserId(userss);
+              model.addAttribute("uoms", unitsOfMeasureService.getAllUnits());
+                model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(ProductStatusEnum.Active));
 
                 redirectAttributes.addFlashAttribute("message", pic.getOriginalFilename() + " => " + e.getMessage());
                 return "redirect:/product/index";
@@ -157,6 +169,11 @@ public class ProductController {
             return "redirect:/product/index";
 
         } else {
+
+            if (product.getId() == null) {
+                String slug = slagGenerator.generateSlug(product.getTitle());
+                product.setSlug(slug);
+            }
             productRepository.save(product);
             redirectAttributes.addFlashAttribute("message", "File empty");
             return "redirect:/product/index";
@@ -168,30 +185,30 @@ public class ProductController {
     @RequestMapping("/details/{id}")
     public String create(Model model, @PathVariable Long id, Product product) {
 
-        model.addAttribute("product_details", productRepository.findById(id));
+        model.addAttribute("product_details", productRepository.findById(id).orElse(null));
 
-        return "catalog/product/product_details";
+        return "product/product_details";
 
     }
 
     @RequestMapping("/edit/{id}")
     public String edit(Model model, @PathVariable Long id, Product product) {
-        model.addAttribute("ourproduct", productRepository.findById(id));
+        model.addAttribute("product", productRepository.findById(id).orElse(null));
+        model.addAttribute("statuslist", ProductStatusEnum.values());
         model.addAttribute("producttype", ProductTypeEnum.values());
-           model.addAttribute("uoms", unitsRepository.findAll());
-        model.addAttribute("statuslist", Status.values());
-        model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(Status.Active));
+         model.addAttribute("uoms", unitsOfMeasureService.getAllUnits());
+        model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(ProductStatusEnum.Active));
         Users userss = new Users();
         userss.setId(loggedUserService.activeUserid());
         product.setUserId(userss);
-        return "catalog/product/add";
+        return "product/add";
     }
 
     @RequestMapping("/delete/{id}")
 
     public String delete(Model model, @PathVariable Long id, Product product, RedirectAttributes redirectAttributes) {
 
-        product = productRepository.getOne(id);
+        product = productRepository.findById(id).orElse(null);
         File file = new File(properties.getRootPath() + File.separator + product.getImageName());
 
         file.delete();

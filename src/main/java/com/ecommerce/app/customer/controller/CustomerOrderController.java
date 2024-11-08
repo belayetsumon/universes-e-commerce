@@ -13,7 +13,6 @@ import com.ecommerce.app.order.model.OrderItem;
 import com.ecommerce.app.order.model.OrderStatus;
 import com.ecommerce.app.order.model.SalesOrder;
 import com.ecommerce.app.order.repository.OrderItemRepository;
-import com.ecommerce.app.ripository.BloodGroupRepository;
 import com.ecommerce.app.ripository.ProfileRepository;
 import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
@@ -41,8 +40,7 @@ public class CustomerOrderController {
     @Autowired
     ProfileRepository profileRepository;
 
-    @Autowired
-    BloodGroupRepository bloodGroupRepository;
+
 
     @Autowired
     LoggedUserService loggedUserService;
@@ -141,7 +139,7 @@ public class CustomerOrderController {
     @RequestMapping(value = {"/details/{oid}"})
     public String details(Model model, @PathVariable Long oid, SalesOrder salesOrder) {
 
-        model.addAttribute("orderdetails", salesOrderRepository.getOne(oid));
+        model.addAttribute("orderdetails", salesOrderRepository.findById(oid).orElse(null));
 
         return "customer/order/order_details";
     }
@@ -153,7 +151,7 @@ public class CustomerOrderController {
 
         userId.setId(loggedUserService.activeUserid());
 
-        SalesOrder orders = salesOrderRepository.getOne(orderid);
+        SalesOrder orders = salesOrderRepository.findById(orderid).orElse(null);
 
         model.addAttribute("orderinfo", orders);
 
@@ -166,7 +164,7 @@ public class CustomerOrderController {
         Users userId = new Users();
         userId.setId(loggedUserService.activeUserid());
 
-        SalesOrder orders = salesOrderRepository.getOne(orderid);
+        SalesOrder orders = salesOrderRepository.findById(orderid).orElse(null);
         orders.setStatus(OrderStatus.Complete);
         salesOrderRepository.save(orders);
         model.addAttribute("orderinfo", orders);
@@ -180,7 +178,7 @@ public class CustomerOrderController {
 
         userId.setId(loggedUserService.activeUserid());
 
-        SalesOrder orders = salesOrderRepository.getOne(orderid);
+        SalesOrder orders = salesOrderRepository.findById(orderid).orElse(null);
 
         model.addAttribute("orderinfo", orders);
 
@@ -194,7 +192,7 @@ public class CustomerOrderController {
 
         userId.setId(loggedUserService.activeUserid());
 
-        SalesOrder orders = salesOrderRepository.getOne(orderid);
+        SalesOrder orders = salesOrderRepository.findById(orderid).orElse(null);
 
         model.addAttribute("orderinfo", orders);
 

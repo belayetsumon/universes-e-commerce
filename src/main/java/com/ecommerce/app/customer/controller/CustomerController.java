@@ -11,7 +11,6 @@ import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.user.services.LoggedUserService;
 import com.ecommerce.app.module.user.services.LoginEventService;
 import com.ecommerce.app.order.model.OrderStatus;
-import com.ecommerce.app.ripository.BloodGroupRepository;
 import com.ecommerce.app.ripository.ProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,8 +31,7 @@ public class CustomerController {
     @Autowired
     ProfileRepository profileRepository;
 
-    @Autowired
-    BloodGroupRepository bloodGroupRepository;
+
 
     @Autowired
     LoggedUserService loggedUserService;

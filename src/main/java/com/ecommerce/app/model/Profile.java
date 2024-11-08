@@ -58,10 +58,6 @@ public class Profile {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @NotNull(message = "*Please provide your blood group")
-    @ManyToOne(optional = true)
-    private BloodGroup bloodGroup;
-
     @NotBlank(message = "*Please provide your name")
     private String mobile;
 
@@ -79,8 +75,8 @@ public class Profile {
 
     @NotBlank(message = "*Please provide your nominee name")
     private String nominee;
-    
-        @NotBlank(message = "*Please provide your nominee name")
+
+    @NotBlank(message = "*Please provide your nominee name")
     private String nomineeRelation;
 
     private String facebookUrl;
@@ -110,7 +106,7 @@ public class Profile {
     public Profile() {
     }
 
-    public Profile(Long id, Users userId, String name, String fathersName, String mothersName, String nid, String lastEducationQualification, String occupation, String designation, String organization, Gender gender, BloodGroup bloodGroup, String mobile, String presentAddress, String permanentAddress, String presentCity, String presentCountry, String nominee, String nomineeRelation, String facebookUrl, String linkdinUrl, String whatupNo, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
+    public Profile(Long id, Users userId, String name, String fathersName, String mothersName, String nid, String lastEducationQualification, String occupation, String designation, String organization, Gender gender, String mobile, String presentAddress, String permanentAddress, String presentCity, String presentCountry, String nominee, String nomineeRelation, String facebookUrl, String linkdinUrl, String whatupNo, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
         this.id = id;
         this.userId = userId;
         this.name = name;
@@ -122,7 +118,6 @@ public class Profile {
         this.designation = designation;
         this.organization = organization;
         this.gender = gender;
-        this.bloodGroup = bloodGroup;
         this.mobile = mobile;
         this.presentAddress = presentAddress;
         this.permanentAddress = permanentAddress;
@@ -225,14 +220,6 @@ public class Profile {
 
     public void setGender(Gender gender) {
         this.gender = gender;
-    }
-
-    public BloodGroup getBloodGroup() {
-        return bloodGroup;
-    }
-
-    public void setBloodGroup(BloodGroup bloodGroup) {
-        this.bloodGroup = bloodGroup;
     }
 
     public String getMobile() {
@@ -346,7 +333,5 @@ public class Profile {
     public void setModified(LocalDateTime modified) {
         this.modified = modified;
     }
-
-   
 
 }

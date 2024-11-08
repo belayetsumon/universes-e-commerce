@@ -5,8 +5,8 @@
  */
 package com.ecommerce.app.product.model;
 
-import com.ecommerce.app.model.enumvalue.Status;
 import com.ecommerce.app.module.user.model.Users;
+import com.ecommerce.app.vendor.model.Vendorprofile;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -22,7 +22,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -30,6 +29,7 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
+
 /**
  *
  * @author User
@@ -50,6 +50,10 @@ public class Product implements Serializable {
     @JoinColumn(nullable = false)
     private Users userId;
 
+    @ManyToOne(optional = true, fetch = FetchType.LAZY)
+    @JoinColumn(nullable = true)
+    private Vendorprofile vendorprofile;
+
 //    @NotNull(message = "Please select minimum one sub category")
 //    @ManyToMany(fetch = FetchType.LAZY)
 //    @JoinTable(name = "exam_productsubcategory",
@@ -64,28 +68,26 @@ public class Product implements Serializable {
     @NotBlank(message = "Title  is required.")
     private String title;
 
-    @NotBlank(message = "Slug  is required.")
     private String slug;
 
     private int orderno;// position of product serial 
 
     @Lob
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String shortDescription;
 
     @Lob
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Lob
     private String video;
 
-    @NotNull(message = "Price is required.")
     private double price;
 
-    private double buyPrice;
+    private double purchasePrice;
 
-    private double salePrice;
+    private double salesPrice;
 
     private double companyProfit;
 
@@ -94,15 +96,14 @@ public class Product implements Serializable {
 
     private double companyDiscount;
 
-    private double discount;
+    private double vendordiscount;
 
-    @DateTimeFormat(pattern = "dd-MM-yyyy")
-    private LocalDate discountStartDate;
+    @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm:ss")
+    private LocalDateTime discountStartDate;
 
-    @DateTimeFormat(pattern = "dd-MM-yyyy")
-    private LocalDate discountEndDate;
+    @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm:ss")
+    private LocalDateTime discountEndDate;
 
-   
     @ManyToOne(optional = true, fetch = FetchType.LAZY)
     private Unitofmeasurement uom;
 
@@ -118,10 +119,10 @@ public class Product implements Serializable {
 
     @NotNull(message = "Status is required.")
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private ProductStatusEnum status;
 
     // meta description
-    @Lob
+    @Lob()
     private String metaTitle;
 
     @Lob
@@ -150,10 +151,11 @@ public class Product implements Serializable {
     public Product() {
     }
 
-    public Product(Long id, int sku, Users userId, Productcategory productcategory, String title, String slug, int orderno, String shortDescription, String description, String video, double price, double buyPrice, double salePrice, double companyProfit, ProductTypeEnum productType, double companyDiscount, double discount, LocalDate discountStartDate, LocalDate discountEndDate, Unitofmeasurement uom, String imageName, Boolean newProduct, Boolean featuredProduct, Boolean manageStock, Boolean emiavailable, Status status, String metaTitle, String metaDescription, String metaKeywords, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
+    public Product(Long id, int sku, Users userId, Vendorprofile vendorprofile, Productcategory productcategory, String title, String slug, int orderno, String shortDescription, String description, String video, double price, double purchasePrice, double salesPrice, double companyProfit, ProductTypeEnum productType, double companyDiscount, double vendordiscount, LocalDateTime discountStartDate, LocalDateTime discountEndDate, Unitofmeasurement uom, String imageName, Boolean newProduct, Boolean featuredProduct, Boolean manageStock, Boolean emiavailable, ProductStatusEnum status, String metaTitle, String metaDescription, String metaKeywords, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
         this.id = id;
         this.sku = sku;
         this.userId = userId;
+        this.vendorprofile = vendorprofile;
         this.productcategory = productcategory;
         this.title = title;
         this.slug = slug;
@@ -162,12 +164,12 @@ public class Product implements Serializable {
         this.description = description;
         this.video = video;
         this.price = price;
-        this.buyPrice = buyPrice;
-        this.salePrice = salePrice;
+        this.purchasePrice = purchasePrice;
+        this.salesPrice = salesPrice;
         this.companyProfit = companyProfit;
         this.productType = productType;
         this.companyDiscount = companyDiscount;
-        this.discount = discount;
+        this.vendordiscount = vendordiscount;
         this.discountStartDate = discountStartDate;
         this.discountEndDate = discountEndDate;
         this.uom = uom;
@@ -208,6 +210,14 @@ public class Product implements Serializable {
 
     public void setUserId(Users userId) {
         this.userId = userId;
+    }
+
+    public Vendorprofile getVendorprofile() {
+        return vendorprofile;
+    }
+
+    public void setVendorprofile(Vendorprofile vendorprofile) {
+        this.vendorprofile = vendorprofile;
     }
 
     public Productcategory getProductcategory() {
@@ -274,20 +284,20 @@ public class Product implements Serializable {
         this.price = price;
     }
 
-    public double getBuyPrice() {
-        return buyPrice;
+    public double getPurchasePrice() {
+        return purchasePrice;
     }
 
-    public void setBuyPrice(double buyPrice) {
-        this.buyPrice = buyPrice;
+    public void setPurchasePrice(double purchasePrice) {
+        this.purchasePrice = purchasePrice;
     }
 
-    public double getSalePrice() {
-        return salePrice;
+    public double getSalesPrice() {
+        return salesPrice;
     }
 
-    public void setSalePrice(double salePrice) {
-        this.salePrice = salePrice;
+    public void setSalesPrice(double salesPrice) {
+        this.salesPrice = salesPrice;
     }
 
     public double getCompanyProfit() {
@@ -314,27 +324,27 @@ public class Product implements Serializable {
         this.companyDiscount = companyDiscount;
     }
 
-    public double getDiscount() {
-        return discount;
+    public double getVendordiscount() {
+        return vendordiscount;
     }
 
-    public void setDiscount(double discount) {
-        this.discount = discount;
+    public void setVendordiscount(double vendordiscount) {
+        this.vendordiscount = vendordiscount;
     }
 
-    public LocalDate getDiscountStartDate() {
+    public LocalDateTime getDiscountStartDate() {
         return discountStartDate;
     }
 
-    public void setDiscountStartDate(LocalDate discountStartDate) {
+    public void setDiscountStartDate(LocalDateTime discountStartDate) {
         this.discountStartDate = discountStartDate;
     }
 
-    public LocalDate getDiscountEndDate() {
+    public LocalDateTime getDiscountEndDate() {
         return discountEndDate;
     }
 
-    public void setDiscountEndDate(LocalDate discountEndDate) {
+    public void setDiscountEndDate(LocalDateTime discountEndDate) {
         this.discountEndDate = discountEndDate;
     }
 
@@ -386,11 +396,11 @@ public class Product implements Serializable {
         this.emiavailable = emiavailable;
     }
 
-    public Status getStatus() {
+    public ProductStatusEnum getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(ProductStatusEnum status) {
         this.status = status;
     }
 

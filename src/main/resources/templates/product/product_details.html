@@ -4,7 +4,7 @@ To change this license header, choose License Headers in Project Properties.
 To change this template file, choose Tools | Templates
 and open the template in the editor.
 -->
-<div xmlns:th="http://www.thymeleaf.org" layout:decorator="admin-layout">
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
     <div layout:fragment = "main_content">
 
         <div> <h4> Product <small>Home>Product </small></h4>
@@ -14,29 +14,154 @@ and open the template in the editor.
             <div class="col-sm-12">
                 <div class="card">
                     <div class="card-header">
-                        <div class="row"> <div class="col-sm-5 font-weight-bold text-danger"><i class="fas fa-list"></i> Product Details</div>
-                            <div class="col-sm-7 "> <a class="btn btn-danger btn-sm float-right" th:href="@{/ourproduct/index}">Close</a></div>
+                        <div class="row"> <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i> Product Details</strong></div>
+                            
+                                           <div class="col-sm-7 text-end ">
+                                <div class="btn-group ">
+                                    <a  class="btn btn-success btn-sm " th:href="@{/product/edit/{id}(id=${product_details.id})}"> <i class="bi bi-pencil"></i> Edit</a>
+                                    <a  class="btn btn-warning btn-sm " th:href="@{/product/delete/{id}(id=${product_details.id})}"> <i class="bi bi-trash3"></i> Delete </a>
+                                    <a class="btn btn-danger btn-sm "  th:href="@{/product/index}"><i class="bi bi-x-circle"></i> Close</a>
+                                </div>
+                            </div>                    
                         </div>
                     </div>
+                    
                     <div class="card-body">
-
                         <table class="table table-bordered">
                             <tr>
-                                <td> Name</td>
+                                <th> Name</th>
                                 <td> :</td>
                                 <td th:text="${product_details.title}">Otto</td>
-
                             </tr>
-
                             <tr>
-                                <td> Slug</td>
+                                <th> Slug</th>
                                 <td>: </td>
                                 <td th:text="${product_details.slug}">Otto</td>
+                            </tr>
+                           <tr> <th> Product Category</th>
+                                <td> :</td>
+                                <td th:text="${product_details.productcategory.name}"> </td>
+                            </tr>
+                            <tr> <th> Parents Category</th>
+                                <td> :</td>
+                                <td th:text="${product_details.productcategory.parent}"> </td>
 
                             </tr>
-
-                            <tr> <td> Image</td>
+                            
+                                <tr> <th> Product Type</th>
                                 <td> :</td>
+                                <td th:text="${product_details.productType}"> </td>
+
+                            </tr>
+                            
+                                <tr> <th> Order Position No</th>
+                                <td> :</td>
+                                <td th:text="${product_details.orderno}"> </td>
+
+                            </tr>
+                                <tr> <th>Purchase Price</th>
+                                <td> :</td>
+                                <td th:text="${product_details.description}"> </td>
+
+                            </tr>
+                                <tr><th> Sales Price</th>
+                                <td> :</td>
+                                <td th:text="${product_details.salesPrice}"> </td>
+
+                            </tr>
+                                <tr> <th> Vendor Discount</th>
+                                <td> :</td>
+                                <td th:text="${product_details.vendordiscount}"> </td>
+
+                            </tr>
+                                <tr> <th> Company Discount</th>
+                                <td> :</td>
+                                <td th:text="${product_details.companyDiscount}"> </td>
+
+                            </tr>
+                                <tr> <th> Company Profit</th>
+                                <td> :</td>
+                                <td th:text="${product_details.companyProfit}"> </td>
+
+                            </tr>
+                                <tr> <th> Discount Start Date</th>
+                                <td> :</td>
+                                <td th:text="${product_details.discountStartDate}"> </td>
+
+                            </tr>
+                                <tr> <th> Discount End Date</th>
+                                <td> :</td>
+                                <td th:text="${product_details.discountEndDate}"> </td>
+
+                            </tr>
+                                <tr> <th> UoM</th>
+                                <td> :</td>
+                                <td th:text="${product_details.uom.name}"> </td>
+
+                            </tr>
+                                <tr> <th> Short Description:</th>
+                                <td> :</td>
+                                <td th:text="${product_details.shortDescription}"> </td>
+
+                            </tr>
+                                <tr> <th> Description</th>
+                                <td> :</td>
+                                <td th:text="${product_details.description}"> </td>
+
+                            </tr>
+                                <tr> <th> Youtube Video Link</th>
+                                <td> :</td>
+                                <td th:text="${product_details.video}"> </td>
+
+                            </tr>
+                                <tr><th> New Product </th>
+                                <td> :</td>
+                                <td th:text="${product_details.newProduct}"> </td>
+
+                            </tr>
+                                <tr> <th> Manage Stock </th>
+                                <td> :</td>
+                                <td th:text="${product_details.manageStock}"> </td>
+
+                            </tr>
+                                <tr> <th> Featured Product </th>
+                                <td> :</td>
+                                <td th:text="${product_details.featuredProduct}"> </td>
+
+                            </tr>
+                    
+                                <tr> <th> Meta Title</th>
+                                <td> :</td>
+                                <td th:text="${product_details.metaTitle}"> </td>
+
+                            </tr>
+                            
+                                       <tr> <th> Meta Description</th>
+                                <td> :</td>
+                                <td th:text="${product_details.metaDescription}"> </td>
+
+                            </tr>
+                            
+                                          <tr> <th> Meta Keywords</th>
+                                <td> :</td>
+                                <td th:text="${product_details.metaKeywords}"> </td>
+
+                            </tr>
+                                <tr> <th> EMI Available </th>
+                                <td> :</td>
+                                <td th:text="${product_details.emiavailable}"> </td>
+
+                            </tr>
+                            
+                            <tr> <th>Status </th>
+                                <td> :</td>
+                                <td th:text="${product_details.status}"> </td>
+
+                            </tr>
+                            
+
+                      <tr> <th> Image</th>
+                                <td> : </td>
                                 <td> 
                                     <span th:if="${ not #strings.isEmpty(product_details.imageName)}" class="badge bg-green pull-right"> 
                                         <img  class="img-responsive" th:src="@{/files/}+${product_details.imageName}" width="300px"  height="250px"/>
@@ -45,45 +170,29 @@ and open the template in the editor.
                                     <span th:if="${#strings.isEmpty(product_details.imageName)}" > Image Not Found </span></td>
                             </tr>
 
-                            <tr> <td> Description</td>
-                                <td> :</td>
-                                <td th:text="${product_details.description}"> </td>
-
-                            </tr>
-
-                            <tr> <td> Created</td>
+                            <tr> <th> Created</th>
                                 <td> :</td>
                                 <td>  <span th:text="${product_details.created}"> </span> </td>
 
                             </tr>
 
-                            <tr> <td> Created By</td>
+                            <tr> <th> Created By</th>
                                 <td> :</td>
                                 <td>  <span th:text="${product_details.createdBy}"> </span> </td>
                             </tr>
 
-                            <tr> <td>Updated </td>
+                            <tr> <th>Updated </th>
                                 <td> :</td>
                                 <td>  <span th:text="${product_details.modified}"> </span></td>
                             </tr>
 
-                            <tr> <td> Updated By</td>
+                            <tr> <th> Updated By</th>
                                 <td> :</td>
                                 <td> <span th:text="${product_details.modifiedBy}"> </span></td>
                             </tr>
-                            <tr> 
-                                <td> <a th:href="@{/ourproduct/edit/{id}(id=${product_details.id})}"> Edit  </a></td>
-
-                                <td> </td>
-
-                                <td><a th:href="@{/ourproduct/delete/{id}(id=${product_details.id})}"> Delete </a></td>
-                            </tr>
+                  
                         </table>
-
                     </div><!--  Card body end-->
-
-                    <div class="card-footer">
-                    </div> <!--  Card footer end-->
                 </div><!--  Card  end-->
 
 
