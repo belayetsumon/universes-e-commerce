@@ -24,54 +24,11 @@ and open the template in the editor.
 
         <div class="row">
             <div class="col-sm-12">
-<<<<<<< HEAD
-=======
-
-                <!--                <div class="card">
-                                    <div class="card-header">
-                                        Head 
-                                    </div>
-                                    <div class="card-body">
-                
-                                        <h1>Category Tree</h1>
-                
-                                        <ul>
-                                            <div th:each="category : ${productcategorylist}">
-                                                <li th:if="${category.parent == null}">
-                                                    <span th:text="${category.name}"></span>
-                                                    <ul>
-                                                        <div>
-                                                            <li th:each="child : ${category.children}">
-                                                               ..... <span th:text="${child.name}"></span>
-                                                                <ul>
-                                                                    <li th:each="grandChild : ${child.children}">
-                                                                        ...<span th:text="${grandChild.name}"></span>
-                                                                    </li>
-                                                                </ul>
-                                                            </li>
-                                                        </div>
-                                                    </ul>
-                                                </li>
-                                            </div>
-                                        </ul>
-                
-                                    </div>
-                                </div>  Card  end-->
-
-
-
-
-
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
                 <div class="card">
                     <div class="card-header">
                         <div class="row"> 
 
-<<<<<<< HEAD
                             <div class="col-sm-5 font-weight-bold "> <strong> <i class="bi bi-list-task"></i>  Category List [[${categories.size()}]] </strong> </div>
-=======
-                            <div class="col-sm-5 font-weight-bold "> <i class="bi bi-list-task"></i>  Category List </strong></div>
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
                             <div class="col-sm-7 text-end ">
                                 <div class="btn-group ">
                                     <a class="btn btn-success btn-sm " th:href="@{/productcategory/create}"> <i class="bi bi-plus-circle"></i> Add Product Category</a>
@@ -80,54 +37,6 @@ and open the template in the editor.
                             </div> 
                         </div>
                     </div>
-<<<<<<< HEAD
-=======
-
-
-                    <div class="card-body table-responsive">
-                        <span th:if="${ not #strings.isEmpty(message)}">
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <span th:text="${message}" > </span>
-                    
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true"></span>
-                                </button>
-                            </div>
-                        </span>
-                        <table id="example" class="table table-bordered table-hover table-striped">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">Parent</th>
-                                    <th scope="col"> Sort Order</th>
-                                    <th scope="col">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="productcategorylists,status:${productcategorylist}">
-
-                                    <th th:text="${status.count}">1</th>
-
-                                    <td> 
-                                        <span  th:text="${productcategorylists.name}">    </span>
-                                        <br>
-                                        <small><span th:text="${productcategorylists.status}">Otto</span></small>
-                                    </td>
-
-                                    <td th:text="${productcategorylists.orderno}">Otto</td>
-                                    <td th:text="${productcategorylists.orderno}">Otto</td>
-                                    <td>  
-                                        <a th:href="@{/productcategory/details/{id}(id=${productcategorylists.id})}" > <button class="btn btn-success btn-sm " > <i class="bi bi-eye-slash"></i> Details </button> 
-                                    </td>
-
-                                </tr>
-                            </tbody>
-                        </table>
-
-                    </div>
-                </div>
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
 
 
                     <div class="card-body table-responsive">
@@ -172,7 +81,7 @@ and open the template in the editor.
                                     </td>
                                     <td th:text="${productcategorylists.orderno}"> </td>
                                     
-                                    <td><a  type="button" th:href="@{/productcategory/details/{id}(id=${productcategorylists.id})}">  <button class="btn btn-success btn-sm " > <i class="bi bi-eye-slash"></i> View </button>  </a></td>
+                                    <td><a  type="button" th:href="@{/productcategory/details/{id}(id=${productlists.id})}">  <button class="btn btn-success btn-sm " > <i class="bi bi-eye-slash"></i> View </button>  </a></td>
                                 </tr>
                             </tbody>
                         </table>

@@ -8,10 +8,7 @@ package com.ecommerce.app.product.controller;
 import com.ecommerce.app.globalComponant.SlagGenerator;
 import com.ecommerce.app.model.enumvalue.Status;
 import com.ecommerce.app.product.model.ProductStatusEnum;
-<<<<<<< HEAD
-=======
-import com.ecommerce.app.product.model.ProductTypeEnum;
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
+
 import com.ecommerce.app.product.model.Productcategory;
 import com.ecommerce.app.product.ripository.ProductcategoryRepository;
 import com.ecommerce.app.product.services.ProductcategoryService;
@@ -52,12 +49,11 @@ public class ProductcategoryController {
     @Autowired
     private SlagGenerator slagGenerator;
 
-<<<<<<< HEAD
+
     @Autowired
     ProductcategoryService productcategoryService;
 
-=======
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
+
     @RequestMapping(value = {"", "/", "/index"})
     public String index(Model model) {
         // model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
@@ -98,11 +94,13 @@ public class ProductcategoryController {
     @RequestMapping("/create")
     public String create(Model model, Productcategory productcategory) {
 
-<<<<<<< HEAD
+
         model.addAttribute("statuslist", ProductStatusEnum.values());
-=======
+
         model.addAttribute("statuslist",  ProductStatusEnum.values());
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
+
+        model.addAttribute("statuslist",  ProductStatusEnum.values());
+
         model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
 
         List<Productcategory> rootCategories = productcategoryRepository.findByParentIsNull();
@@ -117,11 +115,13 @@ public class ProductcategoryController {
     ) {
 
         if (bindingResult.hasErrors()) {
-<<<<<<< HEAD
+
             model.addAttribute("statuslist", ProductStatusEnum.values());
-=======
+
           model.addAttribute("statuslist",  ProductStatusEnum.values());
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
+
+          model.addAttribute("statuslist",  ProductStatusEnum.values());
+
             model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
             return "product/productcategory/add";
         }
@@ -194,17 +194,17 @@ public class ProductcategoryController {
 
     @RequestMapping("/edit/{id}")
     public String edit(Model model, @PathVariable Long id, Productcategory productcategory) {
-<<<<<<< HEAD
+
 
         model.addAttribute("productcategory", productcategoryRepository.findById(id).orElse(null));
         model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
         model.addAttribute("statuslist", ProductStatusEnum.values());
-=======
+
         
         model.addAttribute("productcategory", productcategoryRepository.findById(id).orElse(null));
         model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
         model.addAttribute("statuslist",  ProductStatusEnum.values());
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
+
         return "product/productcategory/add";
     }
 

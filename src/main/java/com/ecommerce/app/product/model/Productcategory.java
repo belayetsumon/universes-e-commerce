@@ -1,98 +1,94 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package com.ecommerce.app.product.model;
+package com.ecommerce.app.product.model ;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
-import org.springframework.data.annotation.*;
-import org.springframework.data.jpa.domain.support.*;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
 
-/**
- *
- * @author User
- */
-@Entity
-@EntityListeners(AuditingEntityListener.class)
-public class Productcategory implements Serializable {
+    @Entity
+    @EntityListeners(AuditingEntityListener.class)
+    public class Productcategory implements Serializable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
 
-    @NotBlank(message = "Name  is required.")
-    private String name;
+        @NotBlank(message = "Name  is required.")
+        private String name;
 
-    private String slug;
+        private String slug;
 
-    private int orderno;
+        private int orderno;
 
-    @Lob
-    private String description;
+        @Lob
+        private String description;
 
-    private String imageName;
+        private String imageName;
 
-    private double discount;
+        private double discount;
 
-    private Boolean featuredCat;
-<<<<<<< HEAD
+        private Boolean featuredCat;
 
-    @DateTimeFormat(pattern = "dd-MM-yyyy")
-    private LocalDate discountStartDate;
-=======
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
+    
 
-    @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm:ss")
-    private LocalDateTime discountStartDate;
+        @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm:ss")
+        private LocalDateTime discountStartDate;
 
-    @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm:ss")
-    private LocalDateTime discountEndDate;
+        @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm:ss")
+        private LocalDateTime discountEndDate;
 
-    @NotNull(message = "Status is required.")
-    @Enumerated(EnumType.STRING)
-    private ProductStatusEnum status;
+        @NotNull(message = "Status is required.")
+        @Enumerated(EnumType.STRING)
+        private ProductStatusEnum status;
 
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "parent")
-    private Productcategory parent;
+        @ManyToOne(optional = true)
+        @JoinColumn(name = "parent")
+        private Productcategory parent;
 
-    /// Audit /// 
-    @CreatedBy
-    @Column(nullable = false, updatable = false)
-    private String createdBy;
+        /// Audit /// 
+        @CreatedBy
+        @Column(nullable = false, updatable = false)
+        private String createdBy;
 
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime created;
+        @CreatedDate
+        @Column(nullable = false, updatable = false)
+        private LocalDateTime created;
 
-    @LastModifiedBy
-    @Column(insertable = false)
-    private String modifiedBy;
+        @LastModifiedBy
+        @Column(insertable = false)
+        private String modifiedBy;
 
-    @LastModifiedDate
-    @Column(insertable = false)
-    private LocalDateTime modified;
+        @LastModifiedDate
+        @Column(insertable = false)
+        private LocalDateTime modified;
 
-    /// End Audit //// 
-    @OneToMany(mappedBy = "parent")
-    private List<Productcategory> children;
+        /// End Audit //// 
+        @OneToMany(mappedBy = "parent")
+        private List<Productcategory> children;
 
-    public Productcategory() {
-    }
+        public Productcategory() {
+        }
 
-<<<<<<< HEAD
-    public Productcategory(Long id, String name, String slug, int orderno, String description, String imageName, double discount, Boolean featuredCat, LocalDate discountStartDate, LocalDate discountEndDate, ProductStatusEnum status, Productcategory parent, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified, List<Productcategory> children) {
-=======
     public Productcategory(Long id, String name, String slug, int orderno, String description, String imageName, double discount, Boolean featuredCat, LocalDateTime discountStartDate, LocalDateTime discountEndDate, ProductStatusEnum status, Productcategory parent, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified, List<Productcategory> children) {
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
         this.id = id;
         this.name = name;
         this.slug = slug;
@@ -176,11 +172,7 @@ public class Productcategory implements Serializable {
         this.featuredCat = featuredCat;
     }
 
-<<<<<<< HEAD
-    public LocalDate getDiscountStartDate() {
-=======
     public LocalDateTime getDiscountStartDate() {
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
         return discountStartDate;
     }
 
@@ -252,8 +244,7 @@ public class Productcategory implements Serializable {
         this.children = children;
     }
 
-<<<<<<< HEAD
-=======
+  
+
     
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
 }

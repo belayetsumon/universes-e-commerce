@@ -1,10 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.ecommerce.app.product.model;
-
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import jakarta.persistence.Column;
@@ -22,6 +16,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -30,10 +25,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
 
-/**
- *
- * @author User
- */
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 public class Product implements Serializable {
@@ -51,10 +42,6 @@ public class Product implements Serializable {
     private Users userId;
 
     @ManyToOne(optional = true, fetch = FetchType.LAZY)
-<<<<<<< HEAD
-=======
-    @JoinColumn(nullable = true)
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
     private Vendorprofile vendorprofile;
 
 //    @NotNull(message = "Please select minimum one sub category")
@@ -91,15 +78,8 @@ public class Product implements Serializable {
     @Lob
     private String video;
 
-<<<<<<< HEAD
     private double purchasePrice;
-    @NotNull(message = " Sales price is required.")
-=======
-    private double price;
-
-    private double purchasePrice;
-
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
+    @NotNull(message = " SalesPrice is required.")
     private double salesPrice;
 
     private double companyProfit;
@@ -111,18 +91,14 @@ public class Product implements Serializable {
 
     private double vendordiscount;
 
-    @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm:ss")
-    private LocalDateTime discountStartDate;
+    @DateTimeFormat(pattern = "dd-MM-yyyy")
+    private LocalDate discountStartDate;
 
-    @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm:ss")
-    private LocalDateTime discountEndDate;
+    @DateTimeFormat(pattern = "dd-MM-yyyy")
+    private LocalDate discountEndDate;
 
-<<<<<<< HEAD
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @NotNull(message = "UOM is required.")
-=======
-    @ManyToOne(optional = true, fetch = FetchType.LAZY)
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
     private Unitofmeasurement uom;
 
     private String imageName;
@@ -142,12 +118,8 @@ public class Product implements Serializable {
     private ProductStatusEnum status;
 
     // meta description
-<<<<<<< HEAD
     @Lob
     @Column(columnDefinition = "TEXT")
-=======
-    @Lob()
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
     private String metaTitle;
 
     @Lob
@@ -178,11 +150,7 @@ public class Product implements Serializable {
     public Product() {
     }
 
-<<<<<<< HEAD
     public Product(Long id, int sku, Users userId, Vendorprofile vendorprofile, Productcategory productcategory, Manufacturer manufacturer, String title, String slug, int orderno, String shortDescription, String description, String video, double purchasePrice, double salesPrice, double companyProfit, ProductTypeEnum productType, double companyDiscount, double vendordiscount, LocalDate discountStartDate, LocalDate discountEndDate, Unitofmeasurement uom, String imageName, Boolean newProduct, Boolean featuredProduct, Boolean manageStock, Boolean emiavailable, Boolean onlineShow, ProductStatusEnum status, String metaTitle, String metaDescription, String metaKeywords, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
-=======
-    public Product(Long id, int sku, Users userId, Vendorprofile vendorprofile, Productcategory productcategory, String title, String slug, int orderno, String shortDescription, String description, String video, double price, double purchasePrice, double salesPrice, double companyProfit, ProductTypeEnum productType, double companyDiscount, double vendordiscount, LocalDateTime discountStartDate, LocalDateTime discountEndDate, Unitofmeasurement uom, String imageName, Boolean newProduct, Boolean featuredProduct, Boolean manageStock, Boolean emiavailable, ProductStatusEnum status, String metaTitle, String metaDescription, String metaKeywords, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
         this.id = id;
         this.sku = sku;
         this.userId = userId;
@@ -195,10 +163,6 @@ public class Product implements Serializable {
         this.shortDescription = shortDescription;
         this.description = description;
         this.video = video;
-<<<<<<< HEAD
-=======
-        this.price = price;
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
         this.purchasePrice = purchasePrice;
         this.salesPrice = salesPrice;
         this.companyProfit = companyProfit;
@@ -328,25 +292,10 @@ public class Product implements Serializable {
         this.purchasePrice = purchasePrice;
     }
 
-<<<<<<< HEAD
     public double getSalesPrice() {
         return salesPrice;
     }
 
-=======
-    public double getPurchasePrice() {
-        return purchasePrice;
-    }
-
-    public void setPurchasePrice(double purchasePrice) {
-        this.purchasePrice = purchasePrice;
-    }
-
-    public double getSalesPrice() {
-        return salesPrice;
-    }
-
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
     public void setSalesPrice(double salesPrice) {
         this.salesPrice = salesPrice;
     }
@@ -383,19 +332,19 @@ public class Product implements Serializable {
         this.vendordiscount = vendordiscount;
     }
 
-    public LocalDateTime getDiscountStartDate() {
+    public LocalDate getDiscountStartDate() {
         return discountStartDate;
     }
 
-    public void setDiscountStartDate(LocalDateTime discountStartDate) {
+    public void setDiscountStartDate(LocalDate discountStartDate) {
         this.discountStartDate = discountStartDate;
     }
 
-    public LocalDateTime getDiscountEndDate() {
+    public LocalDate getDiscountEndDate() {
         return discountEndDate;
     }
 
-    public void setDiscountEndDate(LocalDateTime discountEndDate) {
+    public void setDiscountEndDate(LocalDate discountEndDate) {
         this.discountEndDate = discountEndDate;
     }
 
@@ -447,7 +396,6 @@ public class Product implements Serializable {
         this.emiavailable = emiavailable;
     }
 
-<<<<<<< HEAD
     public Boolean getOnlineShow() {
         return onlineShow;
     }
@@ -456,8 +404,6 @@ public class Product implements Serializable {
         this.onlineShow = onlineShow;
     }
 
-=======
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
     public ProductStatusEnum getStatus() {
         return status;
     }

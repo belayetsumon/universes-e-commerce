@@ -5,9 +5,9 @@
  */
 package com.ecommerce.app.product.ripository;
 
-import com.ecommerce.app.product.model.Product;
-import com.ecommerce.app.model.enumvalue.Status;
+
 import com.ecommerce.app.module.user.model.Users;
+import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.ProductStatusEnum;
 
 import java.util.List;

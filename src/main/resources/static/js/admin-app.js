@@ -153,7 +153,11 @@ $(document).ready(function () {
 
     // Call the function on page load for product image upload
 <<<<<<< HEAD
+<<<<<<< HEAD
    /* validateImageUpload(
+=======
+    validateImageUpload(
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
 =======
     validateImageUpload(
 >>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
@@ -167,15 +171,21 @@ $(document).ready(function () {
             30, // Minimum file size (KB)
             1                          // Maximum file size (MB)
 <<<<<<< HEAD
+<<<<<<< HEAD
             );*/
 
     // Call the function on page load for category image upload
  /*   validateImageUpload(
 =======
+=======
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
             );
 
     // Call the function on page load for category image upload
     validateImageUpload(
+<<<<<<< HEAD
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
+=======
 >>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
             '#catimagefile', // Input file selector
             '#catimage_error_message', // Error message selector
@@ -187,7 +197,11 @@ $(document).ready(function () {
             30, // Minimum file size (KB)
             1                          // Maximum file size (MB)
 <<<<<<< HEAD
+<<<<<<< HEAD
             ); */
+=======
+            );
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
 =======
             );
 >>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f

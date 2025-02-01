@@ -29,10 +29,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.ecommerce.app.product.ripository.ProductRepository;
-<<<<<<< HEAD
 import com.ecommerce.app.product.services.ProductService;
-=======
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
+
 import com.ecommerce.app.product.services.UnitsOfMeasureService;
 import jakarta.validation.Valid;
 
@@ -65,15 +63,14 @@ public class ProductController {
 
     @Autowired
     UnixTimeComponent unixTimeComponent;
-<<<<<<< HEAD
+
 
     @Autowired
     ProductService productService;
 
     @Autowired
     ManufacturerRepository manufacturerRepository;
-=======
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
+
 
     @RequestMapping(value = {"", "/", "/index"})
     public String index(Model model) {
@@ -95,11 +92,9 @@ public class ProductController {
         model.addAttribute("producttype", ProductTypeEnum.values());
         model.addAttribute("uoms", unitsOfMeasureService.getAllUnits());
         model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(ProductStatusEnum.Active));
-<<<<<<< HEAD
-        model.addAttribute("manufacturerlist", manufacturerRepository.findAll());
-=======
 
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
+        model.addAttribute("manufacturerlist", manufacturerRepository.findAll());
+
         return "product/add";
     }
 
@@ -116,11 +111,9 @@ public class ProductController {
             model.addAttribute("producttype", ProductTypeEnum.values());
             model.addAttribute("uoms", unitsOfMeasureService.getAllUnits());
             model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(ProductStatusEnum.Active));
-<<<<<<< HEAD
-            model.addAttribute("manufacturerlist", manufacturerRepository.findAll());
-=======
 
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
+            model.addAttribute("manufacturerlist", manufacturerRepository.findAll());
+
             return "product/add";
         }
 
@@ -166,15 +159,15 @@ public class ProductController {
 
                 model.addAttribute("statuslist", ProductStatusEnum.values());
                 model.addAttribute("producttype", ProductTypeEnum.values());
-<<<<<<< HEAD
+
                 model.addAttribute("uoms", unitsOfMeasureService.getAllUnits());
                 model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(ProductStatusEnum.Active));
                 model.addAttribute("manufacturerlist", manufacturerRepository.findAll());
-=======
+
               model.addAttribute("uoms", unitsOfMeasureService.getAllUnits());
                 model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(ProductStatusEnum.Active));
 
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
+
                 redirectAttributes.addFlashAttribute("message", pic.getOriginalFilename() + " => " + e.getMessage());
                 return "redirect:/product/index";
             }
@@ -207,11 +200,13 @@ public class ProductController {
     @RequestMapping("/details/{id}")
     public String create(Model model, @PathVariable Long id, Product product) {
 
-<<<<<<< HEAD
+
         model.addAttribute("product_details", productService.all_Product_for_admin_By_Id(id));
-=======
+
         model.addAttribute("product_details", productRepository.findById(id).orElse(null));
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
+
+        model.addAttribute("product_details", productRepository.findById(id).orElse(null));
+
 
         return "product/product_details";
 
@@ -222,20 +217,20 @@ public class ProductController {
         model.addAttribute("product", productRepository.findById(id).orElse(null));
         model.addAttribute("statuslist", ProductStatusEnum.values());
         model.addAttribute("producttype", ProductTypeEnum.values());
-<<<<<<< HEAD
+
         model.addAttribute("uoms", unitsOfMeasureService.getAllUnits());
         model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(ProductStatusEnum.Active));
         model.addAttribute("manufacturerlist", manufacturerRepository.findAll());
 //        Users userss = new Users();
 //        userss.setId(loggedUserService.activeUserid());
 //        product.setUserId(userss);
-=======
+
          model.addAttribute("uoms", unitsOfMeasureService.getAllUnits());
         model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(ProductStatusEnum.Active));
         Users userss = new Users();
         userss.setId(loggedUserService.activeUserid());
         product.setUserId(userss);
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
+
         return "product/add";
     }
 
