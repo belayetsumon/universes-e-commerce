@@ -129,7 +129,7 @@ public class CustomerOrderController {
 
             for (int i = 0; i < cartitem.size(); i++) {
 
-                total += cartitem.get(i).getProduct().getPrice() * cartitem.get(i).getQuantity();
+                total += cartitem.get(i).getProduct().getSalesPrice() * cartitem.get(i).getQuantity();
             }
             return total;
         }

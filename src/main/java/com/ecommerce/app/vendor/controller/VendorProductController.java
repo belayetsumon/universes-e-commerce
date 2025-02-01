@@ -14,7 +14,6 @@ import com.ecommerce.app.module.user.services.LoggedUserService;
 
 import com.ecommerce.app.product.model.Productcategory;
 import com.ecommerce.app.product.ripository.ProductcategoryRepository;
-import com.ecommerce.app.product.ripository.ProductsubcategoryRepository;
 import com.ecommerce.app.services.StorageProperties;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -51,8 +50,6 @@ public class VendorProductController {
     @Autowired
     ProductcategoryRepository productcategoryRepository;
 
-    @Autowired
-    ProductsubcategoryRepository productsubcategoryRepository;
 
     @Autowired
     ProductRepository examRepository;
@@ -77,7 +74,7 @@ public class VendorProductController {
 
         Productcategory productcategory = new Productcategory();
         productcategory.setId(cid);
-        model.addAttribute("productsubcategorylist", productsubcategoryRepository.findByProductcategory(productcategory));
+       // model.addAttribute("productsubcategorylist", productsubcategoryRepository.findByProductcategory(productcategory));
 
         Users userss = new Users();
         userss.setId(loggedUserService.activeUserid());
@@ -97,7 +94,7 @@ public class VendorProductController {
             userss.setId(loggedUserService.activeUserid());
             exam.setUserId(userss);
             model.addAttribute("statuslist", Status.values());
-            model.addAttribute("productsubcategorylist", productsubcategoryRepository.findByStatus(Status.Active));
+        //    model.addAttribute("productsubcategorylist", productsubcategoryRepository.findByStatus(Status.Active));
             return "catalog/exam/add";
         }
 
@@ -138,7 +135,7 @@ public class VendorProductController {
 
                 model.addAttribute("statuslist", Status.values());
 
-                model.addAttribute("productsubcategorylist", productsubcategoryRepository.findByStatus(Status.Active));
+            //    model.addAttribute("productsubcategorylist", productsubcategoryRepository.findByStatus(Status.Active));
 
                 redirectAttributes.addFlashAttribute("message", pic.getOriginalFilename() + " => " + e.getMessage());
                 return "redirect:/exam/index";
@@ -180,7 +177,7 @@ public class VendorProductController {
         model.addAttribute("exam", examRepository.getReferenceById(id));
 
         model.addAttribute("statuslist", Status.values());
-        model.addAttribute("productsubcategorylist", productsubcategoryRepository.findByStatus(Status.Active));
+    //    model.addAttribute("productsubcategorylist", productsubcategoryRepository.findByStatus(Status.Active));
         return "catalog/exam/add";
     }
 

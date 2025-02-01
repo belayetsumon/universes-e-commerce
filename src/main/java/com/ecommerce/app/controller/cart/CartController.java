@@ -58,7 +58,7 @@ public class CartController {
 
             for (int i = 0; i < cartitem.size(); i++) {
 
-                subtotal += cartitem.get(i).getProduct().getPrice() * cartitem.get(i).getQuantity();
+                subtotal += cartitem.get(i).getProduct().getSalesPrice() * cartitem.get(i).getQuantity();
             }
             return subtotal;
         }
@@ -103,7 +103,6 @@ public class CartController {
 
             }
             session.setAttribute("sessioncart", shoppingcart_list);
-
         }
         return "redirect:/cart/index";
     }

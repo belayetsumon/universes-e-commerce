@@ -14,8 +14,14 @@ and open the template in the editor.
             <div class="col-sm-12">
                 <div class="card">
                     <div class="card-header">
-                        <div class="row"> <div class="col-sm-5 font-weight-bold text-danger"><i class="fas fa-list"></i> Order Details</div>
-                            <div class="col-sm-7 "> <a class="btn btn-danger btn-sm float-right" th:href="@{/customer-order/index}">Close</a></div>
+                        <div class="row">  
+                            <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i> Order Details</strong> </div>
+
+                            <div class="col-sm-7 text-end"> 
+                                <div class="btn-group ">
+                                    <a th:href="@{/customer-order/index}" type="button" class="btn  btn-danger btn-sm"><i class="bi bi-x-circle"></i> Close</a></div>
+                            </div>
+
                         </div>
                     </div>
                     <div class="card-body">
@@ -69,7 +75,7 @@ and open the template in the editor.
 
                                         <a class="btn btn-danger btn-sm float-right"  th:href="@{/customerorder/payment/{oid}(oid=${orderdetails.id})}" > Pay Now</a>
                                         <a class="btn btn-danger btn-sm float-right"  th:href="@{/customerorder/payment_success/{oid}(oid=${orderdetails.id})}" > Pay success</a>
-                                    
+
                                     </div>
                                 </div>   
 

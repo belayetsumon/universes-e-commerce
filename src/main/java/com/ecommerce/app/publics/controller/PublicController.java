@@ -25,7 +25,6 @@ import com.ecommerce.app.ripository.NewsRepository;
 import com.ecommerce.app.ripository.OurclientsRepository;
 import com.ecommerce.app.ripository.OurservicesRepository;
 import com.ecommerce.app.product.ripository.ProductcategoryRepository;
-import com.ecommerce.app.product.ripository.ProductsubcategoryRepository;
 import com.ecommerce.app.ripository.ProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -84,8 +83,7 @@ public class PublicController {
     @Autowired
     FaqRepository faqRepository;
 
-    @Autowired
-    ProductsubcategoryRepository productsubcategoryRepository;
+
 
     @Autowired
     ProductRepository examRepository;

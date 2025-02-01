@@ -30,6 +30,7 @@ public class SalesOrder {
 
     @NotNull(message = "User cannot be blank.")
     @ManyToOne(optional = true, fetch = FetchType.LAZY)
+    
     public Users customer;
 
     public double total;

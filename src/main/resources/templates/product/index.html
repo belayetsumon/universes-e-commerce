@@ -24,12 +24,25 @@ and open the template in the editor.
                 <div class="card">
                     <div class="card-header">
                         <div class="row">  
+<<<<<<< HEAD
+                            <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i> Product  List. Total Product : [[${productlist.size()}]]</strong> </div>
+=======
                             <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i> Product  List</strong> </div>
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
 
                             <div class="col-sm-7 text-end"> 
                                 <div class="btn-group ">
                                     <a class="btn btn-success btn-sm " th:href="@{/product/create}"> <i class="bi bi-plus-circle"></i> Add Product </a>
                                     <a th:href="@{/admin/index}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a></div>
+<<<<<<< HEAD
+                            </div>
+
+                        </div>
+                    </div>
+                  
+
+        
+=======
                             </div>
 
                         </div>
@@ -46,6 +59,7 @@ and open the template in the editor.
                                 </button>
                             </div>
                         </span>
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
                         
                         
                         <div class="card-body table-responsive">
@@ -56,6 +70,10 @@ and open the template in the editor.
                                         <th>Image </th>
 
                                         <th>Name</th>
+<<<<<<< HEAD
+                                        <th>UoM</th>
+=======
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
 
                                         <th>Price </th>
                                         <th>Status </th>
@@ -76,17 +94,26 @@ and open the template in the editor.
                                         <td>
                                             <a th:href="@{/product/details/{id}(id=${productlists.id})}" th:text="${productlists.title}">    </a>
                                             <br>
+<<<<<<< HEAD
+                                            <span>Cat:[[${productlists.category}]]</span>
+                                        </td>
+                                         <td th:text="${productlists.uom}">Otto</td>
+                                        <td th:text="${productlists.salesPrice}">Otto</td>
+                                        <td th:text="${productlists.status}">Otto</td>
+                                        <td><a  type="button" th:href="@{/product/details/{id}(id=${productlists.id})}">  <button class="btn btn-success btn-sm " > <i class="bi bi-eye-slash"></i> View </button>  </a></td>
+=======
                                             <span th:text="${productlists.productcategory.name}">Otto</span>
                                         </td>
                                         <td th:text="${productlists.price}">Otto</td>
                                         <td th:text="${productlists.status}">Otto</td>
                                         <td><a  type="button" th:href="@{/product/details/{id}(id=${productlists.id})}">  <button class="btn btn-success btn-sm " > <i class="bi bi-eye-slash"></i> Details </button>  </a></td>
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
 
-                    </div><!--  Card body end-->
+                    
 
 
                 </div><!--  Card  end-->
@@ -114,6 +141,31 @@ and open the template in the editor.
                 </div><!--  Card  end-->
 
 
+<<<<<<< HEAD
+=======
+            </div><!--  Main Content  end-->
+            <div class="col-sm-3">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">  
+                            <div class="col-sm-5 font-weight-bold ">  <strong><i class="fas fa-list"></i> Filter</strong> </div>
+
+
+
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+
+
+                    </div><!--  Card body end-->
+
+
+                </div><!--  Card  end-->
+
+
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
             </div>
         </div>   <!--  Layout end-->      </div><!--  Main Content  end-->
 </div>

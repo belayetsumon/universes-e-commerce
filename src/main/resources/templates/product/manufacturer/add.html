@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment = "main_content">
+        <section> 
+            <div class="row">
+                <div class="col-sm-1"><h4> Product</h4></div>
+                <div class="col-sm-5">   <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item " aria-current="page">Product</li>
+                            <li class="breadcrumb-item " aria-current="page">Manufacturer</li>
+                            <li class="breadcrumb-item active" aria-current="page">Add</li>
+                        </ol>
+                    </nav>
+                </div></div>
+        </section>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">  
+                            <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i> Manufacturer  Add</strong> </div>
+
+                            <div class="col-sm-7 text-end"> 
+                                <div class="btn-group ">
+
+                                    <a th:href="@{/manufacturer/list}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a></div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+
+                        <form th:action="@{/manufacturer/save}" th:object="${manufacturer}" enctype="multipart/form-data" method="post" >
+
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${#fields.hasErrors('*')}">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                <h4><i class="icon fa fa-ban"></i> Error </h4>
+                                <ul th:if="${#fields.hasErrors('*')}">
+                                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
+                                </ul>
+                            </div>
+
+                            <div class="row" th:if="${!#strings.isEmpty(success)}"> 
+                                <span  class="text-success"th:text="success"> </span>
+                            </div> 
+
+                            <div class="form-group">
+                                <input type="hidden" class="form-control"  th:field="*{id}" />
+
+                            </div>
+
+                            <div class="form-group col-sm-6">
+                                <label for="exampleInputEmail1" class="col-md-5"> Name :<span class="text-danger"> *</span></label>
+                                <input type="text"  minlength=" 2 "class="form-control " th:field="*{name}" aria-describedby="emailHelp" placeholder="Enter name" required="true">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Book Name</span>
+                            </div>     
+
+                        
+
+                            <div class="form-group col-sm-6">
+
+                                <label for="accept">
+                                    <input type="checkbox" id="accept" th:field="*{featuredManufacturer}" /> 
+
+                                    Featured Manufacturer
+
+                                </label>
+                            </div>
+                            <div class="form-group col-sm-6">
+                                <label for="exampleInputEmail1 col-sm-5">Order Position No:<span class="text-danger"> </span></label>
+                                <input type="number"  class="form-control col-sm-5" th:field="*{orderno}" aria-describedby="emailHelp" placeholder="Enter no">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('orderno')}" th:errors="*{orderno}">Book Name</span>
+                            </div>
+
+                            <div class="form-group col-sm-6">
+                                <label for="exampleInputEmail1 col-sm-5">Discount By Category(%):<span class="text-danger"> </span></label>
+                                <input type="number"   min="0"class="form-control col-sm-5" th:field="*{discount}" aria-describedby="emailHelp" placeholder="Enter no">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('discount')}" th:errors="*{discount}">Book Name</span>
+                            </div>
+
+                            <div class="form-group col-sm-6">
+                                <label for="exampleInputEmail1 col-sm-5">Discount Start Date:<span class="text-danger"> </span></label>
+                                <input  type="datetime-local"    min="0" class="form-control col-sm-5" th:field="*{discountStartDate}" aria-describedby="emailHelp" placeholder="DD/MM/YYYY">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('discountStartDate')}" th:errors="*{discountStartDate}">Book Name</span>
+                            </div>
+
+                            <div class="form-group col-sm-6">
+                                <label for="exampleInputEmail1 col-sm-5">Discount End Date:<span class="text-danger"> </span></label>
+                                <input type="text"   min="0"class="form-control col-sm-5" id="discountEndDate" th:field="*{discountEndDate}" aria-describedby="emailHelp" placeholder="DD/MM/YYYY">
+
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('discountEndDate')}" th:errors="*{discountEndDate}">Book Name</span>
+                            </div>
+
+                            <div class="form-group col-sm-6">
+                                <label for="exampleInputEmail1">Description:<span class="text-danger"> </span></label>
+                                <textarea type="text"  rows="10" class="form-control col-sm-5" th:field="*{description}" aria-describedby="emailHelp" placeholder="Enter Description"></textarea>
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Book Name</span>
+                            </div>
+
+
+
+                            <div class="form-group col-sm-6">
+                                <label for="exampleInputEmail1">Status<span class="text-danger"> *</span></label>
+                                <select id="inputState" class="form-control col-sm-3"  th:field="*{status}">
+                                    <option value=" "> Select one</option>              
+                                    <option th:each =" status : ${statuslist}"
+                                            th:value="${status} " 
+                                            th:text="${status}"> Select one</option>
+                                </select>
+                            </div>
+
+
+                            <div class="form-group col-sm-6">
+                                <label for="exampleInputEmail1">Image<span class="text-danger"> </span></label>
+                                <input type="hidden"  th:value="${manufacturer.imageName}">
+
+                                <input type="file" id="catimagefile" minlength=" 5 "class="form-control col-sm-5" name="pic" aria-describedby="emailHelp">
+                                <img id="catimagePreview" alt="Image Preview" style="max-width: 300px; margin-top: 10px; display: none;" />                
+
+                                <div>   <button type="button" id="catDeleteImageBtn"  class="btn btn-danger btn-sm"style="display:none; margin-top: 10px;">Delete Preview</button></div>
+                                <div id="catimageInfo" style="margin-top: 10px;"></div>
+                                <div id="#catimage_error_message" style="color: red;"></div>
+                            </div>
+
+
+
+
+                            <div class=" col-sm-6 text-center">
+                                <button type="submit" class="btn btn-success m-4">  <i class="bi bi-check-circle"></i> Save </button>
+                            </div>
+                        </form>
+
+                    </div><!--  Card body end-->
+                </div><!--  Card  end-->
+
+
+            </div><!--  Main Content  end-->
+
+        </div>   <!--  Layout end-->      </div><!--  Main Content  end-->
+</div>

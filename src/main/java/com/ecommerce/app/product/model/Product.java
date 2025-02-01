@@ -51,7 +51,10 @@ public class Product implements Serializable {
     private Users userId;
 
     @ManyToOne(optional = true, fetch = FetchType.LAZY)
+<<<<<<< HEAD
+=======
     @JoinColumn(nullable = true)
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
     private Vendorprofile vendorprofile;
 
 //    @NotNull(message = "Please select minimum one sub category")
@@ -62,10 +65,15 @@ public class Product implements Serializable {
 //
 //    private Set<Productsubcategory> productsubcategory;
     @NotNull(message = "Product category cannot be blank.")
-    @ManyToOne(optional = true, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Productcategory productcategory;
 
+    @ManyToOne(optional = true, fetch = FetchType.LAZY)
+    private Manufacturer manufacturer;
+
     @NotBlank(message = "Title  is required.")
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String title;
 
     private String slug;
@@ -83,10 +91,15 @@ public class Product implements Serializable {
     @Lob
     private String video;
 
+<<<<<<< HEAD
+    private double purchasePrice;
+    @NotNull(message = " Sales price is required.")
+=======
     private double price;
 
     private double purchasePrice;
 
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
     private double salesPrice;
 
     private double companyProfit;
@@ -104,7 +117,12 @@ public class Product implements Serializable {
     @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime discountEndDate;
 
+<<<<<<< HEAD
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @NotNull(message = "UOM is required.")
+=======
     @ManyToOne(optional = true, fetch = FetchType.LAZY)
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
     private Unitofmeasurement uom;
 
     private String imageName;
@@ -117,18 +135,27 @@ public class Product implements Serializable {
 
     private Boolean emiavailable;
 
+    private Boolean onlineShow;
+
     @NotNull(message = "Status is required.")
     @Enumerated(EnumType.STRING)
     private ProductStatusEnum status;
 
     // meta description
+<<<<<<< HEAD
+    @Lob
+    @Column(columnDefinition = "TEXT")
+=======
     @Lob()
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
     private String metaTitle;
 
     @Lob
+    @Column(columnDefinition = "TEXT")
     private String metaDescription;
 
     @Lob
+    @Column(columnDefinition = "TEXT")
     private String metaKeywords;
 
     /// Audit /// 
@@ -151,19 +178,27 @@ public class Product implements Serializable {
     public Product() {
     }
 
+<<<<<<< HEAD
+    public Product(Long id, int sku, Users userId, Vendorprofile vendorprofile, Productcategory productcategory, Manufacturer manufacturer, String title, String slug, int orderno, String shortDescription, String description, String video, double purchasePrice, double salesPrice, double companyProfit, ProductTypeEnum productType, double companyDiscount, double vendordiscount, LocalDate discountStartDate, LocalDate discountEndDate, Unitofmeasurement uom, String imageName, Boolean newProduct, Boolean featuredProduct, Boolean manageStock, Boolean emiavailable, Boolean onlineShow, ProductStatusEnum status, String metaTitle, String metaDescription, String metaKeywords, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
+=======
     public Product(Long id, int sku, Users userId, Vendorprofile vendorprofile, Productcategory productcategory, String title, String slug, int orderno, String shortDescription, String description, String video, double price, double purchasePrice, double salesPrice, double companyProfit, ProductTypeEnum productType, double companyDiscount, double vendordiscount, LocalDateTime discountStartDate, LocalDateTime discountEndDate, Unitofmeasurement uom, String imageName, Boolean newProduct, Boolean featuredProduct, Boolean manageStock, Boolean emiavailable, ProductStatusEnum status, String metaTitle, String metaDescription, String metaKeywords, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
         this.id = id;
         this.sku = sku;
         this.userId = userId;
         this.vendorprofile = vendorprofile;
         this.productcategory = productcategory;
+        this.manufacturer = manufacturer;
         this.title = title;
         this.slug = slug;
         this.orderno = orderno;
         this.shortDescription = shortDescription;
         this.description = description;
         this.video = video;
+<<<<<<< HEAD
+=======
         this.price = price;
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
         this.purchasePrice = purchasePrice;
         this.salesPrice = salesPrice;
         this.companyProfit = companyProfit;
@@ -178,6 +213,7 @@ public class Product implements Serializable {
         this.featuredProduct = featuredProduct;
         this.manageStock = manageStock;
         this.emiavailable = emiavailable;
+        this.onlineShow = onlineShow;
         this.status = status;
         this.metaTitle = metaTitle;
         this.metaDescription = metaDescription;
@@ -228,6 +264,14 @@ public class Product implements Serializable {
         this.productcategory = productcategory;
     }
 
+    public Manufacturer getManufacturer() {
+        return manufacturer;
+    }
+
+    public void setManufacturer(Manufacturer manufacturer) {
+        this.manufacturer = manufacturer;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -276,14 +320,20 @@ public class Product implements Serializable {
         this.video = video;
     }
 
-    public double getPrice() {
-        return price;
+    public double getPurchasePrice() {
+        return purchasePrice;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
+    public void setPurchasePrice(double purchasePrice) {
+        this.purchasePrice = purchasePrice;
     }
 
+<<<<<<< HEAD
+    public double getSalesPrice() {
+        return salesPrice;
+    }
+
+=======
     public double getPurchasePrice() {
         return purchasePrice;
     }
@@ -296,6 +346,7 @@ public class Product implements Serializable {
         return salesPrice;
     }
 
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
     public void setSalesPrice(double salesPrice) {
         this.salesPrice = salesPrice;
     }
@@ -396,6 +447,17 @@ public class Product implements Serializable {
         this.emiavailable = emiavailable;
     }
 
+<<<<<<< HEAD
+    public Boolean getOnlineShow() {
+        return onlineShow;
+    }
+
+    public void setOnlineShow(Boolean onlineShow) {
+        this.onlineShow = onlineShow;
+    }
+
+=======
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
     public ProductStatusEnum getStatus() {
         return status;
     }
@@ -459,4 +521,5 @@ public class Product implements Serializable {
     public void setModified(LocalDateTime modified) {
         this.modified = modified;
     }
+
 }

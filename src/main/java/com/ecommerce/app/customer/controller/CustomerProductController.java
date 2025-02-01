@@ -10,7 +10,6 @@ import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.services.LoggedUserService;
 import com.ecommerce.app.order.model.OrderStatus;
 import com.ecommerce.app.product.ripository.ProductcategoryRepository;
-import com.ecommerce.app.product.ripository.ProductsubcategoryRepository;
 import com.ecommerce.app.services.StorageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,8 +38,6 @@ public class CustomerProductController {
     @Autowired
     ProductcategoryRepository productcategoryRepository;
 
-    @Autowired
-    ProductsubcategoryRepository productsubcategoryRepository;
 
     @Autowired
     ProductRepository examRepository;

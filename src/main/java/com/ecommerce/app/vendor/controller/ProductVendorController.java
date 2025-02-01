@@ -11,7 +11,6 @@ import com.ecommerce.app.module.user.services.LoggedUserService;
 import com.ecommerce.app.product.model.Product;
 
 import com.ecommerce.app.product.ripository.ProductcategoryRepository;
-import com.ecommerce.app.product.ripository.ProductsubcategoryRepository;
 import com.ecommerce.app.services.StorageProperties;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -48,8 +47,7 @@ public class ProductVendorController {
     @Autowired
     ProductcategoryRepository productcategoryRepository;
 
-    @Autowired
-    ProductsubcategoryRepository productsubcategoryRepository;
+ 
 
     @Autowired
     ProductRepository productRepository;

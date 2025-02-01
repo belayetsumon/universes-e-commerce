@@ -1,28 +1,37 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.ecommerce.app.product.model;
 
-import jakarta.persistence.*;
-import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.List;
-import org.springframework.data.annotation.*;
-import org.springframework.data.jpa.domain.support.*;
-import org.springframework.format.annotation.DateTimeFormat;
-
 /**
  *
- * @author User
+ * @author libertyerp_local
  */
+import jakarta.persistence.Entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.format.annotation.DateTimeFormat;
+
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-public class Productcategory implements Serializable {
+public class Manufacturer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,34 +44,24 @@ public class Productcategory implements Serializable {
 
     private int orderno;
 
-    @Lob
-    private String description;
-
     private String imageName;
+
+    private Boolean featuredManufacturer;
 
     private double discount;
 
-    private Boolean featuredCat;
-<<<<<<< HEAD
+    @Lob
+    private String description;
 
     @DateTimeFormat(pattern = "dd-MM-yyyy")
     private LocalDate discountStartDate;
-=======
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
 
-    @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm:ss")
-    private LocalDateTime discountStartDate;
-
-    @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm:ss")
-    private LocalDateTime discountEndDate;
+    @DateTimeFormat(pattern = "dd-MM-yyyy")
+    private LocalDate discountEndDate;
 
     @NotNull(message = "Status is required.")
     @Enumerated(EnumType.STRING)
     private ProductStatusEnum status;
-
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "parent")
-    private Productcategory parent;
 
     /// Audit /// 
     @CreatedBy
@@ -81,35 +80,25 @@ public class Productcategory implements Serializable {
     @Column(insertable = false)
     private LocalDateTime modified;
 
-    /// End Audit //// 
-    @OneToMany(mappedBy = "parent")
-    private List<Productcategory> children;
-
-    public Productcategory() {
+    public Manufacturer() {
     }
 
-<<<<<<< HEAD
-    public Productcategory(Long id, String name, String slug, int orderno, String description, String imageName, double discount, Boolean featuredCat, LocalDate discountStartDate, LocalDate discountEndDate, ProductStatusEnum status, Productcategory parent, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified, List<Productcategory> children) {
-=======
-    public Productcategory(Long id, String name, String slug, int orderno, String description, String imageName, double discount, Boolean featuredCat, LocalDateTime discountStartDate, LocalDateTime discountEndDate, ProductStatusEnum status, Productcategory parent, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified, List<Productcategory> children) {
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
+    public Manufacturer(Long id, String name, String slug, int orderno, String imageName, Boolean featuredManufacturer, double discount, String description, LocalDate discountStartDate, LocalDate discountEndDate, ProductStatusEnum status, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
         this.id = id;
         this.name = name;
         this.slug = slug;
         this.orderno = orderno;
-        this.description = description;
         this.imageName = imageName;
+        this.featuredManufacturer = featuredManufacturer;
         this.discount = discount;
-        this.featuredCat = featuredCat;
+        this.description = description;
         this.discountStartDate = discountStartDate;
         this.discountEndDate = discountEndDate;
         this.status = status;
-        this.parent = parent;
         this.createdBy = createdBy;
         this.created = created;
         this.modifiedBy = modifiedBy;
         this.modified = modified;
-        this.children = children;
     }
 
     public Long getId() {
@@ -144,20 +133,20 @@ public class Productcategory implements Serializable {
         this.orderno = orderno;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public String getImageName() {
         return imageName;
     }
 
     public void setImageName(String imageName) {
         this.imageName = imageName;
+    }
+
+    public Boolean getFeaturedManufacturer() {
+        return featuredManufacturer;
+    }
+
+    public void setFeaturedManufacturer(Boolean featuredManufacturer) {
+        this.featuredManufacturer = featuredManufacturer;
     }
 
     public double getDiscount() {
@@ -168,31 +157,27 @@ public class Productcategory implements Serializable {
         this.discount = discount;
     }
 
-    public Boolean getFeaturedCat() {
-        return featuredCat;
+    public String getDescription() {
+        return description;
     }
 
-    public void setFeaturedCat(Boolean featuredCat) {
-        this.featuredCat = featuredCat;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-<<<<<<< HEAD
     public LocalDate getDiscountStartDate() {
-=======
-    public LocalDateTime getDiscountStartDate() {
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
         return discountStartDate;
     }
 
-    public void setDiscountStartDate(LocalDateTime discountStartDate) {
+    public void setDiscountStartDate(LocalDate discountStartDate) {
         this.discountStartDate = discountStartDate;
     }
 
-    public LocalDateTime getDiscountEndDate() {
+    public LocalDate getDiscountEndDate() {
         return discountEndDate;
     }
 
-    public void setDiscountEndDate(LocalDateTime discountEndDate) {
+    public void setDiscountEndDate(LocalDate discountEndDate) {
         this.discountEndDate = discountEndDate;
     }
 
@@ -202,14 +187,6 @@ public class Productcategory implements Serializable {
 
     public void setStatus(ProductStatusEnum status) {
         this.status = status;
-    }
-
-    public Productcategory getParent() {
-        return parent;
-    }
-
-    public void setParent(Productcategory parent) {
-        this.parent = parent;
     }
 
     public String getCreatedBy() {
@@ -243,17 +220,5 @@ public class Productcategory implements Serializable {
     public void setModified(LocalDateTime modified) {
         this.modified = modified;
     }
-
-    public List<Productcategory> getChildren() {
-        return children;
-    }
-
-    public void setChildren(List<Productcategory> children) {
-        this.children = children;
-    }
-
-<<<<<<< HEAD
-=======
-    
->>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
+  
 }

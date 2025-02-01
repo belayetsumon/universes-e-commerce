@@ -30,28 +30,33 @@ and open the template in the editor.
                             </div>
                         </span>
 
+                
                         <table class="table table-bordered" th:if="${ not #lists.isEmpty(orderlist)}">
                             <thead class="thead-light">
                                 <tr>
                                     <th scope="col">#</th>
                                     <th scope="col">Customer</th>
-                                   <th scope="col">Exam Name</th>
+                                    <th scope="col">Mobile</th>
+                                    <th scope="col">Email</th>
                                     <th scope="col"> Status </th>
-                                    <th scope="col"> Price/Taka </th>
+                                    <th scope="col"> Total </th>
                                     <th scope="col"> Date Added </th>
                                     <th scope="col"> Date Modified </th>
+                                     <th scope="col">Details </th>
                                 </tr>
                             </thead>
                             <tbody>
 
                                 <tr th:each="orderlists,status:${orderlist}">
                                     <th th:text="${status.count}">1</th>
-                                    <td> <a   th:text="${orderlists.customer.name}">    </a></td>
-                                   <td> <a  th:href="@{/customerorder/details/{oid}(oid=${orderlists.id})}" th:text="${orderlists.customer.name}">    </a></td>
+                                    <td> <a  th:href="@{/order/details/{oid}(oid=${orderlists.id})}" th:text="${orderlists.customer.name}">    </a></td>
+                                    <td th:text="${orderlists.customer.mobile}">Otto</td>
+                                    <td th:text="${orderlists.customer.email}">Otto</td>
                                     <td th:text="${orderlists.status}">Otto</td>
                                     <td th:text="${orderlists.total}">Otto</td>
                                     <td th:text="${orderlists.created}">Otto</td>
                                     <td th:text="${orderlists.modified}">@mdo</td>
+                                     <td> <a  th:href="@{/order/details/{oid}(oid=${orderlists.id})}">   Details </a> </td>
                                 </tr>
                             </tbody>
                         </table>

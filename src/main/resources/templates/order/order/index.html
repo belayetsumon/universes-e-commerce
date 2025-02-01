@@ -41,6 +41,7 @@ and open the template in the editor.
                                     <th scope="col"> Total </th>
                                     <th scope="col"> Date Added </th>
                                     <th scope="col"> Date Modified </th>
+                                     <th scope="col">Details </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -50,19 +51,19 @@ and open the template in the editor.
                                     <td> <a  th:href="@{/order/details/{oid}(oid=${orderlists.id})}" th:text="${orderlists.customer.name}">    </a></td>
                                     <td th:text="${orderlists.customer.mobile}">Otto</td>
                                     <td th:text="${orderlists.customer.email}">Otto</td>
-                                         <td th:text="${orderlists.status}">Otto</td>
+                                    <td th:text="${orderlists.status}">Otto</td>
                                     <td th:text="${orderlists.total}">Otto</td>
                                     <td th:text="${orderlists.created}">Otto</td>
                                     <td th:text="${orderlists.modified}">@mdo</td>
+                                     <td> @mdo </td>
                                 </tr>
                             </tbody>
                         </table>
+                        
                         <table class="table table-bordered" th:if="${ #lists.isEmpty(orderlist)}">
                             <tr>
                                 <td> Sorry no order found ! </td>
                             </tr>
-
-
                         </table>
 
 
@@ -75,4 +76,4 @@ and open the template in the editor.
             </div><!--  Main Content  end-->
 
         </div>   <!--  Layout end-->
-            </div>    </div>
+    </div>    </div>

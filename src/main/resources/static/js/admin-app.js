@@ -152,7 +152,11 @@ $(document).ready(function () {
     }
 
     // Call the function on page load for product image upload
+<<<<<<< HEAD
+   /* validateImageUpload(
+=======
     validateImageUpload(
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
             '#imagefile', // Input file selector
             '#image_error_message', // Error message selector
             '#imagePreview', // Image preview selector
@@ -162,10 +166,17 @@ $(document).ready(function () {
             '#uploadForm', // Form ID
             30, // Minimum file size (KB)
             1                          // Maximum file size (MB)
+<<<<<<< HEAD
+            );*/
+
+    // Call the function on page load for category image upload
+ /*   validateImageUpload(
+=======
             );
 
     // Call the function on page load for category image upload
     validateImageUpload(
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
             '#catimagefile', // Input file selector
             '#catimage_error_message', // Error message selector
             '#catimagePreview', // Image preview selector
@@ -175,7 +186,11 @@ $(document).ready(function () {
             '#catUploadForm', // Form ID
             30, // Minimum file size (KB)
             1                          // Maximum file size (MB)
+<<<<<<< HEAD
+            ); */
+=======
             );
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
 });
 
 

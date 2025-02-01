@@ -8,13 +8,19 @@ package com.ecommerce.app.product.controller;
 import com.ecommerce.app.globalComponant.SlagGenerator;
 import com.ecommerce.app.model.enumvalue.Status;
 import com.ecommerce.app.product.model.ProductStatusEnum;
+<<<<<<< HEAD
+=======
 import com.ecommerce.app.product.model.ProductTypeEnum;
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
 import com.ecommerce.app.product.model.Productcategory;
 import com.ecommerce.app.product.ripository.ProductcategoryRepository;
+import com.ecommerce.app.product.services.ProductcategoryService;
 import com.ecommerce.app.services.StorageProperties;
 import jakarta.validation.Valid;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.imageio.ImageIO;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,17 +52,61 @@ public class ProductcategoryController {
     @Autowired
     private SlagGenerator slagGenerator;
 
+<<<<<<< HEAD
+    @Autowired
+    ProductcategoryService productcategoryService;
+
+=======
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
     @RequestMapping(value = {"", "/", "/index"})
     public String index(Model model) {
-        model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
+        // model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
+
+        // Retrieve all root-level categories (those with no parent)
+        List<Productcategory> rootCategories = productcategoryRepository.findAll();
+        // Add root categories to the model
+        model.addAttribute("categories", rootCategories);
+//        List<Productcategory> rootNodes = productcategoryService.getRootNodes();
+//
+//        List<String> paths = new ArrayList<>();
+//        List<Productcategory> treeData = productcategoryRepository.findAll();
+//
+//        // Generate all paths starting from the root nodes
+//        for (Productcategory rootNode : treeData) {
+//            generatePaths(rootNode, "", paths);
+//        }
+//
+//        model.addAttribute("rootNodes", paths);
+
         return "product/productcategory/index";
+    }
+
+    // Recursive function to generate all paths
+    private void generatePaths(Productcategory node, String currentPath, List<String> paths) {
+        // Add current node to the path
+        String path = currentPath.isEmpty() ? node.getName() : currentPath + " → " + node.getName();
+        paths.add(path);
+
+        // If the node has children, recursively generate paths for them
+        if (node.getChildren() != null) {
+            for (Productcategory child : node.getChildren()) {
+                generatePaths(child, path, paths);
+            }
+        }
     }
 
     @RequestMapping("/create")
     public String create(Model model, Productcategory productcategory) {
 
+<<<<<<< HEAD
+        model.addAttribute("statuslist", ProductStatusEnum.values());
+=======
         model.addAttribute("statuslist",  ProductStatusEnum.values());
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
         model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
+
+        List<Productcategory> rootCategories = productcategoryRepository.findByParentIsNull();
+        model.addAttribute("categories", rootCategories);
 
         return "product/productcategory/add";
     }
@@ -67,7 +117,11 @@ public class ProductcategoryController {
     ) {
 
         if (bindingResult.hasErrors()) {
+<<<<<<< HEAD
+            model.addAttribute("statuslist", ProductStatusEnum.values());
+=======
           model.addAttribute("statuslist",  ProductStatusEnum.values());
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
             model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
             return "product/productcategory/add";
         }
@@ -140,10 +194,17 @@ public class ProductcategoryController {
 
     @RequestMapping("/edit/{id}")
     public String edit(Model model, @PathVariable Long id, Productcategory productcategory) {
+<<<<<<< HEAD
+
+        model.addAttribute("productcategory", productcategoryRepository.findById(id).orElse(null));
+        model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
+        model.addAttribute("statuslist", ProductStatusEnum.values());
+=======
         
         model.addAttribute("productcategory", productcategoryRepository.findById(id).orElse(null));
         model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
         model.addAttribute("statuslist",  ProductStatusEnum.values());
+>>>>>>> 8be69ac5b0b4aff187039abad5bb6d2f07da813f
         return "product/productcategory/add";
     }
 
@@ -155,6 +216,19 @@ public class ProductcategoryController {
         productcategoryRepository.deleteById(id);
         redirectAttributes.addFlashAttribute("message", "Deleted successfully.");
         return "redirect:/productcategory/index";
+    }
+
+    public List<Productcategory> getAllParents(Productcategory category) {
+        List<Productcategory> parents = new ArrayList<>();
+        Productcategory currentCategory = category;
+
+        // Traverse up the parent hierarchy
+        while (currentCategory != null && currentCategory.getParent() != null) {
+            currentCategory = currentCategory.getParent(); // Move to the parent category
+            parents.add(currentCategory); // Add the parent to the list
+        }
+
+        return parents;
     }
 
 }
