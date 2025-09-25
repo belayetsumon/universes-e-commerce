@@ -1,0 +1,58 @@
+<div class="modal-header">
+    <h1 class="modal-title fs-5" id="exampleModalLabel">Add/Edit Delivery Timeline</h1>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+
+    <form 
+        th:hx-post="@{/deliverytimeline/save}" 
+        hx-trigger="submit"
+        hx-target="body"
+        hx-swap="outerHTML"
+        method="post"
+        enctype="multipart/form-data" 
+        th:object="${deliveryTimeline}">
+
+        <div class="form-group">
+            <input type="hidden" class="form-control" th:field="*{id}" >
+            <input type="hidden" class="form-control" th:field="*{product}" >
+        </div>
+
+        <!--        <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <select class="form-control" th:field="*{transactionsType}" required="true" >
+                        <option value=""> Select one</option>
+                        <option th:each =" lists :${list}"
+                                th:value=" ${lists.id}" 
+                                th:text="${lists.name}"> Select one</option>
+                    </select>
+                </div>-->
+    <div class="mb-3">
+            <label class="form-label">Delivery Area </label>
+            <textarea  min="0" class="form-control" th:field="*{deliveryArea}" required></textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Estimated Timeline</label>
+            <textarea  min="0" class="form-control" th:field="*{estimatedTimeline}" required></textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea  min="0" class="form-control" th:field="*{description}" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <p class="text-muted"> Example: Dhaka 24 hr. Out of dhaka 3 days. </p>
+
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Close</button>
+            <button type="submit" class="btn btn-success">Submit</button>
+        </div>
+
+    </form> 
+</div>
+
+
+
+

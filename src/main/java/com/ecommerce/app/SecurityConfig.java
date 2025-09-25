@@ -6,8 +6,6 @@
 package com.ecommerce.app;
 
 import com.ecommerce.app.module.user.componant.CustomLoginSuccessHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 import org.springframework.security.authentication.*;
@@ -36,10 +34,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-//     @Bean
-//    public PasswordEncoder getPasswordEncoder() {
-//        return NoOpPasswordEncoder.getInstance();
-//    }
+
     @Bean
     public AuthenticationManager authenticationManager(
             HttpSecurity httpSecurity, UserDetailsService userDetailsService, BCryptPasswordEncoder bCryptPasswordEncoder) throws Exception {
@@ -52,44 +47,37 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http 
-                .authorizeHttpRequests(auth -> {
-            try {
-                auth
-                        .requestMatchers(
-                                "/", "/public/**", "/order/create",
-                                "/users/uregistrations", "/users/usave",
-                                "/users/userforgotpassword",
-                                "/forgotpassword/**").permitAll()
-                        .requestMatchers("/users/frontRegistrationSave").permitAll()
-                        //.antMatchers("/dashboards/index").hasRole("admin")
-                        .anyRequest().authenticated()
-                        .and()
-                        .formLogin()
-                        .loginPage("/public/member-login")
-                        .successHandler(customLoginSuccessHandler)
-                        //.defaultSuccessUrl("/", true)
-                        .usernameParameter("username")
-                        .passwordParameter("password")
-                        //                .failureUrl("/login?error=true")
-                        .permitAll()
-                        .and()
-                        .logout().logoutUrl("/users/logout")
-                        .logoutSuccessUrl("/public/member-login")
-                        .deleteCookies("JSESSIONID")
-                        .invalidateHttpSession(true)
-                        .and()
-                        .exceptionHandling()
-                        .accessDeniedPage("/access-denied");
-            } catch (Exception ex) {
-                Logger.getLogger(SecurityConfig.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        });
+        http
+            .csrf(csrf -> csrf.disable()) // Disable CSRF if not needed
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                    "/", "/public/**","/cart/**",
+                    "/users/uregistrations", "/users/usave",
+                    "/users/userforgotpassword", "/forgotpassword/**"
+                ).permitAll()
+                .requestMatchers("/users/frontRegistrationSave").permitAll()
+                .anyRequest().authenticated()
+            )
+            .formLogin(login -> login
+                .loginPage("/public/member-login")
+                .successHandler(customLoginSuccessHandler)
+                .usernameParameter("username")
+                .passwordParameter("password")
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutUrl("/users/logout")
+                .logoutSuccessUrl("/public/member-login")
+                .deleteCookies("JSESSIONID")
+                .invalidateHttpSession(true)
+            )
+            .exceptionHandling(ex -> ex
+                .accessDeniedPage("/access-denied")
+            );
 
-        http.csrf().disable();
         return http.build();
-
     }
+
 
     @Bean
     public WebSecurityCustomizer ignoringCustomizer() {

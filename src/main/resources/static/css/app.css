@@ -2,7 +2,7 @@
 
 body{
     font-family: 'Roboto', sans-serif;
-    font-size: 12px;
+
 }
 
 
@@ -34,86 +34,12 @@ body{
 }
 
 
-
-
-/*.textRed{ color:#ff6347;}*/
-
-.textMaroon{ color:#992337; }
-.bgMaroon {
-    background-color: #992337;    
-}
-.borderColor{
-    border-color: #992337;    
-}
-
-
 .banner{
-    background: url(../img/slide-1.jpg) no-repeat center center fixed; 
+    background: url(../img/slide-1.jpg) no-repeat center center fixed;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;
     background-size: cover;
     min-height: 300px;
-
-}
-
-
-/*==================================================
- * Effect 7
- * ===============================================*/
-.effect7
-{
-    position:relative;
-    -webkit-box-shadow:0 1px 6px 0 rgba(32,33,36,0.28) ;
-    -moz-box-shadow:0 1px 6px 0 rgba(32,33,36,0.28) ;
-    box-shadow:0 1px 6px 0 rgba(32,33,36,0.28) ;
-    min-height: 340px;
-}
-
-/*================================================== */
-
-.home_test{
-    -webkit-box-shadow:0 1px 6px 0 rgba(32,33,36,0.28) ;
-    -moz-box-shadow:0 1px 6px 0 rgba(32,33,36,0.28) ;
-    box-shadow:0 1px 6px 0 rgba(32,33,36,0.28) ;
-    min-height: 350px;
-}
-
-
-.home_box_effect{
-
-    -webkit-box-shadow:0 1px 6px 0 rgba(32,33,36,0.28) ;
-    -moz-box-shadow:0 1px 6px 0 rgba(32,33,36,0.28) ;
-    box-shadow:0 1px 6px 0 rgba(32,33,36,0.28) ;
-    min-height: 150px;
-
-}
-
-
-.home_job_left{
-
-    background: url(../img/competition.png) no-repeat center center; 
-    background-size: cover;
-
-}
-.home_university_left{
-
-    background: url(../img/bg8.jpg) no-repeat center center; 
-    background-size: cover;
-
-}
-
-
-.home_hsc_left{
-
-    background: url(../img/hsc.jpeg) no-repeat center center; 
-    background-size: cover;
-
-}
-
-.home_ssc_left{
-
-    background: url(../img/ssc.jpg) no-repeat center center; 
-    background-size: cover;
 
 }

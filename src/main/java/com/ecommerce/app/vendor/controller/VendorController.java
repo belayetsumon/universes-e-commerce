@@ -5,13 +5,21 @@
  */
 package com.ecommerce.app.vendor.controller;
 
-import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.services.LoggedUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import com.ecommerce.app.order.repository.SalesOrderRepository;
+import com.ecommerce.app.vendor.model.VendorTransactionStatusEnum;
+import com.ecommerce.app.vendor.model.Vendorprofile;
+import com.ecommerce.app.vendor.repository.VendorprofileRepository;
+import com.ecommerce.app.vendor.services.VendorFinanceService;
+import com.ecommerce.app.vendor.user.componant.VendorUserContext;
+import java.math.BigDecimal;
+import java.util.EnumMap;
+import java.util.Optional;
+import org.springframework.web.bind.annotation.PathVariable;
 
 /**
  *
@@ -28,38 +36,35 @@ public class VendorController {
     @Autowired
     SalesOrderRepository salesOrderRepository;
 
-  
+    @Autowired
+    VendorprofileRepository vendorprofileRepository;
 
-    @RequestMapping(value = {"", "/", "/index", "dashboards"})
-    public String index(Model model) {
-        model.addAttribute("attribute", "value");
+    @Autowired
+    private VendorUserContext vendorUserContext;
 
-        Users userId = new Users();
-        userId.setId(loggedUserService.activeUserid());
-        // model.addAttribute("orderlist", salesOrderRepository.findByCustomer(userId));
+    @Autowired
+    VendorFinanceService vendorFinanceService;
 
-//        Pageable pageable = new PageRequest(0, 20, Sort.Direction.DESC, "id");
-//
-//        List<Exam> totalexamsales = examRepository.findByUserIdAndOrderItemSalesOrderStatus(pageable, userId, OrderStatus.Complete);
+    @RequestMapping(value = {"/home"})
+    public String home() {
+        Long id = vendorUserContext.getActiveVendor().getId();
+        return "redirect:/vendor/index/" + id;
+    }
 
-//        double totalincome = 0.00;
-//
-//        if (!totalexamsales.isEmpty()) {
-//
-//            for (int i = 0; i < totalexamsales.size(); i++) {
-//
-//                totalincome += totalexamsales.get(i).getPrice();
-//            }
-//        } else {
-//
-//            totalincome = 0.00;
-//        }
-//
-//        int income = (int) (totalincome * 30 / 100);
-//
-//        
-//        model.addAttribute("totalincome", income);
-//        
+    @RequestMapping(value = {"/{id}", "/{id}", "/index/{id}", "/dashboards/{id}"})
+    public String index(Model model, @PathVariable Long id) {
+        vendorUserContext.setActiveVendor(null);
+        Optional<Vendorprofile> vendorprofile = vendorprofileRepository.findById(id);
+        Vendorprofile vendorprofiles = vendorprofile.get();
+        vendorUserContext.setActiveVendor(vendorprofiles);
+        EnumMap<VendorTransactionStatusEnum, BigDecimal> balance = vendorFinanceService
+                .getVendorBalance(id);
+
+        model.addAttribute("pending", balance.get(VendorTransactionStatusEnum.PENDING));
+        model.addAttribute("available", balance.get(VendorTransactionStatusEnum.AVAILABLE));
+        model.addAttribute("paid", balance.get(VendorTransactionStatusEnum.PAID));
+        model.addAttribute("vendorprofile", vendorUserContext.getActiveVendor());
+
         return "vendor/dashboards";
     }
 

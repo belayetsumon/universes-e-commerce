@@ -2,313 +2,635 @@
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-home">
     <div layout:fragment = "main_content">
 
-        <div class="container-fluid">
-            <img th:src="@{/img/ebanner.jpg}" class="img-fluid" alt="Banner Image">
+        <div class="container-fluid p-0">
+            <div id="myCarousel" class="carousel slide carousel-container" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img th:src="@{/img/slide/slide_1.jpg}"  class="d-block w-100" alt="Slide 1">
+                    </div>
+                    <div class="carousel-item">
+                        <img th:src="@{/img/slide/slide_2.jpg}"  class="d-block w-100" alt="Slide 2">
+                    </div>
+                    <div class="carousel-item">
+                        <img th:src="@{/img/slide/slide_3.jpg}"  class="d-block w-100" alt="Slide 3">
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
         </div>
 
-        <section class="pt-5 pb-5"> <!-- Latest Product  -->
-            <div class="container">
+        <section class="pt-5 pb-2"> <!-- Latest Product  -->
 
-                <div  class="row">
-                    Featured Category
+            <div class="container my-3 featured-cat-container card border-0 shadow-none h-100">
+                <div class="row justify-content-between align-items-center mb-2">
+                    <!-- Title -->
+                    <div class="col text-start section_title d-flex align-items-center">
+                        <span class="section-title-square"></span>
+                        Featured Category
+                    </div>
 
+                    <!-- Arrows beside title (always visible) -->
+                    <div class="col-auto d-flex gap-2">
+                        <button class="btn p-0 border-0 bg-transparent" type="button" onclick="scrollLeft('featuredCarousel')">
+                            <span class="bi bi-arrow-left fs-3 text-danger"></span>
+                        </button>
+                        <button class="btn p-0 border-0 bg-transparent" type="button" onclick="scrollRight('featuredCarousel')">
+                            <span class="bi bi-arrow-right fs-3 text-danger"></span>
+                        </button>
+                    </div>
+                </div>
+                <hr>
+
+                <div class="position-relative">
+                    <!-- Scrollable carousel -->
+                    <div class="featured-cat-carousel" id="featuredCarousel">
+                        <div class="featured-cat-item" th:each="featureCatLists : ${featureCatList}">
+                            <div class="card border-0 h-100 d-flex flex-column align-items-center">
+                                <span th:if="${not #strings.isEmpty(featureCatLists.imageName)}">
+                                    <img class="rounded-circle featured-cat-img hvr-bounce-in"
+                                         th:src="@{/files/}+${featureCatLists.imageName}" />
+                                </span>
+                                <span th:if="${#strings.isEmpty(featureCatLists.imageName)}">
+                                    <img class="rounded-circle featured-cat-img hvr-bounce-in"
+                                         th:src="@{/img/image-not-available.png}" />
+                                </span>
+                                <a class="nav-link text-center mt-2 featured-cat-text hvr-bounce-in"
+                                   th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${featureCatLists.id})}">
+                                    [[${featureCatLists.name}]]
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <script>
+                const carousel = document.getElementById('featuredCarousel');
+                let isDown = false;
+                let startX, scrollLeftPos;
+
+// Mouse drag
+                carousel.addEventListener('mousedown', (e) => {
+                    isDown = true;
+                    carousel.classList.add('active');
+                    startX = e.pageX - carousel.offsetLeft;
+                    scrollLeftPos = carousel.scrollLeft;
+                });
+                carousel.addEventListener('mouseleave', () => {
+                    isDown = false;
+                    carousel.classList.remove('active');
+                });
+                carousel.addEventListener('mouseup', () => {
+                    isDown = false;
+                    carousel.classList.remove('active');
+                });
+                carousel.addEventListener('mousemove', (e) => {
+                    if (!isDown)
+                        return;
+                    e.preventDefault();
+                    const x = e.pageX - carousel.offsetLeft;
+                    const walk = (x - startX);
+                    carousel.scrollLeft = scrollLeftPos - walk;
+                });
+
+// Touch events
+                carousel.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].pageX - carousel.offsetLeft;
+                    scrollLeftPos = carousel.scrollLeft;
+                });
+                carousel.addEventListener('touchmove', (e) => {
+                    const x = e.touches[0].pageX - carousel.offsetLeft;
+                    const walk = (x - startX);
+                    carousel.scrollLeft = scrollLeftPos - walk;
+                });
+
+// Arrow button scrolling
+                function scrollLeft(id) {
+                    const container = document.getElementById(id);
+                    const itemWidth = container.querySelector('.featured-cat-item').offsetWidth + 16;
+                    container.scrollBy({left: -itemWidth, behavior: 'smooth'});
+                }
+                function scrollRight(id) {
+                    const container = document.getElementById(id);
+                    const itemWidth = container.querySelector('.featured-cat-item').offsetWidth + 16;
+                    container.scrollBy({left: itemWidth, behavior: 'smooth'});
+                }
+
+// Keyboard navigation
+                carousel.tabIndex = 0;
+                carousel.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowLeft')
+                        scrollLeft('featuredCarousel');
+                    if (e.key === 'ArrowRight')
+                        scrollRight('featuredCarousel');
+                });
+
+            </script>
+
+
+        </section>
+
+        <section class="my-1">
+            <div class="container my-3   border-0 p-0 "> <!-- full width -->
+                <div class="row g-1"> <!-- g-0 removes all gutters/padding between cols -->
+
+                    <!-- First Promo Image -->
+                    <div class="col-12 col-md-6 pe-2 banner-effect">
+                        <a>    <img th:src="@{/img/banner/promo_1.jpg}"
+                                    alt="Promo 1"
+                                    class="img-fluid w-100"> </a>
+                    </div>
+
+                    <!-- Second Promo Image -->
+                    <div class="col-12 col-md-6 ps-2 banner-effect">
+                        <a>     <img th:src="@{/img/banner/promo_2.jpg}"
+                                     alt="Promo 2"
+                                     class="img-fluid w-100"></a>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <section class="pt-5 pb-2 trending-products"> <!-- Latest Product  -->
+            <div class="container my-3 featured-cat-container card border-0 shadow-none h-100">
+
+                <!-- 🔹 Row: Title left, Tabs + Nav right -->
+                <div class="row justify-content-between align-items-center mb-3">
+
+                    <!-- Title -->
+                    <div class="col-auto text-start section_title d-flex align-items-center">
+                        <span class="section-title-square me-2"></span>
+                        <h5 class="mb-0">Deals Today</h5>
+                    </div>
+
+                    <!-- Tabs + Arrows -->
 
 
                 </div>
+                <hr class="mb-3">
+                <!-- 🔹 Tab Content -->
+                <div class="row row-cols-1 row-cols-md-5 g-4 ">
 
-       <div class="row">
-        <!-- Repeat this card for 6 images -->
-        <div class="col-md-2 mb-4">
-            <div class="card image-card">
-                <img th:src="@{/img/ebanner.jpg}" class="card-img-top" alt="Image 1">
-            </div>
-        </div>
-        <div class="col-md-2 mb-4">
-            <div class="card image-card">
-                <img src="https://via.placeholder.com/150" class="card-img-top" alt="Image 2">
-            </div>
-        </div>
-        <div class="col-md-2 mb-4">
-            <div class="card image-card">
-                <img src="https://via.placeholder.com/150" class="card-img-top" alt="Image 3">
-            </div>
-        </div>
-        <div class="col-md-2 mb-4">
-            <div class="card image-card">
-                <img src="https://via.placeholder.com/150" class="card-img-top" alt="Image 4">
-            </div>
-        </div>
-        <div class="col-md-2 mb-4">
-            <div class="card image-card">
-                <img src="https://via.placeholder.com/150" class="card-img-top" alt="Image 5">
-            </div>
-        </div>
-        <div class="col-md-2 mb-4">
-            <div class="card image-card">
-                <img src="https://via.placeholder.com/150" class="card-img-top" alt="Image 6">
-            </div>
-        </div>
-    </div>
+                    <div class="col" th:each="productlists,status:${productlist}">
 
 
+                        <div class="card product-card  position-relative mb-4 hvr-bounce-in h-100">
+
+                            <span th:if="${ not #strings.isEmpty(productlists.imageName)}" class="">
+                                <!--                                <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />-->
+                                <img class="card-img-top" th:src="@{${productlists.imageUrl}}" />
+
+
+                            </span>
+                            <span th:if="${#strings.isEmpty(productlists.imageName)}" >
+                                <img  class="card-img-top" th:src="@{/img/image-not-available.png}" />
+                            </span>
+
+                            <div class="badge-container">
+                                <span th:if="${productlists.totalDiscountPercent != null and productlists.totalDiscountPercent > 0}" class="badge rounded-pill bg-danger badge-custom" >
+                                    -[[${productlists.totalDiscountPercent}]]%
+                                </span>
+                                <span  th:if="${productlists.featuredProduct}" class="badge rounded-pill bg-info badge-custom">Featured</span>
+                                <!--                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>-->
+                            </div>
+
+                            <div class="card-body">
+                                <div class="card-title">
+                                    <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.id})}" >  <span  th:text="${productlists.title}">    </span> </a>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="row"  th:if="${productlists.totalDiscountPercent > 0}">
+                                        <div class=" col-auto text-muted text-decoration-line-through"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
+                                        <div class=" col-auto  text-success">-[[${productlists.totalDiscountedAmount}]]</div>
+                                        <div class=" col-auto  text-reds">[[${productlists.afterDiscountRemainingAmount}]]</div>
+                                    </div>
+
+                                    <div class="row"  th:unless="${productlists.totalDiscountPercent > 0}">
+                                        <div class="  text-center"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
+                                    </div>
+                                    <div>
+                                        <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
+                                        <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
+                                    </div>
+                                </div>
+
+                                <form  class="" th:action="@{/cart/add}"  enctype="multipart/form-data" method="post" >
+
+                                    <input type="hidden" class="form-control" th:name ="product_id" th:value="${productlists.id}" />
+
+                                    <!--                                            <label  class="col-auto" for="exampleInputEmail1">Quantity:</label>-->
+
+                                    <!--                                        <div class="fs-6 text-danger"> <strong> Price: </strong><span  th:text="${productlists.salesPrice}">    </span></div>-->
+                                    <input  type="hidden" min="1"   class="col-auto form-control mb-3"  size="10" th:name="quantity" value="1" />
+
+                                    <div class=" form-group text-center ">
+                                        <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Add to Cart</button>
+                                        <button class="btn btn-sm btn-outline-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i> Add to WishList </button>
+                                    </div>
+                                </form>
+
+
+                                <!--                                <div class="mt-2">
+                                                                    <span class="badge bg-warning text-dark">Rating: 4.5 <i class="fas fa-star"></i></span>
+                                                                    <span class="badge bg-secondary">Top</span>
+                                                                    <span class="badge bg-primary">Trend</span>
+                                                                </div>-->
+
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
 
             </div>
         </section>
 
-        <section class="pt-5 pb-5"> <!-- Latest Product  -->
-            <div class="container">
-
-                <div  class="row">
-                    Flash sale
-
-
-
-                </div>
-
-           
-     
+        <section class="my-1">
+            <div class="container p-0">
                 <div class="row">
-                    <div class="col-md-3">
-                        <div class="card product-card  position-relative">
-                            <img src="https://via.placeholder.com/300" class="card-img-top" alt="Product Image">
+                    <!-- First Promo Image -->
+                    <div class="col-12 col-md-4 pe-md-2 banner-effect">
+                        <a> <img th:src="@{/img/banner/promo_1.jpg}"
+                                 alt="Promo 1"
+                                 class="img-fluid w-100 rounded shadow-sm"> </a>
+                    </div>
 
-                            <div class="badge-container">
-                                <span class="badge rounded-pill bg-danger badge-custom">-20%</span>
-                                <span class="badge rounded-pill bg-info badge-custom">Featured</span>
-                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>
-                            </div>
+                    <!-- Second Promo Image -->
+                    <div class="col-12 col-md-4 px-md-1 banner-effect">
+                        <a>  <img th:src="@{/img/banner/promo_2.jpg}"
+                                  alt="Promo 2"
+                                  class="img-fluid w-100 rounded shadow-sm"></a>
+                    </div>
 
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <a href="#" class="text-decoration-none text-dark text-reds">Product Name</a>
-                                </h5>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="text-muted text-decoration-line-through">$59.99</h6>
-                                        <h6 class="text-success">$47.99</h6>
+
+                    <!-- Third Promo Image -->
+                    <div class="col-12 col-md-4 ps-md-1 banner-effect">
+                        <a>    <img th:src="@{/img/banner/promo_2.jpg}"
+                                    alt="Promo 3"
+                                    class="img-fluid w-100 rounded shadow-sm"> </a>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+        <section class="pt-5 pb-2 trending-products"> <!-- Latest Product  -->
+            <div class="container my-3 featured-cat-container card border-0 shadow-none h-100">
+
+                <!-- 🔹 Row: Title left, Tabs + Nav right -->
+                <div class="row justify-content-between align-items-center mb-3">
+
+                    <!-- Title -->
+                    <div class="col-auto text-start section_title d-flex align-items-center">
+                        <span class="section-title-square me-2"></span>
+                        <h5 class="mb-0">Trending Products</h5>
+                    </div>
+
+                    <!-- Tabs + Arrows -->
+                    <div class="col d-flex justify-content-end align-items-center gap-3 ">
+
+                        <!-- Tab Navigation -->
+                        <ul class="nav nav-pills border-0 mt-1" id="productTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="featured-tab" data-bs-toggle="tab" data-bs-target="#featured" type="button" role="tab">
+                                    Featured
+                                </button>
+                            </li>
+
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="best-tab" data-bs-toggle="tab" data-bs-target="#best" type="button" role="tab">
+                                    BestSaller
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="new-tab" data-bs-toggle="tab" data-bs-target="#new" type="button" role="tab">
+                                    Latest
+                                </button>
+                            </li>
+                        </ul>
+
+                    </div>
+
+                </div>
+                <hr class="m-0">
+                <!-- 🔹 Tab Content -->
+                <div class="tab-content  p-3 " id="productTabsContent">
+                    <!-- Featured -->
+                    <div class="tab-pane fade show active" id="featured" role="tabpanel">
+                        <div class="row row-cols-1 row-cols-md-5 g-4 ">
+
+                            <div class="col" th:each="productlists,status:${productlist}">
+
+
+                                <div class="card product-card  position-relative mb-4 hvr-bounce-in h-100">
+
+                                    <span th:if="${ not #strings.isEmpty(productlists.imageName)}" class="">
+                                        <!--                                <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />-->
+                                        <img class="card-img-top" th:src="@{${productlists.imageUrl}}" />
+
+
+                                    </span>
+                                    <span th:if="${#strings.isEmpty(productlists.imageName)}" >
+                                        <img  class="card-img-top" th:src="@{/img/image-not-available.png}" />
+                                    </span>
+
+                                    <div class="badge-container">
+                                        <span th:if="${productlists.totalDiscountPercent != null and productlists.totalDiscountPercent > 0}" class="badge rounded-pill bg-danger badge-custom" >
+                                            -[[${productlists.totalDiscountPercent}]]%
+                                        </span>
+                                        <span  th:if="${productlists.featuredProduct}" class="badge rounded-pill bg-info badge-custom">Featured</span>
+                                        <!--                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>-->
                                     </div>
-                                    <div>
-                                        <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
-                                        <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
+
+                                    <div class="card-body">
+                                        <div class="card-title">
+                                            <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.id})}" >  <span  th:text="${productlists.title}">    </span> </a>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="row"  th:if="${productlists.totalDiscountPercent > 0}">
+                                                <div class=" col-auto text-muted text-decoration-line-through"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
+                                                <div class=" col-auto  text-success">-[[${productlists.totalDiscountedAmount}]]</div>
+                                                <div class=" col-auto  text-reds">[[${productlists.afterDiscountRemainingAmount}]]</div>
+                                            </div>
+
+                                            <div class="row"  th:unless="${productlists.totalDiscountPercent > 0}">
+                                                <div class="  text-center"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
+                                            </div>
+                                            <div>
+                                                <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
+                                                <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
+                                            </div>
+                                        </div>
+
+                                        <form  class="" th:action="@{/cart/add}"  enctype="multipart/form-data" method="post" >
+
+                                            <input type="hidden" class="form-control" th:name ="product_id" th:value="${productlists.id}" />
+
+                                            <!--                                            <label  class="col-auto" for="exampleInputEmail1">Quantity:</label>-->
+
+                                            <!--                                        <div class="fs-6 text-danger"> <strong> Price: </strong><span  th:text="${productlists.salesPrice}">    </span></div>-->
+                                            <input  type="hidden" min="1"   class="col-auto form-control mb-3"  size="10" th:name="quantity" value="1" />
+
+                                            <div class=" form-group text-center ">
+                                                <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Add to Cart</button>
+                                                <button class="btn btn-sm btn-outline-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i> Add to WishList </button>
+                                            </div>
+                                        </form>
+
+
+                                        <!--                                <div class="mt-2">
+                                                                            <span class="badge bg-warning text-dark">Rating: 4.5 <i class="fas fa-star"></i></span>
+                                                                            <span class="badge bg-secondary">Top</span>
+                                                                            <span class="badge bg-primary">Trend</span>
+                                                                        </div>-->
+
                                     </div>
                                 </div>
-
-                                <div class="mt-2">
-                                    <span class="badge bg-warning text-dark">Rating: 4.5 <i class="fas fa-star"></i></span>
-                                    <span class="badge bg-secondary">Top</span>
-                                    <span class="badge bg-primary">Trend</span>
-                                </div>
                             </div>
+
+
                         </div>
                     </div>
 
-                    <!-- Repeat Card for More Products -->
-                    <div class="col-md-3">
-                        <div class="card position-relative">
-                            <img src="https://via.placeholder.com/300" class="card-img-top" alt="Product Image">
+                    <!-- New -->
+                    <div class="tab-pane fade" id="new" role="tabpanel">
+                        <div class="row row-cols-1 row-cols-md-5 g-4 ">
 
-                            <div class="badge-container">
-                                <span class="badge rounded-pill bg-danger badge-custom">-15%</span>
-                                <span class="badge rounded-pill bg-info badge-custom">Featured</span>
-                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>
-                            </div>
+                            <div class="col" th:each="productlists,status:${productlist}">
 
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <a href="#" class="text-decoration-none text-dark">Another Product</a>
-                                </h5>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="text-muted text-decoration-line-through">$39.99</h6>
-                                        <h6 class="text-success">$33.99</h6>
+
+                                <div class="card product-card  position-relative mb-4 hvr-bounce-in h-100">
+
+                                    <span th:if="${ not #strings.isEmpty(productlists.imageName)}" class="">
+                                        <!--                                <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />-->
+                                        <img class="card-img-top" th:src="@{${productlists.imageUrl}}" />
+
+
+                                    </span>
+                                    <span th:if="${#strings.isEmpty(productlists.imageName)}" >
+                                        <img  class="card-img-top" th:src="@{/img/image-not-available.png}" />
+                                    </span>
+
+                                    <div class="badge-container">
+                                        <span th:if="${productlists.totalDiscountPercent != null and productlists.totalDiscountPercent > 0}" class="badge rounded-pill bg-danger badge-custom" >
+                                            -[[${productlists.totalDiscountPercent}]]%
+                                        </span>
+                                        <span  th:if="${productlists.featuredProduct}" class="badge rounded-pill bg-info badge-custom">Featured</span>
+                                        <!--                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>-->
                                     </div>
-                                    <div>
-                                        <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
-                                        <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
+
+                                    <div class="card-body">
+                                        <div class="card-title">
+                                            <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.id})}" >  <span  th:text="${productlists.title}">    </span> </a>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="row"  th:if="${productlists.totalDiscountPercent > 0}">
+                                                <div class=" col-auto text-muted text-decoration-line-through"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
+                                                <div class=" col-auto  text-success">-[[${productlists.totalDiscountedAmount}]]</div>
+                                                <div class=" col-auto  text-reds">[[${productlists.afterDiscountRemainingAmount}]]</div>
+                                            </div>
+
+                                            <div class="row"  th:unless="${productlists.totalDiscountPercent > 0}">
+                                                <div class="  text-center"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
+                                            </div>
+                                            <div>
+                                                <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
+                                                <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
+                                            </div>
+                                        </div>
+
+                                        <form  class="" th:action="@{/cart/add}"  enctype="multipart/form-data" method="post" >
+
+                                            <input type="hidden" class="form-control" th:name ="product_id" th:value="${productlists.id}" />
+
+                                            <!--                                            <label  class="col-auto" for="exampleInputEmail1">Quantity:</label>-->
+
+                                            <!--                                        <div class="fs-6 text-danger"> <strong> Price: </strong><span  th:text="${productlists.salesPrice}">    </span></div>-->
+                                            <input  type="hidden" min="1"   class="col-auto form-control mb-3"  size="10" th:name="quantity" value="1" />
+
+                                            <div class=" form-group text-center ">
+                                                <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Add to Cart</button>
+                                                <button class="btn btn-sm btn-outline-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i> Add to WishList </button>
+                                            </div>
+                                        </form>
+
+
+                                        <!--                                <div class="mt-2">
+                                                                            <span class="badge bg-warning text-dark">Rating: 4.5 <i class="fas fa-star"></i></span>
+                                                                            <span class="badge bg-secondary">Top</span>
+                                                                            <span class="badge bg-primary">Trend</span>
+                                                                        </div>-->
+
                                     </div>
                                 </div>
-
-                                <div class="mt-2">
-                                    <span class="badge bg-warning text-dark">Rating: 4.0 <i class="fas fa-star"></i></span>
-                                    <span class="badge bg-secondary">Top</span>
-                                    <span class="badge bg-primary">Trend</span>
-                                </div>
                             </div>
+
+
                         </div>
                     </div>
 
-                    <div class="col-md-3">
-                        <div class="card position-relative">
-                            <img src="https://via.placeholder.com/300" class="card-img-top" alt="Product Image">
+                    <!-- Best Sale -->
+                    <div class="tab-pane fade" id="best" role="tabpanel">
+                        <div class="row row-cols-1 row-cols-md-5 g-4 ">
 
-                            <div class="badge-container">
-                                <span class="badge rounded-pill bg-danger badge-custom">-10%</span>
-                                <span class="badge rounded-pill bg-info badge-custom">Featured</span>
-                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>
-                            </div>
+                            <div class="col" th:each="productlists,status:${productlist}">
 
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <a href="#" class="text-decoration-none text-dark">Third Product</a>
-                                </h5>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="text-muted text-decoration-line-through">$29.99</h6>
-                                        <h6 class="text-success">$26.99</h6>
+
+                                <div class="card product-card  position-relative mb-4 hvr-bounce-in h-100">
+
+                                    <span th:if="${ not #strings.isEmpty(productlists.imageName)}" class="">
+                                        <!--                                <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />-->
+                                        <img class="card-img-top" th:src="@{${productlists.imageUrl}}" />
+
+
+                                    </span>
+                                    <span th:if="${#strings.isEmpty(productlists.imageName)}" >
+                                        <img  class="card-img-top" th:src="@{/img/image-not-available.png}" />
+                                    </span>
+
+                                    <div class="badge-container">
+                                        <span th:if="${productlists.totalDiscountPercent != null and productlists.totalDiscountPercent > 0}" class="badge rounded-pill bg-danger badge-custom" >
+                                            -[[${productlists.totalDiscountPercent}]]%
+                                        </span>
+                                        <span  th:if="${productlists.featuredProduct}" class="badge rounded-pill bg-info badge-custom">Featured</span>
+                                        <!--                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>-->
                                     </div>
-                                    <div>
-                                        <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
-                                        <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
+
+                                    <div class="card-body">
+                                        <div class="card-title">
+                                            <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.id})}" >  <span  th:text="${productlists.title}">    </span> </a>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="row"  th:if="${productlists.totalDiscountPercent > 0}">
+                                                <div class=" col-auto text-muted text-decoration-line-through"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
+                                                <div class=" col-auto  text-success">-[[${productlists.totalDiscountedAmount}]]</div>
+                                                <div class=" col-auto  text-reds">[[${productlists.afterDiscountRemainingAmount}]]</div>
+                                            </div>
+
+                                            <div class="row"  th:unless="${productlists.totalDiscountPercent > 0}">
+                                                <div class="  text-center"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
+                                            </div>
+                                            <div>
+                                                <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
+                                                <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
+                                            </div>
+                                        </div>
+
+                                        <form  class="" th:action="@{/cart/add}"  enctype="multipart/form-data" method="post" >
+
+                                            <input type="hidden" class="form-control" th:name ="product_id" th:value="${productlists.id}" />
+
+                                            <!--                                            <label  class="col-auto" for="exampleInputEmail1">Quantity:</label>-->
+
+                                            <!--                                        <div class="fs-6 text-danger"> <strong> Price: </strong><span  th:text="${productlists.salesPrice}">    </span></div>-->
+                                            <input  type="hidden" min="1"   class="col-auto form-control mb-3"  size="10" th:name="quantity" value="1" />
+
+                                            <div class=" form-group text-center ">
+                                                <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Add to Cart</button>
+                                                <button class="btn btn-sm btn-outline-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i> Add to WishList </button>
+                                            </div>
+                                        </form>
+
+
+                                        <!--                                <div class="mt-2">
+                                                                            <span class="badge bg-warning text-dark">Rating: 4.5 <i class="fas fa-star"></i></span>
+                                                                            <span class="badge bg-secondary">Top</span>
+                                                                            <span class="badge bg-primary">Trend</span>
+                                                                        </div>-->
+
                                     </div>
                                 </div>
-
-                                <div class="mt-2">
-                                    <span class="badge bg-warning text-dark">Rating: 4.2 <i class="fas fa-star"></i></span>
-                                    <span class="badge bg-secondary">Top</span>
-                                    <span class="badge bg-primary">Trend</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                                    <div class="col-md-3">
-                        <div class="card position-relative">
-                            <img src="https://via.placeholder.com/300" class="card-img-top" alt="Product Image">
-
-                            <div class="badge-container">
-                                <span class="badge rounded-pill bg-danger badge-custom">-10%</span>
-                                <span class="badge rounded-pill bg-info badge-custom">Featured</span>
-                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>
                             </div>
 
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <a href="#" class="text-decoration-none text-dark">Third Product</a>
-                                </h5>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="text-muted text-decoration-line-through">$29.99</h6>
-                                        <h6 class="text-success">$26.99</h6>
-                                    </div>
-                                    <div>
-                                        <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
-                                        <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
-                                    </div>
-                                </div>
 
-                                <div class="mt-2">
-                                    <span class="badge bg-warning text-dark">Rating: 4.2 <i class="fas fa-star"></i></span>
-                                    <span class="badge bg-secondary">Top</span>
-                                    <span class="badge bg-primary">Trend</span>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
-   
-
-
-
 
             </div>
         </section>
 
 
-        <section class="pt-5 pb-5"> <!-- Latest Product  -->
 
 
 
+        <section class="pt-1 pb-1">
+            <div class="container p-0">
+                <div class="row g-3"><!-- g-3 adds spacing between cols -->
 
+                    <div class="col-sm-3 col-md-3 d-flex">
+                        <div class="support-box flex-fill">
+                            <div class="support-box-inner text-center">
+                                <div class="service-image" style="font-size: 80px">
+                                    <i class="bi bi-truck"></i>
+                                </div>
+                                <div class="support-description">
+                                    <h5>Free Shipping</h5>
+                                    <p>Free shipping on all US order or order above $200</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
+                    <div class="col-sm-3 col-md-3 d-flex">
+                        <div class="support-box flex-fill">
+                            <div class="support-box-inner text-center">
+                                <div class="service-image" style="font-size: 80px">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                </div>
+                                <div class="support-description">
+                                    <h5>90 Days Return</h5>
+                                    <p>Simply return it within 30 days for an exchange</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-            <div class="container">
+                    <div class="col-sm-3 col-md-3 d-flex">
+                        <div class="support-box flex-fill">
+                            <div class="support-box-inner text-center">
+                                <div class="service-image" style="font-size: 80px">
+                                    <i class="bi bi-shield-lock"></i>
+                                </div>
+                                <div class="support-description">
+                                    <h5>Secure Payment</h5>
+                                    <p>100% <br>secure payment</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                <div  class="row">
-                    Top Selling Products
-
-
+                    <div class="col-sm-3 col-md-3 d-flex">
+                        <div class="support-box flex-fill">
+                            <div class="support-box-inner text-center">
+                                <div class="service-image" style="font-size: 80px">
+                                    <i class="bi bi-headset"></i>
+                                </div>
+                                <div class="support-description">
+                                    <h5>24/7 Support</h5>
+                                    <p>Dedicated support</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                 </div>
-
-                <div  class="row">
-                    Top Selling Products
-
-
-
-                </div>
-
-
-
             </div>
         </section>
 
-
-
-        <section class="pt-5 pb-5">
-            <div class="container">
-
-                <div  class="row">
-
-                    <div class="col-sm-3 col-md-3">
-                        <div class="row">
-                            <div class="col-3">
-                                <i class="fas fa-rocket fs-1"></i>
-                            </div>
-                            <div class="col-9">
-                                <h4> Free Delivery</h4>
-                                For all oders over $99
-
-
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-3 col-md-3">
-
-                        <div class="row">
-                            <div class="col-3">
-                                <i class="fas fa-sync fs-1"></i>
-                            </div>
-                            <div class="col-9">
-                                <h4> 90 Days Return</h4>
-                                If goods have problems
-                            </div>
-                        </div>
-
-                    </div>
-                    <div class="col-sm-3 col-md-3">
-
-                        <div class="row ">
-                            <div class="col-3">
-                                <i class="fas fa-credit-card fs-1"></i>
-                            </div>
-                            <div class="col-9">
-                                <h4> Secure Payment</h4>
-                                100% secure payment
-                            </div>
-                        </div>
-
-                    </div>
-                    <div class="col-sm-3 col-md-3">
-
-                        <div class="row">
-                            <div class="col-3 text-center">
-
-                                <i class="fa-regular fa-comment-dots fs-1"></i>
-
-                            </div>
-                            <div class="col-9">
-                                <h4> 24/7 Support</h4>
-                                Dedicated support
-                            </div>
-                        </div>
-
-                    </div>
-
-
-
-                </div>
-
-            </div>
-        </section>
 
     </div> <!-- End main Content -->
 </div> <!-- End fragment -->

@@ -53,9 +53,12 @@ and open the template in the editor.
                             <thead class="thead-light">
                                 <tr>
                                     <th scope="col">#</th>
+                                    <th scope="col">Image</th>
                                     <th scope="col">Name</th>
                                     <th scope="col">Parent</th>
                                     <th scope="col"> Sort Order</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Featured</th>
                                     <th scope="col">Action</th>
                                 </tr>
                             </thead>
@@ -63,6 +66,16 @@ and open the template in the editor.
                                 <tr th:each="productcategorylists , status : ${categories}">
 
                                     <td th:text="${status.count}"> </td>
+
+                                    <td>
+                                        <span th:if="${ not #strings.isEmpty(productcategorylists.imageName)}" class="badge bg-green pull-right"> 
+                                            <img  class="img-responsive" th:src="@{/files/}+${productcategorylists.imageName}" width="100px"  height="100px"/>
+                                        </span>
+
+                                        <span th:if="${#strings.isEmpty(productcategorylists.imageName)}" > Image Not Found </span>
+                                    </td>
+
+
                                     <td th:text="${productcategorylists.name}"> </td>
                                     <td >
 
@@ -75,13 +88,12 @@ and open the template in the editor.
                                         <span th:if="${productcategorylists.parent == null}">
                                             <span class="text-danger">  No Parent</span>
                                         </span>
-
-
-
                                     </td>
                                     <td th:text="${productcategorylists.orderno}"> </td>
-                                    
-                                    <td><a  type="button" th:href="@{/productcategory/details/{id}(id=${productlists.id})}">  <button class="btn btn-success btn-sm " > <i class="bi bi-eye-slash"></i> View </button>  </a></td>
+                                    <td th:text="${productcategorylists.status}"> </td>
+                                    <td th:text="${productcategorylists.featuredCat}"> </td>
+
+                                    <td><a  type="button" th:href="@{/productcategory/details/{id}(id=${productcategorylists.id})}">  <button class="btn btn-success btn-sm " > <i class="bi bi-eye-slash"></i> View </button>  </a></td>
                                 </tr>
                             </tbody>
                         </table>

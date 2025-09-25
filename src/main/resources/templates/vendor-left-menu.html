@@ -1,25 +1,29 @@
-<div class="card borderColor">
-    <div class="card-header bgMaroon text-white">
-        <i class="fas fa-list"></i> Navigation : Instructor/Vendor
+<div class="card">
+    <div class="card-header">
+        Navigation : Vendor
     </div>
-    <div class="card-body">
-        <ul class="list-group fa-ul list-group-flush">
-            <li class="list-group-item"><a class="textMaroon" th:href="@{/vendor/}"> <span class="fa-li"><i class="fas fa-wallet"></i></span>Home </a></li>
 
-            <li class="list-group-item"><a class="textMaroon" th:href="@{/productvendor/create}"><span class="fa-li"><i class="fas fa-book-open"></i></span>Add Product</a></li>
-            <li class="list-group-item"><a class="textMaroon" th:href="@{/productvendor/index}"> <span class="fa-li"><i class="fas fa-list"></i></span> Product List</a></li>
-            <li class="list-group-item"><a class="textMaroon" th:href="@{/vendor-order/index}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Sales Order List</a></li>
-            <li class="list-group-item"><a class="textMaroon" th:href="@{/vendor-order/index}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Sales Delivery List</a></li>
-            <li class="list-group-item"><a class="textMaroon" th:href="@{/}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>POS</a></li>
-            <li class="list-group-item"><a class="textMaroon" th:href="@{/}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Stock Adjustment</a></li>
-            <li class="list-group-item"><a class="textMaroon" th:href="@{/}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Stock</a></li>
-            <li class="list-group-item"> <a class="textMaroon" th:href="@{/vendorprofile/index}"> <span class="fa-li"><i class="fas fa-map-marked"></i></span> Profile</a></li>
-            <li class="list-group-item"> <a class="textMaroon" th:href="@{/vendorprofileimage/index}"> <span class="fa-li"><i class="fas fa-map-marked"></i></span> Profile Image</a></li>
-            <!--            <li class="list-group-item"> <a class="textMaroon" th:href="@{/instructor}"> <span class="fa-li"><i class="fas fa-map-marked"></i></span> Addresses</a></li>
-                        <li class="list-group-item"> <a class="textMaroon" th:href="@{/instructor}"> <span class="fa-li"><i class="fas fa-credit-card"></i> </span>Payment Options</a></li>
-                        <li class="list-group-item"> <a class="textMaroon " th:href="@{/instructor}"> <span class="fa-li"><i class="fas fa-lock"></i> </span>Login & Security</a></li>
-                        <li class="list-group-item"> <a class="textMaroon " th:href="@{/instructor}"> <span class="fa-li"><i class="far fa-bell"></i></span> Notifications</a></li>-->
-        </ul>
-    </div>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item"><a class=" nav-link" th:href="@{/vendor/home}">   <i class="bi bi-house"></i> Home </a></li>
+        <li class="list-group-item"><a class=" nav-link" th:href="@{/productvendor/index}">  <i class="bi bi-box-seam"></i> Product List</a></li>
+        <li class="list-group-item"><a class=" nav-link" th:href="@{/vendor-order/index}"> <i class="bi bi-journal-text"></i>Sales Order List</a></li>
+        <li class="list-group-item"><a class=" nav-link" th:href="@{/vendor/home}"> <i class="bi bi-archive"></i>Stock/Inventory</a></li>
+        <li class="list-group-item"><a class=" nav-link" th:href="@{/vendor-transaction/list}">  <i class="bi bi-graph-up-arrow"></i>Vendor Transaction</a></li>
+        <li class="list-group-item"><a class=" nav-link" th:href="@{/vendor-payout/list}">  <i class="bi bi-credit-card"></i>Vendor Payout</a></li>
+        <li class="list-group-item"><a class=" nav-link" th:href="@{/vendor-payout-methods/list}">  <i class="bi bi-wallet2"></i>Add Pay out Method</a></li>
+        <!--
+
+                                                                                                                                                                       <li class="list-group-item"><a class="textMaroon" th:href="@{/}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>POS</a></li>
+<li class="list-group-item"><a class="textMaroon" th:href="@{/}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Stock Adjustment</a></li>
+<li class="list-group-item"><a class="textMaroon" th:href="@{/}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Stock</a></li>-->
+        <li class="list-group-item"> <a class=" nav-link" th:href="@{/vendorprofile/details}"> <i class="bi bi-person-circle"></i> Vendor Profile</a></li>
+        <li class="list-group-item"> <a class=" nav-link" th:href="@{/vendorprofileimage/index}"> <i class="bi bi-image"></i>Vendor Logo</a></li>
+        <li class="list-group-item"> <a class=" nav-link" th:href="@{/vendor-users/userlist}"> <i class="bi bi-people"></i> Vendor User Management </a></li>
+        <!--            <li class="list-group-item"> <a class="textMaroon" th:href="@{/instructor}"> <span class="fa-li"><i class="fas fa-map-marked"></i></span> Addresses</a></li>
+                    <li class="list-group-item"> <a class="textMaroon" th:href="@{/instructor}"> <span class="fa-li"><i class="fas fa-credit-card"></i> </span>Payment Options</a></li>
+                    <li class="list-group-item"> <a class="textMaroon " th:href="@{/instructor}"> <span class="fa-li"><i class="fas fa-lock"></i> </span>Login & Security</a></li>
+                    <li class="list-group-item"> <a class="textMaroon " th:href="@{/instructor}"> <span class="fa-li"><i class="far fa-bell"></i></span> Notifications</a></li>-->
+    </ul>
 </div>
+
 

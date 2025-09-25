@@ -1,62 +1,68 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
-<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-page">
-    <div layout:fragment = "main_content">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-page">
+    <div layout:fragment="main_content">
 
-        <section class="" style="background-color: #D6D6D6">
-
-
+        <section style="background-color: #D6D6D6">
             <section style="padding: 40px 0px 100px 0px">
                 <div class="container">
-
-
                     <div class="card">
                         <div class="row p-5">
-                        <div class=" text-center col col-xs-12">
-                            <img  class="img-fluid img-thumbnail " th:src="@{/img/login.png}" />
-                        </div>
-                        <div class="col col-xs-12">
-                            <form th:action="@{/public/member-login}"  method="post">
+                            <div class="text-center  col-xs-12  col-sm-6 col-md-6">
+                                <img class="img-fluid img-thumbnail" th:src="@{/img/login.png}" />
+                            </div>
 
+
+
+
+                            <div class="col-xs-12 col-sm-6  col-md-6">
+
+                                <!-- ✅ Flash Success Message -->
+                                <!-- Success Flash Message -->
+                                <div class="alert alert-success alert-dismissible fade show" th:if="${success}" role="alert">
+                                    <span th:text="${success}">Success message</span>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+
+                                <!-- Error and logout alerts -->
                                 <div class="alert alert-danger" th:if="${param.error}">
-                                    Invalid User Name or Password. Please try again.   
+                                    Invalid User Name or Password. Please try again.
                                 </div>
                                 <div class="alert alert-warning" th:if="${param.logout}">
                                     You have been logged out.
                                 </div>
 
-                                <div class="form-group">
-                                    <label for="exampleInputEmail1">Email address</label>
-                                    <input type="email"  name="username" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" value="" placeholder="Enter email">
-                                </div>
-                                <div class="form-group">
-                                    <label for="exampleInputPassword1">Password</label>
-                                    <input type="text" name="password" class="form-control" id="exampleInputPassword1" value="" placeholder="Password">
-                                </div>
+                                <!-- Login Form -->
+                                <form th:action="@{/public/member-login}" method="post">
+                                    <div class="form-group">
+                                        <label for="exampleInputEmail1">Email address</label>
+                                        <input type="email" name="username" class="form-control" id="exampleInputEmail1"
+                                               aria-describedby="emailHelp" placeholder="Enter email">
+                                    </div>
 
-                                <div class="form-group mt-2 text-center">
+                                    <div class="form-group">
+                                        <label for="exampleInputPassword1">Password</label>
+                                        <input type="text" name="password" class="form-control" id="exampleInputPassword1"
+                                               placeholder="Password">
+                                    </div>
 
-                                    <button type="submit" class="btn  btn-sm btn-success ">Submit</button>
+                                    <div class="form-group mt-2 text-center">
+                                        <button type="submit" class="btn btn-sm btn-success">Submit</button>
+                                    </div>
+                                </form>
+
+                                <!-- Additional Links -->
+                                <div class="text-center">
+                                    <a th:href="@{/public/forgot-password}"
+                                       class="btn btn-primary btn-sm m-1 btn-block btn-warning">Forgot Password</a>
+                                    <a th:href="@{/public/front-registration}"
+                                       class="btn btn-primary btn-sm m-1 btn-block btn-success">New Registration</a>
                                 </div>
-                            </form>
-                            <div class="text-center">
-                            <a th:href="@{/public/forgot-password}" class="btn btn-primary btn-sm m-1 btn-block btn-warning">Forgot Password</a>
-                            <a  th:href="@{/public/front-registration}"class="btn btn-primary btn-sm m-1 btn-block  btn-success">New Registration</a>
- </div>
+                            </div>
                         </div>
                     </div>
-     </div>
                 </div>
             </section>
-
         </section>
 
-
-
-
     </div>
-</div>
+</html>

@@ -5,17 +5,18 @@
  */
 package com.ecommerce.app.vendor.controller;
 
-
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.services.LoggedUserService;
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import com.ecommerce.app.vendor.repository.VendorprofileRepository;
+import com.ecommerce.app.vendor.services.VendorCodeGenerator;
+import com.ecommerce.app.vendor.user.componant.VendorUserContext;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -33,6 +34,12 @@ public class VendorProfileController {
     @Autowired
     VendorprofileRepository vendorprofileRepository;
 
+    @Autowired
+    private VendorCodeGenerator vendorCodeGenerator;
+
+    @Autowired
+    private VendorUserContext vendorUserContext;
+
     @RequestMapping(value = {"", "/", "/index"})
     public String index(Model model) {
         Users users = new Users();
@@ -41,35 +48,47 @@ public class VendorProfileController {
         return "vendor/profile/index";
     }
 
-    @RequestMapping(value = {"create"})
+    @RequestMapping(value = {"/create"})
     public String create(Model model, Vendorprofile vendorprofile) {
 
         Users users = new Users();
-        
+
         users.setId(loggedUserService.activeUserid());
-        
+
         vendorprofile.setUserId(users);
-        
-        return "vendor/profile/profile_add";
+
+        return "customer/vendor_profile_create";
     }
 
     @RequestMapping("/save")
-    public String create(Model model, @Valid Vendorprofile vendorprofile, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+    public String save(Model model, @Valid Vendorprofile vendorprofile, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
 
         if (bindingResult.hasErrors()) {
             Users users = new Users();
             users.setId(loggedUserService.activeUserid());
             vendorprofile.setUserId(users);
-            return "vendor/profile/profile_add";
+            return "vendor/profile/vendor_profile_create";
         }
+
+        vendorprofile.setVendorCode(vendorCodeGenerator.generateNextVendorCode());
         vendorprofileRepository.save(vendorprofile);
-        return "redirect:/vendorprofile/index";
+        return "redirect:/vendorprofile/details";
     }
 
-    @RequestMapping("/edit/{id}")
-    public String edit(Model model, @PathVariable Long id, Vendorprofile vendorprofile) {
-        //model.addAttribute("vendorprofile", vendorprofileRepository.getOne(id));
-        return "vendor/profile/profile_add";
+    @RequestMapping("/edit")
+    public String edit(Model model, Vendorprofile vendorprofile, HttpSession session) {
+
+        vendorprofile = vendorUserContext.getActiveVendor();
+        model.addAttribute("vendorprofile", vendorprofileRepository.findById(vendorprofile.getId()).orElse(null));
+        return "vendor/profile/vendor_profile_create";
+    }
+
+    @RequestMapping("/details")
+    public String details(Model model, Vendorprofile vendorprofile, HttpSession session) {
+
+        vendorprofile = vendorUserContext.getActiveVendor();
+        model.addAttribute("vendorprofile", vendorprofileRepository.findById(vendorprofile.getId()).orElse(null));
+        return "vendor/profile/details";
     }
 
 }

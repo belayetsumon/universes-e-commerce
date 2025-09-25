@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment = "main_content">
+
+        <section> 
+            <div class="row">
+                <div class="col-sm-3"><h4>Vendor</h4></div>
+                <div class="col-sm-5">   
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a  class="nav-link" href="#">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Vendor Profile </li>
+                        </ol>
+                    </nav>
+                </div></div>
+        </section>
+
+        <hr/>
+        <section>
+            <div class="card">
+                <div class="card-header ">
+                    <h5 class="font-weight-bold "><i class="fas fa-list"></i> Vendor Profile </h5>
+                </div>
+                <div class="card-body">
+
+                    <table class="table">
+                        <tr>
+                            <td>Action</td>
+                            <td>
+                                <a type="button"   class="btn btn-success btn-sm " th:href="@{/adminvendor/edit/{id}(id=${vendor.id})}"> Edit</a>
+                                 <a  type="button"  class="btn btn-danger btn-sm " th:href="@{/adminvendor/delete/{id}(id=${vendor.id})}"> Delete</a>
+                            </td>
+                        </tr> 
+                        <tr>
+                            <td>First Name</td>
+                            <td>[[${vendor.firstName}]]</td>
+                        </tr>  
+
+                        <tr>
+                            <td>Last Name</td>
+                            <td>[[${vendor.lastName}]]</td>
+                        </tr>  
+
+                        <tr>
+                            <td>Designation</td>
+                            <td>[[${vendor.designation}]]</td>
+                        </tr>  
+
+                        <tr>
+                            <td>Company Name</td>
+                            <td>[[${vendor.companyName}]]</td>
+                        </tr>  
+
+                        <tr>
+                            <td>Phone/Mobile</td>
+                            <td>[[${vendor.phone}]]</td>
+                        </tr> 
+
+                        <tr>
+                            <td>Email</td>
+                            <td>[[${vendor.email}]]</td>
+                        </tr> 
+
+                        <tr>
+                            <td>Address</td>
+                            <td>[[${vendor.address}]]</td>
+                        </tr>  
+
+                        <tr>
+                            <td>Description</td>
+                            <td>[[${vendor.description}]]</td>
+                        </tr>  
+
+                        <tr>
+                            <td>Status</td>
+                            <td>[[${vendor.vendorStatusEnum}]]</td>
+                        </tr>  
+
+                        <tr>
+                            <td>createdBy</td>
+                            <td>[[${vendor.createdBy}]]</td>
+                        </tr>  
+
+                        <tr>
+                            <td>created</td>
+                            <td>[[${vendor.created}]]</td>
+                        </tr>  
+
+                        <tr>
+                            <td>modifiedBy</td>
+                            <td>[[${vendor.modifiedBy}]]</td>
+                        </tr>  
+
+                        <tr>
+                            <td>modified</td>
+                            <td>[[${vendor.modified}]]</td>
+                        </tr>  
+
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</div>

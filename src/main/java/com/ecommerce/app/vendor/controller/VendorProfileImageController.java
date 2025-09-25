@@ -70,7 +70,7 @@ public class VendorProfileImageController {
 
         if (!pic.isEmpty()) {
             try {
-                byte[] bytes = pic.getBytes();
+                // byte[] bytes = pic.getBytes();
 
                 // Creating the directory to store file
                 File dir = new File(properties.getRootPath());

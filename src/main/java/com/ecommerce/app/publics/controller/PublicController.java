@@ -15,6 +15,10 @@ import com.ecommerce.app.module.user.services.LoginEventService;
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.ProductStatusEnum;
 import com.ecommerce.app.product.model.Productcategory;
+import com.ecommerce.app.product.ripository.AvailableDeliveryAreaRepository;
+import com.ecommerce.app.product.ripository.DeliveryChargeRepository;
+import com.ecommerce.app.product.ripository.DeliveryTimelineRepository;
+import com.ecommerce.app.product.ripository.ProductImageRepository;
 import com.ecommerce.app.ripository.BlogCategoryRepository;
 import com.ecommerce.app.ripository.BlogRepository;
 import com.ecommerce.app.ripository.ContactRepository;
@@ -36,6 +40,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.ecommerce.app.product.ripository.ProductRepository;
+import com.ecommerce.app.product.ripository.WarrantyRepository;
+import com.ecommerce.app.product.services.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 
@@ -69,8 +75,6 @@ public class PublicController {
     @Autowired
     ProductcategoryRepository productcategoryRepository;
 
-
-
     @Autowired
     ProductRepository productRepository;
 
@@ -82,8 +86,6 @@ public class PublicController {
 
     @Autowired
     FaqRepository faqRepository;
-
-
 
     @Autowired
     ProductRepository examRepository;
@@ -99,6 +101,24 @@ public class PublicController {
 
     @Autowired
     LoginEventService loginEventService;
+
+    @Autowired
+    ProductService productService;
+
+    @Autowired
+    ProductImageRepository productImageRepository;
+
+    @Autowired
+    AvailableDeliveryAreaRepository availableDeliveryAreaRepository;
+
+    @Autowired
+    DeliveryChargeRepository deliveryChargeRepository;
+
+    @Autowired
+    DeliveryTimelineRepository deliveryTimelineRepository;
+
+    @Autowired
+    WarrantyRepository warrantyRepository;
 
     @RequestMapping("/about-us")
     public String aboutUs(Model model) {
@@ -203,7 +223,7 @@ public class PublicController {
     @RequestMapping("/product")
     public String product(Model model) {
 
-        model.addAttribute("productlist", productRepository.findByStatusOrderByIdDesc(ProductStatusEnum.Active));
+        model.addAttribute("productlist", productService.all_Product_front_view(null, null, null, null, null, null));
         model.addAttribute("productcategorylist", productcategoryRepository.findByStatusAndParentIsNull(ProductStatusEnum.Active));
         return "frontview/product";
     }
@@ -211,22 +231,24 @@ public class PublicController {
     @RequestMapping("/product-by-category/{prodcatid}")
     public String productByCategory(Model model, @PathVariable long prodcatid, Productcategory productcategory) {
 
+        model.addAttribute("productlist", productRepository.findActiveProductsByCategoryOrChildren(prodcatid));
+        model.addAttribute("productcategorylist", productcategoryRepository.findByStatusAndParentIsNull(ProductStatusEnum.Active));
+
         productcategory.setId(prodcatid);
-
-       // model.addAttribute("productlist", ourproductRepository.findByProductcategoryOrderByIdDesc(productcategory));
-
-        //model.addAttribute("productcategorylist", productcategoryRepository.findByStatusAndOurproductStatus(com.ecommerce.app.model.enumvalue.Status.Active, com.ecommerce.app.model.enumvalue.Status.Active));
-
-        model.addAttribute("productcategoryname", productcategoryRepository.getReferenceById(prodcatid));
-
+        model.addAttribute("child_category_list", productcategoryRepository.findByStatusAndParent(ProductStatusEnum.Active, productcategory));
         return "frontview/product-by-category";
     }
 
     @RequestMapping("/single-product/{prodid}")
     public String single_product(Model model, @PathVariable long prodid, Product product) {
 
-        model.addAttribute("product_details", productRepository.getReferenceById(prodid));
-
+        // model.addAttribute("product_details", productRepository.getReferenceById(prodid));
+        model.addAttribute("product_details", productService.product_details_for_front_view_single_product_page_by_Id(prodid));
+        model.addAttribute("img_list", productImageRepository.findByProductIdOrderByIdDesc(prodid));
+        model.addAttribute("d_a_list", availableDeliveryAreaRepository.findByProductIdOrderByIdDesc(prodid));
+        model.addAttribute("d_c_list", deliveryChargeRepository.findByProductIdOrderByIdDesc(prodid));
+        model.addAttribute("d_t_list", deliveryTimelineRepository.findByProductIdOrderByIdDesc(prodid));
+        model.addAttribute("w_list", warrantyRepository.findByProductIdOrderByIdDesc(prodid));
         return "frontview/single-product";
     }
 
@@ -328,7 +350,7 @@ public class PublicController {
         return "redirect:/";
     }
 
-    //  Model test Start Here 
+    //  Model test Start Here
     @RequestMapping("/exam-category")
     public String examcategory(Model model) {
 

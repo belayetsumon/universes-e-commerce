@@ -10,8 +10,7 @@ package com.ecommerce.app.order.model;
  * @author User
  */
 public enum OrderStatus {
-   Canceled,Canceled_Reversal,Chargeback,
-   Complete,Denied,Expired,
-   Failed,Pending,Processed,Processing,Refunded,Reversed
-   ,Shipped,Voided
+    NEW_ORDER, PENDING, CONFIRMED, PROCESSING, PACKED, SHIPPED, IN_TRANSIT,
+    OUT_FOR_DELIVERY, DELIVERED, RETURN_REQUESTED, RETURNED,
+    CANCELLED, COMPLETED
 }

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-customar-page">
+    <div layout:fragment = "main_content">
+        <section class=" d-none d-sm-block">
+            <div class="card">
+                <div class="card-header bg-info">
+                    <h5 class="font-weight-bold text-white"><i class="fas fa-list"></i> Customer Dashboards . <small>Welcome Mr.<span th:text="${username}"> </span></small></h5>
+                </div>
+                <div class="card-body">
+                    <div class="card-body">
+                        <form th:action="@{/customer/save}" th:object="${vendorprofile}" enctype="multipart/form-data" method="post" >
+
+
+                            <div class="alert alert-danger alert-dismissible fade show"
+                                 th:if="${#fields.hasErrors('*')}" role="alert">
+                                <h4 class="alert-heading"><i class="bi bi-exclamation-triangle-fill"></i> Error</h4>
+                                <ul th:if="${#fields.hasErrors('*')}">
+                                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+
+
+                            <div class="form-group">
+                                <input type="hidden" class="form-control"  th:field="*{id}" />
+                                <input type="hidden" class="form-control"  th:field="*{userId}" />
+                                <input type="text" class="form-control"  th:field="*{vendorCode}" />
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">First Name</label>
+                                <input type="text" class="form-control" th:field="*{firstName}" aria-describedby="emailHelp" placeholder="">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}">Book Name</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Last Name</label>
+                                <input type="text" class="form-control" th:field="*{lastName}" aria-describedby="emailHelp" placeholder="">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}">Book Name</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Designation</label>
+                                <input type="text" class="form-control" th:field="*{designation}" aria-describedby="emailHelp" placeholder="">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('designation')}" th:errors="*{designation}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Company Name</label>
+                                <input type="text" class="form-control" th:field="*{companyName}" aria-describedby="companyName" placeholder="">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('companyName')}" th:errors="*{firstName}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Phone/Mobile</label>
+                                <input type="text" class="form-control" th:field="*{phone}" aria-describedby="emailHelp" placeholder="">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">E-mail</label>
+                                <input type="text" class="form-control" th:field="*{email}" aria-describedby="emailHelp" placeholder="">
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Address</label>
+                                <textarea type="text"  rows="10" class="form-control col-sm-8" th:field="*{address}" aria-describedby="emailHelp" placeholder="Enter Description"></textarea>
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('address')}" th:errors="*{address}">Book Name</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Description</label>
+                                <textarea type="text"  rows="10" class="form-control col-sm-8" th:field="*{description}" aria-describedby="emailHelp" placeholder="Enter Description"></textarea>
+                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Book Name</span>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </div>
+</div>

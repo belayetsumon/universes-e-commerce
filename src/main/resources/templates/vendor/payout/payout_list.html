@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
+    <div layout:fragment = "main_content">
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center alert alert-secondary">
+                <h4>Vendor Payout  Management</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Vendor Payout  List</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="card alert alert-info">
+
+                    <p>Pending Amount :<span th:text="${pending}"></span>Taka </p>
+                </div>
+            </div>
+
+            <div class="col-sm-4">
+                <div class="card  alert alert-success">
+                    <p>  Available Balance: <span th:text="${available}"></span>Taka </p>
+                </div>
+            </div>
+            <div class="col-sm-4 ">
+                <div class="card alert alert-primary">
+                    <p>   Total Paid: <span th:text="${paid}"></span>Taka </p>
+                </div>
+            </div>
+
+
+            <div class="col-sm-12">
+
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="font-weight-bold mb-0">
+                            <i class="bi bi-list-task"></i> Vendor Payout  List
+                            <span th:text="${list.size()}"></span>
+                        </h5>
+                        <div class="btn-group">
+                            <a class="btn btn-success btn-sm" th:href="@{/vendor-payout/request}">
+                                <i class="bi bi-plus-circle"></i> New Request Payout
+                            </a>
+                            <!-- Example: add more buttons here -->
+                            <!--
+                            <a class="btn btn-primary btn-sm" href="#">Another Action</a>
+                            -->
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+                        <div th:if="${not #strings.isEmpty(message)}"
+                             class="alert alert-success alert-dismissible fade show" role="alert">
+                            <span th:text="${message}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+
+
+
+                        <div class="table-responsive">
+
+                            <table class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Vendor</th>
+                                        <th>Preferred Method</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Ref.:</th>
+                                        <th> System Note</th>
+                                        <th>Requested At </th>
+                                        <th>Processed At</th>
+                                        <th>Paid At</th>
+                                        <th>Edit</th>
+                                        <!--                                        <th>Delete</th>-->
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(list)}">
+                                        <td colspan="8" class="text-center">Sorry, no Data found!</td>
+                                    </tr>
+                                    <tr th:each="m ,status: ${list}">
+                                        <td th:text="${status.count}"></td>
+                                        <td th:text="${m.vendor?.companyName}"></td>
+                                        <td>
+                                            Preferred Method: [[${m.payoutMethod.preferredMethod}]]<br>
+                                            Institute Name: [[${m.payoutMethod.bankName}]]<br>
+                                            Account Name:   [[${m.payoutMethod.accountTitle}]]<br>
+                                            Account Number:    [[${m.payoutMethod.accountNumber}]]<br>
+
+
+                                        </td>
+                                        <td th:text="${m.amount}"></td>
+                                        <td th:text="${m.status}"></td>
+                                        <td th:text="${m.payoutReference}"></td>
+                                        <td th:text="${m.adminNote}"></td>
+                                        <td th:text="${m.requestedAt}"></td>
+                                        <td th:text="${m.processedAt}"></td>
+                                        <td th:text="${m.paidAt}"></td>
+                                        <td>
+                                            <a th:href="@{/vendor-payout/edit/{id}(id=${m.id})}" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square me-2 text-black"></i>Edit</a>
+                                        </td>
+                                        <!--                                        <td>
+                                                                                    <a th:href="@{/vendor-payout/delete/{id}(id=${m.id})}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i>Delete</a>
+                                                                                </td>-->
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </div>
+
+                    </div><!--  Card body end-->
+
+
+                </div><!--  Card  end-->
+            </div>
+
+        </div>
+
+    </div>
+</div>   <!--  Layout end-->

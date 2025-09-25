@@ -1,0 +1,5 @@
+<form th:action="@{/wallet/generate-giftcard}" method="post">
+    <label>Enter points to convert into a gift card:</label>
+    <input type="number" name="points" min="100" th:attr="max=${eligiblePoints}" required />
+    <button type="submit">Generate Gift Card</button>
+</form>

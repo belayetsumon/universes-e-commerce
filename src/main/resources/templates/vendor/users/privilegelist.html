@@ -1,0 +1,70 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment = "main_content">
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4><i class="bi bi-person-badge-fill me-2 text-primary"></i>Vendor Privileges Management</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Vendor Privileges List</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i> Vendor Privileges List. Total [[${vendorPrivileges.size()}]]</strong> </div>
+
+                            <div class="col-sm-7 text-end">
+                                <div class="btn-group ">
+                                    <a class="btn btn-success btn-sm " th:href="@{/adminvendorusers/privileges_add}"> <i class="bi bi-plus-circle"></i> Add Vendor Privileges </a>
+                                    <a th:href="@{/admin/index}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body table-responsive">
+                        <!-- Success Message -->
+                        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <span th:text="${successMessage}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+
+                        <table id="example" class="table table-bordered table-hover table-striped">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Slug</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="vp : ${vendorPrivileges}">
+                                    <td th:text="${vp.name}">Name</td>
+                                    <td th:text="${vp.slug}">Slug</td>
+                                    <td>
+                                        <a th:href="@{/adminvendorusers/privileges_edit/{id}(id=${vp.id})}" class="btn btn-sm btn-warning">    <i class="bi bi-pencil-square me-2 text-black"></i> Edit</a>
+                                        <a th:href="@{/adminvendorusers/privileges_delete/{id}(id=${vp.id})}"
+                                           class="btn btn-sm btn-danger"
+                                           onclick="return confirm('Are you sure?')"> <i class="bi bi-trash"></i> Delete</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+
+
+            </div><!--  Card  end-->
+
+
+        </div><!--  Main Content  end-->
+
+    </div>   <!--  Layout end-->      </div><!--  Main Content  end-->

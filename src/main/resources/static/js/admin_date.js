@@ -4,3 +4,45 @@
  */
 
 
+$(document).ready(function () {
+//    alert("hi");
+    // Initialize the datepicker
+    $('#productDiscountStart').datepicker({
+        dateFormat: 'dd-mm-yy', // Specify the format you need
+        autoclose: true, // Close the datepicker once a date is selected
+        todayHighlight: true, // Highlight today's date
+    });
+    
+    
+    
+    
+    
+     $('#productDiscountEnd').datepicker({
+        dateFormat: 'dd-mm-yy', // Specify the format you need
+        autoclose: true, // Close the datepicker once a date is selected
+        todayHighlight: true, // Highlight today's date
+    });
+    
+    
+    $('#categoryDiscountStartDate').datepicker({
+        dateFormat: 'dd-mm-yy', // Specify the format you need
+        autoclose: true, // Close the datepicker once a date is selected
+        todayHighlight: true, // Highlight today's date
+    });
+    
+    
+    
+    
+    
+     $('#categoryDiscountEndDate').datepicker({
+        dateFormat: 'dd-mm-yy', // Specify the format you need
+        autoclose: true, // Close the datepicker once a date is selected
+        todayHighlight: true, // Highlight today's date
+    });
+    
+    
+    
+    
+    
+    
+});

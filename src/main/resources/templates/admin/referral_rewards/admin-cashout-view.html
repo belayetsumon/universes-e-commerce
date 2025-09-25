@@ -1,0 +1,22 @@
+<tr th:each="r : ${cashouts}">
+    <td th:text="${r.user.name}"></td>
+    <td th:text="${r.amount}"></td>
+    <td th:text="${r.paymentMethod}"></td>
+
+    <td>
+        <span th:if="${r.user.payoutInfo != null}">
+            <span th:if="${r.user.payoutInfo.preferredMethod == T(com.example.enums.PaymentMethod).MOBILE}">
+                Mobile: <span th:text="${r.user.payoutInfo.mobileWalletNumber}"></span>
+            </span>
+            <span th:if="${r.user.payoutInfo.preferredMethod == T(com.example.enums.PaymentMethod).BANK}">
+                Bank: <br/>
+                Acc No: <span th:text="${r.user.payoutInfo.bankAccountNumber}"></span><br/>
+                Name: <span th:text="${r.user.payoutInfo.bankAccountName}"></span><br/>
+                Bank: <span th:text="${r.user.payoutInfo.bankName}"></span>
+            </span>
+        </span>
+    </td>
+
+    <td>...</td>
+</tr>
+

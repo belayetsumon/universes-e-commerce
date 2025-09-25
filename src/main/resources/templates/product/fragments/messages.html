@@ -1,0 +1,22 @@
+<div th:fragment="messages(successMessage, errorMessage)">
+    <!-- Success Message -->
+    <div id="success-message" 
+         th:if="${successMessage}" 
+         class="message success" 
+         th:text="${successMessage}">
+    </div>
+
+    <!-- Error Message -->
+    <div id="error-message" 
+         th:if="${errorMessage}" 
+         class="message error" 
+         th:text="${errorMessage}">
+    </div>
+
+    <script>
+        setTimeout(() => {
+            document.getElementById('success-message')?.classList.add('hidden');
+            document.getElementById('error-message')?.classList.add('hidden');
+        }, 3000);
+    </script>
+</div>

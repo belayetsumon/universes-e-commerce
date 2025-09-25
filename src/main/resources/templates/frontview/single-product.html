@@ -3,75 +3,277 @@
      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
      layout:decorate="front-layout-inner-page">
     <div layout:fragment="main_content">
-            <section   style="background-color: #FFFFFF;">
+        <section  class="breadcrumb_section">
             <div class="container">
-                <nav aria-label="breadcrumb" >
+                <nav aria-label="breadcrumb" class="pt-3 pb-1">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item"><a href="/" class="nav-link">  <i class="bi bi-house"></i> Home</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Product List</li>
                     </ol>
                 </nav>
-            </div> 
-            <!--            <div class="container">
-                            <div class="row">
-                                <div class="col-sm-7">  <h1 class="font-weight-bold" style="color: #fff;"> Product List </h1></div>
-                                <div class="col-sm-5 text-right" style="color: #ffffff">Home/Product List</div>
-                            </div>
-                        </div>-->
+            </div>
         </section>
 
         <section>
-            <div class="container">
+            <div class="container-fluid">
                 <div class="row mt-4">
                     <div class="col-sm-12">
-                        <div class="card mb-4 border-warning">
+                        <div class="card mb-4 ">
 
-                            <div class="card-header border-warning ">
-                                <h5 class="font-weight-bold text-warning"> <i class="fas fa-list"></i> Product Details </h5>
+                            <div class="card-header">
+                                <h5 class="font-weight-bold "> <i class="fas fa-list"></i> Product Details </h5>
                             </div>
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-sm-6">
-                                        <span th:if="${ not #strings.isEmpty(product_details.imageName)}" class=""> 
-                                            <img  class="img-fluid" th:src="@{/files/}+${product_details.imageName}" />
-                                        </span>
-                                        <span th:if="${#strings.isEmpty(product_details.imageName)}" > 
-                                            <img  class="img-fluid" th:src="@{/img/image-not-available.png}" /> 
-                                        </span>
-                                    </div> 
-                                    
-                                    <div class="col-sm-6">
+                                        <!--                                        <span th:if="${ not #strings.isEmpty(product_details.imageName)}" class="">
+                                                                                    <img  class="img-fluid" th:src="@{/files/}+${product_details.imageName}" />
+                                                                                </span>
+                                                                                <span th:if="${#strings.isEmpty(product_details.imageName)}" >
+                                                                                    <img  class="img-fluid" th:src="@{/img/image-not-available.png}" />
+                                                                                </span>-->
 
-                                        <h3 class=" border-bottom border-warning">  <span  th:text="${product_details.title}">    </span></h3>
 
-                                        <h5>  Category: <span  th:text="${product_details.title}">    </span></h5>
 
-                                        <h6>  Price: <span  th:text="${product_details.salesPrice}">    </span></h6>
+                                        <!--                                        <div class="slider-for">
+                                                                                    <div><img src="/images/product1.jpg" alt="Product 1"/></div>
+                                                                                    <div><img src="/images/product2.jpg" alt="Product 2"/></div>
+                                                                                    <div><img src="/images/product3.jpg" alt="Product 3"/></div>
+                                                                                    <div><img src="/images/product4.jpg" alt="Product 4"/></div>
+                                                                                </div>
 
-                                        <!--                                        <h6>  Discount: <span  th:text="${product_details.discount}">    </span></h6>-->
+                                                                                <div class="slider-nav">
+                                                                                    <div><img src="/images/product1.jpg" alt="Thumb 1"/></div>
+                                                                                    <div><img src="/images/product2.jpg" alt="Thumb 2"/></div>
+                                                                                    <div><img src="/images/product3.jpg" alt="Thumb 3"/></div>
+                                                                                    <div><img src="/images/product4.jpg" alt="Thumb 4"/></div>
+                                                                                </div>-->
 
-                                        <form th:action="@{/cart/add}"  enctype="multipart/form-data" method="post" >
 
-                                            <div class="form-group row">
-                                                <input type="hidden" class="form-control" th:name ="product_id" th:value="${product_details.id}" />
+                                        <div id="main-preview">
+                                            <span th:if="${ not #strings.isEmpty(product_details.imageName)}" class="">
+                                                <img  id="mainImage" class="img-fluid " th:src="@{/files/}+${product_details.imageName}"
+                                                      width="800"
+                                                      height="600"/>
+                                            </span>
+                                            <span th:if="${#strings.isEmpty(product_details.imageName)}" >
+                                                <img  class="img-fluid" th:src="@{/img/image-not-available.png}" />
+                                            </span>
 
-                                                <label  class="col-sm-3" for="exampleInputEmail1">Quantity:<span class="text-danger"> </span></label>
-                                                <input  type="number" min="1"   class="form-control col-sm-3 " th:name="quantity" value="1" />
+                                        </div>
+                                        <div class="slider-nav">
+                                            <!-- Loop through product images and check if the image is not null -->
+                                            <div th:each="img : ${img_list}" th:if="${img_list != null}">
+                                                <!--                                                <img th:src="@{/images/{file}(file=${img})}" alt="Thumbnail"/>-->
+                                                <img  class="img-fluid"
+                                                      th:src="@{/files/}+${img.productImageName}"
+                                                      th:attr="data-img=@{/files/}+${img.productImageName}"  width="100" height="80"/>
                                             </div>
+                                            <!-- Optional fallback when the list is empty or contains only null values -->
+                                            <div th:if="${img_list == null || img_list.isEmpty()}">
 
-                                            <button class="btn btn-block btn-warning" >Add to Cart</button>
-                                        </form>
-                                        <!--                                        <a class="btn btn-block btn-warning" th:href="@{/cart/add/{prodid}(prodid=${product_details.id})}">Add to Cart</a>-->
+                                                <!--                                            <p>No product images available.</p>-->
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div class="col-sm-6">
-                                        <h3 class="mt-4 border-bottom border-warning"> Details : </h3>
-                                        <h6>  <span  th:text="${product_details.description}"> </span></h6>
+                                        <div class="row">
+                                            <div class="col-6">
+
+                                                <div class="fs-5">  <span  th:text="${product_details.title}">    </span></div>
+
+                                                <div>  <strong>Category: </strong><span  th:text="${product_details.category}">    </span></div>
+
+                                                <p th:utext="${product_details.shortDescription}">
+
+                                                </p>
+
+                                                <!--                                                <p th:if="${product_details.totalDiscountPercent > 0}">-->
+                                                <ul class="list-unstyled" th:if="${product_details.totalDiscountPercent > 0}">
+                                                    <li>
+                                                        <strong class="fs-6 text-muted">
+                                                            Tk <del><span th:text="${product_details.salesPrice}"></span></del>
+                                                        </strong>
+                                                        <span class="text-warning position-relative ms-3">
+                                                            <strong class="fs-5">
+                                                                -<span th:text="${product_details.totalDiscountPercent}"></span>%
+                                                            </strong>
+                                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                                                Off
+                                                            </span>
+                                                        </span>
+                                                    </li>
+                                                    <li>
+                                                        <span class="fs-5 text-danger">
+                                                            <strong>TK: </strong><span th:text="${product_details.afterDiscountRemainingAmount}"></span>
+                                                        </span>
+                                                    </li>
+                                                </ul>
+
+
+
+                                                <p th:if="${product_details.totalDiscountPercent == 0}">
+                                                    <strong class="fs-5"> Tk: </strong> <span class="fs-5" th:text="${product_details.salesPrice}">    </span>
+                                                </p>
+
+                                                <!--                                                <h6>  Discount: <span  th:text="${product_details.discount}">    </span></h6>-->
+
+                                                <form  class="" th:action="@{/cart/add}"  enctype="multipart/form-data" method="post" >
+
+                                                    <input type="hidden" class="form-control" th:name ="product_id" th:value="${product_details.id}" />
+
+                                                    <input  type="number" min="1"   class="col-auto form-control w-50 mb-3"  size="10" th:name="quantity" value="1" />
+
+                                                    <div class="col-auto form-group">
+                                                        <button class="btn btn-block btn-success" >Add to Cart</button>
+                                                        <button class="btn btn-block btn-outline-info" >Add to WishList </button>
+                                                    </div>
+                                                </form>
+                                                <!--                                        <a class="btn btn-block btn-warning" th:href="@{/cart/add/{prodid}(prodid=${product_details.id})}">Add to Cart</a>-->
+                                                <div>  <strong>Brand: </strong><span  th:text="${product_details.title}">    </span></div>
+                                                <div>  <strong>Manufacture: </strong><span  th:text="${product_details.manufacturerName}"> </span></div>
+                                                <div>  <strong>Availability: </strong>In stock </div>
+                                                <div>  <strong>EMI Available:  </strong>  <span  th:text="${product_details.emiAvailable}"> </span> </div>
+                                                <div >
+
+                                                    <strong>Sold By : </strong>  <span  th:text="${product_details.vendorProfileName}"> </span>
+
+                                                </div>
+                                            </div>
+                                            <div class="col-6 ">
+                                                <div class="fs-6"> Delivery Options </div>
+                                                <p>Available Delivery Area: </p>
+
+
+                                                <ul class="list-unstyled">
+                                                    <li th:if="${d_a_list != null and !#lists.isEmpty(d_a_list)}" th:each="d_a_lists : ${d_a_list}">
+                                                        <span th:text="${d_a_lists.description}"> </span>
+                                                    </li>
+                                                    <!-- Fallback message if the product list is empty or null -->
+
+                                                </ul>
+
+                                                <div th:unless="${d_a_list != null and !#lists.isEmpty(d_a_list)}">
+                                                    No information available.
+                                                </div>
+                                                <hr>
+                                                <div class="textwidget">
+                                                    <div class="fs-6"> Delivery/ Shipping Charge</div>
+
+                                                    <ul class="list-unstyled">
+                                                        <li th:if="${d_c_list != null and !#lists.isEmpty(d_c_list)}" th:each="d_c_lists : ${d_c_list}">
+                                                            <span th:text="${d_c_lists.deliveryArea}"> </span>:
+                                                            <span th:text="${d_c_lists.deliveryCharge == 0 ? 'Free Delivery Available' : d_c_lists.deliveryCharge}"></span>
+
+                                                            <span th:text="${d_c_lists.description}"> </span>
+                                                        </li>
+                                                        <!-- Fallback message if the product list is empty or null -->
+
+                                                    </ul>
+
+                                                    <div th:unless="${d_c_lists != null and !#lists.isEmpty(d_c_lists)}">
+                                                        No information available.
+                                                    </div>
+                                                    <hr>
+                                                </div>
+
+                                                <div class="textwidget">
+                                                    <div class="fs-6"> Delivery Estimated Timeline </div>
+                                                    <ul class="list-unstyled">
+                                                        <li th:if="${d_t_list != null and !#lists.isEmpty(d_t_list)}" th:each="d_t_lists : ${d_t_list}">
+                                                            <!--                                                            <span th:text="${d_t_lists.deliveryArea}"> </span>:  -->
+                                                            <span th:text="${d_t_lists.estimatedTimeline}"> </span>
+                                                            <!--                                                            <span th:text="${d_c_lists.description}"> </span>-->
+                                                        </li>
+                                                        <!-- Fallback message if the product list is empty or null -->
+
+                                                    </ul>
+
+                                                    <div th:unless="${d_t_list != null and !#lists.isEmpty(d_t_list)}">
+                                                        No information available.
+                                                    </div>
+                                                    <hr>
+                                                </div>
+
+                                                <div class="textwidget">
+                                                    <div class="fs-6"> Cash on Delivery Available </div>
+                                                    <p>
+                                                        Delivery Time : Within 30 Working Days
+                                                    </p>
+                                                    <hr>
+                                                </div>
+                                                <div class="textwidget">
+                                                    <div class="fs-6">  Return  </div>
+                                                    Cancellation, Return & Refund <br>
+                                                    Change of mind is not applicable
+                                                    <hr>
+                                                </div>
+                                                <div class="textwidget">
+                                                    <div class="fs-6"> Warranty </div>
+                                                    <ul class="list-unstyled">
+                                                        <li th:if="${w_list != null and !#lists.isEmpty(w_list)}" th:each="w_lists : ${w_list}">
+                                                            <!--                                                            <span th:text="${d_t_lists.deliveryArea}"> </span>:  -->
+                                                            <span th:text="${w_lists.description}"> </span>
+                                                            <!--                                                            <span th:text="${d_c_lists.description}"> </span>-->
+                                                        </li>
+                                                        <!-- Fallback message if the product list is empty or null -->
+
+                                                    </ul>
+
+                                                    <div th:unless="${w_list != null and !#lists.isEmpty(w_list)}">
+                                                        No information available.
+                                                    </div>
+                                                    <hr>
+                                                </div>
+
+                                            </div>   </div></div>
+
+
+                                    <div class="col-sm-12">
+
+
+
+
+
+
+                                        <ul class="nav nav-tabs m-5" id="productTabs">
+                                            <li class="nav-item">
+                                                <a class="nav-link active" id="description-tab" data-bs-toggle="tab" href="#description">Description</a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a class="nav-link" id="reviews-tab" data-bs-toggle="tab" href="#video">Video</a>
+                                            </li>
+                                            <!-- <li class="nav-item">
+                                                 <a class="nav-link" id="specs-tab" data-bs-toggle="tab" href="#specs">Specifications</a>
+                                             </li>-->
+                                        </ul>
+
+
+                                        <!-- Tab Content -->
+                                        <div class="tab-content mt-3">
+                                            <div class="tab-pane fade show active" id="description">
+                                                <p ><span  th:utext="${product_details.description}"> </span></p>
+                                            </div>
+                                            <div class="tab-pane fade" id="video">
+                                                <div class="" th:if="${product_details.video != null}">
+                                                    <iframe width="560" height="315"
+                                                            th:src="'https://www.youtube.com/embed/' + ${#strings.substringAfter(product_details.video,'v=')} + '?si=q54JZcE512Kb-OkG'"
+                                                            title="YouTube video player"
+                                                            frameborder="0"
+                                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                                            allowfullscreen>
+                                                    </iframe>
+                                                </div>
+                                            </div>
+                                            <div class="tab-pane fade" id="specs">
+                                                <ul>
+                                                    <li ></li>
+                                                </ul>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="col-sm-6">
-                                        <h3 class="mt-4 border-bottom border-warning"> Video : </h3>
-                                        <h1 class="text-center"> No Video Available </h1>
-                                    </div>
+
                                 </div>
                             </div>
                         </div>

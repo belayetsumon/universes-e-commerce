@@ -6,118 +6,102 @@ and open the template in the editor.
 -->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
     <div layout:fragment = "main_content">
-        <section class=" d-none d-sm-block">
-            <div class="row">
-
-                <div class="col-sm-3">
-
-                    <div   th:replace="vendor-left-menu">
-                        Left side column. contains the sidebar 
-
-                        Left Side 
-                        =============================================== 
-                    </div>
-                </div>
-                <div class="col-sm-9">
-
-                    <div class="card borderColor">
-                        <div class="card-header bgMaroon text-white ">
-                            <div class="row">  <div class="col-sm-5 font-weight-bold "><i class="fas fa-list"></i> Welcome   </div>
-                                <div class="col-sm-7 "> <span class="float-right">Your Total Earning: <b th:text="${totalincome}">1xxxxx/-</b>.00/- Taka</span></div>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-sm-4">
-                                    <div class="card mb-1">
-                                        <div class="card-header bg-danger text-white">
-                                            Total Income
-                                        </div>
-                                        <div class="card-body">
-                                            <blockquote class="blockquote mb-0">
-                                                <p>   <span th:text="${totalincome}"></span>.00/- Taka </p>
-                                                <footer class="footer"> </footer>
-                                            </blockquote>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-sm-4">
-                                    <div class="card mb-1">
-                                        <div class="card-header bg-primary text-white">
-                                            Total  withdraw 
-                                        </div>
-                                        <div class="card-body">
-                                            <blockquote class="blockquote mb-0">
-                                                <p></p>
-                                                <footer class="blockquote-footer"> <cite title="Source Title"> </cite></footer>
-                                            </blockquote>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-sm-4">
-                                    <div class="card mb-1">
-                                        <div class="card-header bg-secondary text-white">
-                                            Current Balance 
-                                        </div>
-                                        <div class="card-body">
-                                            <blockquote class="blockquote mb-0">
-                                                <p></p>
-                                                <footer class="blockquote-footer"> <cite title="Source Title"> </cite></footer>
-                                            </blockquote>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-sm-4">
-                                    <div class="card mb-1">
-                                        <div class="card-header bg-success text-white">
-                                            Today Sale
-                                        </div>
-                                        <div class="card-body">
-                                            <blockquote class="blockquote mb-0">
-                                                <p></p>
-                                                <footer class="blockquote-footer"> <cite title="Source Title"> </cite></footer>
-                                            </blockquote>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-sm-4">
-                                    <div class="card mb-1">
-                                        <div class="card-header bg-success text-white">
-                                            Current Month Sale
-                                        </div>
-                                        <div class="card-body">
-                                            <blockquote class="blockquote mb-0">
-                                                <p></p>
-                                                <footer class="blockquote-footer"> <cite title="Source Title"> </cite></footer>
-                                            </blockquote>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-sm-4">
-                                    <div class="card mb-1">
-                                        <div class="card-header bg-warning text-white">
-                                            Current Year Sale
-                                        </div>
-                                        <div class="card-body">
-                                            <blockquote class="blockquote mb-0">
-                                                <p></p>
-                                                <footer class="blockquote-footer"> <cite title="Source Title"> </cite></footer>
-                                            </blockquote>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div><!--  Card body end-->
-                </div>
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center alert alert-secondary">
+                <h5><i class="bi bi-speedometer2"></i> <span th:text="${vendorprofile.companyName}"></span> Dashboard</h5>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Vendor Dashboard</li>
+                    </ol>
+                </nav>
+            </div>
         </section>
 
 
 
+        <section class="">
+            <div class="row">
+
+                <div class="col-sm-12">
+
+
+
+
+                    <div class="row">
+
+                        <div class="col-sm-4">
+                            <div class="card alert alert-info">
+
+                                <p>Pending Amount :<span th:text="${pending}"></span>Taka </p>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="card  alert alert-success">
+                                <p>  Available Balance: <span th:text="${available}"></span>Taka </p>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 ">
+                            <div class="card alert alert-primary">
+                                <p>   Total Paid: <span th:text="${paid}"></span>Taka </p>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="card alert alert-warning">
+                                <p>   Pending : <span th:text="${paid}"></span>Taka </p>
+                            </div>
+                            <div class="card alert alert-info">
+                                <p>   Confirmed: <span th:text="${paid}"></span>Taka </p>
+                            </div>
+                            <div class="card alert alert-light">
+                                <p>  Processing: <span th:text="${paid}"></span>Taka </p>
+                            </div>
+                            <div class="card alert alert-warning">
+                                <p>Packed : <span th:text="${paid}"></span>Taka </p>
+                            </div>
+                            <div class="card alert alert-info">
+                                <p> Shipped : <span th:text="${paid}"></span>Taka </p>
+                            </div>
+                            <div class="card alert alert-light">
+                                <p> Transit: <span th:text="${paid}"></span>Taka </p>
+                            </div>  </div>
+
+                        <div class="col-sm-4">
+                            <div class="card alert alert-warning">
+                                <p>Out For Delivery : <span th:text="${paid}"></span>Taka </p>
+                            </div>
+                            <div class="card alert alert-info">
+                                <p>Delivery : <span th:text="${paid}"></span>Taka </p>
+                            </div>
+
+                            <div class="card alert alert-light">
+                                <p>Completed: <span th:text="${paid}"></span>Taka </p>
+                            </div>
+                            <div class="card alert alert-light">
+                                <p>Return Requested : <span th:text="${paid}"></span>Taka </p>
+                            </div>
+                            <div class="card alert alert-warning">
+                                <p>Returned : <span th:text="${paid}"></span>Taka </p>
+                            </div>
+                            <div class="card alert alert-info">
+                                <p>Canceled : <span th:text="${paid}"></span>Taka </p>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="card alert alert-secondary">
+                                <p>                                       Today Sale: <span th:text="${paid}"></span>Taka </p>
+                            </div>
+                            <div class="card alert alert-success">
+                                <p>                                         Current Month Sale: <span th:text="${paid}"></span>Taka </p>
+                            </div>
+                            <div class="card alert alert alert-danger">
+                                <p>   Current Year Sale: <span th:text="${paid}"></span>Taka </p>
+                            </div>
+                        </div>
+                    </div>
+                </div><!--  Card body end-->
+
+            </div>
+        </section>
     </div></div>

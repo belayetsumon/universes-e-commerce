@@ -8,12 +8,12 @@ and open the template in the editor.
     <div layout:fragment = "main_content">
 
 
-        <section class=" d-none d-sm-block">
+        <section class=" ">
 
             <div class="card">
-                <div class="card-header bg-info">
+                <div class="card-header">
 
-                    <h5 class="font-weight-bold text-white"><i class="fas fa-list"></i> Customer Dashboards . <small>Welcome Mr.<span th:text="${username}"> </span></small></h5>
+                    <h5 class="font-weight-bold "><i class="fas fa-list"></i> Customer Dashboards </h5>
 
                 </div>
                 <div class="card-body">
@@ -27,11 +27,12 @@ and open the template in the editor.
                                     <div class="col-sm-6">
                                         <div class="card mb-3">
                                             <div class="card-header">
-                                                <i class="fas fa-list"></i> SMS Statistics
+                                                <i class="fas fa-list"></i> Your Wallet
                                             </div>
                                             <div class="card-body">
-                                                <h5 class="card-title"></h5>
-                                                <p class="card-text"></p>
+                                                <div class="alert alert-info">
+                                                    Balance: <strong th:text="${walletBalance}">0</strong> USD
+                                                </div>
 
                                             </div>
                                         </div>
@@ -43,11 +44,20 @@ and open the template in the editor.
                                     <div class="col-sm-6">
                                         <div class="card mb-3">
                                             <div class="card-header">
-                                                <i class="fas fa-list"></i>  Whatsapp Statistics
+                                                <i class="fas fa-list"></i>  Transactions
                                             </div>
                                             <div class="card-body">
-                                                <h5 class="card-title"></h5>
-                                                <p class="card-text"></p>
+                                                <table class="table table-bordered">
+                                                    <tr>
+                                                        <th>Date</th><th>Type</th><th>Description</th><th>Amount</th>
+                                                    </tr>
+                                                    <tr th:each="txn : ${transactions}">
+                                                        <td th:text="${txn.timestamp}"></td>
+                                                        <td th:text="${txn.type}"></td>
+                                                        <td th:text="${txn.description}"></td>
+                                                        <td th:text="${txn.amount}"></td>
+                                                    </tr>
+                                                </table></p>
 
                                             </div>
                                         </div>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment = "main_content">
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="card">
+                    <div class="card-header">
+
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i> Shipping Charge  List. Total: [[${list.size()}]]</strong> </div>
+
+                            <div class="col-sm-7 text-end">
+                                <div class="btn-group ">
+                                    <a class="btn btn-success btn-sm " th:href="@{/shippingcharge/create}"> <i class="bi bi-plus-circle"></i> Add New </a>
+                                    <a th:href="@{/admin/index}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+                        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <span th:text="${successMessage}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+
+                        <div class="table-responsive">
+
+
+
+
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Zone Type</th>
+                                        <th>Min Weight</th>
+                                        <th>Max Weight</th>
+                                        <th>Charge</th>
+                                        <th>Extra /kg</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="rule, iStat : ${list}">
+                                        <td th:text="${iStat.count}">1</td>
+                                        <td th:text="${rule.zoneType}">Zone</td>
+                                        <td th:text="${rule.minWeight}">0</td>
+                                        <td th:text="${rule.maxWeight}">1</td>
+                                        <td th:text="${rule.charge}">50</td>
+                                        <td th:text="${rule.extraPerKg}">10</td>
+                                        <td>
+                                            <a th:href="@{/shippingcharge/edit/{id}(id=${rule.id})}" class="btn btn-sm btn-warning">Edit</a>
+                                            <form th:action="@{/shippingcharge/delete/{id}(id=${rule.id})}" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this rule?')">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div><!--  Card body end-->
+                </div><!--  Card  end-->
+            </div><!--  Main Content  end-->
+        </div>
+    </div>
+</div>   <!--  Layout end-->

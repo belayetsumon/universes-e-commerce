@@ -1,0 +1,94 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
+    <div layout:fragment="main_content">
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4><i class="bi bi-person-badge-fill me-2 text-primary"></i>Vendor Users Management</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Vendor Users List</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+
+        <div class="card shadow-sm">
+            <div class="card-header  ">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        <span th:text="${vendorPayout.id == null} ? 'Add New Payout Method' : 'Edit Payout Method'"></span>
+                    </h5>
+                    <a th:href="@{/vendor-payout/list}" class="btn btn-danger btn-sm">
+                        <i class="bi bi-x-circle"></i> Close
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body">
+
+                <form th:action="@{/vendor-payout/save}" th:object="${vendorPayout}" method="post">
+
+                    <div class="mb-3 d-flex justify-content-center">
+
+                        <!-- Show all errors in one place -->
+                        <div th:if="${#fields.hasErrors()}" class="alert alert-danger">
+                            <ul>
+                                <li th:each="err : ${#fields.errors()}" th:text="${err}"></li>
+                            </ul>
+                        </div>
+
+                        <div class="alert alert-danger" th:if="${errors}">
+                            <ul>
+                                <li th:each="err : ${errors}" th:text="${err}"></li>
+                            </ul>
+                        </div>
+
+                    </div>
+                    <input type="hidden" th:field="*{id}"/>
+                    <input type="hidden" th:field="*{vendor}"/>
+
+                    <div class="mb-3">
+                        <label>Amount:</label>
+                        <input type="number" class="form-control w-25" th:field="*{amount}" required/>
+                        <div class="form-text"> </div>
+                        <div class="text-danger" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Payout Method:</label>
+                        <select class="form-select w-50" th:field="*{payoutMethod}">
+                            <option th:each="m : ${method}"
+                                    th:value="${m.key}" th:text="${m.value}"></option>
+                        </select>
+                        <div class="text-danger" th:if="${#fields.hasErrors('payoutMethod')}" th:errors="*{payoutMethod}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Pay Out Status:</label>
+                        <select class="form-select w-25" th:field="*{status}">
+                            <option value="REQUESTED"> Request </option>
+                        </select>
+                        <div class="text-danger" th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></div>
+                    </div>
+
+
+
+
+
+
+
+                    <!-- Add vendor selection if needed -->
+                    <!-- Submit button -->
+                    <div class="d-flex justify-content-center">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle me-1"></i> Save
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>

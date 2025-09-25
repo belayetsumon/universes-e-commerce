@@ -49,57 +49,40 @@ public class ProductcategoryController {
     @Autowired
     private SlagGenerator slagGenerator;
 
-
     @Autowired
     ProductcategoryService productcategoryService;
-
 
     @RequestMapping(value = {"", "/", "/index"})
     public String index(Model model) {
         // model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
-
         // Retrieve all root-level categories (those with no parent)
-        List<Productcategory> rootCategories = productcategoryRepository.findAll();
+        List<Productcategory> rootCategories = productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
         // Add root categories to the model
         model.addAttribute("categories", rootCategories);
-//        List<Productcategory> rootNodes = productcategoryService.getRootNodes();
-//
-//        List<String> paths = new ArrayList<>();
-//        List<Productcategory> treeData = productcategoryRepository.findAll();
-//
-//        // Generate all paths starting from the root nodes
-//        for (Productcategory rootNode : treeData) {
-//            generatePaths(rootNode, "", paths);
-//        }
-//
-//        model.addAttribute("rootNodes", paths);
 
         return "product/productcategory/index";
     }
 
     // Recursive function to generate all paths
-    private void generatePaths(Productcategory node, String currentPath, List<String> paths) {
-        // Add current node to the path
-        String path = currentPath.isEmpty() ? node.getName() : currentPath + " → " + node.getName();
-        paths.add(path);
-
-        // If the node has children, recursively generate paths for them
-        if (node.getChildren() != null) {
-            for (Productcategory child : node.getChildren()) {
-                generatePaths(child, path, paths);
-            }
-        }
-    }
-
+    // private void generatePaths(Productcategory node, String currentPath, List<String> paths) {
+    //     // Add current node to the path
+    //     String path = currentPath.isEmpty() ? node.getName() : currentPath + " → " + node.getName();
+    //     paths.add(path);
+    //     // If the node has children, recursively generate paths for them
+    //     if (node.getChildren() != null) {
+    //         for (Productcategory child : node.getChildren()) {
+    //             generatePaths(child, path, paths);
+    //         }
+    //     }
+    // }
     @RequestMapping("/create")
     public String create(Model model, Productcategory productcategory) {
 
+        model.addAttribute("statuslist", ProductStatusEnum.values());
 
         model.addAttribute("statuslist", ProductStatusEnum.values());
 
-        model.addAttribute("statuslist",  ProductStatusEnum.values());
-
-        model.addAttribute("statuslist",  ProductStatusEnum.values());
+        model.addAttribute("statuslist", ProductStatusEnum.values());
 
         model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
 
@@ -118,9 +101,9 @@ public class ProductcategoryController {
 
             model.addAttribute("statuslist", ProductStatusEnum.values());
 
-          model.addAttribute("statuslist",  ProductStatusEnum.values());
+            model.addAttribute("statuslist", ProductStatusEnum.values());
 
-          model.addAttribute("statuslist",  ProductStatusEnum.values());
+            model.addAttribute("statuslist", ProductStatusEnum.values());
 
             model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
             return "product/productcategory/add";
@@ -128,7 +111,7 @@ public class ProductcategoryController {
 
         if (!pic.isEmpty()) {
             try {
-                byte[] bytes = pic.getBytes();
+                // byte[] bytes = pic.getBytes();
 
                 // Creating the directory to store file
                 File dir = new File(properties.getRootPath());
@@ -195,15 +178,13 @@ public class ProductcategoryController {
     @RequestMapping("/edit/{id}")
     public String edit(Model model, @PathVariable Long id, Productcategory productcategory) {
 
-
         model.addAttribute("productcategory", productcategoryRepository.findById(id).orElse(null));
         model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
         model.addAttribute("statuslist", ProductStatusEnum.values());
 
-        
         model.addAttribute("productcategory", productcategoryRepository.findById(id).orElse(null));
         model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
-        model.addAttribute("statuslist",  ProductStatusEnum.values());
+        model.addAttribute("statuslist", ProductStatusEnum.values());
 
         return "product/productcategory/add";
     }

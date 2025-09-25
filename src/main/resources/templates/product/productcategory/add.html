@@ -96,13 +96,13 @@ and open the template in the editor.
 
                             <div class="form-group col-sm-6">
                                 <label for="exampleInputEmail1 col-sm-5">Discount Start Date:<span class="text-danger"> </span></label>
-                                <input  type="datetime-local"    min="0" class="form-control col-sm-5" th:field="*{discountStartDate}" aria-describedby="emailHelp" placeholder="DD/MM/YYYY">
+                                <input  type="text"  id="categoryDiscountStartDate" data-date-format="dd-mm-yyyy" min="0" class="form-control col-sm-5" th:field="*{discountStartDate}" aria-describedby="emailHelp" placeholder="DD/MM/YYYY">
                                 <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('discountStartDate')}" th:errors="*{discountStartDate}">Book Name</span>
                             </div>
 
                             <div class="form-group col-sm-6">
                                 <label for="exampleInputEmail1 col-sm-5">Discount End Date:<span class="text-danger"> </span></label>
-                                <input type="text"   min="0"class="form-control col-sm-5" id="discountEndDate" th:field="*{discountEndDate}" aria-describedby="emailHelp" placeholder="DD/MM/YYYY">
+                                 <input type="text"   id="categoryDiscountEndDate" data-date-format="dd-mm-yyyy" min="0" class="form-control col-sm-5"  th:field="*{discountEndDate}" aria-describedby="emailHelp" placeholder="DD/MM/YYYY">
 
                                 <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('discountEndDate')}" th:errors="*{discountEndDate}">Book Name</span>
                             </div>

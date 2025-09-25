@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-customar-page">
+
+    <div layout:fragment = "main_content">
+        <section>
+            <div class="row">
+                <div class="col-sm-3"><h4> Referral Rewards </h4></div>
+                <div class="col-sm-5">   <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Referral Rewards</li>
+                            <li class="breadcrumb-item active" aria-current="page">Cash Out Request List</li>
+                        </ol>
+                    </nav>
+                </div></div>
+        </section>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-9">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i> Cash Out Request List</strong> </div>
+
+                            <div class="col-sm-7 text-end">
+                                <!--                                <div class="btn-group ">
+                                                                    <a class="btn btn-success btn-sm " th:href="@{/product/create}"> <i class="bi bi-plus-circle"></i> Add Product </a>
+                                                                    <a th:href="@{/admin/index}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>
+                                                                </div>-->
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="card-body table-responsive">
+
+
+                        <table id="example" class="table table-bordered table-hover table-striped">
+                            <thead class="thead-light">
+                                <tr><th>User</th><th>Amount</th><th>Requested At</th><th>Actions</th></tr>
+                            </thead>
+                            <tr th:each="r : ${pendingRequests}">
+                                <td th:text="${r.user.email}"></td>
+                                <td th:text="${r.amount}"></td>
+                                <td th:text="${#dates.format(r.requestedAt, 'yyyy-MM-dd HH:mm')}"></td>
+                                <td>
+                                    <form th:action="@{|/admin/cashouts/${r.id}/approve|}" method="post"><button>✅ Approve</button></form>
+                                    <form th:action="@{|/admin/cashouts/${r.id}/reject|}" method="post"><button>❌ Reject</button></form>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+
+
+
+                </div><!--  Card  end-->
+
+
+            </div><!--  Main Content  end-->
+            <div class="col-sm-3">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold ">  <strong><i class="fas fa-list"></i> Filter</strong> </div>
+
+
+
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+
+
+                    </div><!--  Card body end-->
+
+
+                </div><!--  Card  end-->
+
+
+            </div>
+        </div>   <!--  Layout end-->      </div><!--  Main Content  end-->
+</div>

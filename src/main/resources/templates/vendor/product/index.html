@@ -6,23 +6,19 @@ and open the template in the editor.
 -->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
     <div layout:fragment = "main_content">
-   <section class=" d-none d-sm-block">
+
         <div class="row">
-                  <div class="col-sm-3">
-
-                    <div   th:replace="vendor-left-menu">
-                        Left side column. contains the sidebar 
-
-                        Left Side 
-                        =============================================== 
-                    </div>
-                </div>
             <div class="col-sm-9">
 
                 <div class="card">
                     <div class="card-header">
-                        <div class="row">  <div class="col-sm-5 font-weight-bold text-danger"><i class="fas fa-list"></i> Product  List </div>
-                            <div class="col-sm-7 "> <a class="btn btn-success btn-sm float-right" th:href="@{/product/create}"> Add Product </a></div>
+
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold "><h5 class="font-weight-bold"><i class="bi bi-list-task"></i>  Product  List . Total: [[${productlist.size()}]]</h5></div>
+                            <div class="col-sm-7 text-end">
+                                <div class="btn-group ">
+                                    <a class="btn btn-success btn-sm "  th:href="@{/productvendor/create}"> Add Product </a>
+                                </div>       </div>
                         </div>
                     </div>
                     <div class="card-body">
@@ -30,14 +26,13 @@ and open the template in the editor.
                         <span th:if="${ not #strings.isEmpty(message)}">
 
                             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <span th:text="${message}" > </span>
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
+                                <span th:text="${message}"> </span>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
+
                         </span>
                         <div class="table-responsive">
-                            <table class="table table-bordered">
+                            <table  id="tablesdata" class="table table-bordered" th:if="${ not #lists.isEmpty(productlist)}">
                                 <thead class="thead-light">
                                     <tr>
                                         <th scope="col">#</th>
@@ -47,7 +42,7 @@ and open the template in the editor.
                                         <th scope="col"> Product Category </th>
                                         <th scope="col"> Order no </th>
                                         <th scope="col"> Image </th>
-                                        <th scope="col"> Price </th>
+                                        <th scope="col"> Sales Price </th>
                                         <th scope="col"> Status </th>
                                         <th scope="col"> Created </th>
                                         <th scope="col"> Updated </th>
@@ -59,22 +54,23 @@ and open the template in the editor.
                                         <th th:text="${status.count}">1</th>
                                         <td th:text="${productlists.sku}">Otto</td>
 
-                                        <td> <a th:href="@{/ourproduct/details/{id}(id=${productlists.id})}" th:text="${productlists.title}">    </a></td>
+                                        <td> <a class="nav-link"
+                                                th:href="@{/productvendor/details/{id}(id=${productlists.id})}" th:text="${productlists.title}">    </a></td>
 
                                         <td th:text="${productlists.slug}">Otto</td>
 
-                                        <td th:text="${productlists.productcategory.name}">Otto</td>
+                                        <td th:text="${productlists.category}">Otto</td>
 
                                         <td th:text="${productlists.orderno}">Otto</td>
 
                                         <td>
-                                            <span th:if="${ not #strings.isEmpty(productlists.imageName)}" class="badge bg-green pull-right"> 
+                                            <span th:if="${ not #strings.isEmpty(productlists.imageName)}" class="badge bg-green pull-right">
                                                 <img  class="img-responsive" th:src="@{/files/}+${productlists.imageName}" width="100px"  height="100px"/>
                                             </span>
 
                                             <span th:if="${#strings.isEmpty(productlists.imageName)}" > Image Not Found </span>
                                         </td>
-                                        <td th:text="${productlists.price}">Otto</td>
+                                        <td th:text="${productlists.salesPrice}">Otto</td>
                                         <td th:text="${productlists.status}">Otto</td>
 
                                         <td th:text="${productlists.created}">Otto</td>
@@ -82,6 +78,14 @@ and open the template in the editor.
                                         <td th:text="${productlists.modified}">@mdo</td>
                                     </tr>
                                 </tbody>
+                            </table>
+
+                            <table class="table table-bordered" th:if="${ #lists.isEmpty(productlist)}">
+                                <tr>
+                                    <td> Sorry no product found ! </td>
+                                </tr>
+
+
                             </table>
                         </div>
 
@@ -92,8 +96,29 @@ and open the template in the editor.
 
 
             </div><!--  Main Content  end-->
+            <div class="col-sm-3">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold ">  <strong><i class="fas fa-list"></i> Filter</strong> </div>
+
+
+
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+
+
+                    </div><!--  Card body end-->
+
+
+                </div><!--  Card  end-->
+
+
             </div>
-               </section>
-              </div><!--  Main Content  end-->
-            </div>
-   
+        </div>
+
+    </div><!--  Main Content  end-->
+</div>

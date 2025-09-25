@@ -4,12 +4,14 @@
      layout:decorate="front-layout-inner-page">
     <div layout:fragment="main_content">
 
-        <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #faa619;">
+        <section  class="breadcrumb_section">
             <div class="container">
-                <div class="row">
-                    <div class="col-sm-7">  <h1 class="font-weight-bold" style="color: #fff;">    Cart </h1></div>
-                    <div class="col-sm-5 text-right" style="color: #ffffff">Home/cart</div>
-                </div>
+                <nav aria-label="breadcrumb" class="pt-3 pb-1">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/" class="nav-link">  <i class="bi bi-house"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Cart</li>
+                    </ol>
+                </nav>
             </div>
         </section>
 
@@ -40,34 +42,55 @@
                                                 <th scope="col">#</th>
                                                 <th scope="col">Product</th>
                                                 <th scope="col">Photo</th>
-                                                <th scope="col">price</th>
+                                                <th scope="col"> sales price</th>
                                                 <th scope="col">Quantity</th>
-                                                <th scope="col">Total</th>
+                                                <th scope="col">Discount Rate % </th>
+                                                <th scope="col"> Discount Amount</th>
+                                                <th scope="col">Vat Rate % </th>
+                                                <th scope="col"> Vat Amount </th>
+                                                <th scope="col"> Item Total</th>
                                                 <th scope="col">Remove</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr th:each="cart,status:${session.sessioncart}">
-                                                <th>1</th>
-                                                <td><a    class="card-link text-warning" th:href="@{/front-view/single-product/{prodid}(prodid=${cart.product.id})}" >  <span  th:text="${cart.product.title}">    </span> </a></td>
+                                            <tr th:each="cart,status : ${session.sessioncart}">
+                                                <th> [[${status.count}]]</th>
+                                                <td><a    class="nav-link" th:href="@{/public/single-product/{prodid}(prodid=${cart.product.id})}" >  <span  th:text="${cart.product.title}">    </span> </a></td>
 
-                                                <td> <span th:if="${ not #strings.isEmpty(cart.product.imageName)}" class="badge bg-green pull-right"> 
+                                                <td> <span th:if="${ not #strings.isEmpty(cart.product.imageName)}" class="badge bg-green pull-right">
                                                         <img  class="img-responsive" th:src="@{/files/}+${cart.product.imageName}" width="100px"  height="100px"/>
                                                     </span>
 
                                                     <span th:if="${#strings.isEmpty(cart.product.imageName)}" > Image Not Found </span></td>
 
-                                                <td th:text="${cart.product.salesPrice}">Otto</td>
-
-                                                <td th:text="${cart.quantity}">Otto</td>
+                                                <td th:text="${cart.salesPrice}">Otto</td>
                                                 <td>
-                                                    <div th:with="result=${cart.product.salesPrice * cart.quantity}">
+                                                    <form
 
-                                                        <span th:text="${#numbers.formatDecimal(result, 0, 'COMMA', 2, 'POINT')}">10.00</span> 
 
-                                                    </div>
+                                                        th:attr="hx-post=@{/cart/quantityUpdate}"
+                                                        hx-params="*"
+                                                        hx-trigger="change from:input[name='quantity']"
+
+                                                        hx-target="body"
+                                                        hx-swap="outerHTML">
+
+                                                        <input type="hidden" name="product_id" th:value="${cart.product.id}" />
+                                                        <input type="number" name="quantity" min="1" th:value="${cart.quantity}" />
+                                                    </form>
+
+
+                                                    <!--                                                    <form  class="" th:action="@{/cart/quantityUpdate}"  enctype="multipart/form-data" method="post" >
+                                                                                                            <input type="hidden" class="form-control" th:name ="product_id" th:value="${cart.product.id}" />
+                                                                                                            <input  type="number" min="1" th:name="quantity"  th:value="${cart.quantity}" />
+                                                                                                            <button type="submit" class="btn btn-block btn-sm btn-warning">Proceed To Checkout</button>
+                                                                                                        </form>-->
                                                 </td>
-
+                                                <td th:text="${cart.discountRate}">Otto</td>
+                                                <td th:text="${cart.discountAmount}">Otto</td>
+                                                <td th:text="${cart.vatRate}">Otto</td>
+                                                <td th:text="${cart.vatAmount}">Otto</td>
+                                                <td th:text="${cart.itemTotal}">Otto</td>
                                                 <td class="text-center"><a th:href="@{/cart/remove/{id}(id=${cart.product.id})}" > Delete </a></td>
 
                                             </tr>
@@ -76,8 +99,8 @@
                                     </table>
                                 </div>
 
-                            </div> 
-                            <div class="card-footer"> 
+                            </div>
+                            <div class="card-footer">
                                 <a th:href="@{/public/product}" type="button" class="btn btn-sm btn-success"> Continue Shopping</a>
 
                             </div>
@@ -95,10 +118,10 @@
 
                                 <li class="list-group-item">Order Total: <span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">10.00</span>/-</li>
                                 <!--                                <li class="list-group-item">
-                                                                    <a type="button" class="btn btn-block btn-sm btn-warning">Update Shopping  Cart</a> 
+                                                                    <a type="button" class="btn btn-block btn-sm btn-warning">Update Shopping  Cart</a>
                                                                 </li>-->
                                 <li class="list-group-item">
-                                    <a type="button" class="btn btn-block btn-sm btn-warning" th:href="@{/order/create}">Proceed To Checkout</a> 
+                                    <a type="button" class="btn btn-block btn-sm btn-warning" th:href="@{/order/create}">Proceed To Checkout</a>
                                 </li>
                             </ul>
                         </div>

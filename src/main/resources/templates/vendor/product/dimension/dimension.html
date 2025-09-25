@@ -1,0 +1,54 @@
+<div class="modal-header">
+    <h1 class="modal-title fs-5" id="exampleModalLabel">Add/Edit Dimension </h1>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+
+    <form
+        th:hx-post="@{/productdimension/save}"
+        hx-trigger="submit"
+        hx-target="body"
+        hx-swap="outerHTML"
+        method="post"
+        enctype="multipart/form-data"
+        th:object="${productDimension}">
+
+        <div class="form-group">
+            <input type="hidden" class="form-control" th:field="*{id}" >
+            <input type="hidden" class="form-control" th:field="*{product}" >
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Length/cm</label>
+            <input type="number"  min="1" class="form-control" th:field="*{length}" required>
+
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Width/cm</label>
+            <input type="number"  min="1" class="form-control" th:field="*{width}" required>
+
+        </div>
+
+
+        <div class="mb-3">
+            <label class="form-label">Height/cm</label>
+            <input type="number"  min="1" class="form-control" th:field="*{height}" required>
+        </div>
+
+
+        <div class="mb-3">
+            <label class="form-label">Weight/kg</label>
+            <input type="number"  min="1" class="form-control" th:field="*{weight}" required>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Close</button>
+            <button type="submit" class="btn btn-success">Submit</button>
+        </div>
+
+    </form>
+</div>
+
+
+
+

@@ -1,109 +1,366 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
     <head>
-        <!-- Required meta tags -->
         <meta charset="utf-8">
-        <meta name="viewport"
-              content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title th:text="${pageTitle} ?: 'Dashboard'">Dashboard</title>
+
+        <!-- Bootstrap 5.3 -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+
         <link rel="stylesheet" href="/webjars/bootstrap/5.3.1/css/bootstrap.min.css"/>
         <link rel="stylesheet" href="/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.css">
         <link rel="stylesheet" href="/webjars/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
-        <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.jqueryui.min.css" >       
+        <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.jqueryui.min.css" >
         <!-- DataTables Buttons CSS -->
         <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css"/>
-        <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css"/>        
-        <link rel="stylesheet" th:href="@{/css/admin-app.css}"/> 
-        <title>Universes E-commerce</title>
+        <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css"/>
+        <link rel="stylesheet" th:href="@{/css/admin-app.css}"/>
+        <link rel="stylesheet" th:href="@{/css/filepond.min.css}"/>
+        <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet">
+        <style>
+
+            body {
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                background-color: #f0f2f5;
+                overflow-x: hidden; /* Prevents horizontal scrolling */
+            }
+            .sidebar {
+                width: 280px;
+                background-color: #343a40;
+                color: white;
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                transition: width 0.3s ease;
+                flex-shrink: 0;
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 1030;
+                box-shadow: 0 14px 28px rgba(0,0,0,.25),0 10px 10px rgba(0,0,0,.22) !important;
+            }
+            .sidebar-header {
+                height: 54px; /* Matches navbar height */
+                padding: 0 1rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                display: flex;
+                align-items: center;
+            }
+            .sidebar-header .navbar-brand {
+                color: white;
+                text-decoration: none;
+                font-size: 1.25rem;
+                font-weight: 700;
+                margin-bottom: 0;
+            }
+            .sidebar-search {
+                padding: 1rem;
+            }
+            .sidebar-search .form-control {
+                background-color: #495057;
+                border: none;
+                color: white;
+            }
+            .sidebar-search .form-control::placeholder {
+                color: #ced4da;
+            }
+            .sidebar-content {
+                flex-grow: 1;
+                overflow-y: auto; /* This makes the content area scrollable */
+                -ms-overflow-style: none; /* For IE and Edge */
+                scrollbar-width: none; /* For Firefox */
+            }
+            .sidebar-content::-webkit-scrollbar {
+                display: none; /* For Chrome, Safari, and Opera */
+            }
+            .sidebar-nav .nav-item .nav-link {
+                color: rgba(255, 255, 255, 0.7);
+                padding: 0.75rem 1.5rem;
+                display: flex;
+                align-items: center;
+                transition: background-color 0.2s;
+            }
+            .sidebar-nav .nav-item .nav-link:hover,
+            .sidebar-nav .nav-item .nav-link.active {
+                background-color: rgba(255, 255, 255, 0.1);
+                color: white;
+                border-left: 4px solid #0d6efd;
+                padding-left: 1.25rem;
+            }
+            .sidebar-nav .nav-item .nav-link i {
+                margin-right: 0.75rem;
+                width: 20px;
+                text-align: center;
+            }
+            .sidebar-nav .nav-item .nav-link span {
+                flex-grow: 1;
+            }
+            .main-wrapper {
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+            .main-container {
+                margin-left: 280px;
+                transition: margin-left 0.3s ease;
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+            }
+            .navbar {
+                box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+                position: fixed;
+                top: 0;
+                left: 280px;
+                right: 0;
+                z-index: 1040;
+                transition: left 0.3s ease;
+                background-color: #343a40 !important;
+            }
+            /* Reduce font size of top navbar items */
+            .navbar .nav-link {
+                font-size: 0.9rem;
+            }
+            .main-content {
+                margin-top: 56px; /* Height of the navbar */
+                overflow-y: auto; /* Enables vertical scrolling within this container */
+                overflow-x: hidden; /* Prevents horizontal scrolling */
+                flex-grow: 1; /* Allows the content area to fill available vertical space */
+            }
+            .card {
+                border-radius: 0.5rem;
+                border: 1px solid rgba(0, 0, 0, 0.125);
+            }
+            .card-title {
+                font-weight: 600;
+            }
+            .card-icon {
+                font-size: 2.5rem;
+                padding: 1.25rem;
+                border-radius: 50%;
+                color: white;
+            }
+            .navbar-dark .navbar-nav .nav-link {
+                color: rgba(255,255,255,.55);
+            }
+            .navbar-dark .navbar-nav .nav-link.active, .navbar-dark .navbar-nav .nav-link:hover {
+                color: rgba(255,255,255,.75);
+            }
+
+            /* Submenu styles */
+            .sidebar-nav .nav-item .nav-link[data-bs-toggle="collapse"] i.bi-chevron-right {
+                transition: transform 0.2s ease-in-out;
+            }
+            .sidebar-nav .nav-item .nav-link[aria-expanded="true"] i.bi-chevron-right {
+                transform: rotate(90deg);
+            }
+            .sidebar-nav .nav-item .collapse .nav-link {
+                padding-left: 2.75rem;
+                border-left: none;
+            }
+            .sidebar-nav .nav-item .collapse .nav-link:hover {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+            .sidebar-nav .nav-item .collapse .nav-link.active {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+
+            /* Collapsed sidebar styles */
+            .sidebar-collapsed .sidebar {
+                width: 70px;
+            }
+            .sidebar-collapsed .sidebar .sidebar-header,
+            .sidebar-collapsed .sidebar .sidebar-search,
+            .sidebar-collapsed .sidebar .sidebar-nav span {
+                display: none;
+            }
+            .sidebar-collapsed .sidebar .sidebar-nav .nav-item .nav-link {
+                padding: 0.75rem 0;
+                justify-content: center;
+            }
+            .sidebar-collapsed .sidebar .sidebar-nav .nav-item .nav-link i {
+                margin-right: 0;
+            }
+            .sidebar-collapsed .sidebar .nav-item .nav-link[data-bs-toggle="collapse"] i.bi-chevron-right {
+                display: none;
+            }
+            .sidebar-collapsed .sidebar .collapse {
+                display: none !important;
+            }
+            .sidebar-collapsed .main-container {
+                margin-left: 70px;
+            }
+            .sidebar-collapsed .navbar {
+                left: 70px;
+            }
+            .footer {
+                box-shadow: 0 -0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            }
+            #sidebar-toggle-btn {
+                background-color: #343a40;
+                border-color: #343a40;
+                color: rgba(255, 255, 255, 0.7); /* Slightly grayed out text color for a better hover effect */
+                transition: color 0.2s ease-in-out;
+            }
+
+            #sidebar-toggle-btn:hover {
+                color: white; /* Change to pure white on hover */
+            }
+        </style>
     </head>
     <body>
-        <!-- Site wrapper -->
-        <div th:replace="admin-nav-top">
-            <!-- Header  -->
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+
+            <div   th:replace="admin-nav-left">
+                <!-- Left side column. contains the sidebar -->
+
+                <!--  Left Side -->
+                <!-- =============================================== -->
+            </div>
+
+
+
+
+
         </div>
-        <!-- =============================================== -->
-        <section>
-            <div class="container-fluid">
-                <div class="row">
 
-                    <div class="col-sm-2 p-0">
-                        <div   th:replace="admin-nav-left">
-                            <!-- Left side column. contains the sidebar -->
+        <div class="main-wrapper">
+            <div class="main-container">
+                <!-- Top Navbar -->
 
-                            <!--  Left Side -->
-                            <!-- =============================================== -->
-                        </div>
+                <div th:replace="admin-nav-top_new" >
+                    <!-- Header  -->
+                </div>
 
-                    </div>
-                    <!-- Content Wrapper. Contains page content -->
-                    <div class="col-sm-10 " style="padding: 10px  10px;background: #f6f6f6;">
-                        <div layout:fragment="main_content">
-                            <div  th:replace="admin_content">
-                            </div> 
-                        </div>  
-                    </div>
-                    <div class="col-sm-12 bg-light border-top" style="min-height: 50px;padding: 15px">
-                        <div  th:replace="admin-footer">  
+                <!-- Dynamic Content -->
+                <main class="main-content container-fluid px-3 py-3" layout:fragment="main_content">
+                    <!-- Page-specific content will load here -->
 
-                        </div>  
-                    </div>
+
+
+                </main>
+
+                <div  th:replace="admin-footer_new">
 
                 </div>
+
             </div>
-            <!-- /.content-wrapper -->
-        </section>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                // Sidebar toggle functionality
+                const toggleBtn = document.getElementById('sidebar-toggle-btn');
+                const body = document.body;
+                toggleBtn.addEventListener('click', () => {
+                    body.classList.toggle('sidebar-collapsed');
+                });
+
+                // Menu item active state functionality
+                const sidebarLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+                sidebarLinks.forEach(link => {
+                    link.addEventListener('click', () => {
+                        // Remove active class from all links
+                        sidebarLinks.forEach(l => l.classList.remove('active'));
+                        // Add active class to the clicked link
+                        link.classList.add('active');
+                    });
+                });
+
+                // Function to update date and time
+                function updateDateTime() {
+                    const now = new Date();
+                    const dateOptions = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'};
+                    const timeOptions = {hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false};
+                    const formattedDate = now.toLocaleDateString('en-US', dateOptions);
+                    const formattedTime = now.toLocaleTimeString('en-US', timeOptions);
+                    const dateTimeElement = document.getElementById('current-date-time');
+                    if (dateTimeElement) {
+                        dateTimeElement.textContent = `${formattedDate} then ${formattedTime}`;
+                    }
+                }
+
+                // Update the date and time every second
+                setInterval(updateDateTime, 1000);
+
+                // Initial call to display the time immediately
+                updateDateTime();
+
+                // Bootstrap dropdown hover functionality
+                const userDropdown = document.getElementById('user-dropdown');
+                if (userDropdown) {
+                    let timeout;
+                    userDropdown.addEventListener('mouseenter', () => {
+                        clearTimeout(timeout);
+                        const dropdown = new bootstrap.Dropdown(userDropdown.querySelector('.dropdown-toggle'));
+                        dropdown.show();
+                    });
+                    userDropdown.addEventListener('mouseleave', () => {
+                        timeout = setTimeout(() => {
+                            const dropdown = new bootstrap.Dropdown(userDropdown.querySelector('.dropdown-toggle'));
+                            dropdown.hide();
+                        }, 200); // 200ms delay to allow mouse to move to dropdown items
+                    });
+                }
+
+                // Custom JS to handle accordion behavior and close other submenus
+                document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        const targetId = e.currentTarget.getAttribute('href');
+                        document.querySelectorAll('.collapse.show').forEach(openCollapse => {
+                            // Check if the open collapse is not the target of the current click
+                            if (`#${openCollapse.id}` !== targetId) {
+                                const collapseInstance = bootstrap.Collapse.getInstance(openCollapse);
+                                if (collapseInstance) {
+                                    collapseInstance.hide();
+                                }
+                            }
+                        });
+                    });
+                });
+
+            });
+        </script>
+
+
+
         <script src="/webjars/jquery/3.7.0/jquery.min.js"></script>
         <script src="/webjars/bootstrap/5.3.1/js/bootstrap.bundle.min.js"></script>
         <script src="/webjars/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+
+        <!-- HTMX WebJar Script -->
+        <script th:src="@{/webjars/htmx.org/1.9.5/dist/htmx.min.js}" defer></script>
+
+        <!--        <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"></script>-->
+
         <!--        <script src="/webjars/datatables/2.0.3/js/jquery.dataTables.min.js"></script>-->
-<!--        <script src="/webjars/momentjs/2.29.1/moment.min.js"></script>-->
-              <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
-<!--        <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>-->
+        <!--        <script src="/webjars/momentjs/2.29.1/moment.min.js"></script>-->
+        <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
+        <!--        <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>-->
         <!-- JSZip for Excel export -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
         <!-- pdfmake for PDF export -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/pdfmake.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/vfs_fonts.js"></script>
         <!-- DataTables Buttons HTML5 export JS -->
-<!--        <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>-->
+        <!--        <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>-->
         <!-- DataTables Buttons Print JS -->
-        <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>      
+        <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+        <script th:src="@{/js/filepond.min.js}"></script>
+        <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
+        <script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
+        <script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
         <script th:src="@{/js/admin-app.js}"></script>
         <script th:src="@{/js/admin_date.js}"></script>
-
-<!--        <script>
-            $(document).ready(function () {
-                $('#example').DataTable({
-                    dom: '<"d-flex justify-content-between"<"d-flex align-items-center"f><"button-group btn-group"B>>rtip',
-                    buttons: [
-                        {
-                            extend: 'copy',
-                            className: 'btn btn-primary'
-                        },
-                        {
-                            extend: 'csv',
-                            className: 'btn btn-primary'
-                        },
-                        {
-                            extend: 'excel',
-                            className: 'btn btn-primary'
-                        },
-                        {
-                            extend: 'pdf',
-                            className: 'btn btn-primary'
-                        },
-                        {
-                            extend: 'print',
-                            className: 'btn btn-primary'
-                        }
-                    ],
-                    "pagingType": "simple_numbers"
-                });
-
-                $('#pageLengthSelect').on('change', function () {
-                    table.page.len($(this).val()).draw();
-                });
-
-            });
-        </script>-->
+        <script th:src="@{/js/datatable_app.js}"></script>
+        <!--        <script src="/webjars/htmx.org/1.9.5/dist/htmx.min.js"></script>-->
+        <script src="https://unpkg.com/htmx.org@1.9.5"></script>
     </body>
 </html>

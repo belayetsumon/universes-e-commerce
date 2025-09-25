@@ -1,0 +1,45 @@
+<!-- src/main/resources/templates/fragments/productImageTable.html -->
+
+<div th:fragment="productImageTable">
+    <table id="productImageTable" class="table table-bordered table-hover table-striped">
+        <thead class="thead-light">
+            <tr>
+                <th class="text-center">#</th>
+
+                <th class="text-center">Image</th>
+
+                <th class="text-center">Action</th>
+
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr th:each="img_lists,status:${img_list}">
+                <th  class="text-center" th:text="${status.count}">1</th>
+                <td  class="text-center">
+                    <span th:if="${ not #strings.isEmpty(img_lists.productImageName)}" class="badge bg-green pull-right"> 
+                        <img  class="img-responsive" th:src="@{/files/}+${img_lists.productImageName}" width="100px"  height="100px"/>
+                    </span>
+                    <span th:if="${#strings.isEmpty(img_lists.productImageName)}" > Image Not Found </span>
+                </td>
+                <td class="text-center">
+                    <form 
+                        th:attr="hx-delete='/productimage/delete/' + ${img_lists.id}"
+                        hx-target="#response-message" 
+                        hx-trigger="click" 
+                        hx-on::afterRequest="document.body.dispatchEvent(new Event('refreshTable'))"
+                        hx-swap="innerHTML"
+                        method="post">
+
+                        <button class="btn btn-danger btn-sm " > 
+
+                            <i class="bi bi-x-circle"></i> Delete </button> 
+
+                    </form>
+
+                </td>
+            </tr>
+        </tbody>
+
+    </table>
+</div>

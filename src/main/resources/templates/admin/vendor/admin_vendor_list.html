@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment = "main_content">
+        <section>
+            <div class="row">
+                <div class="col-sm-1"><h4> Vendor</h4></div>
+                <div class="col-sm-2">   <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Vendor List</li>
+                        </ol>
+                    </nav>
+                </div></div>
+        </section>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-9">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i> Vendor  List. Total [[${list.size()}]]</strong> </div>
+
+                            <div class="col-sm-7 text-end">
+                                <div class="btn-group ">
+                                    <!--                                    <a class="btn btn-success btn-sm " th:href="@{/product/create}"> <i class="bi bi-plus-circle"></i> Add Product </a>
+                                                                        <a th:href="@{/admin/index}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>-->
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+
+
+
+                    <div class="card-body table-responsive">
+                        <table id="tablesdata" class="table  table-hover table-striped">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Company/vendor Name </th>
+                                    <th> Name </th>
+                                    <th> Phone </th>
+                                    <th> Email </th>
+                                    <th> Status </th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="lists,status:${list}">
+                                    <td th:text="${status.count}">1</td>
+                                    <td>
+                                        <a  class="nav-link" th:href="@{/vendor/{id}(id=${lists.id})}"><span th:text="${lists.companyName}"></span>  </a>
+                                    </td>
+                                    <td> [[${lists.firstName}]] [[${lists.lastName}]]</td>
+                                    <td> [[${lists.phone}]] </td>
+                                    <td> [[${lists.email}]] </td>
+                                    <td> [[${lists.vendorStatusEnum}]] </td>
+                                    <td>
+
+                                        <a  type="button" th:href="@{/adminvendor/view/{id}(id=${lists.id})}">  <button class="btn btn-success btn-sm " > <i class="bi bi-eye-slash"></i> View </button>  </a>
+
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+
+
+
+                </div><!--  Card  end-->
+
+
+            </div><!--  Main Content  end-->
+            <div class="col-sm-3">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold ">  <strong><i class="fas fa-list"></i> Filter</strong> </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+
+
+                    </div><!--  Card body end-->
+
+
+                </div><!--  Card  end-->
+
+
+            </div>
+        </div>   <!--  Layout end-->      </div><!--  Main Content  end-->
+</div>

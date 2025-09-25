@@ -1,0 +1,81 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment = "main_content">
+        <section>
+            <div class="row">
+                <div class="col-sm-3"><h4> Referral Rewards </h4></div>
+                <div class="col-sm-5">   <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Referral Rewards</li>
+                            <li class="breadcrumb-item active" aria-current="page">Reward Redemption</li>
+                        </ol>
+                    </nav>
+                </div></div>
+        </section>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-9">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i> Reward Redemption List</strong> </div>
+
+                            <div class="col-sm-7 text-end">
+                                <!--                                <div class="btn-group ">
+                                                                    <a class="btn btn-success btn-sm " th:href="@{/product/create}"> <i class="bi bi-plus-circle"></i> Add Product </a>
+                                                                    <a th:href="@{/admin/index}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>
+                                                                </div>-->
+                            </div>
+
+                        </div>
+                    </div>
+
+
+
+
+
+                    <div class="card-body table-responsive">
+                        <table class="table table-bordered table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>User</th>
+                                    <th>Redemption Type</th>
+                                    <th>Details </th>
+                                    <th>Redeemed At</th>
+                                    <th>Points Used</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="r ,status: ${rewardRedemptionlist}">
+                                    <td th:text="${status.count}"></td>
+                                    <td>   [[${r.users.firstName}]]  [[${r.users.lastName}]] </td>
+                                    <td th:text="${r.redemptionType}"></td>
+                                    <td th:text="${r.details}"></td>
+                                    <td th:text="${#temporals.format(r.redeemedAt, 'dd-MM-yyyy HH:mm')}"></td>
+                                    <td th:text="${r.pointsUsed}"></td>
+
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div><!--  Card  end-->
+
+
+            </div><!--  Main Content  end-->
+            <div class="col-sm-3">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold ">  <strong><i class="fas fa-list"></i> Filter</strong> </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                    </div><!--  Card body end-->
+                </div><!--  Card  end-->
+            </div>
+        </div>   <!--  Layout end-->      </div><!--  Main Content  end-->
+</div>

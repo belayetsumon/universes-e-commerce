@@ -1,66 +1,111 @@
 <!DOCTYPE html>
 <div xmlns:th="http://www.thymeleaf.org"
      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-     layout:decorator="front-layout-inner-page">
+     layout:decorate="front-layout-inner-page">
     <div layout:fragment="main_content">
 
-        <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #ffc107;">
-            <div class="container">
-                <div class="row">
-                    <div class="col-sm-7">  <h1 class="font-weight-bold" style="color: #fff;">    Product Category Name : <span th:text="${productcategoryname.name}"> </span> </h1></div>
-                    <div class="col-sm-5 text-right" style="color: #ffffff">Home/Product By Category </div>
-                </div>
+        <section  class="breadcrumb_section">
+
+            <div class="container-fluid bg-white">
+                <nav aria-label="breadcrumb" class="pt-3 pb-1 ">
+                    <ol class="breadcrumb ">
+                        <li class="breadcrumb-item"><a href="/" class="nav-link">  <i class="bi bi-house text-danger"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Product By Category</li>
+                    </ol>
+                </nav>
             </div>
         </section>
 
-
         <section>
-
             <div class="container-fluid">
                 <div class="row mt-4">
                     <div class="col-sm-3">
 
-                        <div class="card border-warning" >
-                            <div class="card-header border-warning">
-                                <h5 class="font-weight-bold text-warning"> <i class="fas fa-list"></i> Product Category</h5>
+                        <div class="card border-0">
+                            <div class="card-header">
+                                <span class="categoryTitle">  <span class="section-title-square"></span> Product Category</span>
                             </div>
-                            <ul class="list-group list-group-flush ">
-                                <li class="list-group-item"th:each="productcategorylists,status:${productcategorylist}" >
-
-                                    <a   class="text-muted"  th:href="@{/front-view/product-by-category/{prodcatid}(prodcatid=${productcategorylists.id})}" >  
 
 
-                                        <span th:text="${productcategorylists.name}" ></span> <span  class="float-right badge badge-warning " th:text="${productcategorylists.ourproduct.size()}" ></span>
-                                    </a></li>
-                            </ul>
-                        </div> 
+                            <div class="categorySidebar">
+                                <ul class="category-list list-unstyled">
+                                    <li th:each="menu : ${productcategorylist}" >
+
+                                        <a th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${menu.id})}"
+                                           th:text="${menu.name}"></a>
+                                    </li>
+                                </ul>
+                            </div>
+
+
+
+
+                        </div>
                     </div>
-                    <div class="col-sm-9">
-                        <div class="card mb-4 border-warning">
 
-                            <div class="card-header border-warning ">
-                                <h5 class="font-weight-bold text-warning"> <i class="fas fa-list"></i> <span th:text="${productcategoryname.name}"> </span> List</h5>
+
+
+
+
+
+                    <div class="col-sm-9">
+                        <div class="card  border-0 mb-2" th:if="${child_category_list != null and not #lists.isEmpty(child_category_list)}">
+                            <div class="card-body">
+
+                                <ul class="d-flex list-unstyled gap-3 justify-content-center text-center" th:if="${child_category_list != null and not #lists.isEmpty(child_category_list)}">
+
+                                    <li class="list-inline-item"> <strong class="text-danger"> Sub-Category: </strong> </li>
+
+                                    <li class="list-inline-item" th:each="child_category : ${child_category_list}">
+
+
+                                        <a    class="nav-link text-center" th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${child_category.id})}" >   [[${child_category.name}]] </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="card border-0">
+
+                            <div class="card-header">
+                                <span th:text="${productlist.size()}"> </span>   items available
                             </div>
                             <div class="card-body">
 
-                                <div class="row">
-                                    <div class="col-sm-4" th:each="productlists,status:${productlist}">
 
-                                        <div class="card mb-4 hvr-bounce-in">
-                                            <span th:if="${ not #strings.isEmpty(productlists.imageName)}" class=""> 
+
+
+                                <div class="row row-cols-1 row-cols-md-5 g-4 justify-content-center">
+                                    <div class="col" th:if="${productlist != null and not #lists.isEmpty(productlist)}" th:each="productlists,status:${productlist}">
+
+                                        <div class="card mb-4 hvr-bounce-in h-100">
+                                            <span th:if="${ not #strings.isEmpty(productlists.imageName)}" class="">
                                                 <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />
                                             </span>
-                                            <span th:if="${#strings.isEmpty(productlists.imageName)}" > 
-                                                <img  class="card-img-top" th:src="@{/img/image-not-available.png}" /> 
+                                            <span th:if="${#strings.isEmpty(productlists.imageName)}" >
+                                                <img  class="card-img-top" th:src="@{/img/image-not-available.png}" />
                                             </span>
 
                                             <div class="card-body">
                                                 <div class="card-title">
-                                                    <h6 class="font-weight-bold text-warning text-center "><a    class="card-link text-warning" th:href="@{/front-view/single-product/{prodid}(prodid=${productlists.id})}" >  <span  th:text="${productlists.title}">    </span> </a></h6>
-                                                    <h6 class=""> <span class="font-weight-bold">Price:</span> <span  th:text="${productlists.price}">    </span> /-</h6>
+                                                    <h6 class="  text-center ">
+                                                    </h6>
+                                                    <h6 class=""> <span class="font-weight-bold">Price:</span> <span  th:text="${productlists.salesPrice}">    </span> /-</h6>
                                                 </div>
                                             </div>
+                                            <div class="card-footer">
+                                                <small class="text-body-secondary">
+
+                                                    <a    class="nav-link " th:href="@{/public/single-product/{prodid}(prodid=${productlists.id})}" >  <span  th:text="${productlists.title}">    </span> </a>
+                                                </small>
+                                            </div>
+
                                         </div>
+                                    </div>
+
+                                    <!-- Show "No Product Found" message if the list is null or empty -->
+
+                                    <div th:unless="${productlist != null and not #lists.isEmpty(productlist)}" class="col d-flex justify-content-center align-items-center">
+                                        <p class="text-center">No Product Found</p>
                                     </div>
                                 </div>
                             </div>

@@ -5,8 +5,9 @@ To change this template file, choose Tools | Templates
 and open the template in the editor.
 -->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+
     <div layout:fragment = "main_content">
-        <section> 
+        <section>
             <div class="row">
                 <div class="col-sm-1"><h4> Product</h4></div>
                 <div class="col-sm-2">   <nav aria-label="breadcrumb">
@@ -23,63 +24,65 @@ and open the template in the editor.
 
                 <div class="card">
                     <div class="card-header">
-                        <div class="row">  
+                        <div class="row">
                             <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i> Product  List</strong> </div>
 
-                            <div class="col-sm-7 text-end"> 
+                            <div class="col-sm-7 text-end">
                                 <div class="btn-group ">
                                     <a class="btn btn-success btn-sm " th:href="@{/product/create}"> <i class="bi bi-plus-circle"></i> Add Product </a>
-                                    <a th:href="@{/admin/index}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a></div>
+                                    <a th:href="@{/admin/index}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>
+                                </div>
                             </div>
 
                         </div>
                     </div>
-                  
 
-        
-                        
-                        
-                        <div class="card-body table-responsive">
-                            <table id="example" class="table table-bordered table-hover table-striped">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Image </th>
 
-                                        <th>Name</th>
-                                        <th>UoM</th>
 
-                                        <th>Price </th>
-                                        <th>Status </th>
 
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="productlists,status:${productlist}">
-                                        <th th:text="${status.count}">1</th>
-                                        <td>
-                                            <span th:if="${ not #strings.isEmpty(productlists.imageName)}" class="badge bg-green pull-right"> 
-                                                <img  class="img-responsive" th:src="@{/files/}+${productlists.imageName}" width="100px"  height="100px"/>
-                                            </span>
 
-                                            <span th:if="${#strings.isEmpty(productlists.imageName)}" > Image Not Found </span>
-                                        </td>
-                                        <td>
-                                            <a th:href="@{/product/details/{id}(id=${productlists.id})}" th:text="${productlists.title}">    </a>
-                                            <br>
-                                            <span>Cat:[[${productlists.category}]]</span>
-                                        </td>
-                                         <td th:text="${productlists.uom}">Otto</td>
-                                        <td th:text="${productlists.salesPrice}">Otto</td>
-                                        <td th:text="${productlists.status}">Otto</td>
-                                        <td><a  type="button" th:href="@{/product/details/{id}(id=${productlists.id})}">  <button class="btn btn-success btn-sm " > <i class="bi bi-eye-slash"></i> View </button>  </a></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="card-body table-responsive">
+                        <table id="example" class="table table-bordered table-hover table-striped">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Image </th>
 
-                    
+                                    <th>Name</th>
+                                    <th>UoM</th>
+
+                                    <th>Price </th>
+                                    <th>Status </th>
+
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="productlists,status:${productlist}">
+                                    <th th:text="${status.count}">1</th>
+                                    <td>
+                                        <span th:if="${ not #strings.isEmpty(productlists.imageName)}" class="badge bg-green pull-right">
+                                            <img  class="img-responsive" th:src="@{/files/}+${productlists.imageName}" width="100px"  height="100px"/>
+                                        </span>
+
+                                        <span th:if="${#strings.isEmpty(productlists.imageName)}" > Image Not Found </span>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/product/details/{id}(id=${productlists.id})}" th:text="${productlists.title}">    </a>
+                                        <br>
+                                        <span><strong>Category : </strong> [[${productlists.category}]]</span><br>
+                                        <span><strong>Vendor :</strong> [[${productlists.vendorProfile}]]</span>
+                                    </td>
+                                    <td th:text="${productlists.uom}">Otto</td>
+                                    <td th:text="${productlists.salesPrice}">Otto</td>
+                                    <td th:text="${productlists.status}">Otto</td>
+                                    <td><a  type="button" th:href="@{/product/details/{id}(id=${productlists.id})}">  <button class="btn btn-success btn-sm " > <i class="bi bi-eye-slash"></i> View </button>  </a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+
 
 
                 </div><!--  Card  end-->
@@ -90,7 +93,7 @@ and open the template in the editor.
 
                 <div class="card">
                     <div class="card-header">
-                        <div class="row">  
+                        <div class="row">
                             <div class="col-sm-5 font-weight-bold ">  <strong><i class="fas fa-list"></i> Filter</strong> </div>
 
 

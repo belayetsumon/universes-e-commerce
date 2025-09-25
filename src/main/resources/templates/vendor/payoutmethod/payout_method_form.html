@@ -1,0 +1,96 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
+    <div layout:fragment="main_content">
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4><i class="bi bi-person-badge-fill me-2 text-primary"></i>Vendor Users Management</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Vendor Users List</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+
+        <div class="card shadow-sm">
+            <div class="card-header  ">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        <span th:text="${vendorPayoutMethod.id == null} ? 'Add New Payout Method' : 'Edit Payout Method'"></span>
+                    </h5>
+                    <a th:href="@{/vendor-payout-methods/list}" class="btn btn-danger btn-sm">
+                        <i class="bi bi-x-circle"></i> Close
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body">
+
+                <form th:action="@{/vendor-payout-methods/save}" th:object="${vendorPayoutMethod}" method="post">
+
+                    <div class="mb-3 d-flex justify-content-center"><div class="w-50">
+                            <!-- Show all errors in one place -->
+                            <div class="alert alert-danger" th:if="${globalErrors}">
+                                <ul>
+                                    <li th:each="err : ${globalErrors}" th:text="${err}"></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <input type="hidden" th:field="*{id}"/>
+                    <input type="hidden" th:field="*{vendor}"/>
+
+                    <div class="mb-3">
+                        <label>Preferred Method</label>
+                        <select class="form-select" th:field="*{preferredMethod}">
+                            <option th:each="m : ${pMethod}"
+                                    th:value="${m}" th:text="${m}"></option>
+                        </select>
+                        <div class="text-danger" th:if="${#fields.hasErrors('preferredMethod')}" th:errors="*{preferredMethod}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Account Type</label>
+                        <input type="text" class="form-control" th:field="*{accountType}" required/>
+                        <div class="form-text">Exe. Bank account type:personal,Company. Mobile account personal,agent, marchant </div>
+                        <div class="text-danger" th:if="${#fields.hasErrors('accountType')}" th:errors="*{accountType}"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label>Bank / Mobile Finance Company Name:</label>
+                        <input type="text" class="form-control" th:field="*{bankName}" required/>
+                        <div class="form-text"> Exe: Sonali Bank PLC, Rupali Bank PLC, Bkash, Nagod etc. </div>
+                        <div class="text-danger" th:if="${#fields.hasErrors('bankName')}" th:errors="*{bankName}"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label>Account Title:</label>
+                        <input type="text" class="form-control" th:field="*{accountTitle}" required/>
+                        <div class="form-text"> Bank Name : Exe. Md Jasim Uddin </div>
+                        <div class="text-danger" th:if="${#fields.hasErrors('accountTitle')}" th:errors="*{accountTitle}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Account Number</label>
+                        <input type="text" class="form-control" th:field="*{accountNumber}" required/>
+                        <div class="form-text">  Exe. 096543456789999, 0171*********** </div>
+                        <div class="text-danger" th:if="${#fields.hasErrors('accountNumber')}" th:errors="*{accountNumber}"></div>
+                    </div>
+
+
+
+                    <!-- Add vendor selection if needed -->
+                    <!-- Submit button -->
+                    <div class="d-flex justify-content-center">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle me-1"></i> Save
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>

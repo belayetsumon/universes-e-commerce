@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Reward Redemption</title>
+    </head>
+    <body>
+        <p>Dear <span th:text="${userName}">User</span>,</p>
+        <p>You have successfully redeemed <strong th:text="${points}">0</strong> points for <strong th:text="${redemptionType}">type</strong>.</p>
+        <p>Details: <em th:text="${details}">details</em></p>
+        <p>Thank you for using our service!</p>
+    </body>
+</html>

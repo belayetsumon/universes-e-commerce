@@ -6,7 +6,6 @@
 package com.ecommerce.app.module.user.ripository;
 
 import com.ecommerce.app.module.user.model.Role;
-import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

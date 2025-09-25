@@ -1,0 +1,82 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4><i class="bi bi-person-badge-fill me-2 text-primary"></i>Vendor Role Management</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Vendor Roles List</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+
+        <div class="card shadow-sm">
+            <div class="card-header  ">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        <span th:text="${vendorRole.id != null} ? 'Edit Vendor Role' : 'Add Vendor Role'"></span>
+                    </h5>
+                    <a th:href="@{/adminvendorusers/rolelist}" class="btn btn-danger btn-sm">
+                        <i class="bi bi-x-circle"></i> Close
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <form th:action="@{/adminvendorusers/role_save}" th:object="${vendorRole}" method="post" class="needs-validation" novalidate>
+                    <div class="mb-3 d-flex justify-content-center">
+                        <div class="w-50">
+                            <label for="name" class="form-label fw-semibold">
+                                <i class="bi bi-tag-fill text-primary me-1"></i> Name
+                            </label>
+                            <input type="text" th:field="*{name}" id="name" class="form-control" placeholder="Enter role name" required />
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                        </div>   </div>
+
+                    <div class="mb-3 d-flex justify-content-center">
+                        <div class="w-50">
+                            <label for="slug" class="form-label fw-semibold">
+                                <i class="bi bi-link-45deg text-primary me-1"></i> Slug
+                            </label>
+                            <input type="text" th:field="*{slug}" id="slug" class="form-control" placeholder="Enter slug" required />
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('slug')}" th:errors="*{slug}"></div>
+                        </div>   </div>
+
+                    <div class="mb-3 d-flex justify-content-center">
+                        <div class="w-50">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-shield-lock-fill text-primary me-1"></i> Privileges
+                            </label>
+                            <div class="row">
+                                <div th:each="privilege : ${allPrivileges}" class="form-check">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           th:value="${privilege.id}"
+                                           th:name="vendorPrivilege"
+                                           th:id="'privilege__' + ${privilege.id}"
+                                           th:checked="${vendorRole.vendorPrivilege != null and vendorRole.vendorPrivilege.contains(privilege)}" />
+
+                                    <label class="form-check-label"
+                                           th:for="'privilege__' + ${privilege.id}"
+                                           th:text="${privilege.name}"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+                    <div class="d-flex justify-content-center">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle me-1"></i> Save Role
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

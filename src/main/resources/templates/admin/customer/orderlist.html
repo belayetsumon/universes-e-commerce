@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment = "main_content">
+        <section>
+            <div class="d-flex justify-content-start align-items-center mb-4">
+                <h2 class="mb-0 me-3">Sales</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a  class="nav-link"href="#">Home</a></li>
+                        <li class="breadcrumb-item"><a  class="nav-link"href="#">Sales</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Sales Order List</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">  <div class="col-sm-5 font-weight-bold "><i class="fas fa-list"></i> <span class="fs-5 fw-bold">  <i class="bi bi-justify"></i> Order List Total : [[${orderlist.size()}]] </span></div>
+
+                        </div>
+
+                    </div>
+                    <div class="card-body">
+
+                        <span th:if="${ not #strings.isEmpty(message)}">
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <span th:text="${message}" > </span>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        </span>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered" th:if="${ not #lists.isEmpty(orderlist)}">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Customer</th>
+                                        <th scope="col"> Vendor Name</th>
+                                        <th scope="col">C.Mobile</th>
+                                        <th scope="col">C.Email</th>
+                                        <th scope="col"> Status </th>
+                                        <th scope="col"> Discount Amount </th>
+                                        <th scope="col">Market Place Commission Amount</th>
+                                        <th scope="col">Vendor Amount</th>
+                                        <th scope="col"> Vat Amount </th>
+                                        <th scope="col"> Item Total</th>
+                                        <th scope="col"> Shipping Charge </th>
+                                        <th scope="col"> Packaging Costs</th>
+                                        <th scope="col"> Grand Total </th>
+                                        <th scope="col"> Date Added </th>
+                                        <th scope="col"> Date Modified </th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="orderlists,status:${orderlist}">
+                                        <th th:text="${status.count}">1</th>
+                                        <td> <a class="nav-link bg-warning" th:href="@{/admin-customer/order-details/{oid}(oid=${orderlists.orderId})}" > [[${orderlists.firstName}]] [[${orderlists.lastName}]]   </a></td>
+                                        <td th:text="${orderlists.vendorName}">Otto</td>
+                                        <td th:text="${orderlists.mobile}">Otto</td>
+                                        <td th:text="${orderlists.email}">Otto</td>
+                                        <td th:text="${orderlists.status}">Otto</td>
+                                        <td th:text="${orderlists.totalDiscountAmount}">Otto</td>
+                                        <td th:text="${orderlists.totalMarketPlaceCommissionAmount}">Otto</td>
+                                        <td th:text="${orderlists.totalVendorAmount}">Otto</td>
+                                        <td th:text="${orderlists.totalVatAmount}">Otto</td>
+                                        <td th:text="${orderlists.itemTotal}">Otto</td>
+                                        <td scope="col">[[${orderlists.shippingChargeAmount}]] </td>
+                                        <td scope="col">[[${orderlists.packagingCost}]]</td>
+                                        <td scope="col">[[${orderlists.grandTotal}]] </td>
+                                        <td th:text="${orderlists.created}">Otto</td>
+                                        <td th:text="${orderlists.modified}">@mdo</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <table class="table table-bordered" th:if="${ #lists.isEmpty(orderlist)}">
+                            <tr>
+                                <td> Sorry no order found ! </td>
+                            </tr>
+                        </table>
+                    </div><!--  Card body end-->
+                </div><!--  Card  end-->
+            </div><!--  Main Content  end-->
+        </div>
+    </div>
+</div>   <!--  Layout end-->

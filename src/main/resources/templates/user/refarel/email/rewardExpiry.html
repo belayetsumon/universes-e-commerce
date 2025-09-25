@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Reward Expiry Notification</title>
+    </head>
+    <body>
+        <p>Dear <span th:text="${userName}">User</span>,</p>
+        <p>Your reward points expired on <strong th:text="${expiryDate}">date</strong>.</p>
+        <p>Please redeem your points before they expire next time.</p>
+        <p>Thank you!</p>
+    </body>
+</html>

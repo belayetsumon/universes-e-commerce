@@ -7,89 +7,93 @@ and open the template in the editor.
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-page">
     <div layout:fragment = "main_content">
 
-        <section class="d-none d-sm-block">
 
 
-            <!--            <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #992337;">
-                            <div class="container">
-                                <div class="row">
-                                    <div class="col-sm-7">  <h1 class="font-weight-bold" style="color: #fff;">    Registration</h1></div>
-                                    <div class="col-sm-5 text-right" style="color: #ffffff">Home/User/Registration</div>
-                                </div>
+
+
+        <section style="padding: 40px 0px 100px 0px">
+            <div class="container">
+                <div class="row">
+                    <div class=" col-xs-12 col-sm-6 col-md-6 ">
+                        <div class="card">
+                            <div class="card-header">
+                                Create Your Account
                             </div>
-                        </section>-->
+                            <div class="card-body">
+                                <form th:action="@{/users/frontRegistrationSave}" th:object="${users}"  method="post" >
+                                    <div class="alert alert-danger alert-dismissible fade show" th:if="${#fields.hasErrors('*')}" role="alert">
+                                        <h4 class="alert-heading">
+                                            <i class="fa fa-ban me-2"></i> Error
+                                        </h4>
+                                        <ul class="mb-0">
+                                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
+                                        </ul>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
 
-            <section style="padding: 40px 0px 100px 0px">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-sm-6 col-md-6 ">
-                            <div class="card">
-                                <div class="card-header">
-                                    Create Your Account
-                                </div>
-                                <div class="card-body">
+                                    <div class="row" th:if="${!#strings.isEmpty(success)}">
+                                        <span  class="alert alert-success alert-dismissible" th:text="${success}"> </span>
+                                    </div>
 
-                                    <form th:action="@{/users/frontRegistrationSave}" th:object="${users}"  method="post" >
-                                        <div class="alert alert-danger alert-dismissible" th:if="${#fields.hasErrors('*')}">
-                                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                                            <h4><i class="icon fa fa-ban"></i> Error </h4>
-                                            <ul th:if="${#fields.hasErrors('*')}">
-                                                <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
-                                            </ul>
-                                        </div> 
+                                    <div class="form-group">
+                                        <input type="hidden" class="form-control"  th:field="*{id}" />
+                                    </div>
 
-                                        <div class="row" th:if="${!#strings.isEmpty(success)}"> 
-                                            <span  class="alert alert-success alert-dismissible" th:text="${success}"> </span>
-                                        </div> 
+                                    <div class="form-group">
+                                        <label for="exampleInputEmail1">First Name</label>
+                                        <input type="text" minlength="5" required="true" class="form-control" th:field="*{firstName}" aria-describedby="emailHelp" placeholder="Enter first name">
+                                        <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}">Book Name</span>
+                                    </div>
 
-                                        <div class="form-group">
-                                            <input type="hidden" class="form-control"  th:field="*{id}" />
+                                    <div class="form-group">
+                                        <label for="exampleInputEmail1"> Last Name</label>
+                                        <input type="text" minlength="5" required="true" class="form-control" th:field="*{lastName}" aria-describedby="emailHelp" placeholder="Enter last name">
+                                        <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}">Book Name</span>
+                                    </div>
 
-                                        </div>
-                                        
-                                        <div class="form-group">
-                                            <label for="exampleInputEmail1">Name</label>
-                                            <input type="text" minlength="5" required="true" class="form-control" th:field="*{name}" aria-describedby="emailHelp" placeholder="Enter name">
-                                            <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Book Name</span>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="exampleInputEmail1">Email address</label>
-                                            <input type="email" 
-                                                   pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-                                                   minlength="5" 
-                                                   required="true" 
-                                                   class="form-control" th:field="*{email}" aria-describedby="emailHelp" placeholder="Enter email">
-                                            <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Book Name</span>
-                                        </div>
 
-                                        <div class="form-group">
-                                            <label for="exampleInputEmail1">Mobile Number</label>
-                                            <input type="text" minlength="11" required="true" class="form-control" th:field="*{mobile}" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter Mobile">
-                                            <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('mobile')}" th:errors="*{mobile}">Book Name</span>
-                                        </div>
+                                    <div class="form-group">
+                                        <label for="exampleInputEmail1">Email address</label>
+                                        <input type="email"
+                                               pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                                               minlength="5"
+                                               required="true"
+                                               class="form-control" th:field="*{email}" aria-describedby="emailHelp" placeholder="Enter email">
+                                        <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Book Name</span>
+                                    </div>
 
-                                        <div class="form-group">
-                                            <label for="exampleInputPassword1">Password</label>
+                                    <div class="form-group">
+                                        <label for="exampleInputEmail1">Mobile Number</label>
+                                        <input type="text" minlength="11" required="true" class="form-control" th:field="*{mobile}" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter Mobile">
+                                        <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('mobile')}" th:errors="*{mobile}">Book Name</span>
+                                    </div>
 
-                                            <input type="password" minlength="6" required="true" th:field="*{password}" class="form-control" id="exampleInputPassword1" placeholder="Enter Password">
-                                            <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Book Name</span>
-                                        </div>
-                                        <div class="form-group mt-3">
-                                            <label for="exampleInputEmail1"></label>
-                                            <button type="submit" class="btn btn-info">Submit</button>
-                                        </div>
-                                    </form>
-                                </div>
+                                    <div class="form-group">
+                                        <label for="exampleInputPassword1">Password</label>
+
+                                        <input type="password" minlength="6" required="true" th:field="*{password}" class="form-control" id="exampleInputPassword1" placeholder="Enter Password">
+                                        <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Book Name</span>
+                                    </div>
+
+
+                                    <div class="form-group">
+                                        <label for="exampleInputPassword1">Referral Code</label>
+
+                                        <input type="text" minlength="6"  maxlength="6" name="ref_code"   class="form-control" id="exampleInputPassword1" placeholder="Enter Referral Code">
+
+                                    </div>
+
+                                    <div class="form-group mt-3">
+                                        <label for="exampleInputEmail1"></label>
+                                        <button type="submit" class="btn btn-info">Submit</button>
+                                    </div>
+
+                                </form>
                             </div>
-                        </div>  
-                    </div>  
+                        </div>
+                    </div>
                 </div>
-            </section>
-
-
+            </div>
         </section>
-
-
-
     </div>
 </div>

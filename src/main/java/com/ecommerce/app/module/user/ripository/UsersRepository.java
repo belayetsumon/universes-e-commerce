@@ -5,14 +5,10 @@
  */
 package com.ecommerce.app.module.user.ripository;
 
-
-
 import com.ecommerce.app.module.user.model.*;
 import java.util.*;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
-
-
 
 /**
  *
@@ -21,15 +17,11 @@ import org.springframework.data.jpa.repository.*;
 public interface UsersRepository extends JpaRepository<Users, Long> {
 
     Optional<Users> findByEmail(String email);
-    
-    
 
     Users findByMobile(String mobile);
-    
-    Users findByReferralcode(String referralcode);
-    
+
     List<Users> findByRole(Role role);
-    
+
     List<Users> findByParent(Users users);
 
     List<Users> findByRoleAndStatusOrderByIdDesc(Role role, Status status);

@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            @page {
+                size: A4;
+                margin: 20mm;
+            }
+            body {
+                font-family: Arial, sans-serif;
+                font-size: 12px;
+                color: #222;
+            }
+            .header {
+                display:flex;
+                gap:12px;
+                align-items:center;
+            }
+            .logo {
+                max-height:70px;
+                object-fit:contain;
+            }
+            .order-meta {
+                margin-left:auto;
+                text-align:right;
+            }
+            .merchant-stamp {
+                width:180px;
+                height:100px;
+                border:1px dashed #bbb;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                font-size:11px;
+                color:#444;
+            }
+            .items-grid {
+                display:flex;
+                flex-wrap:wrap;
+                gap:8px;
+                margin-top:8px;
+            }
+            .item-card {
+                width:48%;
+                box-sizing:border-box;
+                border:1px solid #eee;
+                padding:6px;
+                font-size:12px;
+            }
+            .no-break {
+                page-break-inside: avoid;
+                -webkit-column-break-inside: avoid;
+            }
+            tbody tr {
+                page-break-inside: avoid;
+            }
+            .page-break {
+                display:block;
+                page-break-before:always;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div>
+                <img src="https://placehold.co/100x70/EAEAEA/333333?text=Logo" class="logo" alt="Company Logo" />
+                <div>Future Tech Inc.</div>
+                <div>123 Innovation Dr, Anytown, USA 12345</div>
+            </div>
+            <div class="order-meta">
+                <h1>SALES ORDER</h1>
+                <div>Order #: <strong>SO-2024-00123</strong></div>
+                <div>Date: <span>2024-04-23</span></div>
+                <div>Status: <span>Shipped</span></div>
+                <img src="https://placehold.co/200x50/EAEAEA/333333?text=Barcode" alt="barcode" style="margin-top:6px; max-width:240px;"/>
+            </div>
+        </div>
+
+        <!-- Billing / Shipping -->
+        <div style="display:flex; justify-content:space-between; margin-top:12px;">
+            <div style="width:48%; border:1px solid #ddd; padding:8px;">
+                <strong>BILL TO</strong>
+                <div>John Doe</div>
+                <div>456 Customer Ave</div>
+                <div>Somecity, USA 67890</div>
+            </div>
+            <div style="width:48%; border:1px solid #ddd; padding:8px;">
+                <strong>SHIP TO</strong>
+                <div>Jane Smith</div>
+                <div>789 Delivery St</div>
+                <div>Othertown, USA 10111</div>
+            </div>
+        </div>
+
+        <!-- Items -->
+        <div>
+            <table style="width:100%; border-collapse:collapse; margin-top:12px;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left;">#</th>
+                        <th style="text-align:left;">SKU</th>
+                        <th style="text-align:left;">Product</th>
+                        <th style="text-align:right;">Qty</th>
+                        <th style="text-align:right;">Unit Price</th>
+                        <th style="text-align:right;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="no-break">
+                        <td>1</td>
+                        <td>SKU-001</td>
+                        <td>Wireless Mouse 2.0</td>
+                        <td style="text-align:right;">5</td>
+                        <td style="text-align:right;">$25.00</td>
+                        <td style="text-align:right;">$125.00</td>
+                    </tr>
+                    <tr class="no-break">
+                        <td>2</td>
+                        <td>SKU-002</td>
+                        <td>Ergonomic Keyboard</td>
+                        <td style="text-align:right;">2</td>
+                        <td style="text-align:right;">$75.50</td>
+                        <td style="text-align:right;">$151.00</td>
+                    </tr>
+                    <tr class="no-break">
+                        <td>3</td>
+                        <td>SKU-003</td>
+                        <td>27-inch 4K Monitor</td>
+                        <td style="text-align:right;">1</td>
+                        <td style="text-align:right;">$350.00</td>
+                        <td style="text-align:right;">$350.00</td>
+                    </tr>
+                    <tr>
+                        <td colspan="5" style="text-align:right; border-top:1px solid #ddd; padding-top:6px;"><strong>SUBTOTAL</strong></td>
+                        <td style="text-align:right; border-top:1px solid #ddd; padding-top:6px;"><strong>$626.00</strong></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5" style="text-align:right;">Shipping</td>
+                        <td style="text-align:right;">$15.00</td>
+                    </tr>
+                    <tr>
+                        <td colspan="5" style="text-align:right;">Tax (8%)</td>
+                        <td style="text-align:right;">$50.08</td>
+                    </tr>
+                    <tr>
+                        <td colspan="5" style="text-align:right; border-top:1px solid #ddd;"><strong>GRAND TOTAL</strong></td>
+                        <td style="text-align:right; border-top:1px solid #ddd;"><strong>$691.08</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Notes -->
+        <div style="margin-top:24px; font-size:11px; color:#555;">
+            <div><strong>Notes:</strong></div>
+            <div style="margin-top:4px; padding:8px; border:1px solid #ddd; min-height:60px;">
+                Thank you for your business! All items will be shipped within 2-3 business days.
+            </div>
+        </div>
+
+        <!-- Merchant Stamp -->
+        <div style="margin-top:24px; text-align:right;">
+            <div class="merchant-stamp">Merchant Stamp</div>
+        </div>
+    </body>
+</html>
+

@@ -1,0 +1,50 @@
+<div class="modal-header">
+    <h1 class="modal-title fs-5" id="exampleModalLabel">Add/Edit Delivery Charge </h1>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+
+   <form 
+        th:hx-post="@{/deliverycharge/save}" 
+        hx-trigger="submit"
+        hx-target="body"
+        hx-swap="outerHTML"
+        method="post"
+        enctype="multipart/form-data" 
+        th:object="${deliveryCharge}">
+
+        <div class="form-group">
+            <input type="hidden" class="form-control" th:field="*{id}" >
+            <input type="hidden" class="form-control" th:field="*{product}" >
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Delivery Area</label>
+            <textarea  min="0" class="form-control" th:field="*{deliveryArea}" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <p class="text-muted"> Example: All over the Bangladesh. or Dhaka,Barisal,Comilla </p>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Delivery Charge</label>
+            <input  type="number" min="0" class="form-control" th:field="*{deliveryCharge}" >
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea  min="0" class="form-control" th:field="*{description}" ></textarea>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Close</button>
+            <button type="submit" class="btn btn-success">Submit</button>
+        </div>
+
+    </form> 
+</div>
+
+
+
+

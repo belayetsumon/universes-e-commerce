@@ -11,20 +11,18 @@ and open the template in the editor.
     <div layout:fragment = "main_content">
 
 
-        <section class=" d-none d-sm-block">
+        <section class="">
             <div class="row">
 
                 <div class="col-sm-12">
 
 
                     <div class="card">
-                        <div class="card-header bgMaroon ">
-                            <div class="row">  <div class="col-sm-12">  
+                        <div class="card-header">
+                            <h5> New User Registration </h5>
 
-                                    <h5 class="font-weight-bold text-white"><i class="fas fa-list"></i> Your Team . <small> Mr.<span th:text="${username}"> </span></small></h5></div>
-
-                            </div>
                         </div>
+
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-sm-6">
@@ -39,11 +37,11 @@ and open the template in the editor.
                                                     <ul th:if="${#fields.hasErrors('*')}">
                                                         <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
                                                     </ul>
-                                                </div> 
+                                                </div>
 
-                                                <div class="row" th:if="${!#strings.isEmpty(success)}"> 
+                                                <div class="row" th:if="${!#strings.isEmpty(success)}">
                                                     <span  class="alert alert-success alert-dismissible" th:text="${success}"> </span>
-                                                </div> 
+                                                </div>
 
                                                 <div class="form-group">
                                                     <input type="hidden" class="form-control"  th:field="*{id}" />
@@ -52,16 +50,24 @@ and open the template in the editor.
                                                 </div>
 
                                                 <div class="form-group">
-                                                    <label for="exampleInputEmail1">Name</label>
-                                                    <input type="text" minlength="5" required="true" class="form-control" th:field="*{name}" aria-describedby="emailHelp" placeholder="Enter name">
-                                                    <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Book Name</span>
+                                                    <label for="exampleInputEmail1">First Name</label>
+                                                    <input type="text" minlength="2" required="true" class="form-control" th:field="*{firstName}" aria-describedby="emailHelp" placeholder="Enter first name">
+                                                    <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}">Book Name</span>
                                                 </div>
+
+                                                <div class="form-group">
+                                                    <label for="exampleInputEmail1"> Last Name</label>
+                                                    <input type="text" minlength="2" required="true" class="form-control" th:field="*{lastName}" aria-describedby="emailHelp" placeholder="Enter last name">
+                                                    <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}">Book Name</span>
+                                                </div>
+
+
                                                 <div class="form-group">
                                                     <label for="exampleInputEmail1">Email address</label>
-                                                    <input type="email" 
+                                                    <input type="email"
                                                            pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-                                                           minlength="5" 
-                                                           required="true" 
+                                                           minlength="5"
+                                                           required="true"
                                                            class="form-control" th:field="*{email}" aria-describedby="emailHelp" placeholder="Enter email">
                                                     <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Book Name</span>
                                                 </div>

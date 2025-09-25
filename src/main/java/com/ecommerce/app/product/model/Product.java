@@ -1,4 +1,5 @@
 package com.ecommerce.app.product.model;
+
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import jakarta.persistence.Column;
@@ -13,11 +14,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -27,6 +31,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
+@Table(name = "product")
 public class Product implements Serializable {
 
     @Id
@@ -36,19 +41,18 @@ public class Product implements Serializable {
     @NotNull(message = "Sku is required.")
     private int sku;
 
+    @Column(nullable = false, unique = true, updatable = false)
+    private String uuid = UUID.randomUUID().toString();
+
     @NotNull(message = " User cannot be blank.")
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
     private Users userId;
 
     @ManyToOne(optional = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "vendorprofile_id ", nullable = true)
     private Vendorprofile vendorprofile;
 
-//    @NotNull(message = "Please select minimum one sub category")
-//    @ManyToMany(fetch = FetchType.LAZY)
-//    @JoinTable(name = "exam_productsubcategory",
-//            joinColumns = @JoinColumn(name = "exam_id", referencedColumnName = "id"),
-//            inverseJoinColumns = @JoinColumn(name = "productsubcategory_id", referencedColumnName = "id"))
 //
 //    private Set<Productsubcategory> productsubcategory;
     @NotNull(message = "Product category cannot be blank.")
@@ -65,7 +69,7 @@ public class Product implements Serializable {
 
     private String slug;
 
-    private int orderno;// position of product serial 
+    private int orderno;// position of product serial
 
     @Lob
     @Column(columnDefinition = "TEXT")
@@ -78,18 +82,20 @@ public class Product implements Serializable {
     @Lob
     private String video;
 
-    private double purchasePrice;
+    private BigDecimal purchasePrice = BigDecimal.ZERO;
     @NotNull(message = " SalesPrice is required.")
-    private double salesPrice;
+    private BigDecimal salesPrice = BigDecimal.ZERO;
 
-    private double companyProfit;
+    private BigDecimal vatRate = BigDecimal.ZERO;
+
+    private BigDecimal marketPlaceCommissionRate = BigDecimal.ZERO;
 
     @NotNull(message = "Product Type")
     private ProductTypeEnum productType;
 
-    private double companyDiscount;
+    private BigDecimal marketPlaceDiscount = BigDecimal.ZERO;
 
-    private double vendordiscount;
+    private BigDecimal vendordiscount = BigDecimal.ZERO;
 
     @DateTimeFormat(pattern = "dd-MM-yyyy")
     private LocalDate discountStartDate;
@@ -108,6 +114,8 @@ public class Product implements Serializable {
     private Boolean featuredProduct;
 
     private Boolean manageStock;
+
+    private Boolean manageProductVariants;
 
     private Boolean emiavailable;
 
@@ -130,7 +138,7 @@ public class Product implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String metaKeywords;
 
-    /// Audit /// 
+    /// Audit ///
     @CreatedBy
     @Column(nullable = false, updatable = false)
     private String createdBy;
@@ -150,7 +158,7 @@ public class Product implements Serializable {
     public Product() {
     }
 
-    public Product(Long id, int sku, Users userId, Vendorprofile vendorprofile, Productcategory productcategory, Manufacturer manufacturer, String title, String slug, int orderno, String shortDescription, String description, String video, double purchasePrice, double salesPrice, double companyProfit, ProductTypeEnum productType, double companyDiscount, double vendordiscount, LocalDate discountStartDate, LocalDate discountEndDate, Unitofmeasurement uom, String imageName, Boolean newProduct, Boolean featuredProduct, Boolean manageStock, Boolean emiavailable, Boolean onlineShow, ProductStatusEnum status, String metaTitle, String metaDescription, String metaKeywords, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
+    public Product(Long id, int sku, Users userId, Vendorprofile vendorprofile, Productcategory productcategory, Manufacturer manufacturer, String title, String slug, int orderno, String shortDescription, String description, String video, BigDecimal purchasePrice, BigDecimal salesPrice, BigDecimal vatRate, BigDecimal marketPlaceCommissionRate, ProductTypeEnum productType, BigDecimal marketPlaceDiscount, BigDecimal vendordiscount, LocalDate discountStartDate, LocalDate discountEndDate, Unitofmeasurement uom, String imageName, Boolean newProduct, Boolean featuredProduct, Boolean manageStock, Boolean manageProductVariants, Boolean emiavailable, Boolean onlineShow, ProductStatusEnum status, String metaTitle, String metaDescription, String metaKeywords, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
         this.id = id;
         this.sku = sku;
         this.userId = userId;
@@ -165,9 +173,10 @@ public class Product implements Serializable {
         this.video = video;
         this.purchasePrice = purchasePrice;
         this.salesPrice = salesPrice;
-        this.companyProfit = companyProfit;
+        this.vatRate = vatRate;
+        this.marketPlaceCommissionRate = marketPlaceCommissionRate;
         this.productType = productType;
-        this.companyDiscount = companyDiscount;
+        this.marketPlaceDiscount = marketPlaceDiscount;
         this.vendordiscount = vendordiscount;
         this.discountStartDate = discountStartDate;
         this.discountEndDate = discountEndDate;
@@ -176,6 +185,7 @@ public class Product implements Serializable {
         this.newProduct = newProduct;
         this.featuredProduct = featuredProduct;
         this.manageStock = manageStock;
+        this.manageProductVariants = manageProductVariants;
         this.emiavailable = emiavailable;
         this.onlineShow = onlineShow;
         this.status = status;
@@ -202,6 +212,14 @@ public class Product implements Serializable {
 
     public void setSku(int sku) {
         this.sku = sku;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public Users getUserId() {
@@ -284,28 +302,36 @@ public class Product implements Serializable {
         this.video = video;
     }
 
-    public double getPurchasePrice() {
+    public BigDecimal getPurchasePrice() {
         return purchasePrice;
     }
 
-    public void setPurchasePrice(double purchasePrice) {
+    public void setPurchasePrice(BigDecimal purchasePrice) {
         this.purchasePrice = purchasePrice;
     }
 
-    public double getSalesPrice() {
+    public BigDecimal getSalesPrice() {
         return salesPrice;
     }
 
-    public void setSalesPrice(double salesPrice) {
+    public void setSalesPrice(BigDecimal salesPrice) {
         this.salesPrice = salesPrice;
     }
 
-    public double getCompanyProfit() {
-        return companyProfit;
+    public BigDecimal getVatRate() {
+        return vatRate;
     }
 
-    public void setCompanyProfit(double companyProfit) {
-        this.companyProfit = companyProfit;
+    public void setVatRate(BigDecimal vatRate) {
+        this.vatRate = vatRate;
+    }
+
+    public BigDecimal getMarketPlaceCommissionRate() {
+        return marketPlaceCommissionRate;
+    }
+
+    public void setMarketPlaceCommissionRate(BigDecimal marketPlaceCommissionRate) {
+        this.marketPlaceCommissionRate = marketPlaceCommissionRate;
     }
 
     public ProductTypeEnum getProductType() {
@@ -316,19 +342,19 @@ public class Product implements Serializable {
         this.productType = productType;
     }
 
-    public double getCompanyDiscount() {
-        return companyDiscount;
+    public BigDecimal getMarketPlaceDiscount() {
+        return marketPlaceDiscount;
     }
 
-    public void setCompanyDiscount(double companyDiscount) {
-        this.companyDiscount = companyDiscount;
+    public void setMarketPlaceDiscount(BigDecimal marketPlaceDiscount) {
+        this.marketPlaceDiscount = marketPlaceDiscount;
     }
 
-    public double getVendordiscount() {
+    public BigDecimal getVendordiscount() {
         return vendordiscount;
     }
 
-    public void setVendordiscount(double vendordiscount) {
+    public void setVendordiscount(BigDecimal vendordiscount) {
         this.vendordiscount = vendordiscount;
     }
 
@@ -386,6 +412,14 @@ public class Product implements Serializable {
 
     public void setManageStock(Boolean manageStock) {
         this.manageStock = manageStock;
+    }
+
+    public Boolean getManageProductVariants() {
+        return manageProductVariants;
+    }
+
+    public void setManageProductVariants(Boolean manageProductVariants) {
+        this.manageProductVariants = manageProductVariants;
     }
 
     public Boolean getEmiavailable() {

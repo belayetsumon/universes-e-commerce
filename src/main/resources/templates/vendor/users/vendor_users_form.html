@@ -1,0 +1,88 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
+    <div layout:fragment="main_content">
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4><i class="bi bi-person-badge-fill me-2 text-primary"></i>Vendor Users Management</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Vendor Users List</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+
+        <div class="card shadow-sm">
+            <div class="card-header  ">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        <span th:text="${userVendorRole.id != null} ? 'Edit Vendor Role' : 'Add Vendor Role'"></span>
+                    </h5>
+                    <a th:href="@{/vendor-users/userlist}" class="btn btn-danger btn-sm">
+                        <i class="bi bi-x-circle"></i> Close
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body">
+
+                <div class="card-body">
+                    <form th:action="@{/vendor-users/save}" method="post">
+                        <div class="mb-3 d-flex justify-content-center"><div class="w-50">
+                                <!-- Show all errors in one place -->
+                                <div class="alert alert-danger" th:if="${globalErrors}">
+                                    <ul>
+                                        <li th:each="err : ${globalErrors}" th:text="${err}"></li>
+                                    </ul>
+                                </div>  </div>  </div>
+
+                        <!-- Hidden fields -->
+                        <input type="hidden" name="id" th:value="${id}" />
+                        <!-- User Email -->
+                        <div class="mb-3 d-flex justify-content-center">
+                            <div class="w-50">
+                                <label class="form-label">User Email:</label>
+                                <input type="email" name="email" class="form-control"
+                                       th:value="${email}" placeholder="Enter user email" required />
+                                <div class="text-danger" th:if="${emailError}" th:text="${emailError}"></div>
+                            </div>
+                        </div>
+
+                        <!-- Vendor/Company Name -->
+                        <div class="mb-3 d-flex justify-content-center">
+                            <div class="w-50">
+                                <label class="form-label">Vendor/Company Name:</label>
+                                <div class="form-control-plaintext">[[${companyName}]]</div>
+                            </div>
+                        </div>
+
+                        <!-- Vendor Role -->
+                        <div class="mb-3 d-flex justify-content-center">
+                            <div class="w-50">
+                                <label class="form-label">Vendor Role:</label>
+                                <select class="form-select" name="vendorRoleId" required>
+                                    <option value="" disabled selected>Select a role</option>
+                                    <option th:each="vr : ${rolelist}"
+                                            th:value="${vr.id}"
+                                            th:text="${vr.name}"
+                                            th:selected="${vr.id == vendorRoleId}"></option>
+                                </select>
+                                <div class="text-danger" th:if="${vendorRoleIdError}" th:text="${vendorRoleIdError}"></div>
+                            </div>
+                        </div>
+
+                        <!-- Submit button -->
+                        <div class="d-flex justify-content-center">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle me-1"></i> Save
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

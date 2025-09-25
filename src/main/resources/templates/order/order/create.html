@@ -1,15 +1,17 @@
-<!DOCTYPE html>
 <div xmlns:th="http://www.thymeleaf.org"
      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
      layout:decorate="front-layout-inner-page">
+
     <div layout:fragment="main_content">
 
-        <section  class="border-bottom" style="padding: 50px 0px 50px 0px;background-color: #faa619;">
+        <section  class="breadcrumb_section">
             <div class="container">
-                <div class="row">
-                    <div class="col-sm-7">  <h1 class="font-weight-bold" style="color: #fff;">    Cart:Checkout</h1></div>
-                    <div class="col-sm-5 text-right" style="color: #ffffff">Home/cart/checkout</div>
-                </div>
+                <nav aria-label="breadcrumb" class="pt-3 pb-1">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/" class="nav-link">  <i class="bi bi-house"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Product List</li>
+                    </ol>
+                </nav>
             </div>
         </section>
 
@@ -17,91 +19,255 @@
             <div class="container pt-5 pb-5">
                 <div class="row ">
                     <div class="col-sm-8">
-                        <div class="accordion" id="accordionExample">
-                            <div class="card">
-                                <div class="card-header" id="headingOne">
-                                    <h2 class="mb-0">
-                                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                            Checkout Options : Order Summary 
-                                        </button>
-                                    </h2>
-                                </div>
 
-                                <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
-                                    <div class="card-body">
-                                        <div class="row">
+                        <div th:if="${errorMessage}" class="alert alert-danger">
+                            <p th:text="${errorMessage}"></p>
+                        </div>
 
-                                            <div class="table-responsive" th:if="${session.sessioncart!=null}" >
-                                                <table class="table table-bordered  table-striped t">
-                                                    <thead>
-                                                        <tr>
-                                                            <th scope="col">#</th>
-                                                            <th scope="col">Product</th>
-                                                            <th scope="col">Photo</th>
-                                                            <th scope="col">price</th>
-                                                            <th scope="col">Quantity</th>
-                                                            <th scope="col">Total</th>
+                        <nav>
+                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Order Summary </button>
+                                <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Address</button>
+                                <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Contact</button>
+                                <button class="nav-link" id="nav-disabled-tab" data-bs-toggle="tab" data-bs-target="#nav-disabled" type="button" role="tab" aria-controls="nav-disabled" aria-selected="false" disabled>Disabled</button>
+                            </div>
+                        </nav>
+                        <div class="tab-content" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab" tabindex="0">
 
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr th:each="cart,status:${session.sessioncart}">
-                                                            <th>1</th>
-                                                            <td><a    class="card-link text-warning" th:href="@{/front-view/single-product/{prodid}(prodid=${cart.product.id})}" >  <span  th:text="${cart.product.title}">    </span> </a></td>
+                                <div class="table-responsive" th:if="${session.sessioncart!=null}" >
+                                    <table class="table table-bordered  table-striped t">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">#</th>
+                                                <th scope="col">Product</th>
+                                                <th scope="col">Photo</th>
+                                                <th scope="col">vendor Id</th>
+                                                <th scope="col"> sales price</th>
+                                                <th scope="col">Quantity</th>
+                                                <th scope="col">Discount Rate % </th>
+                                                <th scope="col"> Discount Amount</th>
+                                                <th scope="col">Vat Rate % </th>
+                                                <th scope="col"> Vat Amount </th>
+                                                <th scope="col"> Item Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="cart,status : ${session.sessioncart}">
+                                                <th> [[${status.count}]]</th>
+                                                <td><a    class="nav-link" th:href="@{/public/single-product/{prodid}(prodid=${cart.product.id})}" >  <span  th:text="${cart.product.title}">    </span> </a></td>
 
-                                                            <td> <span th:if="${ not #strings.isEmpty(cart.product.imageName)}" class="badge bg-green pull-right"> 
-                                                                    <img  class="img-responsive" th:src="@{/files/}+${cart.product.imageName}" width="100px"  height="100px"/>
-                                                                </span>
-
-                                                                <span th:if="${#strings.isEmpty(cart.product.imageName)}" > Image Not Found </span></td>
-
-                                                            <td th:text="${cart.product.salesPrice}">Otto</td>
-
-                                                            <td th:text="${cart.quantity}">Otto</td>
-                                                            <td>
-                                                                <div th:with="result=${cart.product.salesPrice * cart.quantity}">
-
-                                                                    <span th:text="${#numbers.formatDecimal(result, 0, 'COMMA', 2, 'POINT')}">10.00</span> 
-
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-
-                                                    </tbody>
-                                                </table>
-
-
-
-                                                <div class="card">
-                                                    <div class="card-header">
-                                                        <i class="fas fa-money-check text-warning"></i>  Order   Summary
-                                                    </div>
-                                                    <ul class="list-group list-group-flush">
-                                                        <li class="list-group-item">Sub Total:<span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">10.00</span> /-</li>
-
-                                                        <li class="list-group-item">Order Total: <span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">10.00</span>/-</li>
-                                                        <!--                                <li class="list-group-item">
-                                                                                            <a type="button" class="btn btn-block btn-sm btn-warning">Update Shopping  Cart</a> 
-                                                                                        </li>-->
-                                                        <li class="list-group-item">
-                                                            <a type="button" class="btn btn-block btn-sm btn-warning" th:href="@{/customer-order/save}"> Confirm Order</a> 
-                                                        </li>
-                                                    </ul>
-                                                </div>
-
-
-                                            </div>
-                                        </div>
-                                    </div>
-
+                                                <td> <span th:if="${ not #strings.isEmpty(cart.product.imageName)}" class="badge bg-green pull-right">
+                                                        <img  class="img-responsive" th:src="@{/files/}+${cart.product.imageName}" width="100px"  height="100px"/>
+                                                    </span>
+                                                    <span th:if="${#strings.isEmpty(cart.product.imageName)}" > Image Not Found </span></td>
+                                                <td th:text="${cart.vendorId}">Otto</td>
+                                                <td th:text="${cart.salesPrice}">Otto</td>
+                                                <td th:text="${cart.quantity}">Otto</td>
+                                                <td th:text="${cart.discountRate}">Otto</td>
+                                                <td th:text="${cart.discountAmount}">Otto</td>
+                                                <td th:text="${cart.vatRate}">Otto</td>
+                                                <td th:text="${cart.vatAmount}">Otto</td>
+                                                <td th:text="${cart.itemTotal}">Otto</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
+
+                            <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
+
+
+                                <div class="container mt-5">
+                                    <h2>Billing Address</h2>
+                                    <form th:action="@{/cart_address/add_billing_address}" th:object="${billingAddress}" method="post" class="row g-3">
+
+                                        <input type="hidden" th:field="*{id}">
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">First Name</label>
+                                            <input type="text" class="form-control" th:field="*{firstName}" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Last Name</label>
+                                            <input type="text" class="form-control" th:field="*{lastName}" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Email</label>
+                                            <input type="email" class="form-control" th:field="*{email}" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Mobile</label>
+                                            <input type="text" class="form-control" th:field="*{mobile}" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Company</label>
+                                            <input type="text" class="form-control" th:field="*{company}">
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Country</label>
+                                            <input type="text" class="form-control" th:field="*{country}" required>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label class="form-label">District</label>
+                                            <input type="text" class="form-control" th:field="*{district}" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">City</label>
+                                            <input type="text" class="form-control" th:field="*{city}" required>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <label class="form-label">Address Line 1</label>
+                                            <input type="text" class="form-control" th:field="*{addressLineOne}" required>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <label class="form-label">Address Line 2</label>
+                                            <input type="text" class="form-control" th:field="*{addressLinetwo}">
+                                        </div>
+
+
+
+                                        <div class="col-md-4">
+                                            <label class="form-label">Post Code</label>
+                                            <input type="text" class="form-control" th:field="*{postCode}" required>
+                                        </div>
+
+
+                                        <div class="form-check form-check-inline">
+
+                                            <input class="form-check-input" type="checkbox"  name="sameAddress" >
+                                            <label class="form-check-label" for="inlineCheckbox2">Shipping address is same as billing address</label>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <button type="submit" class="btn btn-primary">Submit</button>
+                                        </div>
+                                    </form>
+
+                                </div>
+
+                                <div class="container mt-5">
+                                    <h2>Shipping Address</h2>
+                                    <form th:action="@{/cart_address/add_shipping_address}" th:object="${shippingAddress}" method="post" class="row g-3">
+
+                                        <input type="hidden" th:field="*{id}">
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">First Name</label>
+                                            <input type="text" class="form-control" th:field="*{firstName}" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Last Name</label>
+                                            <input type="text" class="form-control" th:field="*{lastName}" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Email</label>
+                                            <input type="email" class="form-control" th:field="*{email}" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Mobile</label>
+                                            <input type="text" class="form-control" th:field="*{mobile}" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Company</label>
+                                            <input type="text" class="form-control" th:field="*{company}">
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Country</label>
+                                            <input type="text" class="form-control" th:field="*{country}" required>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label class="form-label">District</label>
+                                            <input type="text" class="form-control" th:field="*{district}" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">City</label>
+                                            <input type="text" class="form-control" th:field="*{city}" required>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <label class="form-label">Address Line 1</label>
+                                            <input type="text" class="form-control" th:field="*{addressLineOne}" required>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <label class="form-label">Address Line 2</label>
+                                            <input type="text" class="form-control" th:field="*{addressLinetwo}">
+                                        </div>
+
+
+
+                                        <div class="col-md-4">
+                                            <label class="form-label">Post Code</label>
+                                            <input type="text" class="form-control" th:field="*{postCode}" required>
+                                        </div>
+
+
+                                        <div class="col-md-12">
+                                            <button type="submit" class="btn btn-primary">Submit</button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                            </div>
+                            <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab" tabindex="0">...</div>
+                            <div class="tab-pane fade" id="nav-disabled" role="tabpanel" aria-labelledby="nav-disabled-tab" tabindex="0">...</div>
                         </div>
+
+
+
+                        <!--                        <div class="accordion" id="accordionExample">
+                                                    <div class="card">
+                                                        <div class="card-header" id="headingOne">
+                                                            <h2 class="mb-0">
+                                                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                                                    Checkout Options : Order Summary
+                                                                </button>
+                                                            </h2>
+                                                        </div>
+
+                                                        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+                                                            <div class="card-body">
+                                                                <div class="row">
+
+
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+                                                </div>-->
 
                     </div>
                     <div class="col-sm-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-money-check text-warning"></i>  Order   Summary
+                            </div>
+                            <ul class="list-group list-group-flush">
 
-
+                                <li class="list-group-item">Order Total: <span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">10.00</span>/-</li>
+                                <!--                                <li class="list-group-item">
+                                                                    <a type="button" class="btn btn-block btn-sm btn-warning">Update Shopping  Cart</a>
+                                                                </li>-->
+                                <li class="list-group-item">
+                                    <a type="button" class="btn btn-block btn-sm btn-success" th:href="@{/order/savebyvendor}">  Place Order</a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>

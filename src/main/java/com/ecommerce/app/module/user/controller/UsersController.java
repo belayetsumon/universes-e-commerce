@@ -5,6 +5,11 @@
  */
 package com.ecommerce.app.module.user.controller;
 
+import com.ecommerce.app.exception.ForeignKeyConstraintException;
+import com.ecommerce.app.module.ReferralRewards.model.Referral;
+import com.ecommerce.app.module.ReferralRewards.model.Wallet;
+import com.ecommerce.app.module.ReferralRewards.repository.ReferralRepository;
+import com.ecommerce.app.module.ReferralRewards.repository.WalletRepository;
 import com.ecommerce.app.module.user.componant.UserValidator;
 import com.ecommerce.app.module.user.model.Role;
 import com.ecommerce.app.module.user.model.Status;
@@ -13,11 +18,13 @@ import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.RoleRepository;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.user.services.LoginEventService;
+import com.ecommerce.app.module.user.services.UsersService;
 import jakarta.servlet.http.*;
 import jakarta.validation.Valid;
-import java.security.*;
+import java.math.BigDecimal;
 import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -25,6 +32,7 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.*;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -54,9 +62,18 @@ public class UsersController {
     @Autowired
     LoginEventService loginEventService;
 
+    @Autowired
+    private ReferralRepository referralRepository;
+
+    @Autowired
+    UsersService usersService;
+
+    @Autowired
+    WalletRepository walletRepository;
+
     @RequestMapping(value = {"", "/", "/index"})
     public String index(Model model) {
-        model.addAttribute("alluser", usersRepository.findAll());
+        model.addAttribute("alluser", usersRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
         return "user/allusers";
     }
 
@@ -84,7 +101,7 @@ public class UsersController {
 
     @RequestMapping("/edit/{id}")
     public String edit(Model model, @PathVariable Long id, Users users) {
-        model.addAttribute("users", usersRepository.findById(id));
+        model.addAttribute("users", usersRepository.findById(id).orElse(null));
         model.addAttribute("roles", roleRepository.findAll());
         model.addAttribute("status", Status.values());
         model.addAttribute("userTypes", UserType.values());
@@ -134,6 +151,18 @@ public class UsersController {
         return "redirect:/users/index";
     }
 
+    @GetMapping("/deletewithexception/{id}")
+    public String deletewithexception(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            usersService.deleteById(id);
+            redirectAttributes.addFlashAttribute("success", "User deleted successfully!");
+        } catch (ForeignKeyConstraintException ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+        }
+
+        return "redirect:/users/index";
+    }
+
     @RequestMapping("/login")
     public String login(Model model) {
         model.addAttribute("attribute", "value");
@@ -180,26 +209,21 @@ public class UsersController {
 
     @RequestMapping("/frontRegistrationSave")
     public String frontUserSave(Model model, @Valid Users users, BindingResult bindingResult, RedirectAttributes redirectAttributes,
-            @RequestParam(name = "parent", required = false) String parent
+            @RequestParam(name = "parent", required = false) String parent,
+            @RequestParam(name = "ref_code", required = false) String ref
     ) {
-
-        userValidator.validate(users, bindingResult);
-
-        Users parents = usersRepository.findByReferralcode(parent);
-
-        if (parents == null) {
-
-            ObjectError cartItemListError;
-
-            cartItemListError = new ObjectError("parent", "Your referral code is invalid");
-
-            bindingResult.addError(cartItemListError);
-        }
-
+        // System.out.println("ref_code" + ref);
+        //userValidator.validate(users, bindingResult);
+        //   Users parents = usersRepository.findByReferralcode(parent);
+//        if (parents == null) {
+//
+//            ObjectError cartItemListError;
+//
+//            cartItemListError = new ObjectError("parent", "Your referral code is invalid");
+//
+//            bindingResult.addError(cartItemListError);
+//        }
         if (bindingResult.hasErrors()) {
-
-           
-           
 
             return "frontview/front-registration";
         }
@@ -207,31 +231,44 @@ public class UsersController {
         Set<Role> customerRole = new HashSet<Role>();
         Role role = roleRepository.findBySlug("customer");
         customerRole.add(role);
-        
+
         users.setRole(customerRole);
-        
+
         users.setUserType(UserType.customer);
 
         users.setStatus(Status.Active);
+
         users.setPassword(bCryptPasswordEncoder.encode(users.getPassword()));
-
-        users.setParent(parents);
-
-        char[] chars = "abcdefghijklmnopqrstuvwxyz1234567890".toCharArray();
-        StringBuilder sb = new StringBuilder();
-        Random random = new SecureRandom();
-        for (int i = 0; i < 10; i++) {
-            char c = chars[random.nextInt(chars.length)];
-            sb.append(c);
-        }
-        String output = sb.toString();
-
-        users.setReferralcode(output);
 
         usersRepository.save(users);
 
-        redirectAttributes.addFlashAttribute("success", " Congratulations you have successfully registered.");
-        return "redirect:/front-view/front-registration";
+        Users referringUsers = null;
+
+        if (ref != null && !ref.isEmpty()) {
+            Optional<Referral> referringReferral = referralRepository.findByReferralCode(ref);
+
+            if (referringReferral.isPresent()) {
+                referringUsers = referringReferral.get().getUsers();
+            }
+        }
+
+        // Create referral code for this user
+        Referral referral = new Referral();
+
+        referral.setReferralCode(usersService.generateRefaraleCode());
+        referral.setUsers(users);
+        referral.setReferredUser(referringUsers);
+
+        referralRepository.save(referral);
+        Wallet wallet = new Wallet();
+
+        wallet.setBalance(BigDecimal.ZERO);
+        wallet.setUsers(users);
+        walletRepository.save(wallet);
+        redirectAttributes.addFlashAttribute(
+                "success", "Congratulations! You have successfully registered.");
+
+        return "redirect:/public/member-login";
     }
 
 }

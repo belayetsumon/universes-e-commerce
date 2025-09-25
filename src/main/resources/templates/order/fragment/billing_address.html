@@ -1,0 +1,13 @@
+<form th:action="@{/checkout/step3}" method="post" th:object="${billingAddress}">
+    <label>Address</label>
+    <input type="text" th:field="*{address}" required>
+    <label>City</label>
+    <input type="text" th:field="*{city}" required>
+    <label>State</label>
+    <input type="text" th:field="*{state}" required>
+    <label>ZIP</label>
+    <input type="text" th:field="*{zip}" required>
+    <label>Country</label>
+    <input type="text" th:field="*{country}" required>
+    <button type="submit">Next</button>
+</form>

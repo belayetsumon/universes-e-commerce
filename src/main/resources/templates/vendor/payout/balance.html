@@ -1,0 +1,17 @@
+<!-- vendor/balance.html -->
+<h3>Vendor Balance</h3>
+<p>Pending Amount: [[${balance.pending}]]</p>
+<p>Available Balance: [[${balance.available}]]</p>
+<p>Total Paid: [[${balance.paid}]]</p>
+
+<form th:action="@{/vendor/balance/request-payout}" method="post">
+    <label>Payment Method:</label>
+    <select name="method">
+        <option value="BANK">Bank</option>
+        <option value="BKASH">bKash</option>
+    </select>
+    <button type="submit">Request Payout</button>
+</form>
+
+<p th:if="${message}" class="text-success">[[${message}]]</p>
+<p th:if="${error}" class="text-danger">[[${error}]]</p>

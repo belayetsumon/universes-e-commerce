@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head><meta charset="UTF-8" /><title>Referral Reward</title></head>
+    <body>
+        <p>Dear <span th:text="${userName}">User</span>,</p>
+        <p>You have earned <strong th:text="${rewardPoints}">0</strong> points for referring new user <strong th:text="${refereeEmail}">email</strong>.</p>
+        <p>Thank you for spreading the word!</p>
+    </body>
+</html>

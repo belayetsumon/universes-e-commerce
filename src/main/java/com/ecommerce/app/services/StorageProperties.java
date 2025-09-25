@@ -20,7 +20,7 @@ public class StorageProperties {
     String root = System.getProperty("user.home");
 
     //  @Value("${app.repo_image.name}")
-    String dir_name = "oxfordmodeltest";
+    String dir_name = "universesecommerce";
 
     String rootPath = root + File.separator + dir_name;
     String pathurl = "/";

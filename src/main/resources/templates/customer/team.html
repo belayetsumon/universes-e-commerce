@@ -8,171 +8,70 @@ and open the template in the editor.
     <div layout:fragment = "main_content">
 
 
-        <section class=" d-none d-sm-block">
+        <section class="">
             <div class="row">
 
                 <div class="col-sm-12">
 
 
                     <div class="card">
-                        <div class="card-header bgMaroon ">
-                            <div class="row">  <div class="col-sm-12">  
+                        <div class="card-header  ">
+                            <div class="row">  <div class="col-sm-12">
 
-                                    <h5 class="font-weight-bold text-white"><i class="fas fa-list"></i> Your Team . <small> Mr.<span th:text="${username}"> </span></small></h5></div>
-
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-sm-12">
-
-                                    <div class="card mb-4">
-                                        <div class="card-header">
-                                            <i class="fas fa-cart-plus"></i> Your Team Member List: 
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="table-responsive">
-                                                <table id="example" class="table table-bordered table-hover table-striped">
-                                                    <thead>
-                                                        <tr>
-                                                            <th style="width: 10px">#</th>
-                                                            <th>Name</th>
-                                                            <th>Mobile</th>
-                                                            <th>Email</th>
-                                                            <th>Referral Code</th>
-                                                            <th>Status</th>
-                                                            <th>Remark</th>
-                                                             <th>Created Date</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr th:each="alluser,status:${alluser}">
-                                                            <td th:text="${status.count}">2.</td>
-                                                            <td th:text="${alluser.name}">Chakma</td>
-                                                            <td th:text="${alluser.mobile}">Chakma</td>
-                                                            <td th:text="${alluser.email}">Chakma</td>
-                                                            <td th:text="${alluser.referralcode}">Chakma</td>
-                                                            <td th:text="${alluser.status}">Chakma</td> 
-                                                            <td th:text="${alluser.remarks}">Chakma</td>
-                                                            <td th:text="${alluser.createdOn}">Chakma</td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                                <!--                                                <table class="table table-bordered" th:if="${ #lists.isEmpty(orderlist_panding)}">
-                                                                                                    <tr>
-                                                                                                        <td> Sorry no team member is found ! </td>
-                                                                                                    </tr>
-                                                
-                                                
-                                                                                                </table>-->
-                                            </div>
-                                        </div>
-                                        <div class="card-footer ">
-
-                                        </div>
-                                    </div>
-
-
-
-                                </div>      </div>
-                        </div>
-                    </div></div></div>
-
-        </section>
-
-
-
-
-        <section class=" mobile d-block d-sm-none">
-            <div class="row">
-
-                <div class="col-12">
-
-                    <div   th:replace="mobile-top-nav">
-                        Left side column. contains the sidebar 
-
-                        Left Side 
-                        =============================================== 
-                    </div>
-
-
-                    <div class="row mt-4"> </div> 
-                    <div   th:replace="customer_mobile_top_navigation">
-                        Left side column. contains the sidebar 
-
-                        Left Side 
-                        =============================================== 
-                    </div>
-
-
-
-                </div>
-                <div class="col-12">
-
-
-                    <div class="card">
-                        <div class="card-header bgMaroon ">
-                            <div class="row">  <div class="col-sm-12">  
-
-                                    <h5 class="font-weight-bold text-white"><i class="fas fa-list"></i> Customer Dashboards . <small>Welcome Mr.<span th:text="${username}"> </span></small></h5></div>
+                                    <h5 class="font-weight-bold "><i class="fas fa-list"></i> Your Team List  [[${refeList.size()}]]</h5></div>
 
                             </div>
                         </div>
                         <div class="card-body">
-                            <div class="row">
-                                <div class="col-sm-12">
-
-                                    <div class="card mb-4">
-                                        <div class="card-header">
-                                            <i class="fas fa-cart-plus"></i> Pending Order List: 
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="table-responsive">
-
-                                                <table class="table table-bordered" th:if="${ not #lists.isEmpty(orderlist_panding)}">
 
 
+                            <div class="table-responsive">
+                                <table id="example" class="table table-bordered table-hover table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 10px">#</th>
+                                            <th>First Name</th>
+                                            <th>Last Name</th>
+                                            <th>Referral Code</th>
+                                            <th>Mobile</th>
+                                            <th>Email</th>
+                                            <th>Status</th>
+                                            <th>Remark</th>
+                                            <th>Created Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="alluser,status:${refeList}">
+                                            <td th:text="${status.count}">2.</td>
+                                            <td th:text="${alluser.referredUser.firstName}">Chakma</td>
+                                            <td th:text="${alluser.referredUser.lastName}">Chakma</td>
+                                            <td th:text="${alluser.referralCode}">Chakma</td>
+                                            <td th:text="${alluser.referredUser.mobile}">Chakma</td>
+                                            <td th:text="${alluser.referredUser.email}">Chakma</td>
+                                            <td th:text="${alluser.referredUser.status}">Chakma</td>
+                                            <td th:text="${alluser.referredUser.remarks}">Chakma</td>
+                                            <td th:text="${alluser.referredUser.createdOn}">Chakma</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <!--                                                <table class="table table-bordered" th:if="${ #lists.isEmpty(orderlist_panding)}">
+                                                                                    <tr>
+                                                                                        <td> Sorry no team member is found ! </td>
+                                                                                    </tr>
 
-                                                    <tr>
-                                                        <td>#</td>
-                                                        <td>Order Date</td>
-                                                        <td>Status</td>
-                                                        <td>Payment</td>
-                                                    </tr>
-                                                    <tr th:each="orderlists,status:${orderlist_panding}">
-                                                        <td th:text="${orderlists.id}"></td>
-                                                        <td th:text="${orderlists.created}"></td>
-                                                        <td th:text="${orderlists.status}"></td>
-                                                        <td> <a  type=" button"  class=" btn btn-sm btn-success" th:href="@{/customer-order/payment/{orderid}(orderid=${orderlists.id})}"> Pay Now </a> </td>
-                                                    </tr>
-                                                </table>
-                                                <table class="table table-bordered" th:if="${ #lists.isEmpty(orderlist_panding)}">
-                                                    <tr>
-                                                        <td> Sorry no order pending for payment ! </td>
-                                                    </tr>
 
+                                                                                </table>-->
 
-                                                </table>
-                                            </div>
-                                        </div>
-                                        <div class="card-footer ">
-
-                                        </div>
-                                    </div>
+                            </div>
 
 
 
-                                </div>      </div>
+
+
                         </div>
-
                     </div></div></div>
 
-
-            <section class="mb-5"></section>
-
-            <div th:replace="bottom-nav"> </div>
         </section>
-
 
 
     </div>

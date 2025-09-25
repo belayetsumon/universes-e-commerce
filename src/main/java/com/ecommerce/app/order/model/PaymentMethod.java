@@ -9,6 +9,22 @@ package com.ecommerce.app.order.model;
  *
  * @author User
  */
-public class PaymentMethod {
-    
+public enum PaymentMethod {
+    COD("Cash on Delivery"),
+    CARD("Credit/Debit Card"),
+    MOBILE_BANKING("Mobile Banking"),
+    PAYPAL("PayPal"),
+    ALIPAY("Alipay"),
+    GOOGLE_PAY("Google Pay"),
+    DUE("Due Amount");
+
+    private final String displayName;
+
+    PaymentMethod(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
 }

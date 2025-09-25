@@ -9,6 +9,7 @@ import com.ecommerce.app.module.user.model.Users;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -27,6 +28,9 @@ public class Address {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, unique = true, updatable = false)
+    private String uuid = UUID.randomUUID().toString();
 
     @NotNull(message = "User cannot be blank.")
     @OneToOne(optional = true)
@@ -54,7 +58,7 @@ public class Address {
 
     private String district;
 
-    /// Audit /// 
+    /// Audit ///
     @CreatedBy
     @Column(nullable = false, updatable = false)
     private String createdBy;
@@ -70,6 +74,9 @@ public class Address {
     @LastModifiedDate
     @Column(insertable = false)
     private LocalDateTime modified;
+
+    public Address() {
+    }
 
     public Address(Long id, Users userId, String firstName, String lastName, String email, String mobile, String company, String addressOne, String addresstwo, String city, String postCode, String country, String district, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
         this.id = id;
@@ -91,15 +98,20 @@ public class Address {
         this.modified = modified;
     }
 
-    public Address() {
-    }
-
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public Users getUserId() {

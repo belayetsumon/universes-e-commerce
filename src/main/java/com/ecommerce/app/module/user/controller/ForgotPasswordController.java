@@ -45,7 +45,7 @@ public class ForgotPasswordController {
             return "user/forgotpassword";
         }
 
-        model.addAttribute("user", "Hello Mr " + user.getName() + "  Your password has been sent successfully! Please check your email. <br>");
+        model.addAttribute("user", "Hello Mr " + user.getFirstName() + " " + user.getLastName() + "Your password has been sent successfully! Please check your email. <br>");
         return "user/showemail";
     }
 

@@ -1,0 +1,70 @@
+<div class="modal-header">
+    <h1 class="modal-title fs-5" id="exampleModalLabel">Add/Edit Delivery Timeline</h1>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+
+    <form
+        th:hx-post="@{/productvariants/save}"
+        hx-trigger="submit"
+        hx-target="body"
+        hx-swap="outerHTML"
+        method="post"
+        enctype="multipart/form-data"
+        th:object="${productVariants}">
+
+        <div class="form-group">
+            <input type="hidden" class="form-control" th:field="*{id}" >
+            <input type="hidden" class="form-control" th:field="*{product}" >
+        </div>
+
+        <!--        <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <select class="form-control" th:field="*{transactionsType}" required="true" >
+                        <option value=""> Select one</option>
+                        <option th:each =" lists :${list}"
+                                th:value=" ${lists.id}"
+                                th:text="${lists.name}"> Select one</option>
+                    </select>
+                </div>-->
+
+
+        <div class="mb-3">
+            <label class="form-label">Color </label>
+            <select class="form-select" th:field="*{color}" required>
+                <option value="" disabled selected>Select a color</option>
+                <option th:each="c : ${colorlist}"
+                        th:value="${c.id}"
+                        th:text="${c.name}">
+                </option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Size</label>
+            <select class="form-select" th:field="*{size}" required>
+                <option value="" disabled selected>Select a color</option>
+                <option th:each="s : ${sizelist}"
+                        th:value="${s.id}"
+                        th:text="${s.name}">
+                </option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Stock Quantity</label>
+            <input type="number"  min="1" class="form-control" th:field="*{stock_quantity}" required>
+
+        </div>
+
+
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Close</button>
+            <button type="submit" class="btn btn-success">Submit</button>
+        </div>
+
+    </form>
+</div>
+
+
+
+

@@ -19,7 +19,11 @@ public interface ProductcategoryRepository extends JpaRepository<Productcategory
 
     List<Productcategory> findByStatus(ProductStatusEnum status);
     
+    List<Productcategory> findByStatusAndFeaturedCat(ProductStatusEnum status,Boolean featuredCat);
+    
     List<Productcategory> findByStatusAndParentIsNull(ProductStatusEnum status);
+    
+     List<Productcategory> findByStatusAndParent(ProductStatusEnum status, Productcategory parent);
     
     Productcategory  findBySlug(String slug);
     

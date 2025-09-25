@@ -1,0 +1,76 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-customar-page">
+    <div layout:fragment = "main_content">
+
+        <div class="row">
+            <div class="col-sm-9">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i> Referral List</strong> </div>
+
+                            <div class="col-sm-7 text-end">
+                                <!--                                <div class="btn-group ">
+                                                                    <a class="btn btn-success btn-sm " th:href="@{/product/create}"> <i class="bi bi-plus-circle"></i> Add Product </a>
+                                                                    <a th:href="@{/admin/index}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>
+                                                                </div>-->
+                            </div>
+
+                        </div>
+                    </div>
+
+
+
+
+
+                    <div class="card-body table-responsive">
+                        <table class="table table-bordered table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Referral Code</th>
+                                    <th>Owner (Referrer)</th>
+                                    <th>Referred User</th>
+                                    <th>Reward Granted</th>
+                                    <th>Created At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="r : ${list}">
+                                    <td th:text="${r.referralCode}"></td>
+                                    <td th:unless="${r.users != null}">—</td>
+                            <th:block th:with="u=${r.users}">
+                                <td th:text="${u != null ? u.firstName + ' (' + u.lastName + ')' : '—'}"></td>
+                            </th:block>
+
+
+
+
+
+
+                            <td th:text="${r.referredUser != null ? r.referredUser.firstName + ' (' + r.referredUser.lastName + ')' : '—'}"></td>
+                            <td th:text="${r.rewardGranted}"></td>
+                            <td th:text="${#temporals.format(r.createdAt, 'dd-MM-yyyy HH:mm')}"></td>
+
+
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div><!--  Card  end-->
+
+
+            </div><!--  Main Content  end-->
+            <div class="col-sm-3">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold ">  <strong><i class="fas fa-list"></i> Filter</strong> </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                    </div><!--  Card body end-->
+                </div><!--  Card  end-->
+            </div>
+        </div>   <!--  Layout end-->      </div><!--  Main Content  end-->
+</div>

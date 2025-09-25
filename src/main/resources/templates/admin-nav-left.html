@@ -1,366 +1,181 @@
-<div  th:fragment="nav-left" >
-    <nav id="sidebar" >
-        <div class="sidebar-header  p-2">
-            <h6><i class="bi bi-list-task"></i> Navigation</h6>
-        </div>
-        
-        <div class="accordion accordion-flush" id="accordionMenu2">
-            <ul class="list-unstyled ">
-                <li>
-                    <a   class="nav-link"  th:href="@{/admin/index}">
-                        <i class="bi bi-speedometer2"></i> <span class="ms-1"> Dashboards </span>
-                    </a>
-                </li>
+<div  th:fragment="nav-left">
 
-<!--                <li>
-                    <a  href="#" data-toggle="collapse" aria-expanded="false" class=" dropdown-toggle collapsed nav-link"
-                        data-bs-toggle="collapse" data-bs-target="#sales2" 
-                        aria-controls="sales2">
-                        <i class="bi bi-cart-check"></i> Sales
-                    </a>
-                    <ul class="list-unstyled collapse " data-bs-parent="#accordionMenu2" id="sales2"  >
-                        <li >
-                            <a class="nav-link" th:href="@{/admin-customer/index}">
-                             <i class="bi bi-check"></i>
-                                Orders
+
+
+    <div class="sidebar-header text-center ">
+        <a class="navbar-brand" href="#">mUSAPIR</a>
+    </div>
+
+    <div class="sidebar-search">
+        <form class="d-flex" role="search">
+            <div class="input-group">
+                <input class="form-control" type="search" placeholder="Search" aria-label="Search">
+                <span class="input-group-text"><i class="bi-search"></i></span>
+            </div>
+        </form>
+    </div>
+    <div class="sidebar-content">
+        <ul class="nav flex-column sidebar-nav" id="sidebar-accordion">
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" th:href="@{/admin/index}">
+                    <i class="bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#sales-collapse" role="button" aria-expanded="false" aria-controls="sales-collapse">
+                    <i class="bi-cart4"></i>
+                    <span>Sales</span>
+                    <i class="bi-chevron-right ms-auto"></i>
+                </a>
+                <ul class="nav flex-column collapse" id="sales-collapse">
+                    <li class="nav-item"><a class="nav-link"  th:href="@{/admin-customer/orderlist}"><i class="bi-box-seam me-2"></i>Orders</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/shippingcharge/list}" ><i class="bi-truck me-2"></i>Shipping Charge</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-arrow-left-circle me-2"></i>Refunds</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-receipt me-2"></i>Transactions</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-bag-check me-2"></i>Shipments</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-arrow-return-left me-2"></i>Returns</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#customers-collapse" role="button" aria-expanded="false" aria-controls="customers-collapse">
+                    <i class="bi-people-fill"></i>
+                    <span>Customers</span>
+                    <i class="bi-chevron-right ms-auto"></i>
+                </a>
+                <ul class="nav flex-column collapse" id="customers-collapse">
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-person-badge me-2"></i>Manage Customers</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-person-plus me-2"></i>New Customers</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-file-earmark-text me-2"></i>Manage Invoice</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-people me-2"></i>Customer Roles</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-person-lines-fill me-2"></i>Online Customers</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#vendor-collapse" role="button" aria-expanded="false" aria-controls="vendor-collapse">
+                    <i class="bi-shop"></i>
+                    <span>Vendor Management</span>
+                    <i class="bi-chevron-right ms-auto"></i>
+                </a>
+                <ul class="nav flex-column collapse" id="vendor-collapse">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/adminvendor/list}"><i class="bi-list-ul me-2"></i>Vendor List</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/payouts/list}"><i class="bi-cash-coin me-2"></i>Vendor Payout List</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/adminvendorusers/rolelist}"><i class="bi-person-gear me-2"></i>Vendor Role List</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/adminvendorusers/privilegeslist}"><i class="bi-shield-check me-2"></i>Vendor Privilege list</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#products-collapse" role="button" aria-expanded="false" aria-controls="products-collapse">
+                    <i class="bi-box-seam-fill"></i>
+                    <span>Product Catalog</span>
+                    <i class="bi-chevron-right ms-auto"></i>
+                </a>
+                <ul class="nav flex-column collapse" id="products-collapse">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/productcategory/index}"><i class="bi-tags me-2"></i>Product Category</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/manufacturer/list}"><i class="bi-building me-2"></i>Manufacturer</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/product/index}"><i class="bi-box me-2"></i>Product</a></li>
+                    <li class="nav-item"><a class="nav-link"th:href="@{/uom/list}"><i class="bi-rulers me-2"></i>Units</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/productsize/list}"><i class="bi-aspect-ratio me-2"></i>Product Size</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/productcolor/list}"><i class="bi-palette me-2"></i>Product Color</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#referral-collapse" role="button" aria-expanded="false" aria-controls="referral-collapse">
+                    <i class="bi-gift-fill"></i>
+                    <span>Referral And Rewards</span>
+                    <i class="bi-chevron-right ms-auto"></i>
+                </a>
+                <ul class="nav flex-column collapse" id="referral-collapse">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/referral/list}"><i class="bi-person-plus me-2"></i>Referral</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/wallet/walletlist}"><i class="bi-credit-card-2-front me-2"></i>Wallet</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/wallettransaction/list}"><i class="bi-arrow-down-up me-2"></i>Wallet Transaction</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/reward-redemption/list}"><i class="bi-trophy me-2"></i>Redemption</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/referral-reward/referral-reward-list}"><i class="bi-award me-2"></i>Reword</a></li>
+                    <li class="nav-item"><a class="nav-link"th:href="@{/lavelratesettings/list}"><i class="bi-sliders me-2"></i>Level & Rate Settings</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#users-collapse" role="button" aria-expanded="false" aria-controls="users-collapse">
+                    <i class="bi-person-rolodex"></i>
+                    <span>Users</span>
+                    <i class="bi-chevron-right ms-auto"></i>
+                </a>
+                <ul class="nav flex-column collapse" id="users-collapse">
+                    <li class="nav-item"><a class="nav-link"th:href="@{/module/index}"><i class="bi-grid me-2"></i>Module</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/privilege/index}"><i class="bi-shield-lock me-2"></i>Privilege</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/role/index}"><i class="bi-person-badge me-2"></i>Role</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/users/index}"><i class="bi-person-circle me-2"></i>User</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-key me-2"></i>Change Password</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-person me-2"></i>Profile</a></li>
+                </ul>
+            </li>
+            <!--            <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="collapse" href="#promotions-collapse" role="button" aria-expanded="false" aria-controls="promotions-collapse">
+                                <i class="bi-tag-fill"></i>
+                                <span>Promotions</span>
+                                <i class="bi-chevron-right ms-auto"></i>
                             </a>
-                        </li>
-                        <li>
-                            <a class="nav-link" th:href="@{/users/registrations}" target="_blank">
-                        <i class="bi bi-check"></i>
-                                Shipments
+                            <ul class="nav flex-column collapse" id="promotions-collapse">
+                                <li class="nav-item"><a class="nav-link" href="#">Discounts</a></li>
+                                <li class="nav-item"><a class="nav-link" href="#">Affiliates</a></li>
+                            </ul>
+                        </li>-->
+            <!--            <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="collapse" href="#content-collapse" role="button" aria-expanded="false" aria-controls="content-collapse">
+                                <i class="bi-file-earmark-text-fill"></i>
+                                <span>Content management</span>
+                                <i class="bi-chevron-right ms-auto"></i>
                             </a>
-                        </li>
-                        <li>
-                            <a class="nav-link" th:href="@{/users/registrations}" target="_blank">
-                          <i class="bi bi-check"></i>
-                                Invoices
+                            <ul class="nav flex-column collapse" id="content-collapse">
+                                <li class="nav-item"><a class="nav-link" href="#">Topics (pages)</a></li>
+                                <li class="nav-item"><a class="nav-link" href="#">Message templates</a></li>
+                            </ul>
+                        </li>-->
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#config-collapse" role="button" aria-expanded="false" aria-controls="config-collapse">
+                    <i class="bi-gear-fill"></i>
+                    <span>Configuration</span>
+                    <i class="bi-chevron-right ms-auto"></i>
+                </a>
+                <ul class="nav flex-column collapse" id="config-collapse">
+                    <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Access control list</a></li>
+                </ul>
+            </li>
+            <!--            <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="collapse" href="#system-collapse" role="button" aria-expanded="false" aria-controls="system-collapse">
+                                <i class="bi-diagram-3-fill"></i>
+                                <span>System</span>
+                                <i class="bi-chevron-right ms-auto"></i>
                             </a>
-                        </li>
-                        <li>
-                            <a class="nav-link" th:href="@{/users/registrations}" target="_blank">
-                             <i class="bi bi-check"></i>
-                                Refunds
-                            </a>
-                        </li>
-
-                        <li>
-                            <a class="nav-link" th:href="@{/users/registrations}" target="_blank">
-                              <i class="bi bi-check"></i>
-                                Transactions
-                            </a>
-                        </li>
-                    </ul>
-
-                </li>-->
-                <li>
-                    <a  href="#customers" data-toggle="collapse" aria-expanded="false" class=" dropdown-toggle collapsed nav-link"
-                        data-bs-toggle="collapse" data-bs-target="#customers2" 
-                        aria-controls="customers2">
-                      <i class="bi bi-person"></i> Customers
-                    </a>
-                    <ul class="list-unstyled collapse accordion-collapse " data-bs-parent="#accordionMenu2" id="customers2"  >
-                        <li >
-                            <a class="nav-link" th:href="@{/admin-customer/index}">
-                            <i class="bi bi-check"></i>
-                                Manage Customers
-                            </a>
-                        </li>
-
-                        <li>
-                            <a class="nav-link" th:href="@{/users/registrations}" target="_blank">
-                        <i class="bi bi-check"></i>
-                                New Customers
-                            </a>
-                        </li>
-                        <!--                        <li>
-                                                    <a class="nav-link" th:href="@{/productsubcategory/index}">
-                                                        <i class="far fa-file"></i>
-                                                        Manage Invoice 
-                                                    </a>
-                                                </li>-->
-                    </ul>
-                </li>
-
-                <li>
-                    <a  href="#product" data-toggle="collapse" aria-expanded="false" class=" dropdown-toggle collapsed nav-link"
-                        data-bs-toggle="collapse" data-bs-target="#product" 
-                        aria-controls="product">
-
-
-                        <i class="bi bi-tags"></i> Product Catalog
-                    </a>
-                    <ul class="list-unstyled collapse accordion-collapse " data-bs-parent="#accordionMenu2" id="product"  >
-                        <li >
-                            <a class="nav-link" th:href="@{/productcategory/index}">
-                              <i class="bi bi-check"></i>
-                                Product Category
-                            </a>
-                        </li>
-                        
-                             <li >
-                            <a class="nav-link" th:href="@{/manufacturer/list}">
-                              <i class="bi bi-check"></i>
-                                Manufacturer 
-                            </a>
-                        </li>
-                        <!--
-                                                <li >
-                                                    <a class="nav-link" th:href="@{/productsubcategory/index}">
-                                                        <i class="far fa-file"></i>
-                                                        Product Sub-category
-                                                    </a>
-                                                </li>-->
-                        <li >
-                            <a class="nav-link" th:href="@{/product/index}">
-                             <i class="bi bi-check"></i>
-                                Product
-                            </a>
-                        </li>
-
-                        <li >
-                            <a class="nav-link" th:href="@{/examcomment/index}">
-                           <i class="bi bi-check"></i>
-                                Comments List
-                            </a>
-                        </li>
-
-                        <li>
-                            <a class="nav-link" th:href="@{/rate/index}">
-                        <i class="bi bi-check"></i>
-                                Rate List
-                            </a>
-                        </li>
-
-                        <li>
-                            <a class="nav-link" th:href="@{/uom/list}">
-                        <i class="bi bi-check"></i>
-                                Units
-                            </a>
-                        </li>
-
-
-                    </ul>
-
-                </li>
-
-                <!--            <li >
-                                <a  href="#instructor" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
-                
-                                    <i class="fas fa-user"></i> Instructor
-                                </a>
-                
-                                <ul class="list-unstyled collapse" id="instructor"  >
-                                    <li >
-                                        <a class="nav-link" th:href="@{/admin-vendor/index}">
-                                            <i class="far fa-file"></i>
-                                            Instructor List
-                                        </a>
-                                    </li>
-                                    <li >
-                                        <a class="nav-link" th:href="@{/ourproduct/index}">
-                                            <i class="far fa-file"></i>
-                                            Product
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>-->
-
-                <!--                <li>
-                                    <a class="nav-link" th:href="@{/services/index}">
-                                        <span data-feather="layers"></span>
-                                        <i class="fas fa-hand-holding"></i>  CMS
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="nav-link" th:href="@{/services/index}">
-                                        <span data-feather="layers"></span>
-                                        <i class="fas fa-hand-holding"></i>  Marketing
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="nav-link" th:href="@{/services/index}">
-                                        <span data-feather="layers"></span>
-                                        <i class="fas fa-hand-holding"></i>  Reporting
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="nav-link" th:href="@{/services/index}">
-                                        <span data-feather="layers"></span>
-                                        <i class="fas fa-hand-holding"></i>  Settings
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="nav-link" th:href="@{/services/index}">
-                                        <span data-feather="layers"></span>
-                                        <i class="fas fa-hand-holding"></i>  Services
-                                    </a>
-                                </li>
-                
-                                <li>
-                                    <a class="nav-link" th:href="@{/news/index}">
-                                        <span data-feather="layers"></span>
-                                        <i class="far fa-newspaper"></i>  News
-                                    </a>
-                                </li>
-                                <li>
-                                    <a  href="#gallery" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle nav-link"
-                                        data-bs-toggle="collapse" data-bs-target="#gallery" 
-                                        aria-controls="gallery"> 
-                                        <i class="fas fa-camera"></i>  Gallery
-                                    </a>
-                
-                
-                
-                                    <ul class="list-unstyled collapse " id="gallery"  >
-                                        <li class="">
-                                            <a class="" th:href="@{/gallery/index}">
-                                                <i class="far fa-file"></i>  Gallery
-                                            </a>
-                                        </li>
-                                        <li class="">
-                                            <a class="" th:href="@{/images/index}">
-                                                <i class="far fa-file"></i>  Gallery Image
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li>
-                                    <a class="nav-link" th:href="@{/contact/index}">
-                                        <i class="fas fa-id-card"></i>  Contact
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="nav-link" th:href="@{/clients/index}">
-                                        <span data-feather="layers"></span>
-                                        <i class="fas fa-users-cog"></i>  Clients
-                                    </a>
-                                </li>
-                
-                                <li class="">
-                                    <a class="nav-link" th:href="@{/faq/index}">
-                                        <span data-feather="layers"></span>
-                                        <i class="fab fa-quora"></i>  FAQ
-                                    </a>
-                                </li>
-                                <li class="">
-                                    <a class="nav-link" th:href="@{/testimonial/index}">
-                                        <span data-feather="layers"></span>
-                                        <i class="fas fa-certificate"></i>  Testimonial
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#career" data-toggle="collapse" aria-expanded="false" class=" nav-link dropdown-toggle">
-                
-                                        <i class="fas fa-users"></i> Career
-                                    </a>
-                                    <ul class="list-unstyled collapse " id="career"  >
-                                        <li class="">
-                                            <a class="nav-link" th:href="@{/jobcategory/index}">
-                                                <i class="far fa-file"></i>
-                                                Jobs Category
-                                            </a>
-                                        </li>
-                                        <li class="">
-                                            <a class="nav-link" th:href="@{/jobs/index}">
-                                                <i class="far fa-file"></i>
-                                                Jobs
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li>
-                                    <a href="#blog" data-toggle="collapse" aria-expanded="false" class="nav-link dropdown-toggle">
-                
-                                        <i class="fas fa-users"></i> Blog
-                                    </a>
-                
-                                    <ul class="list-unstyled collapse " id="blog"  >
-                                        <li class="">
-                                            <a class="nav-link" th:href="@{/blogcategory/index}">
-                                                <i class="far fa-file"></i>
-                                                Blog Category
-                                            </a>
-                                        </li>
-                                        <li class="">
-                                            <a class="nav-link" th:href="@{/blog/index}">
-                                                <i class="far fa-file"></i>
-                                                Blog
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" th:href="@{/subscriber/index}">
-                                        <span data-feather="layers"></span>
-                                        <i class="fas fa-user-tag"></i> Subscribers 
-                                    </a>
-                                </li>
-                
-                                <li class="nav-item">
-                                    <a class="nav-link" th:href="@{/images/index}">
-                                        <span data-feather="layers"></span>
-                                        <i class="far fa-file"></i>  Company Info
-                                    </a>
-                                </li>-->
-
-                <li>
-                    <a  href="#users" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle nav-link"
-                        data-bs-toggle="collapse" data-bs-target="#users" 
-                        aria-controls="users"> 
-                        <i class="bi bi-person-circle"></i> Users
-                    </a>
-
-
-                    <ul class="list-unstyled collapse " data-bs-parent="#accordionMenu2" id="users"  >
-                        <li class="nav-item">
-                            <a class="nav-link" th:href="@{/module/index}">
-                           <i class="bi bi-check"></i>
-                                Module
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" th:href="@{/privilege/index}">
-                             <i class="bi bi-check"></i>
-                                Privilege 
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" th:href="@{/role/index}">
-                           <i class="bi bi-check"></i>
-                                Role
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" th:href="@{/users/index}">
-                            <i class="bi bi-check"></i>
-                                User
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                        <i class="bi bi-check"></i>
-                                Change Password
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                         <i class="bi bi-check"></i>
-                                Profile
-                            </a>
-                        </li>
-                    </ul>
-
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/users/logout}">
-                        <span data-feather="layers"></span>
-                       <i class="bi bi-box-arrow-right text-danger"></i> Logout
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </nav>   
-
+                            <ul class="nav flex-column collapse" id="system-collapse">
+                                <li class="nav-item"><a class="nav-link" href="#">Log</a></li>
+                                <li class="nav-item"><a class="nav-link" href="#">Maintenance</a></li>
+                            </ul>
+                        </li>-->
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#reports-collapse" role="button" aria-expanded="false" aria-controls="reports-collapse">
+                    <i class="bi-pie-chart-fill"></i>
+                    <span>Reports</span>
+                    <i class="bi-chevron-right ms-auto"></i>
+                </a>
+                <ul class="nav flex-column collapse" id="reports-collapse">
+                    <li class="nav-item"><a class="nav-link" href="#">Bestsellers</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Sales summary</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="bi-question-circle-fill"></i>
+                    <span>Help</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link"  th:href="@{/users/logout}">
+                    <i class="bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </div>
 </div>

@@ -1,6 +1,8 @@
 package com.ecommerce.app.module.user.model;
 
 import com.ecommerce.app.model.*;
+import com.ecommerce.app.module.ReferralRewards.model.Referral;
+import com.ecommerce.app.module.ReferralRewards.model.Wallet;
 
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
@@ -12,7 +14,6 @@ import org.springframework.data.jpa.domain.support.*;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-
 @Table(name = "usermodule_users")
 public class Users implements Serializable {
 
@@ -20,14 +21,20 @@ public class Users implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name")
-    @NotBlank(message = "*Please provide your name")
-    private String name;
+    @Column(nullable = false, unique = true, updatable = false)
+    private String uuid = UUID.randomUUID().toString();
+
+    @Column(name = "firstName")
+    @NotBlank(message = "*Please provide your first name")
+    private String firstName;
+
+    private String lastName;
 
     @Column(name = "email", unique = true)
     @NotBlank(message = "*Please provide your email")
     @Email
     private String email;
+
     @NotBlank(message = "*Please provide your mobile")
     private String mobile;
 
@@ -38,15 +45,11 @@ public class Users implements Serializable {
     @JoinColumn(name = "parent_id")
     Users parent;
 
-    @Column(length = 60)
-    private String referralcode;
-
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     private Set<Role> role = new HashSet<>();
-    
 
     @Enumerated(EnumType.STRING)
     private Status status;
@@ -86,28 +89,28 @@ public class Users implements Serializable {
     //  @LastModifiedBy
     private String updatedBy;
 
-    @OneToOne(mappedBy = "userId")
-    public Profile profile;
+//    @OneToOne(mappedBy = "userId")
+//    public Profile profile;
+    @OneToOne(mappedBy = "users")
+    public Wallet wallet;
+
+    @OneToOne(mappedBy = "users")
+    public Referral referral;
 
     @OneToOne(mappedBy = "userId")
     public ProfileImage profileImage;
 
-//    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    public List<SalesOrder> salesOrder;
-//
-//    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    public List<Product> exam;
     public Users() {
     }
 
-    public Users(Long id, String name, String email, String mobile, String password, Users parent, String referralcode, Status status, UserType userType, String remarks, Date lastLogin, Date lastLogOut, String createdBy, Date updatedOn, String updatedBy, Profile profile, ProfileImage profileImage) {
+    public Users(Long id, String firstName, String lastName, String email, String mobile, String password, Users parent, Status status, UserType userType, String remarks, Date lastLogin, Date lastLogOut, String createdBy, Date updatedOn, String updatedBy, Wallet wallet, Referral referral, ProfileImage profileImage) {
         this.id = id;
-        this.name = name;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.email = email;
         this.mobile = mobile;
         this.password = password;
         this.parent = parent;
-        this.referralcode = referralcode;
         this.status = status;
         this.userType = userType;
         this.remarks = remarks;
@@ -116,7 +119,8 @@ public class Users implements Serializable {
         this.createdBy = createdBy;
         this.updatedOn = updatedOn;
         this.updatedBy = updatedBy;
-        this.profile = profile;
+        this.wallet = wallet;
+        this.referral = referral;
         this.profileImage = profileImage;
     }
 
@@ -128,12 +132,20 @@ public class Users implements Serializable {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getEmail() {
@@ -166,14 +178,6 @@ public class Users implements Serializable {
 
     public void setParent(Users parent) {
         this.parent = parent;
-    }
-
-    public String getReferralcode() {
-        return referralcode;
-    }
-
-    public void setReferralcode(String referralcode) {
-        this.referralcode = referralcode;
     }
 
     public Set<Role> getRole() {
@@ -264,12 +268,20 @@ public class Users implements Serializable {
         this.updatedBy = updatedBy;
     }
 
-    public Profile getProfile() {
-        return profile;
+    public Wallet getWallet() {
+        return wallet;
     }
 
-    public void setProfile(Profile profile) {
-        this.profile = profile;
+    public void setWallet(Wallet wallet) {
+        this.wallet = wallet;
+    }
+
+    public Referral getReferral() {
+        return referral;
+    }
+
+    public void setReferral(Referral referral) {
+        this.referral = referral;
     }
 
     public ProfileImage getProfileImage() {

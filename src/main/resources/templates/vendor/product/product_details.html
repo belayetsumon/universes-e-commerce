@@ -5,8 +5,8 @@ To change this template file, choose Tools | Templates
 and open the template in the editor.
 -->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
-    <div layout:fragment = "main_content">
 
+    <div layout:fragment = "main_content">
         <div> <h4> Product <small>Home>Product </small></h4>
         </div>
         <hr/>
@@ -14,79 +14,888 @@ and open the template in the editor.
             <div class="col-sm-12">
                 <div class="card">
                     <div class="card-header">
-                        <div class="row"> <div class="col-sm-5 font-weight-bold text-danger"><i class="fas fa-list"></i> Product Details</div>
-                            <div class="col-sm-7 "> <a class="btn btn-danger btn-sm float-right" th:href="@{/ourproduct/index}">Close</a></div>
+                        <div class="row">
+
+                            <div class="col-sm-9 font-weight-bold ">
+
+                                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active"
+                                                id="home-tab"
+                                                data-bs-toggle="tab"
+                                                data-bs-target="#home"
+                                                type="button"
+                                                role="tab">Product Basic Info</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link " id="imageupload-tab" data-bs-toggle="tab"
+                                                data-bs-target="#imageupload"
+                                                type="button" role="tab">Image Upload</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link " id="productvariants-tab" data-bs-toggle="tab"
+                                                data-bs-target="#productvariants"
+                                                type="button" role="tab">Product Variants </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link " id="productdimension-tab" data-bs-toggle="tab"
+                                                data-bs-target="#productdimension"
+                                                type="button" role="tab">Product Dimension </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="delivery-options-tab" data-bs-toggle="tab" data-bs-target="#deliveryOptions" type="button" role="tab">Delivery Options</button>
+                                    </li>
+                                </ul>
+
+
+
+                            </div>
+
+                            <div class="col-sm-3 text-end ">
+                                <div class="btn-group ">
+
+                                    <a class="btn btn-danger btn-sm "  th:href="@{/productvendor/index}"><i class="bi bi-x-circle"></i> Close</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
                     <div class="card-body">
 
-                        <table class="table table-bordered">
-                            <tr>
-                                <td> Name</td>
-                                <td> :</td>
-                                <td th:text="${product_details.title}">Otto</td>
 
-                            </tr>
 
-                            <tr>
-                                <td> Slug</td>
-                                <td>: </td>
-                                <td th:text="${product_details.slug}">Otto</td>
+                        <div class="tab-content " id="myTabContent">
+                            <div class="tab-pane fade  show active p-1 " id="home" role="tabpanel">
+                                <div class="row mb-3">
+                                    <div class="col-sm-5"> </div>
 
-                            </tr>
 
-                            <tr> <td> Image</td>
-                                <td> :</td>
-                                <td> 
-                                    <span th:if="${ not #strings.isEmpty(product_details.imageName)}" class="badge bg-green pull-right"> 
-                                        <img  class="img-responsive" th:src="@{/files/}+${product_details.imageName}" width="300px"  height="250px"/>
-                                    </span>
+                                    <div class="col-sm-7 text-end ">
+                                        <div class="btn-group ">
+                                            <a  class="btn btn-success btn-sm " th:href="@{/productvendor/edit/{id}(id=${product_details.id})}"> <i class="bi bi-pencil"></i> Edit</a>
+                                            <a  class="btn btn-warning btn-sm " th:href="@{/productvendor/delete/{id}(id=${product_details.id})}"> <i class="bi bi-trash3"></i> Delete </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <table class="table table-bordered ">
+                                    <tr>
+                                        <th> Name</th>
+                                        <td> :</td>
+                                        <td th:text="${product_details.title}">Otto</td>
+                                    </tr>
+                                    <tr>
+                                        <th> Slug</th>
+                                        <td>: </td>
+                                        <td th:text="${product_details.slug}">Otto</td>
+                                    </tr>
+                                    <!--                                    <tr>
+                                                                            <th> UUID</th>
+                                                                            <td>: </td>
+                                                                            <td th:text="${product_details.uuid}">Otto</td>
+                                                                        </tr>-->
+                                    <tr> <th> Product Category</th>
+                                        <td> :</td>
+                                        <td th:text="${product_details.category}"> </td>
+                                    </tr>
+                                    <tr> <th> Product Type</th>
+                                        <td> :</td>
+                                        <td th:text="${product_details.productType}"> </td>
+                                    </tr>
 
-                                    <span th:if="${#strings.isEmpty(product_details.imageName)}" > Image Not Found </span></td>
-                            </tr>
+                                    <tr> <th> Order Position No</th>
+                                        <td> :</td>
+                                        <td th:text="${product_details.orderno}"> </td>
+                                    </tr>
+                                    <tr> <th>Purchase Price</th>
+                                        <td> :</td>
+                                        <td th:text="${product_details.purchasePrice}"> </td>
+                                    </tr>
+                                    <tr><th> Sales Price</th>
+                                        <td> :</td>
+                                        <td th:text="${product_details.salesPrice}"> </td>
 
-                            <tr> <td> Description</td>
-                                <td> :</td>
-                                <td th:text="${product_details.description}"> </td>
+                                    </tr>
+                                    <tr> <th> Vendor Discount</th>
+                                        <td> :</td>
+                                        <td th:text="${product_details.vendorDiscount}"> </td>
 
-                            </tr>
+                                    </tr>
+                                    <tr> <th> Market Place Discount</th>
+                                        <td> :</td>
+                                        <td th:text="${product_details.marketPlaceDiscount}"> </td>
 
-                            <tr> <td> Created</td>
-                                <td> :</td>
-                                <td>  <span th:text="${product_details.created}"> </span> </td>
+                                    </tr>
+                                    <tr> <th> Company Profit</th>
+                                        <td> :</td>
+                                        <td th:text="${product_details.marketPlaceCommissionRate}"> </td>
 
-                            </tr>
+                                    </tr>
+                                    <tr> <th> Discount Start Date</th>
+                                        <td> :</td>
+                                        <td th:text="${product_details.discountStartDate}"> </td>
 
-                            <tr> <td> Created By</td>
-                                <td> :</td>
-                                <td>  <span th:text="${product_details.createdBy}"> </span> </td>
-                            </tr>
+                                    </tr>
+                                    <tr> <th> Discount End Date</th>
+                                        <td> :</td>
+                                        <td th:text="${product_details.discountEndDate}"> </td>
 
-                            <tr> <td>Updated </td>
-                                <td> :</td>
-                                <td>  <span th:text="${product_details.modified}"> </span></td>
-                            </tr>
+                                    </tr>
+                                    <tr> <th> UoM</th>
+                                        <td> :</td>
+                                        <td th:text="${product_details.uom}"> </td>
 
-                            <tr> <td> Updated By</td>
-                                <td> :</td>
-                                <td> <span th:text="${product_details.modifiedBy}"> </span></td>
-                            </tr>
-                            <tr> 
-                                <td> <a th:href="@{/ourproduct/edit/{id}(id=${product_details.id})}"> Edit  </a></td>
+                                    </tr>
+                                    <tr> <th> Short Description:</th>
+                                        <td> :</td>
+                                        <td th:utext="${product_details.shortDescription}"> </td>
 
-                                <td> </td>
+                                    </tr>
+                                    <tr> <th> Description</th>
+                                        <td> :</td>
+                                        <td th:utext="${product_details.description}"> </td>
 
-                                <td><a th:href="@{/ourproduct/delete/{id}(id=${product_details.id})}"> Delete </a></td>
-                            </tr>
-                        </table>
+                                    </tr>
+                                    <tr> <th> Youtube Video Link</th>
+                                        <td> :</td>
+                                        <td>
+                                            <span th:text="${product_details.video}"></span>
+
+                                            <!--                                            <iframe width="560" height="315" th:src="https://www.youtube.com/embed/oQu3W1vnMLg?si=R94_mR4T3TLG8wpP" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>-->
+                                            <div class="" th:if="${product_details.video != null}">
+                                                <iframe width="560" height="315"
+                                                        th:src="'https://www.youtube.com/embed/' + ${#strings.substringAfter(product_details.video,'v=')} + '?si=q54JZcE512Kb-OkG'"
+                                                        title="YouTube video player"
+                                                        frameborder="0"
+                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                                        allowfullscreen>
+                                                </iframe>
+                                            </div>
+                                        </td>
+
+                                    </tr>
+                                    <tr><th> New Product </th>
+                                        <td> :</td>
+                                        <td th:text="${product_details.newProduct}"> </td>
+
+                                    </tr>
+                                    <tr> <th> Manage Stock </th>
+                                        <td> :</td>
+                                        <td th:text="${product_details.manageStock}"> </td>
+
+                                    </tr>
+                                    <tr> <th> Featured Product </th>
+                                        <td> :</td>
+                                        <td th:text="${product_details.featuredProduct}"> </td>
+
+                                    </tr>
+
+                                    <tr> <th> EMI Available </th>
+                                        <td> :</td>
+                                        <td th:text="${product_details.emiAvailable}"> </td>
+
+                                    </tr>
+                                    <tr> <th> Online Show </th>
+                                        <td> :</td>
+                                        <td th:text="${product_details.onlineShow}"> </td>
+
+                                    </tr>
+
+                                    <tr> <th> Meta Title</th>
+                                        <td> :</td>
+                                        <td th:utext="${product_details.metaTitle}"> </td>
+
+                                    </tr>
+
+                                    <tr> <th> Meta Description</th>
+                                        <td> :</td>
+                                        <td th:utext="${product_details.metaDescription}"> </td>
+
+                                    </tr>
+
+                                    <tr> <th> Meta Keywords</th>
+                                        <td> :</td>
+                                        <td th:utext="${product_details.metaKeywords}"> </td>
+
+                                    </tr>
+                                    <tr> <th>Vat Rate</th>
+                                        <td> :</td>
+                                        <td th:text="${product_details.vatRate}"> </td>
+
+                                    </tr>
+
+                                    <tr> <th>Status </th>
+                                        <td> :</td>
+                                        <td th:text="${product_details.status}"> </td>
+
+                                    </tr>
+
+
+                                    <tr> <th> Image</th>
+                                        <td> : </td>
+                                        <td>
+                                            <span th:if="${ not #strings.isEmpty(product_details.imageName)}" class="badge bg-green pull-right">
+                                                <img  class="img-responsive" th:src="@{/files/}+${product_details.imageName}" width="300px"  height="250px"/>
+                                            </span>
+
+                                            <span th:if="${#strings.isEmpty(product_details.imageName)}" > Image Not Found </span></td>
+                                    </tr>
+
+                                    <tr> <th> Created</th>
+                                        <td> :</td>
+                                        <td>  <span th:text="${product_details.created}"> </span> </td>
+
+                                    </tr>
+
+                                    <tr> <th> Created By</th>
+                                        <td> :</td>
+                                        <td>  <span th:text="${product_details.createdBy}"> </span> </td>
+                                    </tr>
+
+                                    <tr> <th>Updated </th>
+                                        <td> :</td>
+                                        <td>  <span th:text="${product_details.modified}"> </span></td>
+                                    </tr>
+
+                                    <tr> <th> Updated By</th>
+                                        <td> :</td>
+                                        <td> <span th:text="${product_details.modifiedBy}"> </span></td>
+                                    </tr>
+
+                                </table>
+                            </div>
+
+                            <div class="tab-pane fade" id="imageupload" role="tabpanel">
+
+
+                                <!-- Include Reusable Message Fragment -->
+                                <div id="message-container"></div>
+                                <div id="loading-indicator" style="display:none;">
+                                    <p>Uploading... Please wait...</p>
+                                </div>
+                                <div th:replace="product/fragments/messages :: messages(${successMessage}, ${errorMessage})"></div>
+                                <!-- Form Container -->
+
+
+
+                                <div class="d-flex justify-content-center align-items-center" style="min-height: 20vh;">
+
+                                    <form
+                                        method="post"
+                                        enctype="multipart/form-data"
+                                        th:object="${productImage}"
+                                        th:hx-post="@{/vendor_productimage/upload}"
+                                        hx-trigger="submit"
+                                        hx-target="#message-container"
+                                        onsubmit="return true;"
+                                        hx-swap="innerHTML"
+                                        hx-on::after-request="setTimeout(() => window.location.reload(), 500);"
+                                        >
+
+
+                                        <div class="row">
+                                            <div class="message" th:fragment="message">
+                                                <span th:text="${message}"></span>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <input type="hidden" class="form-control" th:field="*{id}" />
+                                                <input type="hidden" class="form-control" name="product" th:value="${product_details.id}" />
+                                            </div>
+
+
+                                            <div class=" col-12">
+                                                <input type="hidden" class="form-control" th:field="*{productImageName}" />
+                                                <input type="file" name="productimg" id="productImage" class="form-control" aria-describedby="fileHelpInline" required>
+                                            </div>
+
+
+                                            <div class="d-flex justify-content-center mt-5">
+                                                <button type="submit" id="submit-btn" class="btn btn-success btn-sm mb-2">Submit</button>
+                                            </div>
+
+                                        </div>
+                                    </form>
+                                </div>
+
+
+                                <div class="table" th:fragment="table">
+
+                                    <table id="productImageTable"
+                                           class="table table-bordered table-hover table-striped">
+
+                                        <thead class="thead-light" >
+                                            <tr>
+                                                <th  class="text-center">#</th>
+                                                <th  class="text-center">Image </th>
+                                                <th  class="text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            <tr th:each="img_lists,status:${img_list}">
+                                                <th  class="text-center" th:text="${status.count}">1</th>
+                                                <td  class="text-center">
+                                                    <span th:if="${ not #strings.isEmpty(img_lists.productImageName)}" class="badge bg-green pull-right">
+                                                        <img  class="img-responsive" th:src="@{/files/}+${img_lists.productImageName}" width="100px"  height="100px"/>
+                                                    </span>
+                                                    <span th:if="${#strings.isEmpty(img_lists.productImageName)}" > Image Not Found </span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <button class="btn btn-danger btn-sm "
+                                                            th:hx-delete="@{/vendor_productimage/delete/{id}(id=${img_lists.id})}"
+                                                            hx-target="#message-container"
+                                                            hx-trigger="click"
+                                                            hx-swap="innerHTML"
+                                                            hx-on::after-request="setTimeout(() => window.location.reload(), 500);"
+                                                            >
+                                                        <i class="bi bi-x-circle"></i> Delete </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+
+
+
+
+
+
+
+
+                            </div>
+
+
+                            <div class="tab-pane fade" id="productvariants" role="tabpanel">
+
+
+                                <!-- Include Reusable Message Fragment -->
+                                <div id="message-container"></div>
+                                <div id="loading-indicator" style="display:none;">
+                                    <p>Save...</p>
+                                </div>
+                                <div th:replace="product/fragments/messages :: messages(${successMessage}, ${errorMessage})"></div>
+                                <!-- Form Container -->
+                                <div class="d-flex justify-content-center align-items-center" style="min-height: 20vh;">
+
+                                    <button class="btn  btn-success btn-sm"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deliveryOptionsModal"
+                                            th:hx-get="@{/productvariants/add/{id}(id=${product_details.id})}"
+                                            hx-target=".modal-content"
+                                            hx-swap="innerHTML"
+                                            hx-trigger="click">
+                                        <i class="bi bi-plus-circle"></i> Add New Product Variants</button>
+                                </div>
+
+
+                                <div class="table" th:fragment="table">
+
+                                    <table id="productImageTable"
+                                           class="table table-bordered table-hover table-striped">
+
+                                        <thead class="thead-light" >
+                                            <tr>
+                                                <th  class="text-center">#</th>
+                                                <th  class="text-center">Size </th>
+                                                <th  class="text-center">Color</th>
+                                                <th  class="text-center">Stock</th>
+                                                <th  class="text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            <tr th:each="p_v,status:${p_variants}">
+                                                <th  class="text-center" th:text="${status.count}">1</th>
+                                                <td  class="text-center">
+
+                                                    <span th:text="${p_v.size.name}" > Image Not Found </span>
+                                                </td>
+
+                                                <td  class="text-center">
+
+                                                    <span th:text="${p_v.color.name}" > Image Not Found </span>
+                                                </td>
+                                                <td  class="text-center">
+
+                                                    <span th:text="${p_v.stock_quantity}" > Image Not Found </span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <button class="btn btn-danger btn-sm "
+                                                            th:hx-delete="@{/productvariants/delete/{id}(id=${p_v.id})}"
+                                                            hx-target="#message-container"
+                                                            hx-trigger="click"
+                                                            hx-swap="innerHTML"
+                                                            hx-on::after-request="setTimeout(() => window.location.reload(), 500);"
+                                                            >
+                                                        <i class="bi bi-x-circle"></i> Delete </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="productdimension" role="tabpanel">
+
+
+                                <!-- Include Reusable Message Fragment -->
+                                <div id="message-container"></div>
+                                <div id="loading-indicator" style="display:none;">
+                                    <p>Save...</p>
+                                </div>
+                                <div th:replace="product/fragments/messages :: messages(${successMessage}, ${errorMessage})"></div>
+                                <!-- Form Container -->
+                                <div class="d-flex justify-content-center align-items-center" style="min-height: 20vh;">
+
+                                    <button class="btn  btn-success btn-sm"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deliveryOptionsModal"
+                                            th:hx-get="@{/vendor_productdimension/add/{id}(id=${product_details.id})}"
+                                            hx-target=".modal-content"
+                                            hx-swap="innerHTML"
+                                            hx-trigger="click">
+                                        <i class="bi bi-plus-circle"></i> Add New Product Dimension</button>
+                                </div>
+
+
+                                <div class="table" th:fragment="table">
+
+                                    <table id="productImageTable"
+                                           class="table table-bordered table-hover table-striped">
+
+                                        <thead class="thead-light" >
+                                            <tr>
+                                                <th  class="text-center">#</th>
+                                                <th  class="text-center">Length/cm </th>
+                                                <th  class="text-center">Width/cm</th>
+                                                <th  class="text-center">Height/cm</th>
+                                                <th  class="text-center">Weight/kg</th>
+                                                <th  class="text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            <tr th:each="p_d,status:${d_dimension}">
+                                                <th  class="text-center" th:text="${status.count}">1</th>
+                                                <td  class="text-center">
+
+                                                    <span th:text="${p_d.length}" > Image Not Found </span>
+                                                </td>
+
+                                                <td  class="text-center">
+
+                                                    <span th:text="${p_d.width}" > Image Not Found </span>
+                                                </td>
+                                                <td  class="text-center">
+
+                                                    <span th:text="${p_d.height}" > Image Not Found </span>
+                                                </td>
+                                                <td  class="text-center">
+
+                                                    <span th:text="${p_d.weight}" > Image Not Found </span>
+                                                </td>
+
+                                                <td class="text-center">
+                                                    <button class="btn btn-danger btn-sm "
+                                                            th:hx-delete="@{/vendor_productdimension/delete/{id}(id=${p_d.id})}"
+                                                            hx-target="#message-container"
+                                                            hx-trigger="click"
+                                                            hx-swap="innerHTML"
+                                                            hx-on::after-request="setTimeout(() => window.location.reload(), 500);"
+                                                            >
+                                                        <i class="bi bi-x-circle"></i> Delete </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+
+
+
+
+
+
+
+                            </div>
+                            <div class="tab-pane fade" id="deliveryOptions" role="tabpanel">
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+
+                                        Available Delivery Area
+                                        <button class="btn  btn-success btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deliveryOptionsModal"
+                                                th:hx-get="@{/vendor_availabledeliveryarea/add/{id}(id=${product_details.id})}"
+                                                hx-target=".modal-content"
+                                                hx-swap="innerHTML"
+                                                hx-trigger="click">
+                                            <i class="bi bi-plus-circle"></i> Add New </button>
+                                    </div>
+                                    <div class="card-body">
+
+                                        <table id="productImageTable"
+                                               class="table table-bordered table-hover table-striped">
+                                            <thead class="thead-light" >
+                                                <tr>
+                                                    <th  class="text-center">#</th>
+                                                    <th  class="text-center">Description </th>
+                                                    <th  class="text-center">Created By </th>
+                                                    <th  class="text-center">Created </th>
+                                                    <th  class="text-center">modified By </th>
+                                                    <th  class="text-center">modified </th>
+                                                    <th  class="text-center">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+
+                                                <tr th:if="${d_a_list != null and not #lists.isEmpty(d_a_list)}" th:each="lists, status : ${d_a_list}">
+                                                    <th  class="text-center" th:text="${status.count}">1</th>
+                                                    <td  class="text-center">
+                                                        [[${lists.description}]]
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        [[${lists.createdBy}]]
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        [[${lists.created}]]
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        [[${lists.modifiedBy}]]
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        [[${lists.modified}]]
+                                                    </td>
+
+                                                    <td class="text-center">
+                                                        <button class="btn btn-warning btn-sm "
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#deliveryOptionsModal"
+                                                                th:hx-get="@{/vendor_availabledeliveryarea/edit/{id}(id=${lists.id})}"
+                                                                hx-target=".modal-content"
+                                                                hx-swap="innerHTML"
+                                                                hx-trigger="click"
+
+                                                                >
+                                                            <i class="bi bi-x-circle"></i> Edit </button>
+                                                        <button class="btn btn-danger btn-sm "
+                                                                th:hx-delete="@{/vendor_availabledeliveryarea/delete/{id}(id=${lists.id})}"
+                                                                hx-target="body"
+                                                                hx-swap="innerHTML">
+                                                            <i class="bi bi-x-circle"></i> Delete </button>
+
+
+                                                        <!--                                                        <form th:action="@{/productimage/delete/{productId}(productId=${img_lists.id})}"
+                                                                                                                      method="post"
+                                                                                                                      up-submit up-target=".message, .table" >
+                                                                                                                    <button class="btn btn-danger btn-sm " >
+                                                                                                                        <i class="bi bi-x-circle"></i> Delete </button>
+                                                                                                                </form>-->
+
+                                                    </td>
+                                                </tr>
+                                                <tr th:if="${d_a_list == null or #lists.isEmpty(d_a_list)}">
+                                                    <td colspan="7" class="text-center">Sorry, no data found</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+
+                                        Delivery Charge
+                                        <button class="btn  btn-success btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deliveryOptionsModal"
+                                                th:hx-get="@{/vendor_deliverycharge/add/{id}(id=${product_details.id})}"
+                                                hx-target=".modal-content"
+                                                hx-swap="innerHTML"
+                                                hx-trigger="click">
+                                            <i class="bi bi-plus-circle"></i> Add New </button>
+                                    </div>
+                                    <div class="card-body">
+
+                                        <table id="productImageTable"
+                                               class="table table-bordered table-hover table-striped">
+                                            <thead class="thead-light" >
+                                                <tr>
+                                                    <th  class="text-center">#</th>
+                                                    <th  class="text-center">Delivery Area </th>
+                                                    <th  class="text-center">Delivery Charge </th>
+                                                    <th  class="text-center">Description </th>
+                                                    <th  class="text-center">Created By </th>
+                                                    <th  class="text-center">Created </th>
+                                                    <th  class="text-center">modified By </th>
+                                                    <th  class="text-center">modified </th>
+                                                    <th  class="text-center">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+
+                                                <tr th:if="${d_c_list != null and not #lists.isEmpty(d_c_list)}" th:each="lists, status : ${d_c_list}">
+                                                    <th  class="text-center" th:text="${status.count}">1</th>
+                                                    <td  class="text-center">
+                                                        [[${lists.deliveryArea}]]
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        [[${lists.deliveryCharge}]]
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        [[${lists.description}]]
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        [[${lists.createdBy}]]
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        [[${lists.created}]]
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        [[${lists.modifiedBy}]]
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        [[${lists.modified}]]
+                                                    </td>
+
+                                                    <td class="text-center">
+                                                        <button class="btn btn-warning btn-sm "
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#deliveryOptionsModal"
+                                                                th:hx-get="@{/vendor_deliverycharge/edit/{id}(id=${lists.id})}"
+                                                                hx-target=".modal-content"
+                                                                hx-swap="innerHTML"
+                                                                hx-trigger="click">
+                                                            <i class="bi bi-x-circle"></i> Edit </button>
+
+                                                        <button class="btn btn-danger btn-sm "
+                                                                th:hx-delete="@{/vendor_deliverycharge/delete/{id}(id=${lists.id})}"
+                                                                hx-target="body"
+                                                                hx-swap="innerHTML">
+                                                            <i class="bi bi-x-circle"></i> Delete </button>
+
+
+                                                        <!--                                                        <form th:action="@{/productimage/delete/{productId}(productId=${img_lists.id})}"
+                                                                                                                      method="post"
+                                                                                                                      up-submit up-target=".message, .table" >
+                                                                                                                    <button class="btn btn-danger btn-sm " >
+                                                                                                                        <i class="bi bi-x-circle"></i> Delete </button>
+                                                                                                                </form>-->
+
+                                                    </td>
+                                                </tr>
+                                                <tr th:if="${d_c_list == null or #lists.isEmpty(d_c_list)}">
+                                                    <td colspan="9" class="text-center">Sorry, no data found</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+
+                                        Delivery Timeline
+                                        <button class="btn  btn-success btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deliveryOptionsModal"
+                                                th:hx-get="@{/vendor_deliverytimeline/add/{id}(id=${product_details.id})}"
+                                                hx-target=".modal-content"
+                                                hx-swap="innerHTML"
+                                                hx-trigger="click">
+                                            <i class="bi bi-plus-circle"></i> Add New </button>
+                                    </div>
+                                    <div class="card-body">
+
+                                        <table id="productImageTable"
+                                               class="table table-bordered table-hover table-striped">
+                                            <thead class="thead-light" >
+                                                <tr>
+                                                    <th  class="text-center">#</th>
+                                                    <th  class="text-center">Delivery Area </th>
+                                                    <th  class="text-center">Estimated Timeline </th>
+                                                    <th  class="text-center">Description </th>
+                                                    <th  class="text-center">Created By </th>
+                                                    <th  class="text-center">Created </th>
+                                                    <th  class="text-center">modified By </th>
+                                                    <th  class="text-center">modified </th>
+                                                    <th  class="text-center">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+
+                                                <tr th:if="${d_t_list != null and not #lists.isEmpty(d_t_list)}" th:each="lists, status : ${d_t_list}">
+                                                    <th  class="text-center" th:text="${status.count}">1</th>
+
+                                                    <td  class="text-center">
+                                                        [[${lists.deliveryArea}]]
+                                                    </td>
+
+                                                    <td  class="text-center">
+                                                        [[${lists.estimatedTimeline}]]
+                                                    </td>
+
+
+                                                    <td  class="text-center">
+                                                        [[${lists.description}]]
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        [[${lists.createdBy}]]
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        [[${lists.created}]]
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        [[${lists.modifiedBy}]]
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        [[${lists.modified}]]
+                                                    </td>
+
+                                                    <td class="text-center">
+                                                        <button class="btn btn-warning btn-sm "
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#deliveryOptionsModal"
+                                                                th:hx-get="@{/vendor_deliverytimeline/edit/{id}(id=${lists.id})}"
+                                                                hx-target=".modal-content"
+                                                                hx-swap="innerHTML"
+                                                                hx-trigger="click"
+
+                                                                >
+                                                            <i class="bi bi-x-circle"></i> Edit </button>
+                                                        <button class="btn btn-danger btn-sm "
+                                                                th:hx-delete="@{/vendor_deliverytimeline/delete/{id}(id=${lists.id})}"
+                                                                hx-target="body"
+                                                                hx-swap="innerHTML">
+                                                            <i class="bi bi-x-circle"></i> Delete </button>
+
+
+                                                        <!--                                                        <form th:action="@{/productimage/delete/{productId}(productId=${img_lists.id})}"
+                                                                                                                      method="post"
+                                                                                                                      up-submit up-target=".message, .table" >
+                                                                                                                    <button class="btn btn-danger btn-sm " >
+                                                                                                                        <i class="bi bi-x-circle"></i> Delete </button>
+                                                                                                                </form>-->
+
+                                                    </td>
+                                                </tr>
+                                                <tr th:if="${d_t_list == null or #lists.isEmpty(d_t_list)}">
+                                                    <td colspan="7" class="text-center">Sorry, no data found</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+
+                                        Warranty
+                                        <button class="btn  btn-success btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deliveryOptionsModal"
+                                                th:hx-get="@{/vendor_warranty/add/{id}(id=${product_details.id})}"
+                                                hx-target=".modal-content"
+                                                hx-swap="innerHTML"
+                                                hx-trigger="click">
+                                            <i class="bi bi-plus-circle"></i> Add New </button>
+                                    </div>
+                                    <div class="card-body">
+
+                                        <table id="productImageTable"
+                                               class="table table-bordered table-hover table-striped">
+                                            <thead class="thead-light" >
+                                                <tr>
+                                                    <th  class="text-center">#</th>
+                                                    <th  class="text-center">Description </th>
+                                                    <th  class="text-center">Created By </th>
+                                                    <th  class="text-center">Created </th>
+                                                    <th  class="text-center">modified By </th>
+                                                    <th  class="text-center">modified </th>
+                                                    <th  class="text-center">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>                                            <tr th:if="${w_list != null and not #lists.isEmpty(w_list)}" th:each="lists, status : ${w_list}">
+                                                    <th  class="text-center" th:text="${status.count}">1</th>
+                                                    <td  class="text-center">
+                                                        [[${lists.description}]]
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        [[${lists.createdBy}]]
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        [[${lists.created}]]
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        [[${lists.modifiedBy}]]
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        [[${lists.modified}]]
+                                                    </td>
+
+                                                    <td class="text-center">
+                                                        <button class="btn btn-warning btn-sm "
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#deliveryOptionsModal"
+                                                                th:hx-get="@{/vendor_warranty/edit/{id}(id=${lists.id})}"
+                                                                hx-target=".modal-content"
+                                                                hx-swap="innerHTML"
+                                                                hx-trigger="click"
+
+                                                                >
+                                                            <i class="bi bi-x-circle"></i> Edit </button>
+                                                        <button class="btn btn-danger btn-sm "
+                                                                th:hx-delete="@{/vendor_warranty/delete/{id}(id=${lists.id})}"
+                                                                hx-target="body"
+                                                                hx-swap="innerHTML">
+                                                            <i class="bi bi-x-circle"></i> Delete </button>
+
+
+                                                        <!--                                                        <form th:action="@{/productimage/delete/{productId}(productId=${img_lists.id})}"
+                                                                                                                      method="post"
+                                                                                                                      up-submit up-target=".message, .table" >
+                                                                                                                    <button class="btn btn-danger btn-sm " >
+                                                                                                                        <i class="bi bi-x-circle"></i> Delete </button>
+                                                                                                                </form>-->
+
+                                                    </td>
+                                                </tr>
+                                                <tr th:if="${w_list == null or #lists.isEmpty(w_list)}">
+                                                    <td colspan="7" class="text-center">Sorry, no data found</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal -->
+                            <div class="modal fade" id="deliveryOptionsModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+
+                                    <div class="modal-content">
+
+
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+
+
+
 
                     </div><!--  Card body end-->
-
-                    <div class="card-footer">
-                    </div> <!--  Card footer end-->
                 </div><!--  Card  end-->
 
 
             </div>
         </div>
-    </div></div>
+    </div>
+
+
+</div>

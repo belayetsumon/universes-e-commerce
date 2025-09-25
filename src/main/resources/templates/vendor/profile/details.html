@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
+    <div layout:fragment = "main_content">
+        <section class=" d-none d-sm-block">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="font-weight-bold"><i class="bi bi-list-task"></i> Vendor Profile </h5>
+                </div>
+                <div class="card-body">
+                    <div class="card-body">
+
+
+                        <table class="table">
+                            <tr>
+                                <td>Edit</td>
+                                <td><a th:href="@{/vendorprofile/edit}"> Edit</a></td>
+                            </tr>
+                            <tr>
+                                <td>Vendor Code</td>
+                                <td>[[${vendorprofile.vendorCode}]]</td>
+                            </tr>
+                            <tr>
+                                <td>First Name</td>
+                                <td>[[${vendorprofile.firstName}]]</td>
+                            </tr>
+
+                            <tr>
+                                <td>Last Name</td>
+                                <td>[[${vendorprofile.lastName}]]</td>
+                            </tr>
+
+                            <tr>
+                                <td>Designation</td>
+                                <td>[[${vendorprofile.designation}]]</td>
+                            </tr>
+
+                            <tr>
+                                <td>Company Name</td>
+                                <td>[[${vendorprofile.companyName}]]</td>
+                            </tr>
+
+                            <tr>
+                                <td>Phone/Mobile</td>
+                                <td>[[${vendorprofile.phone}]]</td>
+                            </tr>
+
+                            <tr>
+                                <td>Email</td>
+                                <td>[[${vendorprofile.email}]]</td>
+                            </tr>
+
+                            <tr>
+                                <td>Address</td>
+                                <td>[[${vendorprofile.address}]]</td>
+                            </tr>
+
+                            <tr>
+                                <td>Description</td>
+                                <td>[[${vendorprofile.description}]]</td>
+                            </tr>
+
+                            <tr>
+                                <td>Status</td>
+                                <td>[[${vendorprofile.vendorStatusEnum}]]</td>
+                            </tr>
+
+                            <tr>
+                                <td>createdBy</td>
+                                <td>[[${vendorprofile.createdBy}]]</td>
+                            </tr>
+
+                            <tr>
+                                <td>created</td>
+                                <td>[[${vendorprofile.created}]]</td>
+                            </tr>
+
+                            <tr>
+                                <td>modifiedBy</td>
+                                <td>[[${vendorprofile.modifiedBy}]]</td>
+                            </tr>
+
+                            <tr>
+                                <td>modified</td>
+                                <td>[[${vendorprofile.modified}]]</td>
+                            </tr>
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </div>
+</div>

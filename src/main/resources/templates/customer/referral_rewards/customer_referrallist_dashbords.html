@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-customar-page">
+    <div layout:fragment = "main_content">
+
+
+        <section class=" ">
+
+            <div class="card">
+                <div class="card-header">
+
+                    <h5 class="font-weight-bold "><i class="fas fa-list"></i> Referral Rewards Dashboards </h5>
+
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+
+
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <div class="card mb-3">
+                                            <div class="card-header">
+                                                <i class="fas fa-list"></i>  Your Referral Code
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="alert alert-info">
+                                                    Total: <code ><strong th:text="${referral_code}"></strong> </code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="card mb-3">
+                                            <div class="card-header">
+                                                <i class="fas fa-list"></i> Your Wallet
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="alert alert-info">
+                                                    Balance: <strong th:text="${walletBalance}">0</strong> Taka
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+
+
+                                    <div class="col-sm-6">
+                                        <div class="card mb-3">
+                                            <div class="card-header">
+                                                <i class="fas fa-list"></i>  Total Credit/Earn
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="alert alert-info">
+                                                    Total: <strong th:text="${totalCredits}">0</strong> Taka
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="card mb-3">
+                                            <div class="card-header">
+                                                <i class="fas fa-list"></i> You  Referred
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="alert alert-info">
+                                                    Total: <strong th:text="${totalref}">0</strong> Customers
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+
+                        </div>      </div>
+                </div>
+            </div>
+
+        </section>
+
+
+
+
+
+
+
+
+    </div>
+</div>

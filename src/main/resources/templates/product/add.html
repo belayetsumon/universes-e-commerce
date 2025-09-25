@@ -7,10 +7,10 @@ and open the template in the editor.
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
     <div layout:fragment = "main_content">
 
-        <section> 
+        <section>
             <div class="row">
                 <div class="col-sm-1"><h4> Product</h4></div>
-                <div class="col-sm-6">   
+                <div class="col-sm-6">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
@@ -27,7 +27,7 @@ and open the template in the editor.
                 <div class="card">
                     <div class="card-header">
                         <div class="row">  <div class="col-sm-5 font-weight-bold "><strong><i class="bi bi-list-task"></i>  Product Add</strong></div>
-                            <div class="col-sm-7 text-end"> 
+                            <div class="col-sm-7 text-end">
                                 <div class="btn-group">
                                     <a class="btn btn-danger btn-sm float-right" th:href="@{/product/index}"><i class="bi bi-x-circle"></i> Close</a></div>
                             </div></div>
@@ -45,13 +45,15 @@ and open the template in the editor.
                                 </ul>
                             </div>
 
-                            <div class="row" th:if="${!#strings.isEmpty(success)}"> 
+                            <div class="row" th:if="${!#strings.isEmpty(success)}">
                                 <span  class="text-success"th:text="success"> </span>
-                            </div> 
+                            </div>
 
                             <div class="form-group">
                                 <input type="hidden" class="form-control"  th:field="*{id}" />
                                 <input type="hidden" class="form-control"  th:field="*{userId}" />
+                                <input type="hidden" class="form-control"  th:field="*{slug}" />
+                                <input type="hidden" class="form-control"  th:field="*{vendorprofile}" />
                             </div>
 
                             <div class="row">
@@ -70,10 +72,10 @@ and open the template in the editor.
 
                                 <div class="form-group col-sm-6">
                                     <label for="exampleInputEmail1">Product Category <span class="text-danger"> *</span></label>
-                                    <select id="inputState" class="form-control col-sm-3"  th:field="*{productcategory}">
-                                        <option value=" "> Select one</option>              
+                                    <select id="inputState" class="form-control col-sm-3"  th:field="*{productcategory}" required>
+                                        <option value=""> Select one</option>
                                         <option th:each =" productcategorylists : ${productcategorylist}"
-                                                th:value="${productcategorylists.id} " 
+                                                th:value="${productcategorylists.id} "
                                                 th:text="${productcategorylists.name}"> Select one</option>
                                     </select>
                                     <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('productcategory')}" th:errors="*{productcategory}">Book Name</span>
@@ -82,19 +84,19 @@ and open the template in the editor.
                                 <div class="form-group col-sm-6">
                                     <label for="exampleInputEmail1">Product Manufacturer <span class="text-danger"> </span></label>
                                     <select id="inputState" class="form-control col-sm-3"  th:field="*{manufacturer}">
-                                        <option value=" "> Select one</option>              
+                                        <option value=""> Select one</option>
                                         <option th:each =" manufacturerlists : ${manufacturerlist}"
-                                                th:value="${manufacturerlists.id} " 
+                                                th:value="${manufacturerlists.id} "
                                                 th:text="${manufacturerlists.name}"> Select one</option>
                                     </select>
                                 </div>
 
                                 <div class="form-group col-sm-6">
                                     <label for="exampleInputEmail1">Product Type <span class="text-danger"> *</span></label>
-                                    <select id="inputState" class="form-control col-sm-3"  th:field="*{productType}">
-                                        <option value=" "> Select one</option>              
+                                    <select id="inputState" class="form-control col-sm-3"  th:field="*{productType}" required>
+                                        <option value=""> Select one</option>
                                         <option th:each =" producttype : ${producttype}"
-                                                th:value="${producttype} " 
+                                                th:value="${producttype} "
                                                 th:text="${producttype}"> Select one</option>
                                     </select>
                                 </div>
@@ -106,14 +108,14 @@ and open the template in the editor.
 
                                 <div class="form-group col-sm-6">
                                     <label for="exampleInputEmail1">Purchase Price:<span class="text-danger"> *</span></label>
-                                    <input type="number"  minlength="1" step="0.01" required="true" class="form-control col-sm-5" th:field="*{purchasePrice}" aria-describedby="emailHelp" placeholder="Enter price">
+                                    <input type="number"  min="1" step="0.01" required="true" class="form-control col-sm-5" th:field="*{purchasePrice}" aria-describedby="emailHelp" placeholder="Enter price">
                                     <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('purchasePrice')}" th:errors="*{purchasePrice}">Book Name</span>
                                 </div>
 
 
                                 <div class="form-group col-sm-6">
                                     <label for="exampleInputEmail1">Sales Price:<span class="text-danger"> *</span></label>
-                                    <input type="number"  minlength="1" step="0.01" required="true" class="form-control col-sm-5" th:field="*{salesPrice}" aria-describedby="emailHelp" placeholder="Enter price">
+                                    <input type="number"  min="1" step="0.01" required="true" class="form-control col-sm-5" th:field="*{salesPrice}" aria-describedby="emailHelp" placeholder="Enter price">
                                     <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('salesPrice')}" th:errors="*{salesPrice}">Book Name</span>
                                 </div>
 
@@ -125,20 +127,20 @@ and open the template in the editor.
                                 </div>
 
                                 <div class="form-group col-sm-6">
-                                    <label for="exampleInputEmail1"> Company Discount:<span class="text-danger"></span></label>
-                                    <input type="number"  minlength="1"  step="0.01" class="form-control col-sm-5" th:field="*{companyDiscount}" aria-describedby="emailHelp" placeholder="Enter Discount">
-                                    <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('companyDiscount')}" th:errors="*{companyDiscount}">Book Name</span>
+                                    <label for="exampleInputEmail1"> Market Place Discount:<span class="text-danger"></span></label>
+                                    <input type="number"  min="0"  step="0.01" class="form-control col-sm-5" th:field="*{marketPlaceDiscount}" aria-describedby="emailHelp" placeholder="Enter Discount">
+                                    <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('marketPlaceDiscount')}" th:errors="*{marketPlaceDiscount}">Book Name</span>
                                 </div>
 
                                 <div class="form-group col-sm-6">
-                                    <label for="exampleInputEmail1"> Company Profit:<span class="text-danger"></span></label>
-                                    <input type="number"  minlength="1" step="0.01" class="form-control col-sm-5" th:field="*{companyProfit}" aria-describedby="emailHelp" placeholder="Enter Discount">
-                                    <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('companyProfit')}" th:errors="*{companyProfit}">Book Name</span>
+                                    <label for="exampleInputEmail1"> Market Place Commission Rate:<span class="text-danger"></span></label>
+                                    <input type="number"  min="0" step="0.01" class="form-control col-sm-5" th:field="*{marketPlaceCommissionRate}" aria-describedby="emailHelp" placeholder="Enter Discount">
+                                    <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('marketPlaceCommissionRate')}" th:errors="*{marketPlaceCommissionRate}">Book Name</span>
                                 </div>
 
                                 <div class="form-group col-sm-6">
                                     <label for="exampleInputEmail1 col-sm-5">Discount Start Date:<span class="text-danger"> </span></label>
-                                    <input type="text"   min="0" class="form-control col-sm-5" th:field="*{discountStartDate}" aria-describedby="emailHelp" placeholder="DD/MM/YYYY">
+                                    <input type="text"  id="productDiscountStart" data-date-format="dd-mm-yyyy"  min="0" class="form-control col-sm-5" th:field="*{discountStartDate}" aria-describedby="emailHelp" placeholder="DD/MM/YYYY">
 
 
 
@@ -148,7 +150,7 @@ and open the template in the editor.
                                 <div class="form-group col-sm-6">
                                     <label for="exampleInputEmail1 col-sm-5">Discount End Date:<span class="text-danger"> </span></label>
 
-                                    <input type="text"   min="0"class="form-control col-sm-5" id="discountEndDate" th:field="*{discountEndDate}" aria-describedby="emailHelp" placeholder="DD/MM/YYYY">
+                                    <input type="text"   id="productDiscountEnd" data-date-format="dd-mm-yyyy"  min="0"class="form-control col-sm-5"  th:field="*{discountEndDate}" aria-describedby="emailHelp" placeholder="DD/MM/YYYY">
 
 
                                     <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('discountEndDate')}" th:errors="*{discountEndDate}">Book Name</span>
@@ -157,10 +159,10 @@ and open the template in the editor.
                                 <div class=" col-sm-6 ">
                                     <div class="row form-group">
                                         <label for="exampleInputEmail1" class=" col-sm-3">UoM:<span class="text-danger"> *</span></label>
-                                        <select id="inputState" class="form-control col-sm-3"  th:field="*{uom}">
-                                            <option value=" "> Select one</option>              
+                                        <select id="inputState" class="form-control col-sm-3"  th:field="*{uom}" required>
+                                            <option value=""> Select one</option>
                                             <option th:each =" uomse : ${uoms}"
-                                                    th:value="${uomse.id} " 
+                                                    th:value="${uomse.id} "
                                                     th:text="${uomse.name}"> Select one</option>
                                         </select>
                                         <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('uom')}" th:errors="*{uom}">Book Name</span>
@@ -208,7 +210,7 @@ and open the template in the editor.
                                 <div class="form-group col-sm-12">
 
                                     <label for="accept">
-                                        <input type="checkbox" id="accept" th:field="*{newProduct}" /> 
+                                        <input type="checkbox" id="accept" th:field="*{newProduct}" />
 
                                         New Product
 
@@ -218,7 +220,7 @@ and open the template in the editor.
                                 <div class="form-group col-sm-12">
 
                                     <label for="accept">
-                                        <input type="checkbox" id="accept" th:field="*{manageStock}" /> 
+                                        <input type="checkbox" id="accept" th:field="*{manageStock}" />
 
                                         Manage Stock
 
@@ -228,59 +230,70 @@ and open the template in the editor.
                                 <div class="form-group col-sm-12">
 
                                     <label for="accept">
-                                        <input type="checkbox" id="accept" th:field="*{featuredProduct}" /> 
+                                        <input type="checkbox" id="accept" th:field="*{featuredProduct}" />
 
                                         Featured Product
 
                                     </label>
                                 </div>
-                                
-                                    <div class="form-group col-sm-12">
+
+                                <div class="form-group col-sm-12">
 
                                     <label for="accept">
-                                        <input type="checkbox" id="accept" th:field="*{onlineShow}" /> 
+                                        <input type="checkbox" id="accept" th:field="*{onlineShow}" />
 
                                         Online Show
 
                                     </label>
                                 </div>
-                                
-                                
+
+
 
                                 <div class="form-group col-sm-12">
 
                                     <label for="accept">
-                                        <input type="checkbox" id="accept" th:field="*{emiavailable}" /> 
+                                        <input type="checkbox" id="accept" th:field="*{emiavailable}" />
 
                                         EMI Available
 
                                     </label>
                                 </div>
 
+                                <div class="form-group col-sm-12">
+                                    <label for="exampleInputEmail1">VAT Rate:<span class="text-danger"> </span></label>
+                                    <input type="text"   class="form-control col-sm-8 w-25" th:field="*{vatRate}" aria-describedby="emailHelp" placeholder="VAT Rate">
+                                    <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('vatRate')}" th:errors="*{vatRate}">Book Name</span>
+                                </div>
+
                                 <div class="form-group col-sm-6">
                                     <label for="exampleInputEmail1">Status<span class="text-danger"> *</span></label>
-                                    <select id="inputState" class="form-control col-sm-3"  th:field="*{status}" required="true">
-                                        <option value=" "> Select one</option>              
+                                    <select id="inputState" class="form-control col-sm-3"  th:field="*{status}" required>
+                                        <option value=""> Select one</option>
                                         <option th:each =" status : ${statuslist}"
-                                                th:value="${status} " 
+                                                th:value="${status} "
                                                 th:text="${status}"> Select one</option>
                                     </select>
+                                    <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('status')}" th:errors="*{status}">Book Name</span>
                                 </div>
 
                                 <div class="form-group col-sm-12">
                                     <label for="exampleInputEmail1">Image<span class="text-danger"> </span></label>
-                                    <input type="hidden"  th:value="${product.imageName}">
-                                    <input type="file"  id="imagefile" 
+
+                                    <input type="hidden"  th:field="*{imageName}" th:value="${product.imageName}">
+
+                                    <input type="file"
+                                           id="imagefile"
                                            accept="image/jpeg, image/png, image/webp, image/gif, image/avif"
-                                           class="form-control col-sm-5" name="pic" />
+                                           class="form-control col-sm-5"
+                                           name="pic"
+                                           data-max-file-size="100KB"
+                                           data-allow-multiple="false"
+                                           data-max-files="1"
+                                           data-accepted-file-types="image/jpeg, image/png"
 
-                                    <img id="imagePreview" alt="Image Preview" style="max-width: 300px; margin-top: 10px; display: none;" />
+                                           />
 
-                                    <div id="image_error_message" style="color: red;"></div>
 
-                                    <button type="button" id="deleteImageBtn" style="display:none; margin-top: 10px;">Delete Preview</button>
-
-                                    <div id="imageInfo" style="margin-top: 10px;"></div>
 
                                     <span  class="help-block "> Image Size Maximum 1024 px x 1024 px </span>
                                 </div>
@@ -291,6 +304,19 @@ and open the template in the editor.
                                 <button type="submit"  id="submitBtn" class="btn btn-success"> <i class="bi bi-check-circle"></i>  Save</button>
                             </div>
                         </form>
+                        <script>
+                            // Register FilePond Plugins for Validation
+                            FilePond.registerPlugin(
+                                    FilePondPluginFileValidateType,
+                                    FilePondPluginFileValidateSize
+                                    );
+                            FilePond.setOptions({
+                                labelMaxFileSizeExceeded: 'File is too large!',
+                                labelMaxFileSize: 'Maximum file size allowed is {filesize}',
+                            });
+                            // Initialize FilePond
+                            FilePond.create(document.querySelector('.filepond'));
+                        </script>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,13 @@
+<form th:action="@{/checkout/step1}" method="post" th:object="${order}">
+    <label>Full Name</label>
+    <input type="text" th:field="*{user.fullName}" readonly="true" />
+    
+    <label>Email</label>
+    <input type="email" th:field="*{user.email}" readonly="true" />
+    
+    <label>Phone</label>
+    <input type="text" th:field="*{user.phone}" readonly="true" />
+    
+    <button type="submit">Next</button>
+</form>
+

@@ -6,15 +6,24 @@ and open the template in the editor.
 -->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
     <div layout:fragment = "main_content">
-        <div> 
-            <h4> Users <small>Home> Users > User Registration</small></h4>
-        </div>
-        <hr/>
+        <section>
+            <div class="d-flex justify-content-start align-items-center mb-4">
+                <h2 class="mb-0 me-3">Users</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item"><a href="#">Users</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">User Registration</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+
         <div class="card">
             <div class="card-header row">
 
                 <div class="col-sm-5">  <strong>  <i class="fas fa-list"></i>User Registration</strong></div>
-                <div class="col-sm-7 text-end">                     
+                <div class="col-sm-7 text-end">
                     <a th:href="@{/users/index}" type="button" class="btn  btn-danger btn-sm">Close</a>
                 </div>
 
@@ -29,14 +38,22 @@ and open the template in the editor.
 
 
                     <div class="form-group row">
-                        <input type="hidden" class="form-control "  th:field="*{id}" />      
+                        <input type="hidden" class="form-control "  th:field="*{id}" />
                     </div>
 
                     <div class="form-group row mb-3">
-                        <label for="colFormLabel" class="col-sm-2 col-form-label text-right">Name<span class="text-danger">*</span>:</label>
+                        <label for="colFormLabel" class="col-sm-2 col-form-label text-right">First Name<span class="text-danger">*</span>:</label>
                         <div class="col-sm-5">
-                            <input type="text" class="form-control col-sm-3" th:required="required" id="colFormLabel" placeholder="Name" th:field="*{name}">
-                            <span  class="help-block text-danger col-sm-8" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">First Name Error</span>
+                            <input type="text" class="form-control col-sm-3" th:required="required" id="colFormLabel" placeholder=" First name" th:field="*{firstName}">
+                            <span  class="help-block text-danger col-sm-8" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}">First Name Error</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group row mb-3">
+                        <label for="colFormLabel" class="col-sm-2 col-form-label text-right">Last Name<span class="text-danger">*</span>:</label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control col-sm-3" th:required="required" id="colFormLabel" placeholder="Last name" th:field="*{lastName}">
+                            <span  class="help-block text-danger col-sm-8" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}">First Name Error</span>
                         </div>
                     </div>
 
@@ -78,7 +95,7 @@ and open the template in the editor.
                             <select id="inputState" class="form-control col-sm-3"  th:field="*{role}">
 
                                 <option th:each =" role: ${roles}"
-                                        th:value="${role.id} " 
+                                        th:value="${role.id} "
                                         th:text="${role.name}"> Select one</option>
                             </select>
                         </div>  </div>
@@ -86,9 +103,9 @@ and open the template in the editor.
                         <label  class="col-sm-2 col-form-label text-right " for="inputState">Status<span class="text-danger">*</span>:</label>
                         <div class=" col-sm-3">
                             <select id="inputState" class="form-control"  th:field="*{status}">
-                                <option value=" "> Select one</option>          
+                                <option value=" "> Select one</option>
                                 <option th:each =" status :${status}"
-                                        th:value=" ${status}" 
+                                        th:value=" ${status}"
                                         th:text="${status}"> Select one</option>
                             </select>
                             <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('status')}" th:errors="*{status}">First Name Error</span>
@@ -99,9 +116,9 @@ and open the template in the editor.
                         <label  class="col-sm-2 col-form-label text-right " for="inputState">User Type<span class="text-danger">*</span>:</label>
                         <div class=" col-sm-3">
                             <select id="inputState" class="form-control"  th:field="*{userType}">
-                                <option value=" "> Select one</option>          
+                                <option value=" "> Select one</option>
                                 <option th:each =" userType :${userTypes}"
-                                        th:value=" ${userType}" 
+                                        th:value=" ${userType}"
                                         th:text="${userType}"> Select one</option>
                             </select>
                             <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('status')}" th:errors="*{status}">First Name Error</span>
@@ -119,7 +136,7 @@ and open the template in the editor.
                     <div class="text-center mb-3">
                         <button type="submit" class="btn btn-success">Save</button>
                     </div>
-                </form> 
+                </form>
             </div>
 
             <div class="card-footer">

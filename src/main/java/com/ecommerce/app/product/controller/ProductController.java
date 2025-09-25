@@ -10,9 +10,16 @@ import com.ecommerce.app.globalComponant.UnixTimeComponent;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.services.LoggedUserService;
 import com.ecommerce.app.product.model.Product;
+import com.ecommerce.app.product.model.ProductDimension;
+import com.ecommerce.app.product.model.ProductImage;
 import com.ecommerce.app.product.model.ProductStatusEnum;
 import com.ecommerce.app.product.model.ProductTypeEnum;
+import com.ecommerce.app.product.model.ProductVariants;
+import com.ecommerce.app.product.ripository.AvailableDeliveryAreaRepository;
+import com.ecommerce.app.product.ripository.DeliveryChargeRepository;
+import com.ecommerce.app.product.ripository.DeliveryTimelineRepository;
 import com.ecommerce.app.product.ripository.ManufacturerRepository;
+import com.ecommerce.app.product.ripository.ProductImageRepository;
 import com.ecommerce.app.product.ripository.ProductcategoryRepository;
 import com.ecommerce.app.services.StorageProperties;
 import java.awt.image.BufferedImage;
@@ -29,10 +36,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.ecommerce.app.product.ripository.ProductRepository;
+import com.ecommerce.app.product.ripository.WarrantyRepository;
+import com.ecommerce.app.product.services.ProductDimensionService;
 import com.ecommerce.app.product.services.ProductService;
+import com.ecommerce.app.product.services.ProductVariantsService;
 
 import com.ecommerce.app.product.services.UnitsOfMeasureService;
 import jakarta.validation.Valid;
+import java.util.List;
 
 /**
  *
@@ -64,13 +75,32 @@ public class ProductController {
     @Autowired
     UnixTimeComponent unixTimeComponent;
 
-
     @Autowired
     ProductService productService;
 
     @Autowired
     ManufacturerRepository manufacturerRepository;
 
+    @Autowired
+    ProductImageRepository productImageRepository;
+
+    @Autowired
+    AvailableDeliveryAreaRepository availableDeliveryAreaRepository;
+
+    @Autowired
+    DeliveryChargeRepository deliveryChargeRepository;
+
+    @Autowired
+    DeliveryTimelineRepository deliveryTimelineRepository;
+
+    @Autowired
+    WarrantyRepository warrantyRepository;
+
+    @Autowired
+    ProductVariantsService productVariantsService;
+
+    @Autowired
+    ProductDimensionService productDimensionService;
 
     @RequestMapping(value = {"", "/", "/index"})
     public String index(Model model) {
@@ -87,12 +117,10 @@ public class ProductController {
         Users userss = new Users();
         userss.setId(loggedUserService.activeUserid());
         product.setUserId(userss);
-
         model.addAttribute("statuslist", ProductStatusEnum.values());
         model.addAttribute("producttype", ProductTypeEnum.values());
         model.addAttribute("uoms", unitsOfMeasureService.getAllUnits());
         model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(ProductStatusEnum.Active));
-
         model.addAttribute("manufacturerlist", manufacturerRepository.findAll());
 
         return "product/add";
@@ -119,7 +147,7 @@ public class ProductController {
 
         if (!pic.isEmpty()) {
             try {
-                byte[] bytes = pic.getBytes();
+                // byte[] bytes = pic.getBytes();
 
                 // Creating the directory to store file
                 File dir = new File(properties.getRootPath());
@@ -164,20 +192,19 @@ public class ProductController {
                 model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(ProductStatusEnum.Active));
                 model.addAttribute("manufacturerlist", manufacturerRepository.findAll());
 
-              model.addAttribute("uoms", unitsOfMeasureService.getAllUnits());
+                model.addAttribute("uoms", unitsOfMeasureService.getAllUnits());
                 model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(ProductStatusEnum.Active));
-
 
                 redirectAttributes.addFlashAttribute("message", pic.getOriginalFilename() + " => " + e.getMessage());
                 return "redirect:/product/index";
             }
         } else if (pic.isEmpty() && product.getId() != null) {
 
-            Product products = productRepository.findById(product.getId()).orElse(null);
+//            Product products = productRepository.findById(product.getId()).orElse(null);
+//
+            product.setImageName(product.getImageName());
 
-            products.setImageName(product.getImageName());
-
-            productRepository.save(products);
+            productRepository.save(product);
 
             redirectAttributes.addFlashAttribute("message", "Successfully saved.");
 
@@ -198,18 +225,23 @@ public class ProductController {
     }
 
     @RequestMapping("/details/{id}")
-    public String create(Model model, @PathVariable Long id, Product product) {
-
-
+    public String create(Model model, @PathVariable Long id, Product product, ProductImage productImage,
+            ProductVariants productVariants
+    ) {
         model.addAttribute("product_details", productService.all_Product_for_admin_By_Id(id));
+        model.addAttribute("img_list", productImageRepository.findByProductIdOrderByIdDesc(id));
+        model.addAttribute("d_a_list", availableDeliveryAreaRepository.findByProductIdOrderByIdDesc(id));
+        model.addAttribute("d_c_list", deliveryChargeRepository.findByProductIdOrderByIdDesc(id));
+        model.addAttribute("d_t_list", deliveryTimelineRepository.findByProductIdOrderByIdDesc(id));
+        model.addAttribute("w_list", warrantyRepository.findByProductIdOrderByIdDesc(id));
 
-        model.addAttribute("product_details", productRepository.findById(id).orElse(null));
+        List<ProductVariants> variant = productVariantsService.findById(id);
+        model.addAttribute("p_variants", variant);
 
-        model.addAttribute("product_details", productRepository.findById(id).orElse(null));
-
+        List<ProductDimension> dimension = productDimensionService.findAllById(id);
+        model.addAttribute("d_dimension", dimension);
 
         return "product/product_details";
-
     }
 
     @RequestMapping("/edit/{id}")
@@ -225,7 +257,7 @@ public class ProductController {
 //        userss.setId(loggedUserService.activeUserid());
 //        product.setUserId(userss);
 
-         model.addAttribute("uoms", unitsOfMeasureService.getAllUnits());
+        model.addAttribute("uoms", unitsOfMeasureService.getAllUnits());
         model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(ProductStatusEnum.Active));
         Users userss = new Users();
         userss.setId(loggedUserService.activeUserid());

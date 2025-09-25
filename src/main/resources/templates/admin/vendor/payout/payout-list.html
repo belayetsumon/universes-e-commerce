@@ -1,0 +1,210 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment = "main_content">
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4><i class="bi bi-person-badge-fill me-2 text-primary"></i>Vendor Payout Management</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Vendor Payout Request List</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="font-weight-bold mb-0">
+                            <i class="bi bi-list-task"></i> Vendor  Payout Request  List
+                            <span th:text="${list.size()}"></span>
+                        </h5>
+                        <div class="btn-group">
+                            <a th:href="@{/admin/index}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>
+                            <!-- Example: add more buttons here -->
+                            <!--
+                            <a class="btn btn-primary btn-sm" href="#">Another Action</a>
+                            -->
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+                        <div th:if="${not #strings.isEmpty(message)}"
+                             class="alert alert-success alert-dismissible fade show" role="alert">
+                            <span th:text="${message}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        <div class="table-responsive">
+
+                            <div class="container my-2">
+                                <div class="alert alert-info p-2 rounded shadow-sm">
+                                    <form th:action="@{/admin/payouts/list}" method="get" class="row justify-content-center g-2">
+
+                                        <!-- From Date -->
+                                        <div class="col-auto">
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text">From:</span>
+                                                <input type="date" id="fromDate" name="fromDate" class="form-control form-control-sm">
+                                            </div>
+                                        </div>
+
+                                        <!-- To Date -->
+                                        <div class="col-auto">
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text">To:</span>
+                                                <input type="date" id="toDate" name="toDate" class="form-control form-control-sm">
+                                            </div>
+                                        </div>
+
+                                        <!-- Transaction Status -->
+                                        <div class="col-auto">
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text">Payout Request Status:</span>
+                                                <select id="status" name="statusStr" class="form-select form-select-sm">
+                                                    <option value="">-- All --</option>
+                                                    <option th:each="options : ${status}"
+                                                            th:value="${options}"
+                                                            th:text="${options}">
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <!-- Search Button -->
+                                        <div class="w-100"></div>
+                                        <div class="col-auto mt-2">
+                                            <button type="submit" class="btn btn-info btn-sm px-4">Search</button>
+                                        </div>
+                                    </form>
+
+                                </div>
+                            </div>
+
+                            <table class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Vendor</th>
+                                        <th>Preferred Method</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Ref.:</th>
+                                        <th>System Note</th>
+                                        <th>Requested At </th>
+                                        <th>Processed At</th>
+                                        <th>Paid At</th>
+                                        <th>Action</th>
+                                        <!--                                        <th>Delete</th>-->
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(list)}">
+                                        <td colspan="8" class="text-center">Sorry, no Data found!</td>
+                                    </tr>
+                                    <tr th:each="m ,status: ${list}">
+                                        <td th:text="${status.count}"></td>
+                                        <td th:text="${m.vendorName}"></td>
+                                        <td>
+                                            Preferred Method: [[${m.preferredMethod}]]<br>
+                                            Institute Name: [[${m.bankName}]]<br>
+                                            Account Name:   [[${m.accountTitle}]]<br>
+                                            Account Number:    [[${m.accountNumber}]]<br>
+                                        </td>
+                                        <td th:text="${m.amount}"></td>
+                                        <td th:text="${m.status}"></td>
+                                        <td th:text="${m.payoutReference}"></td>
+                                        <td th:text="${m.adminNote}"></td>
+                                        <td th:text="${m.requestedAt}"></td>
+                                        <td th:text="${m.processedAt}"></td>
+                                        <td th:text="${m.paidAt}"></td>
+                                        <td>
+
+
+                                            <!-- ✅ Your Approve modal trigger button -->
+                                            <button type="button"
+                                                    class="btn btn-success btn-sm"
+                                                    data-bs-toggle="modal"
+                                                    th:data-bs-target="'#approveModal_' + ${m.id}">
+                                                <i class="bi bi-check-circle me-1"></i> Process
+                                            </button>
+
+                                            <!-- ✅ Bootstrap Modal for this row -->
+                                            <div class="modal fade"
+                                                 th:id="'approveModal_' + ${m.id}"
+                                                 tabindex="-1"
+                                                 aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+
+                                                        <!-- Modal header -->
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Process Payout</h5>
+                                                            <button type="button" class="btn-close"
+                                                                    data-bs-dismiss="modal"
+                                                                    aria-label="Close"></button>
+                                                        </div>
+
+                                                        <!-- Modal body with form -->
+                                                        <form th:action="@{/admin/payouts/process}"
+                                                              method="post">
+                                                            <div class="modal-body">
+
+                                                                <input type="hidden" name="id"  th:value="${m.id}" />
+
+                                                                <div class="mb-3">
+                                                                    <label for="ref" class="form-label">Reference</label>
+                                                                    <input type="text" id="ref" name="ref"
+                                                                           class="form-control"
+                                                                           placeholder="Bank ref / txn id">
+                                                                </div>
+
+                                                                <div class="mb-3">
+                                                                    <label for="note" class="form-label">Note</label>
+                                                                    <textarea id="note" name="note"
+                                                                              class="form-control"
+                                                                              placeholder="Optional note"></textarea>
+                                                                </div>
+
+
+                                                                <div class="mb-3">
+                                                                    <label for="statusStr" class="form-label">Payout Request  Status</label>
+                                                                    <select id="statusStr" name="statusStr" class="form-select form-select-sm">
+                                                                        <option value="">-- Select Status --</option>
+
+                                                                        <option value="PROCESSING">Processing</option>
+                                                                        <option value="PAID">Paid</option>
+                                                                        <option value="FAILED">Failed</option>
+                                                                        <option value="CANCELLED">Cancelled</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <!-- Modal footer -->
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary"
+                                                                        data-bs-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-success">
+                                                                    Process
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div><!--  Card body end-->
+                </div><!--  Card  end-->
+            </div>
+        </div>
+
+
+
+
+    </div><!--  Card  end-->
+
+
+</div><!--  Main Content  end-->

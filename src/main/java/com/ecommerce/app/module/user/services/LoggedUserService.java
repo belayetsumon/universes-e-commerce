@@ -20,23 +20,25 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 
 public class LoggedUserService {
-    
+
     @Autowired
     UsersRepository usersRepository;
-    
+
     @Transactional
     public String activeUserName() {
-        
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Users users = usersRepository.findByEmail(auth.getName()).orElse(null);
-        return users.getName();
+
+        String name = users.getFirstName() + "" + users.getLastName();
+        return name;
     }
-    
+
     public Long activeUserid() {
-        
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Users users = usersRepository.findByEmail(auth.getName()).orElse(null);
         return users.getId();
     }
-    
+
 }

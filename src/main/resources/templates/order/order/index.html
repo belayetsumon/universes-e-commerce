@@ -6,9 +6,6 @@ and open the template in the editor.
 -->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
     <div layout:fragment = "main_content">
-        <div> <h4> Order <small>Home>Order</small></h4>
-        </div>
-        <hr/>
         <div class="row">
             <div class="col-sm-12">
 
@@ -39,9 +36,10 @@ and open the template in the editor.
                                     <th scope="col">Email</th>
                                     <th scope="col"> Status </th>
                                     <th scope="col"> Total </th>
+                                    <th scope="col"> Vendor </th>
                                     <th scope="col"> Date Added </th>
                                     <th scope="col"> Date Modified </th>
-                                     <th scope="col">Details </th>
+                                    <th scope="col">Details </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -53,13 +51,14 @@ and open the template in the editor.
                                     <td th:text="${orderlists.customer.email}">Otto</td>
                                     <td th:text="${orderlists.status}">Otto</td>
                                     <td th:text="${orderlists.total}">Otto</td>
+                                    <td th:text="${orderlists.total}">Otto</td>
                                     <td th:text="${orderlists.created}">Otto</td>
                                     <td th:text="${orderlists.modified}">@mdo</td>
-                                     <td> @mdo </td>
+                                    <td> @mdo </td>
                                 </tr>
                             </tbody>
                         </table>
-                        
+
                         <table class="table table-bordered" th:if="${ #lists.isEmpty(orderlist)}">
                             <tr>
                                 <td> Sorry no order found ! </td>

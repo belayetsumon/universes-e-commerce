@@ -1,0 +1,21 @@
+<form th:action="@{/profile/payout-info}" method="post">
+    <label>Preferred Method:</label>
+    <select name="preferredMethod">
+        <option value="MOBILE">Mobile</option>
+        <option value="BANK">Bank</option>
+    </select>
+
+    <label>Mobile Wallet Number:</label>
+    <input type="text" name="mobileWalletNumber"/>
+
+    <label>Bank Account Name:</label>
+    <input type="text" name="bankAccountName"/>
+
+    <label>Bank Account Number:</label>
+    <input type="text" name="bankAccountNumber"/>
+
+    <label>Bank Name:</label>
+    <input type="text" name="bankName"/>
+
+    <button type="submit">Save</button>
+</form>

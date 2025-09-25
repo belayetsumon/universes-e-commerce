@@ -2,143 +2,127 @@
 <div xmlns:th="http://www.thymeleaf.org"
      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
      layout:decorate="front-layout-inner-page">
+
     <div layout:fragment="main_content">
+
         <section  class="breadcrumb_section">
-            <div class="container">
-                <nav aria-label="breadcrumb" class="pt-3 pb-1">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/" class="nav-link">  <i class="bi bi-house"></i> Home</a></li>
+            <div class="container-fluid bg-white">
+                <nav aria-label="breadcrumb" class="pt-3 pb-1 ">
+                    <ol class="breadcrumb ">
+                        <li class="breadcrumb-item"><a href="/" class="nav-link">  <i class="bi bi-house text-danger"></i> Home</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Product List</li>
                     </ol>
                 </nav>
-            </div> 
+            </div>
         </section>
 
-        <section>
-
-            <div class="container">
-                <div class="row mt-4">
-                    <div class="col-sm-3">
-
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="font-weight-bold "> <i class="fas fa-list"></i> Product Category</h5>
-                            </div>
-                            <div class="categorySidebar">
-
-                                <div class="accordion accordion-flush" 
-                                     id="parentmenu">
-
-                                    <div class=""  th:each="category, iterStat : ${productcategorylist}">
-
-                                        <div class="categorySidebarmenu" 
-                                             id=""
-                                             data-bs-toggle="collapse" 
-                                             th:data-bs-target="'#collapse' + ${iterStat.index}" 
-                                             aria-expanded="false"
-                                             aria-controls="collapseOne">
-                                            <a th:href="@{/front-view/product-by-category/{prodcatid}(prodcatid=${category.id})}">                                
-                                                [[${category.name}]]
-                                            </a>
-                                            <span th:if="${!#lists.isEmpty(category.children)}"> *</span>
-                                        </div>
 
 
-                                        <div th:if="${!#lists.isEmpty(category.children)}"
-                                             th:id="'collapse' + ${iterStat.index}" 
-                                             class="accordion-collapse collapse " 
-                                             aria-labelledby="headingOne" 
-                                             data-bs-parent="#parentmenu">
-                                            <div class="accordion-body">
+        <div class="container-fluid">
+            <div class="row mt-4">
+                <div class="col-sm-3">
 
-                                                <div class="accordion" id="childMenu">
-
-                                                    <div class="" th:each="child, childStat : ${category.children}">
-
-                                                        <div class="" id="subHeadingOne"
-                                                             data-bs-toggle="collapse"
-                                                             th:data-bs-target="'#collapse' + ${childStat.index}" 
-                                                             aria-expanded="false" 
-                                                             th:aria-controls="'collapse' + ${childStat.index}" >
-
-                                                            <a th:href="@{/front-view/product-by-category/{prodcatid}(prodcatid=${child.id})}" >
-
-                                                                [[${child.name}]]
-
-                                                            </a>
-                                                            <span  style=" text-align: right;" th:if="${!#lists.isEmpty(child.children)}"> *</span>
-                                                        </div>
-
-                                                        <div  th:if="${!#lists.isEmpty(child.children)}" 
-                                                              th:id="'collapse' + ${childStat.index}" 
-                                                              class="accordion-collapse collapse" 
-                                                              aria-labelledby="subHeadingOne"
-                                                              data-bs-parent="#childMenu">
-
-                                                            <div class="accordion-body">
-
-                                                                <div th:each="grandChild, childStat : ${child.children}">
-                                                                    [[${grandChild.name}]]
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                        </div>   
-                                    </div>     
-                                </div>  
-
-
-                                <!--                            <ul class="list-group list-group-flush ">
-                                                                <li class="list-group-item" th:each="productcategorylists,status:${productcategorylist}" >
-                                                                    <a   class="text-muted"  th:href="@{/front-view/product-by-category/{prodcatid}(prodcatid=${productcategorylists.id})}" >  
-                                                                        <span th:text="${productcategorylists.name}" ></span> <span  class="float-right badge badge-warning " th:text="${productcategorylists.ourproduct.size()}" ></span>
-                                                                    </a></li>
-                                                            </ul>-->
-
-
-
-                            </div>
-
-
+                    <div class="card border-0">
+                        <div class="card-header ">
+                            <span class="categoryTitle"> <span class="categoryTitle-title-square"></span> Product Category</span>
+                        </div>
+                        <!-- ✅ HTML -->
+                        <div class="categorySidebar">
+                            <ul class="category-list list-unstyled">
+                                <li th:each="menu : ${productcategorylist}">
+                                    <a th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${menu.id})}"
+                                       th:text="${menu.name}"></a>
+                                </li>
+                            </ul>
                         </div>
 
                     </div>
-                    <div class="col-sm-9">
-                        <div class="card  ">
 
-                            <div class="card-header">
-                                <span th:text="${productlist.size()}"> </span>   Products found
-                            </div>
-                            <div class="card-body">
+                </div>
+                <div class="col-sm-9">
+                    <div class="card border-0">
 
-                                <div class="row">
-                                    <div class="col-sm-4" th:each="productlists,status:${productlist}">
+                        <div class="card-header">
+                            <span th:text="${productlist.size()}"> </span> Products found
+                        </div>
 
-                                        <div class="card mb-4 hvr-bounce-in">
-                                            <span th:if="${ not #strings.isEmpty(productlists.imageName)}" class=""> 
-                                                <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />
+                        <div class="card-body">
+
+                            <div class="row row-cols-1 row-cols-md-5 g-4">
+                                <div class="col" th:each="productlists,status:${productlist}">
+
+                                    <div class="card product-card  position-relative mb-4 hvr-bounce-in h-100">
+
+                                        <span th:if="${ not #strings.isEmpty(productlists.imageName)}" class="">
+                                            <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />
+                                        </span>
+                                        <span th:if="${#strings.isEmpty(productlists.imageName)}" >
+                                            <img  class="card-img-top" th:src="@{/img/image-not-available.png}" />
+                                        </span>
+
+                                        <div class="badge-container">
+                                            <span th:if="${productlists.totalDiscountPercent != null and productlists.totalDiscountPercent > 0}" class="badge rounded-pill bg-danger badge-custom" >
+                                                -[[${productlists.totalDiscountPercent}]]%
                                             </span>
-                                            <span th:if="${#strings.isEmpty(productlists.imageName)}" > 
-                                                <img  class="card-img-top" th:src="@{/img/image-not-available.png}" /> 
-                                            </span>
+                                            <span  th:if="${productlists.featuredProduct}" class="badge rounded-pill bg-info badge-custom">Featured</span>
+                                            <!--                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>-->
+                                        </div>
 
-                                            <div class="card-body">
-                                                <div class="card-title">
-                                                    <h6 class="font-weight-bold text-warning text-center "><a    class="card-link text-warning" th:href="@{/public/single-product/{prodid}(prodid=${productlists.id})}" >  <span  th:text="${productlists.title}">    </span> </a></h6>
-                                                    <h6 class=""> <span class="font-weight-bold">Price:</span> <span  th:text="${productlists.salesPrice}">    </span> /-</h6>
+                                        <div class="card-body">
+                                            <div class="card-title">
+                                                <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.id})}" >  <span  th:text="${productlists.title}">    </span> </a>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="row"  th:if="${productlists.totalDiscountPercent > 0}">
+                                                    <div class=" col-auto text-muted text-decoration-line-through"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
+                                                    <div class=" col-auto  text-success">-[[${productlists.totalDiscountedAmount}]]</div>
+                                                    <div class=" col-auto  text-reds">[[${productlists.afterDiscountRemainingAmount}]]</div>
+                                                </div>
+
+                                                <div class="row"  th:unless="${productlists.totalDiscountPercent > 0}">
+                                                    <div class="  text-center"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
+                                                </div>
+                                                <div>
+                                                    <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
+                                                    <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
                                                 </div>
                                             </div>
+
+                                            <form  class="" th:action="@{/cart/add}"  enctype="multipart/form-data" method="post" >
+
+                                                <input type="hidden" class="form-control" th:name ="product_id" th:value="${productlists.id}" />
+
+                                                <!--                                            <label  class="col-auto" for="exampleInputEmail1">Quantity:</label>-->
+
+                                                <!--                                        <div class="fs-6 text-danger"> <strong> Price: </strong><span  th:text="${productlists.salesPrice}">    </span></div>-->
+                                                <input  type="hidden" min="1"   class="col-auto form-control mb-3"  size="10" th:name="quantity" value="1" />
+
+                                                <div class=" form-group text-center ">
+                                                    <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Add to Cart</button>
+                                                    <button class="btn btn-sm btn-outline-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i> Add to WishList </button>
+                                                </div>
+                                            </form>
+
+
+                                            <!--                                <div class="mt-2">
+                                                                                <span class="badge bg-warning text-dark">Rating: 4.5 <i class="fas fa-star"></i></span>
+                                                                                <span class="badge bg-secondary">Top</span>
+                                                                                <span class="badge bg-primary">Trend</span>
+                                                                            </div>-->
+
                                         </div>
                                     </div>
+
+
+
+
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
         </section>
     </div>

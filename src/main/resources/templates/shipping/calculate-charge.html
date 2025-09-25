@@ -1,0 +1,17 @@
+<form hx-post="/order/calculate-charge"
+      hx-target="#chargeResult"
+      hx-swap="outerHTML">
+    <select name="zoneType" class="form-select">
+        <option value="DHAKA_CITY">ঢাকার ভিতরে</option>
+        <option value="CITY_TO_SUBURB">ঢাকা থেকে সাব এরিয়া</option>
+        <option value="DHAKA_TO_OUTSIDE">ঢাকার বাইরে</option>
+        <option value="CITY_TO_CITY">এক শহর থেকে অন্য শহর</option>
+        <option value="SAME_DAY_METRO">একই দিনে</option>
+    </select>
+
+    <input type="number" name="weightKg" step="0.1" class="form-control" placeholder="Weight in KG">
+    <button type="submit" class="btn btn-primary">Calculate</button>
+</form>
+
+<div id="chargeResult"></div>
+

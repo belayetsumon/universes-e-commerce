@@ -7,17 +7,29 @@ and open the template in the editor.
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
     <div layout:fragment = "main_content">
 
-        <div> 
-            <h4> Users <small>Home> Users </small></h4>
-        </div>
-        <hr/>
+        <section>
+            <div class="d-flex align-items-center mb-4">
+                <h2>Users</h2>
+                <nav aria-label="breadcrumb" class="align-middle">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item"><a href="#">Users</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">User List</li>
+                    </ol>
+                </nav>
+            </div>
+
+
+        </section>
         <div class="row">
             <div class="col-sm-12">
 
                 <div class="card">
+
+
                     <div class="card-header">
                         <div class="row">  <div class="col-sm-5"> <strong>  <i class="fas fa-list"></i> User  List   Total Employee :  <span th:text="${alluser.size()}"></span></strong></div>
-                            <div class="col-sm-7 text-end">  
+                            <div class="col-sm-7 text-end">
                                 <div class="btn-group ">
                                     <a th:href="@{/users/registrations}" type="button" class="btn  btn-success btn-sm bg-green">New Employee Registration</a>
                                     <a th:href="@{/users/index}" type="button" class="btn  btn-danger btn-sm">Close</a>
@@ -25,11 +37,19 @@ and open the template in the editor.
                         </div>
                     </div>
                     <div class="card-body table-responsive">
-                        <table id="example" class="table table-bordered table-hover table-striped">
+
+
+                        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                        <table id="tablesdata" class="table table-bordered table-hover table-striped">
                             <thead>
+
+
                                 <tr>
                                     <th style="width: 10px">#</th>
-                                    <th>Name</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
                                     <th>Mobile</th>
                                     <th>Email</th>
                                     <th>Role</th>
@@ -42,19 +62,20 @@ and open the template in the editor.
                             <tbody>
                                 <tr th:each="alluser,status:${alluser}">
                                     <td th:text="${status.count}">2.</td>
-                                    <td th:text="${alluser.name}">Chakma</td>
+                                    <td th:text="${alluser.firstName}">Chakma</td>
+                                    <td th:text="${alluser.lastName}">Chakma</td>
                                     <td th:text="${alluser.mobile}">Chakma</td>
                                     <td th:text="${alluser.email}">Chakma</td>
                                     <td> <span th:each="role :${alluser.role}">
                                             <span th:text="${role.name}+' ,'">  </span>
                                         </span>
                                     </td>
-                                    <td th:text="${alluser.status}">Chakma</td> 
+                                    <td th:text="${alluser.status}">Chakma</td>
                                     <td th:text="${alluser.remarks}">Chakma</td>
                                     <td>
                                         <a type="button" class="btn  btn-success btn-sm" th:href="@{/users/edit/{id} (id=${alluser.id})}" > Edit</a>
                                     </td>
-                                    <td> <a  type="button" class="btn  btn-danger btn-sm" th:href="@{/users/delete/{id} (id=${alluser.id})}" > Delete </a></td>
+                                    <td> <a  type="button" class="btn  btn-danger btn-sm" th:href="@{/users/deletewithexception/{id} (id=${alluser.id})}" > Delete </a></td>
                                 </tr>
                             </tbody>
                         </table>

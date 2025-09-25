@@ -1,343 +1,265 @@
 
 <section>
-    <div class="container"> 
-        <div class="row" style="font-size: 12px;"> 
+    <div class="container py-1" style="font-size: 12px;">
+        <div class="row align-items-center">
 
-            <div class=" col-xs-12 col-sm-6 col-md-6">Welcome to Universes Online Shopping Store !</div>
+            <!-- 🔹 Left: Welcome text -->
+            <div class="col-12 col-sm-6 text-start">
+                Welcome to Musapir Online Shopping Store!
+            </div>
 
-            <div class=" col-xs-12 col-sm-6 col-md-6">
+            <!-- 🔹 Right: Menu items -->
+            <div class="col-12 col-sm-6 text-end">
+                <div class="d-flex justify-content-end flex-wrap gap-2">
 
-                <div class="row">
-                    <div class="col-xs-6 col-sm-2 col-md-2">
-
-                        <div class="dropdown">
-                            <a href="#" class="dropdown-toggle text-decoration-none nav-link" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-translate"></i> Language</a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#">Action 1</a></li>
-                                <li><a class="dropdown-item" href="#">Action 2</a></li>
-                                <li><a class="dropdown-item" href="#">Action 3</a></li>
-                            </ul>
-                        </div>
+                    <!-- Language Dropdown -->
+                    <div class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-translate"></i> Language
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">English</a></li>
+                            <li><a class="dropdown-item" href="#">Bangla</a></li>
+                            <li><a class="dropdown-item" href="#">Arabic</a></li>
+                        </ul>
                     </div>
 
-                    <div class=" col-xs-6 col-sm-2 col-md-2 ">
-                        <div class="dropdown">
-                            <a href="#" class="dropdown-toggle text-decoration-none nav-link" data-bs-toggle="dropdown" aria-expanded="false"> 
-                                <i class="bi bi-currency-exchange"></i> Currency </a>
-
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#">Action 1</a></li>
-                                <li><a class="dropdown-item" href="#">Action 2</a></li>
-                                <li><a class="dropdown-item" href="#">Action 3</a></li>
-                            </ul>
-                        </div>
+                    <!-- Currency Dropdown -->
+                    <div class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-currency-exchange"></i> Currency
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">USD</a></li>
+                            <li><a class="dropdown-item" href="#">BDT</a></li>
+                            <li><a class="dropdown-item" href="#">EUR</a></li>
+                        </ul>
                     </div>
 
-                    <div class="col-xs-6 col-sm-3 col-md-3">
-                        <i class="bi bi-binoculars"></i>  Track Your Order
-                    </div>
-                    <div class="col-xs-6 col-sm-3 col-md-3">
-                        <i class="bi bi-geo-alt"></i>  Store Location
-                    </div>
+                    <!-- Track Order -->
+                    <a href="#" class="nav-link text-decoration-none d-flex align-items-center">
+                        <i class="bi bi-binoculars me-1"></i> Track Your Order
+                    </a>
+
+                    <!-- Help -->
+                    <a href="#" class="nav-link text-decoration-none d-flex align-items-center">
+                        <i class="bi bi-question-circle me-1"></i> Help?
+                    </a>
+
                 </div>
-            </div></div>
-    </div> 
+            </div>
+
+        </div>
+    </div>
+
 
 
 </section>
 <header>
 
-    <nav class="navbar navbar-expand-md navbar-light  bg-white shadow-sm  bg-body">
-        <div class="container-fluid">
+    <nav class="navbar navbar-expand-md navbar-light bg-white py-3">
+        <div class="container d-flex justify-content-between align-items-center">
 
-            <div class=" col-xs-8 col-sm-2 col-md-2 ">
-                <a class="fs-5 nav-link" href="/">Universes E-commerce</a>
-
+            <!-- 🔹 Left: Logo -->
+            <div class="d-flex align-items-center">
+                <a class="navbar-brand" href="/">
+                    <img th:src="@{/img/logo.png}" alt="Logo" class="img-fluid" style="max-height: 50px;">
+                </a>
             </div>
-            <div class="col-xs-2 col-sm-1 col-md-1 d-none">
 
-
-                <div class="dropdown">
-                    <button class="btn  dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <li><a class="dropdown-item" href="#">Item 1</a></li>
-                        <li><a class="dropdown-item" href="#">Item 2</a></li>
-                        <li><a class="dropdown-item" href="#">Item 3</a></li>
-                        <li><a class="dropdown-item" href="#">Item 4</a></li>
-                    </ul>
-                </div>
-            </div> 
-
-            <div class="col-xs-12 col-sm-5 col-md-5 m-2 m-sm-0">
+            <!-- 🔹 Center: Search -->
+            <div class="flex-fill mx-3">
                 <div class="input-group">
-
-                    <div class="dropdown d-block d-sm-none">
-                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <li><a class="dropdown-item" href="#">Action 1</a></li>
-                            <li><a class="dropdown-item" href="#">Action 2</a></li>
-                            <li><a class="dropdown-item" href="#">Action 3</a></li>
-                        </ul>
-                    </div>
-<!--                    <select class="form-select d-none d-sm-block" style="width: 10%;" aria-label="Default select example">
-                        <option selected>All</option>
-                        <option value="1">One</option>
-                        <option value="2">Two</option>
-                        <option value="3">Three</option>
-                    </select>-->
-                    <input type="text" class="form-control " placeholder="Search" aria-label="Username" aria-describedby="basic-addon1">
-                    <button type="submit" class="btn btn-primary">Search</button>
+                    <input type="text" class="form-control" placeholder="Search" aria-label="Search">
+                    <button class="btn btn-danger" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
                 </div>
             </div>
 
-            <div class="col-xs-12 col-sm-4 col-md-4 ">
-                <div class="row">
-                    <div class="col text-center">
-                        <i class="bi bi-suit-heart bi-4x text-reds" style="font-size: 2rem;"> </i>
-                    </div>
-                    <div class="col text-center">
-                       <a th:href="@{/cart/index}"> <i class="bi bi-cart4 text-reds" style="font-size: 2rem;  "></i> </a>
-                    </div>
-                    <div class="col text-center">
-                        <i class="bi bi-person" style="font-size: 2rem;"></i>
+            <!-- 🔹 Right: Icons & Login/Register -->
+            <div class="d-flex align-items-center gap-3">
 
+                <!-- Wishlist -->
+                <a class="nav-link d-flex align-items-center" th:href="@{/cart/index}">
+                    <i class="bi bi-suit-heart text-reds fs-4 me-1"></i>
+                    <span>Wishlist</span>
+                </a>
+
+                <!-- My Cart Dropdown -->
+                <div class="nav-item dropdown">
+                    <div class="nav-link d-flex align-items-center" href="#" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                         hx-get="/cart/count" hx-trigger="every 2s" hx-target="#cart-count" hx-swap="outerHTML">
+                        <i class="bi bi-cart4 text-reds fs-4 me-1"></i>
+                        <span >My Cart</span>
+                        <span class="badge bg-danger ms-1 text-white cart-count" id="cart-count">0</span>
                     </div>
-                    <div class="col text-center">
-                        <div sec:authorize="!isAuthenticated()">
-                            <a class= "nav-link"
-                               th:href="@{/public/member-login}">Login</a>
-                        </div>
-                        
-                             <div sec:authorize="isAuthenticated()">
-                            <a class= "nav-link"
-                              th:href="@{/users/logout}" th:text="'Logout'"> </a>
-                        </div>
-                    </div>
-                    <div class="col text-center">
-                        <a class= "nav-link"
-                           th:href="@{/public/front-registration}">Register</a>
-                    </div>
+
+                    <div class="dropdown-menu table-dropdown p-2" aria-labelledby="cartDropdown" style="min-width: 350px;">
+                        <table class="table table-sm  mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Product</th>
+                                    <th>Qty</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="cart,status : ${session.sessioncart}">
+                                    <td th:text="${status.count}">Otto</td>
+                                    <td th:text="${cart.product.title}">Otto</td>
+                                    <td th:text="${cart.quantity}"></td>
+                                    <td th:text="${cart.salesPrice}"></td>
+                                    <td th:text="${cart.itemTotal}">Otto</td>
+                                    <td><span class="text-danger ms-2">&times;</span></td>
+                                </tr>
+                            </tbody>
+                            <!--                            <tfoot>
+                                                            <tr>
+                                                                <td colspan="5" class="text-end fw-bold">Grand Total</td>
+                                                                <td class="fw-bold">
+
+                                                                    <h1 th:text="${@thymeleafUtils.hello()}"></h1>
+
+                                                                                                            <span th:text="${#lists.isEmpty(session.sessioncart) ? 0 : thymeleafUtils.sumItemTotals(session.sessioncart)}"></span>
+                                                                </td>
+
+                                                            </tr>
+                                                        </tfoot>-->
+                        </table></div>
+                </div>
+
+                <!-- Login / Logout -->
+                <div sec:authorize="!isAuthenticated()">
+                    <a class="nav-link d-flex align-items-center" th:href="@{/public/member-login}">
+                        <i class="bi bi-person text-reds fs-5 me-1"></i> Login
+                    </a>
+                </div>
+
+                <div sec:authorize="isAuthenticated()">
+                    <a class="nav-link d-flex align-items-center" th:href="@{/users/logout}">
+                        <i class="bi bi-box-arrow-right text-reds fs-5 me-1"></i> Logout
+                    </a>
+                </div>
+
+                <!-- Register -->
+                <div sec:authorize="!isAuthenticated()">
+                    <a class="nav-link d-flex align-items-center" th:href="@{/public/front-registration}">
+                        <i class="bi bi-person-plus text-reds fs-5 me-1"></i> Register
+                    </a>
                 </div>
 
             </div>
 
         </div>
     </nav>
-    <div class="row">
-        <div class="col-md-12 col-sm-12 col-lg-12 text-center">
-            <ul class=" list-inline">
-                <li class="list-inline-item">
-                    <a class="nav-link active" aria-current="page" href="/">Home</a>
-                </li>
-
-                <li  class="list-inline-item">
-                    <a class= "nav-link"  th:href="@{/public/product}">Product</a> </li>
 
 
-                <li  class="list-inline-item">
-                    <a class= "nav-link"  th:href="@{/admin/index}">Admin Panel</a> </li>
 
-                <li  class="list-inline-item">
-                    <a class= "nav-link"  th:href="@{/customer/index}">My Account</a> </li>
-
-                <li  class="list-inline-item">
-                    <a class= "nav-link"  th:href="@{/customer/index}">Vendor</a> </li>
-            </ul>
-
-        </div>
-    </div>
 </header>
-
-
-
-<!--<section  class="d-none d-sm-block"style="background-color: #992337;color: #ffffff;">
-    <div class="container-fluid" >
-        <div class="row">
-            <div class="col-sm-6  d-none d-sm-block">
-                <ul class="list-inline">
-                    <li  
-                        class="list-inline-item"><a class="text-white"
-                                                th:href="@{/}"
-                                                aria-current="page">Home</a></li>                    
-                    <li class="list-inline-item"></li>
-
-                    <li sec:authorize="isAuthenticated()" class="list-inline-item">
-                        <a class="text-white" th:href="@{/customer/index}">My Account</a> </li>
-
-
-                                        <li sec:authorize="hasAuthority('admin')" class="list-inline-item">
-                                            <a class="text-white" th:href="@{/admin/index}"> Admin Account</a> </li>
-
-                    <li class="list-inline-item"  >
-
-                        <div sec:authorize="isAuthenticated()">
-                            <a class="text-white" th:href="@{/users/logout}">Log Out</a>
-                        </div>
-
-                        <div sec:authorize="!isAuthenticated()">
-                            <a class="text-white"
-                               th:href="@{/public/member-login}">Login</a>
-                        </div>
-
-                    </li>
-
-                    <li class="list-inline-item">
-                        <a class="text-white" th:href="@{/cart/index}">Cart <span class="badge badge-pill badge-warning" th:text="${totaltest}">4</span></a>
-                    </li>
-                </ul>
-            </div>
-
-            <div class=" col-xs-12 text-center d-block d-sm-none">
-                <ul class="list-inline">
-                    
-                    <li  
-                        class="list-inline-item"><a class="text-white"
-                                                th:href="@{/}"
-                                                aria-current="page">Home</a></li>                    
-                    <li class="list-inline-item"></li>
-
-                    <li sec:authorize="isAuthenticated()" class="list-inline-item">
-                        <a class="text-white" th:href="@{/customer/index}">My Account</a> </li>
-
-
-                                        <li sec:authorize="hasAuthority('admin')" class="list-inline-item">
-                                            <a class="text-white" th:href="@{/admin/index}"> Admin Account</a> </li>
-
-                    <li class="list-inline-item"  >
-
-                        <div sec:authorize="isAuthenticated()">
-                            <a class="text-white" th:href="@{/users/logout}">Log Out</a>
-                        </div>
-
-                        <div sec:authorize="!isAuthenticated()">
-                            <a class="text-white"
-                               th:href="@{/public/member-login}">Login</a>
-                        </div>
-
-                    </li>
-
-                    <li class="list-inline-item">
-                        <a class="text-white" th:href="@{/cart/index}">Cart <span class="badge badge-pill badge-warning" th:text="${totaltest}">4</span></a>
-                    </li>
-                    <li class="list-inline-item"><a th:class="text-white"  th:href="@{/front-view/exam-category}">Exam Category</a></li>
-                    <li class="list-inline-item"><a th:class="text-white"  th:href="@{/front-view/all-exam}">All Exam</a></li>
-                    <li class="list-inline-item"><a th:class="text-white"  th:href="@{/front-view/all-instructor}">All Instructor</a></li>
-                    <li sec:authorize="!isAuthenticated()" class="list-inline-item">
-                        <a class="text-white" th:href="@{/public/front-registration}">Registration</a>
-                    </li>
-
-                    <li class="list-inline-item">
-                        <a class="text-white" th:href="@{/front-view/contactUs}">Contact Us</a>
-                    </li>
-
-
-                </ul>
-            </div>
-        </div>
-    </div>
-</section>
-<nav class=" d-none d-sm-block navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-        <div class="d-flex flex-grow-">
-            <span class="w-100 d-lg-none d-block"> hidden spacer to center brand on mobile </span>
-            <a  class="display-5 textMaroon d-none d-lg-inline-block  font-weight-bold" th:href="@{/}">
-               Ajmaeen  General Trading LLC 
-            </a>
-
-            <a class="navbar-brand-two mx-auto d-lg-none d-inline-block" th:href="@{/}">
-
-                <i class="fas fa-home textMaroon"></i>
-            </a>
-                        <div class="w-100 text-right">
-                            <button class="navbar-toggler float-xs-right" type="button" data-toggle="collapse" data-target="#myNavbar">
-                                <span class="navbar-toggler-icon"></span>
-                            </button>
-                        </div>
-
-        </div>
-
-        <div class="collapse navbar-collapse flex-grow-1 text-right" id="myNavbar">
-            <ul class="navbar-nav ml-auto flex-nowrap">
-
-                <li class="nav-item active">
-                    <a class="nav-link textMaroon" th:href="@{/}">Home<span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link  textMaroon dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        About Us
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" th:href="@{/front-view/about-us}">About Us</a>
-                                                    <a class="dropdown-item" th:href="@{/front-view/mission-vision}">Mission & Vision</a>
-                                                    <a class="dropdown-item" th:href="@{/front-view/advisory-council}">Advisory Council</a>
-                                                    <a class="dropdown-item" th:href="@{/front-view/executive-committee}">Executive committee</a>
-                                                    <a class="dropdown-item" th:href="@{/front-view/constitution}">Constitution</a>
-                                                    <div class="dropdown-divider"></div>
-                                                <a class="dropdown-item" th:href="@{/front-view/ceo-message}">CEO Message</a> 
-                                                <a class="dropdown-item" th:href="@{/front-view/agent-division}">Agent Division</a> 
-                                                <a class="dropdown-item" th:href="@{/front-view/trade-division}">Trading Division</a>
-                                                <a class="dropdown-item" th:href="@{/front-view/corporate-value}">Corporate Values</a>
-                                                <a class="dropdown-item" th:href="@{/front-view/code-conduct}">Code of Conduct</a>
-                        <a class="dropdown-item" th:href="@{/front-view/clients}">Our Clients</a>
-
-                    </div>
-                </li>
-
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            Member
-                                        </a>
-                                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                            <a class="dropdown-item" th:href="@{/front-view/all-member}">All Member</a>
-                                            <a class="dropdown-item" th:href="@{/front-view/member-login}">Member Login</a>
-                                            <a class="dropdown-item" th:href="@{/front-view/member-registration}">Member Registration</a>
-                                            <a class="dropdown-item" th:href="@{/front-view/batch-modaretor}">Batch Moderator</a>
-                                            <div class="dropdown-divider"></div>
-                
-                                        </div>
+<section style="background-color: #cd0c2b;" class="mb-3">
+    <div class="container">
+        <div class="row navbar-custom">
+            <!-- Left: Categories Dropdown (col-md-2) -->
+            <!--            <div class="col-12 col-xs-8 col-sm-3 col-md-3 text-start  mb-md-0 " id="dr-menu">
+                            <div class="dropdown w-100">
+                                <button class=" btn-block text-start w-100 dropdown-toggle" type="button" id="categoryDropdown"
+                                        aria-expanded="false">
+                                    <i class="bi bi-justify custom-icon"></i> CATEGORIES
+                                </button>
+                                <ul class=" main-category dropdown-menu " aria-labelledby="categoryDropdown">
+                                    <li th:each="menu : ${maincategory}">
+                                        <a class="dropdown-item "
+                                           th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${menu.id})}"
+                                           th:text="${menu.name}"></a>
                                     </li>
-                                <li class="nav-item"><a th:class="'nav-link '+${resourses}"  th:href="@{/front-view/resourses}">Resources</a></li>
-                                <li class="nav-item"><a th:class="'nav-link '+${wholesale}"  th:href="@{/front-view/wholesale}">Wholesale</a></li>
+
+                                </ul>
+                            </div>
+                        </div>-->
 
 
- <li class="nav-item"><a th:class="'nav-link '+${wholesale}"  th:href="@{/front-view/exam-category}">Exam Category</a></li>
-                <li class="nav-item"><a th:class="'nav-link '+${wholesale}"  th:href="@{/front-view/all-exam}">All Exam</a></li>
-                <li class="nav-item"><a th:class="nav-link"  th:href="@{/front-view/all-instructor}">All Instructor</a></li>
+            <!-- Categories Menu  drop down start-->
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3" id="dr-menu">
 
-     <li sec:authorize="!isAuthenticated()" class="nav-item">
-          <a class="nav-link"  th:href="@{/public/about-us}">About Us</a>
-                  
-                </li>
+                <!-- Desktop/Tablet: Dropdown -->
+                <div class="dropdown d-none d-md-block w-100">
+                    <button class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-between dropdown-toggle"
+                            type="button"
+                            id="categoryDropdown"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        <span><i class="bi bi-justify custom-icon me-2"></i> CATEGORIES</span>
+                    </button>
 
+                    <ul class="dropdown-menu w-100" aria-labelledby="categoryDropdown">
+                        <li th:each="menu : ${maincategory}">
+                            <a class="dropdown-item"
+                               th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${menu.id})}"
+                               th:text="${menu.name}"></a>
+                        </li>
+                    </ul>
+                </div>
 
-                <li sec:authorize="!isAuthenticated()" class="nav-item">
-                    <a class="nav-link" th:href="@{/public/front-registration}">Registration</a>
-                </li>
+                <!-- Mobile: Offcanvas -->
+                <div class="d-md-none">
+                    <button class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-between"
+                            type="button"
+                            data-bs-toggle="offcanvas"
+                            data-bs-target="#offcanvasCategories"
+                            aria-controls="offcanvasCategories">
+                        <span><i class="bi bi-justify custom-icon me-2"></i> CATEGORIES</span>
+                    </button>
 
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/public/contactUs}">Contact Us</a>
-                </li>
-
-                <li class="list-inline-item">
-                    <a class="nav-link" th:href="@{/cart/index}">Cart <span class="badge badge-pill badge-warning" th:text="${totaltest}">4</span></a>
-                </li>
-
-                                <li class="nav-item">
-                                    <a class="nav-link" th:href="@{/cart/}"><div class="" th:if="${session.sessioncart==null}" >                                   
-                                            <i class="fas fa-shopping-cart text-danger"></i>   Cart  0 
-                                        </div> 
-                
-                                        <div class="" th:if="${session.sessioncart!=null}" >
-                                            <i class="fas fa-shopping-cart text-warning"></i> Cart <span th:text="${session.sessioncart.size()}"></span>
-                                        </div></a>
+                    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasCategories" aria-labelledby="offcanvasCategoriesLabel">
+                        <div class="offcanvas-header">
+                            <h5 class="offcanvas-title" id="offcanvasCategoriesLabel">Categories</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                        </div>
+                        <div class="offcanvas-body p-0">
+                            <ul class="list-group list-group-flush">
+                                <li th:each="menu : ${maincategory}" class="list-group-item">
+                                    <a class="text-decoration-none"
+                                       th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${menu.id})}"
+                                       th:text="${menu.name}"></a>
                                 </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
 
-            </ul>
+            </div>
+            <!-- Categories Menu  drop down end-->
+
+            <!-- Right: Menu Items (col-md-10) -->
+            <div class="col-12 col-md-9">
+                <ul class="list-inline mb-0 d-flex flex-wrap justify-content-md-start align-items-center">
+                    <li class="list-inline-item">
+                        <a class="nav-link active link-light" aria-current="page" href="/">Home</a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a class="nav-link link-light" th:href="@{/public/product}">Product</a>
+                    </li>
+
+                    <li class="list-inline-item">
+                        <a class="nav-link link-light" th:href="@{/public/product}">Latest Offers</a>
+                    </li>
+
+                    <li class="list-inline-item">
+                        <a class="nav-link link-light" th:href="@{/admin/index}">Admin Panel</a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a class="nav-link link-light" th:href="@{/customer/index}">My Account</a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a class="nav-link link-light" th:href="@{/customer/index}">Vendor</a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
-</nav>-->
+
+</section>

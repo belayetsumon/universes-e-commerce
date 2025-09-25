@@ -4,7 +4,6 @@ import com.ecommerce.app.product.model.Unitofmeasurement;
 import com.ecommerce.app.product.ripository.UnitsOfMeasureRepository;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 public class UnitsOfMeasureService {
     private final UnitsOfMeasureRepository repository;
 
-    @Autowired
     public UnitsOfMeasureService(UnitsOfMeasureRepository repository) {
         this.repository = repository;
     }

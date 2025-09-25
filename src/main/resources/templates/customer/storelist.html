@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-customar-page">
+    <div layout:fragment = "main_content">
+
+        <section class=" d-none d-sm-block">
+            <div class="card">
+                <div class="card-header bg-info">
+                    <div class="row">  
+                        <div class="col-sm-7 font-weight-bold ">
+                            <h5 class="font-weight-bold text-white"><i class="fas fa-list"></i> Customer Dashboards . <small>Welcome Mr.<span th:text="${username}"> </span></small></h5>
+                        </div>
+                        <div class="col-sm-5 text-end"> 
+                            <div class="btn-group ">
+                                <a class="btn btn-success btn-sm " th:href="@{/customer/create}"> <i class="bi bi-plus-circle"></i> Create Store </a>
+                            </div>
+                        </div>
+                    </div>  
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <table class="table">
+                                <ul class="list-unstyled" th:each="storelists,status:${storelist}">
+                                    <li>
+                                        <a  type="button" class="btn btn-success btn-sm " th:href="@{/vendor/{id}(id=${storelists.id})}"  >  [[${storelists.companyName}]]</a>
+                                    </li>
+                                </ul>
+                            </table>
+                        </div>     
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+
+
+
+
+
+
+
+    </div>
+</div>
