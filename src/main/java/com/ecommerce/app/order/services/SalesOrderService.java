@@ -5,9 +5,7 @@
 package com.ecommerce.app.order.services;
 
 import com.ecommerce.app.order.model.OrderItem;
-import com.ecommerce.app.order.model.PackagingCost;
 import com.ecommerce.app.order.model.SalesOrder;
-import com.ecommerce.app.order.model.ShippingCharge;
 import com.ecommerce.app.order.repository.SalesOrderRepository;
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import jakarta.persistence.EntityManager;
@@ -80,24 +78,8 @@ public class SalesOrderService {
         vendorNameSubquery.select(vendor.get("companyName"))
                 .where(cb.equal(vendor.get("id"), salesOrder.get("vendorId")));
 
-        // Shipping Charge Subquery
-        Subquery<BigDecimal> shippingChargeSubquery = cq.subquery(BigDecimal.class);
-        Root<ShippingCharge> shippingCharge = shippingChargeSubquery.from(ShippingCharge.class);
-        shippingChargeSubquery.select(cb.coalesce(shippingCharge.get("shippingChargeAmount"), BigDecimal.ZERO))
-                .where(cb.equal(shippingCharge.get("order").get("id"), salesOrder.get("id")));
-
-        // Packaging Cost Subquery
-        Subquery<BigDecimal> packagingCostSubquery = cq.subquery(BigDecimal.class);
-        Root<PackagingCost> packagingCost = packagingCostSubquery.from(PackagingCost.class);
-        packagingCostSubquery.select(cb.coalesce(packagingCost.get("packagingCost"), BigDecimal.ZERO))
-                .where(cb.equal(packagingCost.get("order").get("id"), salesOrder.get("id")));
-
         // Expression for grand total
         Expression<BigDecimal> totalItemExpr = cb.coalesce(totalItemAmountSubquery.getSelection(), BigDecimal.ZERO);
-        Expression<BigDecimal> shippingChargeExpr = cb.coalesce(shippingChargeSubquery.getSelection(), BigDecimal.ZERO);
-        Expression<BigDecimal> packagingCostExpr = cb.coalesce(packagingCostSubquery.getSelection(), BigDecimal.ZERO);
-
-        Expression<BigDecimal> grandTotal = cb.sum(cb.sum(totalItemExpr, shippingChargeExpr), packagingCostExpr);
 
         // Filter predicates
         List<Predicate> predicates = new ArrayList<>();
@@ -121,9 +103,9 @@ public class SalesOrderService {
                 totalVatSubquery.alias("totalVatAmount"),
                 totalVendorAmountSubquery.alias("totalVendorAmount"),
                 totalItemAmountSubquery.alias("itemTotal"),
-                shippingChargeSubquery.alias("shippingChargeAmount"),
-                packagingCostSubquery.alias("packagingCost"),
-                grandTotal.alias("grandTotal"),
+                salesOrder.get("packingCharge").alias("packingCharge"),
+                salesOrder.get("deliveryCharge").alias("deliveryCharge"),
+                salesOrder.get("grandTotal").alias("grandTotal"),
                 salesOrder.get("status").alias("status"),
                 salesOrder.get("createdBy").alias("createdBy"),
                 salesOrder.get("created").alias("created"),
@@ -152,10 +134,10 @@ public class SalesOrderService {
             map.put("totalDiscountAmount", tuple.get("totalDiscountAmount"));
             map.put("totalMarketPlaceCommissionAmount", tuple.get("totalMarketPlaceCommissionAmount"));
             map.put("totalVatAmount", tuple.get("totalVatAmount"));
-            map.put("totalVendorAmount", tuple.get("totalVendorAmount"));
+            map.put("totalVendorAmount", tuple.get("deliveryCharge"));
             map.put("itemTotal", tuple.get("itemTotal"));
-            map.put("shippingChargeAmount", tuple.get("shippingChargeAmount"));
-            map.put("packagingCost", tuple.get("packagingCost"));
+            map.put("deliveryCharge", tuple.get("deliveryCharge"));
+            map.put("packingCharge", tuple.get("packingCharge"));
             map.put("grandTotal", tuple.get("grandTotal"));
             map.put("status", tuple.get("status"));
             map.put("createdBy", tuple.get("createdBy"));

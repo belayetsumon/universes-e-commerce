@@ -34,7 +34,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-
     @Bean
     public AuthenticationManager authenticationManager(
             HttpSecurity httpSecurity, UserDetailsService userDetailsService, BCryptPasswordEncoder bCryptPasswordEncoder) throws Exception {
@@ -48,53 +47,59 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Disable CSRF if not needed
-            .authorizeHttpRequests(auth -> auth
+                .csrf(csrf -> csrf.disable()) // Disable CSRF if not needed
+                .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/", "/public/**","/cart/**",
-                    "/users/uregistrations", "/users/usave",
-                    "/users/userforgotpassword", "/forgotpassword/**"
-                ).permitAll()
+                        "/",
+                        "/public/**",
+                        "/cart/**",
+                        "/carts/**",
+                        "/users/uregistrations",
+                        "/users/usave",
+                        "/users/userforgotpassword",
+                        "/forgotpassword/**",
+                        "/district/select-district",
+                        "/district/save-district",
+                        "/error").permitAll()
                 .requestMatchers("/users/frontRegistrationSave").permitAll()
                 .anyRequest().authenticated()
-            )
-            .formLogin(login -> login
+                )
+                .formLogin(login -> login
                 .loginPage("/public/member-login")
                 .successHandler(customLoginSuccessHandler)
                 .usernameParameter("username")
                 .passwordParameter("password")
                 .permitAll()
-            )
-            .logout(logout -> logout
+                )
+                .logout(logout -> logout
                 .logoutUrl("/users/logout")
                 .logoutSuccessUrl("/public/member-login")
                 .deleteCookies("JSESSIONID")
                 .invalidateHttpSession(true)
-            )
-            .exceptionHandling(ex -> ex
+                )
+                .exceptionHandling(ex -> ex
                 .accessDeniedPage("/access-denied")
-            );
+                );
 
         return http.build();
     }
 
-
     @Bean
     public WebSecurityCustomizer ignoringCustomizer() {
-    return web -> web.ignoring().requestMatchers(
-                "/resources/**", 
+        return web -> web.ignoring().requestMatchers(
+                "/resources/**",
                 "/static/**",
-                "/css/**", 
-//                "/bootstrap/**", 
-//                "/bootstrap-5.2.3-dist/css/**", 
-//                "/bootstrap-5.2.3-dist/js/**", 
-//                "/plugin/owlcarousel/**", 
-//                "/fontawesome/css/**",
-//                "/fontawesome/webfonts/**", 
-//                "/plugin/owlcarousel/assets/**",
-                "/js/**", 
-                "/img/**", 
-                "/webjars/**", 
+                "/css/**",
+                //                "/bootstrap/**",
+                //                "/bootstrap-5.2.3-dist/css/**",
+                //                "/bootstrap-5.2.3-dist/js/**",
+                //                "/plugin/owlcarousel/**",
+                //                "/fontawesome/css/**",
+                //                "/fontawesome/webfonts/**",
+                //                "/plugin/owlcarousel/assets/**",
+                "/js/**",
+                "/img/**",
+                "/webjars/**",
                 "/files/**"
         );
     }

@@ -31,7 +31,8 @@ and open the template in the editor.
 
             <div class="card-body">
 
-
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
                 <form  th:action="@{/users/save}"   th:object="${users}"  method="post" >
 
                     <div th:text="${message}"> </div>

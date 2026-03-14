@@ -8,13 +8,15 @@ package com.ecommerce.app.services;
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Paths;
-import org.springframework.stereotype.Service;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author User
  */
-@Service
+@Component
+@ConfigurationProperties(prefix = "storage")
 public class StorageProperties {
 
     String root = System.getProperty("user.home");

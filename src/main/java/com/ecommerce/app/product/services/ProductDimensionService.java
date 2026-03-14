@@ -5,7 +5,6 @@
 package com.ecommerce.app.product.services;
 
 import com.ecommerce.app.product.model.ProductDimension;
-import com.ecommerce.app.product.model.ProductVariants;
 import com.ecommerce.app.product.ripository.ProductDimensionRepository;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,7 @@ public class ProductDimensionService {
         return repository.findById(id).orElse(null);
     }
 
-    public List<ProductDimension> findAllById(Long id) {
+    public ProductDimension findAllById(Long id) {
         return repository.findByProduct_Id(id);
 
     }

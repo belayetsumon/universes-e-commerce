@@ -7,7 +7,6 @@ package com.ecommerce.app.module.shipping.controller;
 import com.ecommerce.app.module.shipping.model.ShippingChargeRule;
 import com.ecommerce.app.module.shipping.model.ShippingZoneTypeEnum;
 import com.ecommerce.app.module.shipping.repository.ShippingChargeRuleRepository;
-import com.ecommerce.app.module.shipping.services.ShippingChargeService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -27,9 +26,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/shippingcharge")
 public class ShippingChargeController {
-
-    @Autowired
-    ShippingChargeService shippingChargeService;
 
     @Autowired
     private ShippingChargeRuleRepository repository;

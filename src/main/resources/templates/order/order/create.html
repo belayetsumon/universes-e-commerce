@@ -27,9 +27,9 @@
                         <nav>
                             <div class="nav nav-tabs" id="nav-tab" role="tablist">
                                 <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Order Summary </button>
-                                <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Address</button>
-                                <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Contact</button>
-                                <button class="nav-link" id="nav-disabled-tab" data-bs-toggle="tab" data-bs-target="#nav-disabled" type="button" role="tab" aria-controls="nav-disabled" aria-selected="false" disabled>Disabled</button>
+                                <!--                                <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Address</button>
+                                                                <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Contact</button>
+                                                                <button class="nav-link" id="nav-disabled-tab" data-bs-toggle="tab" data-bs-target="#nav-disabled" type="button" role="tab" aria-controls="nav-disabled" aria-selected="false" disabled>Disabled</button>-->
                             </div>
                         </nav>
                         <div class="tab-content" id="nav-tabContent">
@@ -42,7 +42,7 @@
                                                 <th scope="col">#</th>
                                                 <th scope="col">Product</th>
                                                 <th scope="col">Photo</th>
-                                                <th scope="col">vendor Id</th>
+                                                <!--                                                <th scope="col">vendor Id</th>-->
                                                 <th scope="col"> sales price</th>
                                                 <th scope="col">Quantity</th>
                                                 <th scope="col">Discount Rate % </th>
@@ -61,7 +61,7 @@
                                                         <img  class="img-responsive" th:src="@{/files/}+${cart.product.imageName}" width="100px"  height="100px"/>
                                                     </span>
                                                     <span th:if="${#strings.isEmpty(cart.product.imageName)}" > Image Not Found </span></td>
-                                                <td th:text="${cart.vendorId}">Otto</td>
+                                                <!--                                                <td th:text="${cart.vendorId}">Otto</td>-->
                                                 <td th:text="${cart.salesPrice}">Otto</td>
                                                 <td th:text="${cart.quantity}">Otto</td>
                                                 <td th:text="${cart.discountRate}">Otto</td>
@@ -73,11 +73,6 @@
                                         </tbody>
                                     </table>
                                 </div>
-                            </div>
-
-                            <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
-
-
                                 <div class="container mt-5">
                                     <h2>Billing Address</h2>
                                     <form th:action="@{/cart_address/add_billing_address}" th:object="${billingAddress}" method="post" class="row g-3">
@@ -221,6 +216,155 @@
                                         </div>
                                     </form>
                                 </div>
+
+                            </div>
+
+                            <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
+
+
+                                <!--                                <div class="container mt-5">
+                                                                    <h2>Billing Address</h2>
+                                                                    <form th:action="@{/cart_address/add_billing_address}" th:object="${billingAddress}" method="post" class="row g-3">
+
+                                                                        <input type="hidden" th:field="*{id}">
+
+                                                                        <div class="col-md-6">
+                                                                            <label class="form-label">First Name</label>
+                                                                            <input type="text" class="form-control" th:field="*{firstName}" required>
+                                                                        </div>
+
+                                                                        <div class="col-md-6">
+                                                                            <label class="form-label">Last Name</label>
+                                                                            <input type="text" class="form-control" th:field="*{lastName}" required>
+                                                                        </div>
+
+                                                                        <div class="col-md-6">
+                                                                            <label class="form-label">Email</label>
+                                                                            <input type="email" class="form-control" th:field="*{email}" required>
+                                                                        </div>
+
+                                                                        <div class="col-md-6">
+                                                                            <label class="form-label">Mobile</label>
+                                                                            <input type="text" class="form-control" th:field="*{mobile}" required>
+                                                                        </div>
+
+                                                                        <div class="col-md-6">
+                                                                            <label class="form-label">Company</label>
+                                                                            <input type="text" class="form-control" th:field="*{company}">
+                                                                        </div>
+
+                                                                        <div class="col-md-6">
+                                                                            <label class="form-label">Country</label>
+                                                                            <input type="text" class="form-control" th:field="*{country}" required>
+                                                                        </div>
+
+                                                                        <div class="col-md-4">
+                                                                            <label class="form-label">District</label>
+                                                                            <input type="text" class="form-control" th:field="*{district}" required>
+                                                                        </div>
+                                                                        <div class="col-md-4">
+                                                                            <label class="form-label">City</label>
+                                                                            <input type="text" class="form-control" th:field="*{city}" required>
+                                                                        </div>
+                                                                        <div class="col-md-12">
+                                                                            <label class="form-label">Address Line 1</label>
+                                                                            <input type="text" class="form-control" th:field="*{addressLineOne}" required>
+                                                                        </div>
+
+                                                                        <div class="col-md-12">
+                                                                            <label class="form-label">Address Line 2</label>
+                                                                            <input type="text" class="form-control" th:field="*{addressLinetwo}">
+                                                                        </div>
+
+
+
+                                                                        <div class="col-md-4">
+                                                                            <label class="form-label">Post Code</label>
+                                                                            <input type="text" class="form-control" th:field="*{postCode}" required>
+                                                                        </div>
+
+
+                                                                        <div class="form-check form-check-inline">
+
+                                                                            <input class="form-check-input" type="checkbox"  name="sameAddress" >
+                                                                            <label class="form-check-label" for="inlineCheckbox2">Shipping address is same as billing address</label>
+                                                                        </div>
+
+                                                                        <div class="col-md-12">
+                                                                            <button type="submit" class="btn btn-primary">Submit</button>
+                                                                        </div>
+                                                                    </form>
+
+                                                                </div>
+
+                                                                <div class="container mt-5">
+                                                                    <h2>Shipping Address</h2>
+                                                                    <form th:action="@{/cart_address/add_shipping_address}" th:object="${shippingAddress}" method="post" class="row g-3">
+
+                                                                        <input type="hidden" th:field="*{id}">
+
+                                                                        <div class="col-md-6">
+                                                                            <label class="form-label">First Name</label>
+                                                                            <input type="text" class="form-control" th:field="*{firstName}" required>
+                                                                        </div>
+
+                                                                        <div class="col-md-6">
+                                                                            <label class="form-label">Last Name</label>
+                                                                            <input type="text" class="form-control" th:field="*{lastName}" required>
+                                                                        </div>
+
+                                                                        <div class="col-md-6">
+                                                                            <label class="form-label">Email</label>
+                                                                            <input type="email" class="form-control" th:field="*{email}" required>
+                                                                        </div>
+
+                                                                        <div class="col-md-6">
+                                                                            <label class="form-label">Mobile</label>
+                                                                            <input type="text" class="form-control" th:field="*{mobile}" required>
+                                                                        </div>
+
+                                                                        <div class="col-md-6">
+                                                                            <label class="form-label">Company</label>
+                                                                            <input type="text" class="form-control" th:field="*{company}">
+                                                                        </div>
+
+                                                                        <div class="col-md-6">
+                                                                            <label class="form-label">Country</label>
+                                                                            <input type="text" class="form-control" th:field="*{country}" required>
+                                                                        </div>
+
+                                                                        <div class="col-md-4">
+                                                                            <label class="form-label">District</label>
+                                                                            <input type="text" class="form-control" th:field="*{district}" required>
+                                                                        </div>
+                                                                        <div class="col-md-4">
+                                                                            <label class="form-label">City</label>
+                                                                            <input type="text" class="form-control" th:field="*{city}" required>
+                                                                        </div>
+
+                                                                        <div class="col-md-12">
+                                                                            <label class="form-label">Address Line 1</label>
+                                                                            <input type="text" class="form-control" th:field="*{addressLineOne}" required>
+                                                                        </div>
+
+                                                                        <div class="col-md-12">
+                                                                            <label class="form-label">Address Line 2</label>
+                                                                            <input type="text" class="form-control" th:field="*{addressLinetwo}">
+                                                                        </div>
+
+
+
+                                                                        <div class="col-md-4">
+                                                                            <label class="form-label">Post Code</label>
+                                                                            <input type="text" class="form-control" th:field="*{postCode}" required>
+                                                                        </div>
+
+
+                                                                        <div class="col-md-12">
+                                                                            <button type="submit" class="btn btn-primary">Submit</button>
+                                                                        </div>
+                                                                    </form>
+                                                                </div>-->
 
                             </div>
                             <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab" tabindex="0">...</div>

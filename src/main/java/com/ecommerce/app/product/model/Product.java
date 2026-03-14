@@ -2,6 +2,8 @@ package com.ecommerce.app.product.model;
 
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.vendor.model.Vendorprofile;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -47,20 +49,44 @@ public class Product implements Serializable {
     @NotNull(message = " User cannot be blank.")
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
+    @JsonIgnore
     private Users userId;
+
+    @JsonProperty("userId")
+    public Long getUserIdValue() {
+        return userId != null ? userId.getId() : null;
+    }
 
     @ManyToOne(optional = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "vendorprofile_id ", nullable = true)
+    @JsonIgnore
     private Vendorprofile vendorprofile;
+
+    @JsonProperty("vendorId")
+    public Long getVendorIdValue() {
+        return vendorprofile != null ? vendorprofile.getId() : null;
+    }
 
 //
 //    private Set<Productsubcategory> productsubcategory;
     @NotNull(message = "Product category cannot be blank.")
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Productcategory productcategory;
 
+    @JsonProperty("categoryId")
+    public Long getCategoryIdValue() {
+        return productcategory != null ? productcategory.getId() : null;
+    }
+
     @ManyToOne(optional = true, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Manufacturer manufacturer;
+
+    @JsonProperty("manufacturerId")
+    public Long getManufacturerIdValue() {
+        return manufacturer != null ? manufacturer.getId() : null;
+    }
 
     @NotBlank(message = "Title  is required.")
     @Lob
@@ -105,7 +131,13 @@ public class Product implements Serializable {
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @NotNull(message = "UOM is required.")
+    @JsonIgnore
     private Unitofmeasurement uom;
+
+    @JsonProperty("uomId")
+    public Long getUomIdValue() {
+        return uom != null ? uom.getId() : null;
+    }
 
     private String imageName;
 

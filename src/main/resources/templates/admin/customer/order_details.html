@@ -92,24 +92,13 @@ and open the template in the editor.
                                                         <div class="form-group">
                                                             <label class="my-2" >Remark </label>
                                                             <input type="text" class="form-control col-sm-3" name="remark"  />
-
                                                         </div>
                                                         <div class="form-group  mt-2 text-center">
                                                             <button type="submit"  id="submitBtn" class="btn btn-success"> <i class="bi bi-check-circle"></i>  Update</button>
                                                         </div>
-
                                                     </form>
-
                                                 </td>
-
-
-
-
-
                                             </tr>
-
-
-
                                         </tbody>
                                     </table>
                                 </div>
@@ -383,7 +372,39 @@ and open the template in the editor.
                                     </table>
                                 </div>
 
+                                <div class="card mt-3 mb-3">
+                                    <div class="card-header ">
+                                        <i class="bi bi-list-task"></i>Audit
+                                    </div>
+                                    <table class="table table-bordered" >
 
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Created</th>
+                                                <th scope="col">Created By</th>
+                                                <th scope="col">Updated</th>
+                                                <th scope="col">Updated By</th>
+
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <tr>
+                                                <td th:text="${orderdetails.created}">Otto</td>
+                                                <td th:text="${orderdetails.createdBy}">Otto</td>
+                                                <td th:text="${orderdetails.modified}">Otto</td>
+                                                <td th:text="${orderdetails.modifiedBy}">Otto</td>
+                                            </tr>
+                                        </tbody>
+
+                                    </table>
+
+                                    <table class="table table-bordered" th:if="${ #lists.isEmpty(orderhistory)}">
+                                        <tr>
+                                            <td> Sorry no order found ! </td>
+                                        </tr>
+                                    </table>
+                                </div>
                             </div>
 
                         </div>

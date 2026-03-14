@@ -14,14 +14,34 @@
 
                     <!-- Language Dropdown -->
                     <div class="dropdown">
-                        <a href="#" class="nav-link dropdown-toggle text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-translate"></i> Language
+                        <a href="#" class="nav-link dropdown-toggle text-decoration-none"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-translate"></i>
+                            <span th:text="${currentShippingDistrict != null ? currentShippingDistrict : 'Select Shipping District'}"></span>
                         </a>
+
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">English</a></li>
-                            <li><a class="dropdown-item" href="#">Bangla</a></li>
-                            <li><a class="dropdown-item" href="#">Arabic</a></li>
+                            <th:block th:each="d : ${shippinglocations}">
+                                <li>
+                                    <button class="dropdown-item district-btn"
+                                            type="button"
+                                            th:data-district="${d}">
+                                        [[${d}]]
+                                    </button>
+                                </li>
+                            </th:block>
                         </ul>
+
+                        <!--                        <ul class="dropdown-menu">
+                                                    <th:block th:each="d : ${shippinglocations}">
+                                                        <li>
+                                                            <form method="post" th:action="@{/district/select2}">
+                                                                <input type="hidden" name="district" th:value="${d}" />
+                                                                <button class="dropdown-item" type="submit" th:text="${d}"></button>
+                                                            </form>
+                                                        </li>
+                                                    </th:block>
+                                                </ul>-->
                     </div>
 
                     <!-- Currency Dropdown -->
@@ -117,18 +137,19 @@
                                     <td><span class="text-danger ms-2">&times;</span></td>
                                 </tr>
                             </tbody>
-                            <!--                            <tfoot>
-                                                            <tr>
-                                                                <td colspan="5" class="text-end fw-bold">Grand Total</td>
-                                                                <td class="fw-bold">
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2" class="text-end fw-bold"><a th:href="@{/cart/index}"> View Cart</a></td>
+                                    <td colspan="3" class="text-end fw-bold">Grand Total</td>
+                                    <td class="fw-bold">
 
-                                                                    <h1 th:text="${@thymeleafUtils.hello()}"></h1>
+                                        <!--                                                                    <h1 th:text="${@thymeleafUtils.hello()}"></h1>
 
-                                                                                                            <span th:text="${#lists.isEmpty(session.sessioncart) ? 0 : thymeleafUtils.sumItemTotals(session.sessioncart)}"></span>
-                                                                </td>
+                                                                                                                                                    <span th:text="${#lists.isEmpty(session.sessioncart) ? 0 : thymeleafUtils.sumItemTotals(session.sessioncart)}"></span>-->
+                                    </td>
 
-                                                            </tr>
-                                                        </tfoot>-->
+                                </tr>
+                            </tfoot>
                         </table></div>
                 </div>
 

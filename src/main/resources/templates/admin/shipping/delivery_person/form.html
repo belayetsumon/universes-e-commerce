@@ -1,0 +1,17 @@
+<form th:action="@{/delivery-person/save}" th:object="${deliveryPerson}" method="post">
+    <input type="hidden" th:field="*{id}">
+    <label>Vendor ID</label>
+    <input th:field="*{vendorId}" required>
+
+    <label>Name</label>
+    <input th:field="*{name}" required>
+
+    <label>Phone</label>
+    <input th:field="*{phone}" required>
+
+    <label>Active</label>
+    <input type="checkbox" th:field="*{active}">
+
+    <button type="submit">Save</button>
+</form>
+

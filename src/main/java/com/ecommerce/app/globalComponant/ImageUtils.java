@@ -4,7 +4,20 @@
  */
 package com.ecommerce.app.globalComponant;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+import javax.imageio.ImageIO;
+import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  *
@@ -12,58 +25,160 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class ImageUtils {
-    
-  /*
-    public void processAndUploadImage(MultipartFile file, String uploadUrl) throws Exception {
-        // Step 1: Load the image from MultipartFile
-        BufferedImage image = ImageIO.read(file.getInputStream());
 
-        // Step 2: Resize the image (example: 800x600)
-        BufferedImage resizedImage = resizeImage(image, 800, 600);
+    String BASE_FOLDER = Paths.get(System.getProperty("user.home"), "universesecommerce").toString();
+    // Max file size in bytes (e.g., 50 MB)
+    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
+    private static final Map<String, Integer> IMAGE_SIZES = Map.of(
+            "thumb", 100,
+            "medium", 300,
+            "large", 600
+    );
 
-        // Step 3: Generate new filename with UNIX timestamp and size
-        long timestamp = System.currentTimeMillis() / 1000;
-        long fileSize = file.getSize();
-        String newFileName = timestamp + "_" + fileSize + ".webp";
+    public String multipleImageSizeSave(MultipartFile file, Long userId, String imgDirName) throws IOException {
 
-        // Step 4: Convert to WebP format and save to disk
-        Path outputPath = Paths.get(System.getProperty("java.io.tmpdir"), newFileName);
-        File webpFile = convertToWebP(resizedImage, outputPath);
+        // 1️⃣ Validate file
+        String originalFilename = Objects.requireNonNull(file.getOriginalFilename());
+        String extension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
 
-        // Step 5: Upload the image to the server
-        uploadImageToServer(webpFile, uploadUrl);
-    }
-
-    // Resize the image
-    private BufferedImage resizeImage(BufferedImage originalImage, int width, int height) {
-        Image scaledImage = originalImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-        BufferedImage resizedImage = new BufferedImage(width, height, originalImage.getType());
-        Graphics2D g = resizedImage.createGraphics();
-        g.drawImage(scaledImage, 0, 0, null);
-        g.dispose();
-        return resizedImage;
-    }
-
-    // Convert the image to WebP format (Assuming you have WebP-Java or external cwebp utility)
-    private File convertToWebP(BufferedImage image, Path outputPath) throws IOException {
-        try (FileOutputStream fos = new FileOutputStream(outputPath.toFile())) {
-            // Assuming you have WebP library available here
-            WebP.write(image, fos);  // Use a WebP conversion library
+        if (!List.of(".jpg", ".jpeg", ".png").contains(extension)) {
+            throw new IOException("Invalid file type. Only JPG, JPEG, PNG allowed.");
         }
-        return outputPath.toFile();
+
+        // 2️⃣ Ensure user/media folder exists
+        Path basePath = Paths.get(BASE_FOLDER, imgDirName);
+        if (!Files.exists(basePath)) {
+            Files.createDirectories(basePath);
+        }
+
+        // 3️⃣ Generate unique file name
+        String fileName = UUID.randomUUID().toString() + extension;
+
+        // 4️⃣ Save original file
+        Path originalPath = basePath.resolve(fileName);
+        file.transferTo(originalPath.toFile());
+
+        // 5️⃣ Resize images
+        for (Map.Entry<String, Integer> entry : IMAGE_SIZES.entrySet()) {
+            String folderName = entry.getKey();
+            int size = entry.getValue();
+
+            Path dirPath = basePath.resolve(folderName);
+            if (!Files.exists(dirPath)) {
+                Files.createDirectories(dirPath);
+            }
+
+            File outputPath = dirPath.resolve(fileName).toFile();
+
+            Thumbnails.of(originalPath.toFile())
+                    .size(size, size)
+                    .keepAspectRatio(true)
+                    .toFile(outputPath);
+        }
+
+        return fileName;
     }
 
-    // Upload the image to the server using HttpClient
-    private void uploadImageToServer(File imageFile, String uploadUrl) throws IOException {
-        HttpPost uploadFile = new HttpPost(uploadUrl);
+    public String multipleImageSizeSaveConvertWebp(MultipartFile file, Long userId, String imgDirName) throws IOException {
 
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        builder.addPart("file", new FileBody(imageFile));
-        HttpEntity multipart = builder.build();
-        uploadFile.setEntity(multipart);
+        // 1️⃣ Validate file
+        String originalFilename = Objects.requireNonNull(file.getOriginalFilename());
+        String extension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
 
-        HttpResponse response = HttpClients.createDefault().execute(uploadFile);
-        System.out.println("Server response: " + response.getStatusLine());
+        if (!List.of(".jpg", ".jpeg", ".png").contains(extension)) {
+            throw new IOException("Invalid file type. Only JPG, JPEG, PNG allowed.");
+        }
+
+        if (file.getSize() > 2_000_000) { // 2MB limit
+            throw new IOException("File size exceeds limit (2MB).");
+        }
+
+        // 2️⃣ Ensure user/media folder exists
+        Path basePath = Paths.get(BASE_FOLDER, imgDirName);
+        if (!Files.exists(basePath)) {
+            Files.createDirectories(basePath);
+        }
+
+        // 3️⃣ Generate unique WebP file name
+        String fileName = UUID.randomUUID().toString() + ".webp";
+
+        // 4️⃣ Save original file as WebP
+        Path originalPath = basePath.resolve(fileName);
+        Thumbnails.of(file.getInputStream())
+                .size(800, 800) // optional max size for original
+                .outputFormat("webp")
+                .toFile(originalPath.toFile());
+
+        // 5️⃣ Resize images and save as WebP
+        for (Map.Entry<String, Integer> entry : IMAGE_SIZES.entrySet()) {
+            String folderName = entry.getKey();
+            int size = entry.getValue();
+
+            Path dirPath = basePath.resolve(folderName);
+            if (!Files.exists(dirPath)) {
+                Files.createDirectories(dirPath);
+            }
+
+            File outputPath = dirPath.resolve(fileName).toFile();
+
+            Thumbnails.of(originalPath.toFile())
+                    .size(size, size)
+                    .keepAspectRatio(true)
+                    .outputFormat("webp")
+                    .toFile(outputPath);
+        }
+
+        return fileName;
     }
-    */
+
+    public String saveBannerImage(MultipartFile file, String imgDirPath,
+            int width, int height) throws IOException {
+
+        // 1️⃣ Check empty file
+        if (file.isEmpty()) {
+            throw new IOException("File is empty.");
+        }
+
+        // 2️⃣ Check file size
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new IOException("File exceeds maximum size of " + (MAX_FILE_SIZE / (1024 * 1024)) + " MB.");
+        }
+
+        // 1️⃣ Validate file
+        String originalFilename = Objects.requireNonNull(file.getOriginalFilename());
+        String extension = originalFilename.substring(originalFilename.lastIndexOf('.') + 1).toLowerCase();
+
+        if (!extension.matches("jpg|jpeg|png|webp")) {
+            throw new IOException("Invalid file type. Only JPG, JPEG, PNG, WEBP allowed.");
+        }
+
+        // 2️⃣ Prepare output directory (NIO safe)
+        Path basePath = Paths.get(BASE_FOLDER, imgDirPath);
+        if (Files.notExists(basePath)) {
+            Files.createDirectories(basePath);
+        }
+
+        // 3️⃣ Generate UUID filename
+        String uuidName = UUID.randomUUID().toString() + "." + extension;
+
+        // Correct file path creation
+        Path outputPath = basePath.resolve(uuidName);
+        File outputFile = outputPath.toFile();
+
+        // 4️⃣ Read input image (NO need for ImageWriter check — Thumbnailator handles it)
+        BufferedImage inputImage = ImageIO.read(file.getInputStream());
+        if (inputImage == null) {
+            throw new IOException("Invalid image file.");
+        }
+
+        // 5️⃣ Resize + save safely
+        Thumbnails.of(inputImage)
+                .forceSize(width, height)
+                .outputFormat(extension)
+                .allowOverwrite(true)
+                .toFile(outputFile);
+
+        return uuidName;
+    }
+
 }

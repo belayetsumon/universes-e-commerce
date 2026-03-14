@@ -5,6 +5,10 @@
  */
 package com.ecommerce.app.module.user.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import java.util.Set;
@@ -15,6 +19,7 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "usermodule_role")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Role {
 
     @Id
@@ -28,12 +33,14 @@ public class Role {
     public String slug;
 
     @ManyToMany(mappedBy = "role")
+    //@JsonBackReference // avoid infinite loop
     private Set<Users> users;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "usermodule_role_privilege",
             joinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "privilege_id", referencedColumnName = "id"))
+    @JsonIgnore
     private Set<Privilege> privilege;
 
     public Role(Long id, String name, String slug, Set<Users> users, Set<Privilege> privilege) {

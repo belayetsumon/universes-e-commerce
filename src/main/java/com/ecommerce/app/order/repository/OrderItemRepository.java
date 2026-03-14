@@ -6,6 +6,7 @@
 package com.ecommerce.app.order.repository;
 
 import com.ecommerce.app.order.model.OrderItem;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -13,5 +14,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @author User
  */
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
-    
+
+    List<OrderItem> findBySalesOrder_Id(Long id);
 }

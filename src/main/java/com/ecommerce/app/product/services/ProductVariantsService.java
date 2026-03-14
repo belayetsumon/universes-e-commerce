@@ -33,6 +33,11 @@ public class ProductVariantsService {
 
     }
 
+    public List<ProductVariants> findByProductId(Long id) {
+        return repository.findByProduct_Id(id);
+
+    }
+
     public ProductVariants save(ProductVariants variants) {
         return repository.save(variants);
     }
@@ -40,4 +45,5 @@ public class ProductVariantsService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+
 }

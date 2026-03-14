@@ -32,5 +32,5 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
 
     List<Users> findByStatus(Status status);
 
-    List<Users> findByStatusAndProfileImageNotNullOrderByIdDesc(Status status, Pageable pageable);
+    //List<Users> findByStatusAndProfileImageNotNullOrderByIdDesc(Status status, Pageable pageable);
 }

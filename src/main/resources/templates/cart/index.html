@@ -14,7 +14,6 @@
                 </nav>
             </div>
         </section>
-
         <section>
             <div class="container pt-5 pb-5">
                 <div class="row ">
@@ -28,83 +27,40 @@
 
                             <div class="card-body">
 
+                                <div class="modal fade" id="districtModal" tabindex="-1" aria-hidden="true"
+                                     th:data-show="${showDistrictModal}">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Select Your Shipping District</h5>
+                                            </div>
+                                            <div class="modal-body">
+                                                <select id="districtSelect" class="form-select">
+                                                    <option th:each="d : ${shippinglocations}"
+                                                            th:value="${d}"
+                                                            th:text="${d}">
+                                                    </option>
+                                                </select>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button id="saveDistrict" class="btn btn-primary">Save</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="" th:if="${session.sessioncart==null}" >
                                     <h1>  Your Cart is Currently Empty</h1>
                                     Before proceed to checkout you must add some products to your shopping cart.
                                     You will find a lot of interesting products on our "PRODUCT" page.
                                 </div>
 
-
-                                <div class="table-responsive" th:if="${session.sessioncart!=null}" >
-                                    <table class="table table-bordered  table-striped t">
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">#</th>
-                                                <th scope="col">Product</th>
-                                                <th scope="col">Photo</th>
-                                                <th scope="col"> sales price</th>
-                                                <th scope="col">Quantity</th>
-                                                <th scope="col">Discount Rate % </th>
-                                                <th scope="col"> Discount Amount</th>
-                                                <th scope="col">Vat Rate % </th>
-                                                <th scope="col"> Vat Amount </th>
-                                                <th scope="col"> Item Total</th>
-                                                <th scope="col">Remove</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr th:each="cart,status : ${session.sessioncart}">
-                                                <th> [[${status.count}]]</th>
-                                                <td><a    class="nav-link" th:href="@{/public/single-product/{prodid}(prodid=${cart.product.id})}" >  <span  th:text="${cart.product.title}">    </span> </a></td>
-
-                                                <td> <span th:if="${ not #strings.isEmpty(cart.product.imageName)}" class="badge bg-green pull-right">
-                                                        <img  class="img-responsive" th:src="@{/files/}+${cart.product.imageName}" width="100px"  height="100px"/>
-                                                    </span>
-
-                                                    <span th:if="${#strings.isEmpty(cart.product.imageName)}" > Image Not Found </span></td>
-
-                                                <td th:text="${cart.salesPrice}">Otto</td>
-                                                <td>
-                                                    <form
+                                <div id="cartContainer"></div>
 
 
-                                                        th:attr="hx-post=@{/cart/quantityUpdate}"
-                                                        hx-params="*"
-                                                        hx-trigger="change from:input[name='quantity']"
-
-                                                        hx-target="body"
-                                                        hx-swap="outerHTML">
-
-                                                        <input type="hidden" name="product_id" th:value="${cart.product.id}" />
-                                                        <input type="number" name="quantity" min="1" th:value="${cart.quantity}" />
-                                                    </form>
-
-
-                                                    <!--                                                    <form  class="" th:action="@{/cart/quantityUpdate}"  enctype="multipart/form-data" method="post" >
-                                                                                                            <input type="hidden" class="form-control" th:name ="product_id" th:value="${cart.product.id}" />
-                                                                                                            <input  type="number" min="1" th:name="quantity"  th:value="${cart.quantity}" />
-                                                                                                            <button type="submit" class="btn btn-block btn-sm btn-warning">Proceed To Checkout</button>
-                                                                                                        </form>-->
-                                                </td>
-                                                <td th:text="${cart.discountRate}">Otto</td>
-                                                <td th:text="${cart.discountAmount}">Otto</td>
-                                                <td th:text="${cart.vatRate}">Otto</td>
-                                                <td th:text="${cart.vatAmount}">Otto</td>
-                                                <td th:text="${cart.itemTotal}">Otto</td>
-                                                <td class="text-center"><a th:href="@{/cart/remove/{id}(id=${cart.product.id})}" > Delete </a></td>
-
-                                            </tr>
-
-                                        </tbody>
-                                    </table>
-                                </div>
+                                <div id="grandTotal" class="fw-bold mt-3"></div>
 
                             </div>
-                            <div class="card-footer">
-                                <a th:href="@{/public/product}" type="button" class="btn btn-sm btn-success"> Continue Shopping</a>
-
-                            </div>
-
                         </div>
                     </div>
                     <div class="col-sm-4">

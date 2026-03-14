@@ -41,27 +41,27 @@ public class OrderItem {
 
     public Long productid;
 
-    public BigDecimal quantity;
+    public BigDecimal quantity = BigDecimal.ZERO.setScale(2);
 
     private Unitofmeasurement uom;
+    public BigDecimal weight = BigDecimal.ZERO.setScale(2);
+    public BigDecimal salesPrice = BigDecimal.ZERO.setScale(2);
 
-    public BigDecimal salesPrice;
+    public BigDecimal discountRate = BigDecimal.ZERO.setScale(2);
 
-    public BigDecimal discountRate;
+    public BigDecimal discountAmount = BigDecimal.ZERO.setScale(2);
 
-    public BigDecimal discountAmount;
+    public BigDecimal marketPlaceCommissionRate = BigDecimal.ZERO.setScale(2);
 
-    public BigDecimal marketPlaceCommissionRate;
+    public BigDecimal marketPlaceCommissionAmount = BigDecimal.ZERO.setScale(2);
 
-    public BigDecimal marketPlaceCommissionAmount;
+    public BigDecimal vendorAmount = BigDecimal.ZERO.setScale(2);
 
-    public BigDecimal vendorAmount;
+    public BigDecimal vatRate = BigDecimal.ZERO.setScale(2);
 
-    public BigDecimal vatRate;
+    public BigDecimal vatAmount = BigDecimal.ZERO.setScale(2);
 
-    public BigDecimal vatAmount;
-
-    public BigDecimal itemTotal;
+    public BigDecimal itemTotal = BigDecimal.ZERO.setScale(2);
 
     /// Audit ///
     @CreatedBy
@@ -84,7 +84,7 @@ public class OrderItem {
     public OrderItem() {
     }
 
-    public OrderItem(Long id, SalesOrder salesOrder, Product product, Long vendorId, Long productid, BigDecimal quantity, Unitofmeasurement uom, BigDecimal salesPrice, BigDecimal discountRate, BigDecimal discountAmount, BigDecimal marketPlaceCommissionRate, BigDecimal marketPlaceCommissionAmount, BigDecimal vendorAmount, BigDecimal vatRate, BigDecimal vatAmount, BigDecimal itemTotal, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
+    public OrderItem(Long id, SalesOrder salesOrder, Product product, Long vendorId, Long productid, BigDecimal quantity, Unitofmeasurement uom, BigDecimal weight, BigDecimal salesPrice, BigDecimal discountRate, BigDecimal discountAmount, BigDecimal marketPlaceCommissionRate, BigDecimal marketPlaceCommissionAmount, BigDecimal vendorAmount, BigDecimal vatRate, BigDecimal vatAmount, BigDecimal itemTotal, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
         this.id = id;
         this.salesOrder = salesOrder;
         this.product = product;
@@ -92,6 +92,7 @@ public class OrderItem {
         this.productid = productid;
         this.quantity = quantity;
         this.uom = uom;
+        this.weight = weight;
         this.salesPrice = salesPrice;
         this.discountRate = discountRate;
         this.discountAmount = discountAmount;
@@ -161,6 +162,14 @@ public class OrderItem {
 
     public void setUom(Unitofmeasurement uom) {
         this.uom = uom;
+    }
+
+    public BigDecimal getWeight() {
+        return weight;
+    }
+
+    public void setWeight(BigDecimal weight) {
+        this.weight = weight;
     }
 
     public BigDecimal getSalesPrice() {

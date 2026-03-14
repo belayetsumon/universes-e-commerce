@@ -3,11 +3,18 @@ package com.ecommerce.app.module.user.model;
 import com.ecommerce.app.model.*;
 import com.ecommerce.app.module.ReferralRewards.model.Referral;
 import com.ecommerce.app.module.ReferralRewards.model.Wallet;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.io.*;
 import java.util.*;
 import org.springframework.data.jpa.domain.support.*;
@@ -15,6 +22,7 @@ import org.springframework.data.jpa.domain.support.*;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "usermodule_users")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Users implements Serializable {
 
     @Id
@@ -26,29 +34,39 @@ public class Users implements Serializable {
 
     @Column(name = "firstName")
     @NotBlank(message = "*Please provide your first name")
+    @Size(min = 3, max = 50, message = "First name must be 3-50 characters")
+    @Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "First name can only contain letters, numbers, underscores, or hyphens")
     private String firstName;
 
+    @Column(name = "lastName")
+    @Size(min = 3, max = 50, message = "Last name must be 3-50 characters")
+    @Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "Last name can only contain letters, numbers, underscores, or hyphens")
     private String lastName;
 
     @Column(name = "email", unique = true)
     @NotBlank(message = "*Please provide your email")
-    @Email
+    @Email(message = "Invalid email format")
     private String email;
 
     @NotBlank(message = "*Please provide your mobile")
+    @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Invalid mobile number")
+    @Column(nullable = false, unique = true)
     private String mobile;
 
     @Column(length = 60)
+    @JsonIgnore
     private String password;
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "parent_id")
+    //@JsonBackReference // parent is "back" side
     Users parent;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
+    // @JsonManagedReference // roles are "forward" side
     private Set<Role> role = new HashSet<>();
 
     @Enumerated(EnumType.STRING)
@@ -71,6 +89,7 @@ public class Users implements Serializable {
      */
     //@Version
     @Column(name = "version")
+    @JsonIgnore
     private long version = 1L;
 
     @Column(name = "created_on", nullable = false, insertable = true, updatable = false)
@@ -91,19 +110,18 @@ public class Users implements Serializable {
 
 //    @OneToOne(mappedBy = "userId")
 //    public Profile profile;
-    @OneToOne(mappedBy = "users")
-    public Wallet wallet;
-
-    @OneToOne(mappedBy = "users")
-    public Referral referral;
-
-    @OneToOne(mappedBy = "userId")
-    public ProfileImage profileImage;
-
+//    @OneToOne(mappedBy = "users")
+//    public Wallet wallet;
+//
+//    @OneToOne(mappedBy = "users")
+//    public Referral referral;
+//
+//    @OneToOne(mappedBy = "userId")
+//    public ProfileImage profileImage;
     public Users() {
     }
 
-    public Users(Long id, String firstName, String lastName, String email, String mobile, String password, Users parent, Status status, UserType userType, String remarks, Date lastLogin, Date lastLogOut, String createdBy, Date updatedOn, String updatedBy, Wallet wallet, Referral referral, ProfileImage profileImage) {
+    public Users(Long id, String firstName, String lastName, String email, String mobile, String password, Users parent, Status status, UserType userType, String remarks, Date lastLogin, Date lastLogOut, String createdBy, Date updatedOn, String updatedBy) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -119,9 +137,6 @@ public class Users implements Serializable {
         this.createdBy = createdBy;
         this.updatedOn = updatedOn;
         this.updatedBy = updatedBy;
-        this.wallet = wallet;
-        this.referral = referral;
-        this.profileImage = profileImage;
     }
 
     public Long getId() {
@@ -266,30 +281,6 @@ public class Users implements Serializable {
 
     public void setUpdatedBy(String updatedBy) {
         this.updatedBy = updatedBy;
-    }
-
-    public Wallet getWallet() {
-        return wallet;
-    }
-
-    public void setWallet(Wallet wallet) {
-        this.wallet = wallet;
-    }
-
-    public Referral getReferral() {
-        return referral;
-    }
-
-    public void setReferral(Referral referral) {
-        this.referral = referral;
-    }
-
-    public ProfileImage getProfileImage() {
-        return profileImage;
-    }
-
-    public void setProfileImage(ProfileImage profileImage) {
-        this.profileImage = profileImage;
     }
 
 }

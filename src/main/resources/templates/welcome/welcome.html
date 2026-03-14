@@ -3,30 +3,56 @@
     <div layout:fragment = "main_content">
 
         <div class="container-fluid p-0">
-            <div id="myCarousel" class="carousel slide carousel-container" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                    <div class="carousel-item active">
-                        <img th:src="@{/img/slide/slide_1.jpg}"  class="d-block w-100" alt="Slide 1">
-                    </div>
-                    <div class="carousel-item">
-                        <img th:src="@{/img/slide/slide_2.jpg}"  class="d-block w-100" alt="Slide 2">
-                    </div>
-                    <div class="carousel-item">
-                        <img th:src="@{/img/slide/slide_3.jpg}"  class="d-block w-100" alt="Slide 3">
-                    </div>
+
+
+
+
+            <div class="container-fluid p-0">
+
+                <!-- When banner list is empty or null -->
+                <div th:if="${banner == null or #lists.isEmpty(banner)}"
+                     class="text-center py-5 bg-light border">
+                    <h5>No banner found</h5>
                 </div>
 
-                <!-- Controls -->
-                <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon"></span>
-                    <span class="visually-hidden">Previous</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon"></span>
-                    <span class="visually-hidden">Next</span>
-                </button>
+                <!-- When banners exist -->
+                <div th:unless="${banner == null or #lists.isEmpty(banner)}"
+                     id="myCarousel" class="carousel slide carousel-container" data-bs-ride="carousel">
+
+                    <div class="carousel-inner">
+
+                        <div th:each="ad, i : ${banner}"
+                             class="carousel-item"
+                             th:classappend="${i.index == 0} ? ' active'">
+
+                            <img th:src="@{'/files/banner/' + ${ad.imageUrl}}"
+                                 class="d-block w-100"
+                                 th:alt="${ad.title}" />
+                        </div>
+
+                    </div>
+
+                    <!-- Controls only if there are banners -->
+                    <button class="carousel-control-prev" type="button"
+                            data-bs-target="#myCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+
+                    <button class="carousel-control-next" type="button"
+                            data-bs-target="#myCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+
+                </div>
+
             </div>
+
         </div>
+
+
+
 
         <section class="pt-5 pb-2"> <!-- Latest Product  -->
 
@@ -207,7 +233,9 @@
 
                             <div class="card-body">
                                 <div class="card-title">
-                                    <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.id})}" >  <span  th:text="${productlists.title}">    </span> </a>
+                                    <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.id})}" >
+                                        <!--                                        <span  th:text="${productlists.title}"></span> -->
+                                        <p th:text="${productlists.title.length() > 40 ? #strings.substring(productlists.title, 0, 40) + '...' : productlists.title}"></p></a>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="row"  th:if="${productlists.totalDiscountPercent > 0}">
@@ -235,8 +263,8 @@
                                     <input  type="hidden" min="1"   class="col-auto form-control mb-3"  size="10" th:name="quantity" value="1" />
 
                                     <div class=" form-group text-center ">
-                                        <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Add to Cart</button>
-                                        <button class="btn btn-sm btn-outline-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i> Add to WishList </button>
+                                        <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Buy Now</button>
+                                        <button class="btn btn-sm btn-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i>  </button>
                                     </div>
                                 </form>
 
@@ -385,8 +413,8 @@
                                             <input  type="hidden" min="1"   class="col-auto form-control mb-3"  size="10" th:name="quantity" value="1" />
 
                                             <div class=" form-group text-center ">
-                                                <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Add to Cart</button>
-                                                <button class="btn btn-sm btn-outline-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i> Add to WishList </button>
+                                                <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Buy Now</button>
+                                                <button class="btn btn-sm btn-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i>  </button>
                                             </div>
                                         </form>
 
@@ -462,8 +490,8 @@
                                             <input  type="hidden" min="1"   class="col-auto form-control mb-3"  size="10" th:name="quantity" value="1" />
 
                                             <div class=" form-group text-center ">
-                                                <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Add to Cart</button>
-                                                <button class="btn btn-sm btn-outline-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i> Add to WishList </button>
+                                                <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i>Buy Now</button>
+                                                <button class="btn btn-sm btn-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i>  </button>
                                             </div>
                                         </form>
 
@@ -539,8 +567,8 @@
                                             <input  type="hidden" min="1"   class="col-auto form-control mb-3"  size="10" th:name="quantity" value="1" />
 
                                             <div class=" form-group text-center ">
-                                                <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Add to Cart</button>
-                                                <button class="btn btn-sm btn-outline-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i> Add to WishList </button>
+                                                <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i>Buy Now</button>
+                                                <button class="btn btn-sm btn-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i>  </button>
                                             </div>
                                         </form>
 

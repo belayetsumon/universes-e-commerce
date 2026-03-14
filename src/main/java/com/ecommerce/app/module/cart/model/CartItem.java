@@ -7,6 +7,8 @@ package com.ecommerce.app.module.cart.model;
 
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.Unitofmeasurement;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import org.springframework.context.annotation.Scope;
@@ -15,17 +17,20 @@ import org.springframework.context.annotation.Scope;
  *
  * @author User
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Scope("session")
 public class CartItem implements Serializable {
 
+    @JsonIgnore
     public Product product;
-
     public Long vendorId;
 
     private Long productId;
 
-    public BigDecimal quantity;
+    private Long variantId;
 
+    public BigDecimal quantity;
+    @JsonIgnore
     private Unitofmeasurement uom;
 
     public BigDecimal salesPrice;
@@ -40,6 +45,8 @@ public class CartItem implements Serializable {
     public BigDecimal vendorAmount;
     public BigDecimal vatRate;
 
+    public BigDecimal weight;
+
     public BigDecimal vatAmount;
 
     public BigDecimal itemTotal;
@@ -47,10 +54,11 @@ public class CartItem implements Serializable {
     public CartItem() {
     }
 
-    public CartItem(Product product, Long vendorId, Long productId, BigDecimal quantity, Unitofmeasurement uom, BigDecimal salesPrice, BigDecimal discountRate, BigDecimal discountAmount, BigDecimal marketPlaceCommissionRate, BigDecimal marketPlaceCommissionAmount, BigDecimal vendorAmount, BigDecimal vatRate, BigDecimal vatAmount, BigDecimal itemTotal) {
+    public CartItem(Product product, Long vendorId, Long productId, Long variantId, BigDecimal quantity, Unitofmeasurement uom, BigDecimal salesPrice, BigDecimal discountRate, BigDecimal discountAmount, BigDecimal marketPlaceCommissionRate, BigDecimal marketPlaceCommissionAmount, BigDecimal vendorAmount, BigDecimal vatRate, BigDecimal weight, BigDecimal vatAmount, BigDecimal itemTotal) {
         this.product = product;
         this.vendorId = vendorId;
         this.productId = productId;
+        this.variantId = variantId;
         this.quantity = quantity;
         this.uom = uom;
         this.salesPrice = salesPrice;
@@ -60,6 +68,7 @@ public class CartItem implements Serializable {
         this.marketPlaceCommissionAmount = marketPlaceCommissionAmount;
         this.vendorAmount = vendorAmount;
         this.vatRate = vatRate;
+        this.weight = weight;
         this.vatAmount = vatAmount;
         this.itemTotal = itemTotal;
     }
@@ -86,6 +95,14 @@ public class CartItem implements Serializable {
 
     public void setProductId(Long productId) {
         this.productId = productId;
+    }
+
+    public Long getVariantId() {
+        return variantId;
+    }
+
+    public void setVariantId(Long variantId) {
+        this.variantId = variantId;
     }
 
     public BigDecimal getQuantity() {
@@ -158,6 +175,14 @@ public class CartItem implements Serializable {
 
     public void setVatRate(BigDecimal vatRate) {
         this.vatRate = vatRate;
+    }
+
+    public BigDecimal getWeight() {
+        return weight;
+    }
+
+    public void setWeight(BigDecimal weight) {
+        this.weight = weight;
     }
 
     public BigDecimal getVatAmount() {

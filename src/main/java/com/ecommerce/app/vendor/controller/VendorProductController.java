@@ -54,7 +54,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/productvendor")
 //@PreAuthorize("hasAuthority('exam')")
-public class ProductVendorController {
+public class VendorProductController {
 
     @Autowired
     StorageProperties properties;
@@ -246,7 +246,7 @@ public class ProductVendorController {
         List<ProductVariants> variant = productVariantsService.findById(id);
         model.addAttribute("p_variants", variant);
 
-        List<ProductDimension> dimension = productDimensionService.findAllById(id);
+        ProductDimension dimension = productDimensionService.findAllById(id);
         model.addAttribute("d_dimension", dimension);
         return "vendor/product/product_details";
 

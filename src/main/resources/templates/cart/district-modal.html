@@ -1,0 +1,23 @@
+<div id="districtModal" class="modal" style="display:block;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Select Shipping District</h5>
+            </div>
+            <div class="modal-body">
+                <form hx-post="/cart/save-district-and-add"
+                      hx-vals='{"productId": [[${productId}]]}'
+                      hx-target="#districtModal"
+                      hx-swap="outerHTML">
+                    <select name="district" class="form-select" required>
+                        <option value="">-- Select District --</option>
+                        <option value="Dhaka">Dhaka</option>
+                        <option value="Chittagong">Chittagong</option>
+                        <!-- Add more -->
+                    </select>
+                    <button type="submit" class="btn btn-primary mt-2">Save & Add to Cart</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

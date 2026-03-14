@@ -238,7 +238,7 @@ public class ProductController {
         List<ProductVariants> variant = productVariantsService.findById(id);
         model.addAttribute("p_variants", variant);
 
-        List<ProductDimension> dimension = productDimensionService.findAllById(id);
+        ProductDimension dimension = productDimensionService.findAllById(id);
         model.addAttribute("d_dimension", dimension);
 
         return "product/product_details";

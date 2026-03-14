@@ -1,0 +1,6 @@
+<div th:fragment="vendorSummary (vendorKey)">
+    <div class="fw-bold">Subtotal:৳ <span th:text="${#numbers.formatDecimal(subtotal, 1, 2)}">0.00</span></div>
+    <div class="fw-bold">Shipping:৳ <span th:text="${#numbers.formatDecimal(shippingCost, 1, 2)}">0.00</span></div>
+    <div class="fw-bold">Packaging:৳ <span th:text="${#numbers.formatDecimal(packagingCost, 1, 2)}">0.00</span></div>
+    <div class="fw-bold">Total:৳ <span th:text="${#numbers.formatDecimal(subtotal + shippingCost + packagingCost, 1, 2)}">0.00</span></div>
+</div>

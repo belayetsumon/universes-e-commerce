@@ -5,8 +5,6 @@
 package com.ecommerce.app.product.ripository;
 
 import com.ecommerce.app.product.model.ProductDimension;
-import com.ecommerce.app.product.model.ProductVariants;
-import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -15,5 +13,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface ProductDimensionRepository extends JpaRepository<ProductDimension, Long> {
 
-    List<ProductDimension> findByProduct_Id(Long id);
+    ProductDimension findByProduct_Id(Long id);
 }

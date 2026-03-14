@@ -4,9 +4,21 @@
  */
 package com.ecommerce.app.product.services;
 
+import com.ecommerce.app.product.model.ProductStatusEnum;
 import com.ecommerce.app.product.model.Productcategory;
 import com.ecommerce.app.product.ripository.ProductcategoryRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Tuple;
+import jakarta.persistence.TupleElement;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Root;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +29,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class ProductcategoryService {
+
+    @Autowired
+    EntityManager entityManager;
 
     @Autowired
     ProductcategoryRepository productcategoryRepository;
@@ -38,4 +53,40 @@ public class ProductcategoryService {
             buildTree(children);  // Recursively build for child nodes
         }
     }
+
+    public List<Map<String, Object>> findActiveCategoryDropDown() {
+
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Tuple> cq = cb.createTupleQuery();
+        Root<Productcategory> root = cq.from(Productcategory.class);
+
+        // LEFT JOIN parent category
+        Join<Productcategory, Productcategory> parentJoin
+                = root.join("parent", JoinType.LEFT);
+
+        cq.multiselect(
+                root.get("id").alias("id"),
+                root.get("uuid").alias("uuid"),
+                root.get("name").alias("name")
+        );
+
+        // WHERE status = ACTIVE
+        cq.where(cb.equal(root.get("status"), ProductStatusEnum.Active));
+
+        List<Tuple> resultList = entityManager.createQuery(cq).getResultList();
+
+        // Convert Tuple -> Map<String, Object>
+        List<Map<String, Object>> finalList = new ArrayList<>();
+
+        for (Tuple t : resultList) {
+            Map<String, Object> map = new HashMap<>();
+            for (TupleElement<?> elem : t.getElements()) {
+                map.put(elem.getAlias(), t.get(elem.getAlias()));
+            }
+            finalList.add(map);
+        }
+
+        return finalList;
+    }
+
 }

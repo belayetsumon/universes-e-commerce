@@ -1,0 +1,21 @@
+<table>
+    <thead>
+        <tr>
+            <th>ID</th><th>Name</th><th>Phone</th><th>Vendor</th><th>Status</th><th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="d : ${list}">
+            <td th:text="${d.id}"></td>
+            <td th:text="${d.name}"></td>
+            <td th:text="${d.phone}"></td>
+            <td th:text="${d.vendorId}"></td>
+            <td th:text="${d.active ? 'Active' : 'Inactive'}"></td>
+            <td>
+                <a th:href="@{'/delivery-person/edit/' + ${d.id}}">Edit</a>
+                <a th:href="@{'/delivery-person/delete/' + ${d.id}}" onclick="return confirm('Delete?')">Delete</a>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<a href="/delivery-person/create">+ Add New</a>

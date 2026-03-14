@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+
+    <div layout:fragment = "main_content">
+        <section>
+            <div class="row">
+                <div class="col-sm-3"><h4> Ads </h4></div>
+                <div class="col-sm-5">   <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Ads</li>
+                            <li class="breadcrumb-item active" aria-current="page">Ads List</li>
+                        </ol>
+                    </nav>
+                </div></div>
+        </section>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold "> <h4 th:text="${ads.id == null ? 'Create Ad' : 'Update Ad'}"></h4> </div>
+
+                            <div class="col-sm-7 text-end">
+                                <div class="btn-group ">
+                                    <a class="btn btn-success btn-sm " th:href="@{/admin/ads/create}"> <i class="bi bi-plus-circle"></i> Add Ads </a>
+                                    <a th:href="@{/admin/index}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/ads/save}"
+                              th:object="${ads}"
+                              method="post"
+                              enctype="multipart/form-data">
+
+                            <!-- Global Error Box -->
+                            <div class="alert alert-danger" th:if="${#fields.hasErrors('*')}">
+                                <ul>
+                                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                                </ul>
+                            </div>
+
+                            <div class="row">
+
+                                <!-- Hidden Fields -->
+                                <input type="hidden" th:field="*{id}">
+                                <input type="hidden" th:field="*{uuid}">
+                                <input type="hidden" th:field="*{version}">
+
+                                <!-- Title -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Title</label>
+                                    <input type="text" th:field="*{title}"
+                                           class="form-control"
+                                           th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'">
+                                    <div class="invalid-feedback" th:errors="*{title}"></div>
+                                </div>
+
+                                <!-- Placement -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Placement</label>
+                                    <select th:field="*{placement}" class="form-select"
+                                            th:classappend="${#fields.hasErrors('placement')} ? 'is-invalid'">
+                                        <option value="">-- select --</option>
+                                        <option th:each="p : ${placements}"
+                                                th:value="${p}" th:text="${p}"></option>
+                                    </select>
+                                    <div class="invalid-feedback" th:errors="*{placement}"></div>
+                                </div>
+
+                                <!-- Image Upload -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Upload Image</label>
+                                    <input type="file"
+                                           name="file"
+                                           class="form-control"
+                                           accept="image/*">
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Width</label>
+                                    <input type="number"  min="100"  th:field="*{width}"
+                                           class="form-control" required="true">
+
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Height</label>
+                                    <input type="number"  min="100"  th:field="*{height}"
+                                           class="form-control" required="true">
+                                </div>
+
+                                <!-- Target Type -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Target Type</label>
+                                    <select th:field="*{targetType}" class="form-select" id="targetType"
+                                            onchange="toggleTargetFields()"
+                                            th:classappend="${#fields.hasErrors('targetType')} ? 'is-invalid'">
+                                        <option value="">-- select --</option>
+                                        <option th:each="t : ${targetTypes}"
+                                                th:value="${t}" th:text="${t}"></option>
+                                    </select>
+                                    <div class="invalid-feedback" th:errors="*{targetType}"></div>
+                                </div>
+
+                                <!-- Category -->
+                                <div class="col-md-6 mb-3" id="categoryBox">
+                                    <label class="form-label">Category</label>
+                                    <select th:field="*{categoryId}" class="form-select">
+                                        <option value="">-- select category --</option>
+                                        <option th:each="c : ${categoryList}"
+                                                th:value="${c.uuid}" th:text="${c.name}"></option>
+                                    </select>
+                                </div>
+
+                                <!-- Product -->
+                                <div class="col-md-6 mb-3" id="productBox">
+                                    <label class="form-label">Product</label>
+                                    <select th:field="*{productId}" class="form-select">
+                                        <option value="">-- select product --</option>
+                                        <option th:each="p : ${productList}"
+                                                th:value="${p.uuid}" th:text="${p.title}"></option>
+                                    </select>
+                                </div>
+
+                                <!-- Vendor -->
+                                <div class="col-md-6 mb-3" id="vendorBox">
+                                    <label class="form-label">Vendor</label>
+                                    <select th:field="*{vendorId}" class="form-select">
+                                        <option value="">-- select vendor --</option>
+                                        <option th:each="v : ${vendorList}"
+                                                th:value="${v.uuid}"
+                                                th:text="${v.vendorCode + ' - ' + v.companyName}"></option>
+                                    </select>
+                                </div>
+
+                                <!-- External URL -->
+                                <div class="col-md-12 mb-3" id="externalBox">
+                                    <label class="form-label">External URL</label>
+                                    <input type="text" th:field="*{externalUrl}" class="form-control">
+                                </div>
+
+                                <!-- Active -->
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Active</label>
+                                    <input type="checkbox" th:field="*{active}" class="form-check-input ms-2">
+                                </div>
+
+                                <!-- Display Order -->
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Display Order</label>
+                                    <input type="number" th:field="*{displayOrder}" class="form-control"
+                                           th:classappend="${#fields.hasErrors('displayOrder')} ? 'is-invalid'">
+                                    <div class="invalid-feedback" th:errors="*{displayOrder}"></div>
+                                </div>
+
+                            </div>
+
+                            <button class="btn btn-primary mt-3" type="submit">Save</button>
+                            <a href="/admin/ads" class="btn btn-secondary mt-3">Cancel</a>
+                        </form>
+                    </div>
+                </div>
+
+            </div> <!--  Card  end-->
+
+
+        </div><!--  Main Content  end-->
+    </div>   <!--  Layout end-->      </div><!--  Main Content  end-->

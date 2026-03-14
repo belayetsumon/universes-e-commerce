@@ -1,7 +1,4 @@
 <div  th:fragment="nav-left">
-
-
-
     <div class="sidebar-header text-center ">
         <a class="navbar-brand" href="#">mUSAPIR</a>
     </div>
@@ -33,7 +30,12 @@
                     <li class="nav-item"><a class="nav-link" th:href="@{/shippingcharge/list}" ><i class="bi-truck me-2"></i>Shipping Charge</a></li>
                     <li class="nav-item"><a class="nav-link" href="#"><i class="bi-arrow-left-circle me-2"></i>Refunds</a></li>
                     <li class="nav-item"><a class="nav-link" href="#"><i class="bi-receipt me-2"></i>Transactions</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-bag-check me-2"></i>Shipments</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/shipments/list}"><i class="bi-bag-check me-2"></i>Shipments</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/carriers/list}"><i class="bi-bag-check me-2"></i>Carrier</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/carrier-rates/list}"><i class="bi-bag-check me-2"></i>Carrier Rate</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/shipping-profiles/list}"><i class="bi-bag-check me-2"></i>Shipping Profiles</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/packagingrates/list}"><i class="bi-bag-check me-2"></i>Packaging Rates</a></li>
+
                     <li class="nav-item"><a class="nav-link" href="#"><i class="bi-arrow-return-left me-2"></i>Returns</a></li>
                 </ul>
             </li>
@@ -94,6 +96,21 @@
                     <li class="nav-item"><a class="nav-link"th:href="@{/lavelratesettings/list}"><i class="bi-sliders me-2"></i>Level & Rate Settings</a></li>
                 </ul>
             </li>
+
+
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#ads-collapse" role="button" aria-expanded="false" aria-controls="referral-collapse">
+                    <i class="bi-gift-fill"></i>
+                    <span>Ads Management</span>
+                    <i class="bi-chevron-right ms-auto"></i>
+                </a>
+                <ul class="nav flex-column collapse" id="ads-collapse">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/ads/list}"><i class="bi-person-plus me-2"></i>Ads List</a></li>
+                </ul>
+            </li>
+
+
+
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#users-collapse" role="button" aria-expanded="false" aria-controls="users-collapse">
                     <i class="bi-person-rolodex"></i>

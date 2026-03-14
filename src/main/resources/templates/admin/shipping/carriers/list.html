@@ -1,0 +1,82 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment = "main_content">
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4><i class="bi bi-person-badge-fill me-2 text-primary"></i>Carrier Management</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Carrier List</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="font-weight-bold mb-0">
+                            <i class="bi bi-list-task"></i> Carrier  List
+                            <span th:text="${carriers.size()}"></span>
+                        </h5>
+                        <div class="btn-group">
+                            <a href="/admin/carriers/new"  type="button"  class="btn btn-success btn-sm">  + Add Carrier</a>
+                            <a th:href="@{/admin/index}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>
+                            <!-- Example: add more buttons here -->
+                            <!--
+                            <a class="btn btn-primary btn-sm" href="#">Another Action</a>
+                            -->
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+                        <div th:if="${not #strings.isEmpty(success)}"
+                             class="alert alert-success alert-dismissible fade show" role="alert">
+                            <span th:text="${success}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+
+
+                        <div th:if="${not #strings.isEmpty(error)}"
+                             class="alert alert-success alert-dismissible fade show" role="alert">
+                            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        <div class="table-responsive">
+
+
+
+                            <div class="container mt-4">
+                                <table class="table table-bordered">
+                                    <thead><tr><th>ID</th><th>Code</th><th>Name</th><th>Active</th><th>Actions</th></tr></thead>
+                                    <tbody>
+                                        <tr th:each="c : ${carriers}">
+                                            <td th:text="${c.id}"></td>
+                                            <td th:text="${c.code}"></td>
+                                            <td th:text="${c.name}"></td>
+                                            <td th:text="${c.active}"></td>
+                                            <td>
+                                                <a th:href="@{'/admin/carriers/edit/' + ${c.id}}" class="btn btn-sm btn-primary">Edit</a>
+                                                <a th:href="@{'/admin/carriers/delete/' + ${c.uuid}}" class="btn btn-sm btn-danger">Delete</a>
+
+
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div><!--  Card body end-->
+                </div><!--  Card  end-->
+            </div>
+        </div>
+
+
+
+
+    </div><!--  Card  end-->
+
+
+</div><!--  Main Content  end-->
+

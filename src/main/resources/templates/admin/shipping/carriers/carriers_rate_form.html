@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment = "main_content">
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold ">
+                                <span class="fs-5 fw-bold">  <i class="bi bi-justify"></i>   <span th:text="${carrierRate.id} != null ? 'Edit Carrier Rate' : 'Create Carrier Rate'">Form</span>
+                                </span>
+                            </div>
+
+                            <div class="col-sm-7 text-end">
+                                <div class="btn-group ">
+
+                                    <a th:href="@{/admin/carrier-rates/list}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="card-body">
+
+                        <form th:action="@{/admin/carrier-rates/save}" th:object="${carrierRate}" method="post" class="row g-3">
+                            <input type="hidden" th:field="*{id}"/>
+
+                            <!-- Carrier -->
+                            <div class="row my-3">
+                                <label class="col-sm-2 col-form-label">Carrier</label>
+                                <div class="col-sm-6">
+                                    <select th:field="*{carrier}" class="form-select" required>
+                                        <option th:each="c : ${carriers}" th:value="${c.id}" th:text="${c.name}"></option>
+                                    </select>
+                                    <div class="form-text">Select the courier or delivery company.</div>
+                                    <div class="text-danger small" th:if="${#fields.hasErrors('carrier')}" th:errors="*{carrier}"></div>
+                                </div>
+                            </div>
+
+                            <!-- District -->
+                            <div class="row mb-3">
+                                <label class="col-sm-2 col-form-label">District</label>
+                                <div class="col-sm-6">
+
+                                    <select multiple="true"th:field="*{district}" class="form-select" required>
+                                        <option th:each="s : ${districts}" th:value="${s}" th:text="${s}"></option>
+                                    </select>
+                                    <div class="form-text">Type or select a district from Bangladesh.</div>
+                                    <div class="text-danger small" th:if="${#fields.hasErrors('district')}" th:errors="*{district}"></div>
+                                </div>
+                            </div>
+
+                            <!-- Speed -->
+                            <div class="row mb-3">
+                                <label class="col-sm-2 col-form-label">Speed</label>
+                                <div class="col-sm-6">
+                                    <select th:field="*{speed}" class="form-select" required>
+                                        <option th:each="s : ${speeds}" th:value="${s}" th:text="${s}"></option>
+                                    </select>
+                                    <div class="form-text">Choose delivery speed (e.g. Regular, Express).</div>
+                                    <div class="text-danger small" th:if="${#fields.hasErrors('speed')}" th:errors="*{speed}"></div>
+                                </div>
+                            </div>
+
+                            <!-- Delivery Type -->
+                            <div class="row mb-3">
+                                <label class="col-sm-2 col-form-label">Delivery Type</label>
+                                <div class="col-sm-6">
+                                    <select th:field="*{deliveryType}" class="form-select" required>
+                                        <option th:each="t : ${types}" th:value="${t}" th:text="${t}"></option>
+                                    </select>
+                                    <div class="form-text">Select the delivery method (e.g. Home Delivery, Pickup).</div>
+                                    <div class="text-danger small" th:if="${#fields.hasErrors('deliveryType')}" th:errors="*{deliveryType}"></div>
+                                </div>
+                            </div>
+
+                            <!-- Pricing row -->
+                            <div class="row mb-3">
+                                <!-- Base Price -->
+                                <div class="col-sm-3">
+                                    <label class="col-form-label">Base Price</label>
+                                    <input type="number" step="0.01" th:field="*{basePrice}" class="form-control" required/>
+                                    <div class="form-text">Minimum charge for the delivery.</div>
+                                    <div class="text-danger small" th:if="${#fields.hasErrors('basePrice')}" th:errors="*{basePrice}"></div>
+                                </div>
+
+                                <!-- Per Kg -->
+                                <div class="col-sm-3">
+                                    <label class="col-form-label">Per Extra Kg</label>
+                                    <input type="number" step="0.01" th:field="*{perKg}" class="form-control" required/>
+                                    <div class="form-text">Charge per kilogram of weight.</div>
+                                    <div class="text-danger small" th:if="${#fields.hasErrors('perKg')}" th:errors="*{perKg}"></div>
+                                </div>
+
+                                <!--                                 Per Km
+                                                                <div class="col-sm-3">
+                                                                    <label class="col-form-label">Per Km</label>
+                                                                    <input type="number" step="0.01" th:field="*{perKm}" class="form-control" required/>
+                                                                    <div class="form-text">Charge per kilometer of distance.</div>
+                                                                    <div class="text-danger small" th:if="${#fields.hasErrors('perKm')}" th:errors="*{perKm}"></div>
+                                                                </div>-->
+
+                                <!-- COD Fee -->
+                                <div class="col-sm-3">
+                                    <label class="col-form-label">COD Fee</label>
+                                    <input type="number" step="0.01" th:field="*{codFee}" class="form-control"/>
+                                    <div class="form-text">Extra fee for Cash on Delivery (optional).</div>
+                                    <div class="text-danger small" th:if="${#fields.hasErrors('codFee')}" th:errors="*{codFee}"></div>
+                                </div>
+                            </div>
+
+
+                            <!-- Buttons -->
+                            <div class="row">
+                                <div class="col-sm-8 offset-sm-2">
+                                    <button class="btn btn-primary">Save</button>
+                                    <a href="/admin/carrier-rates" class="btn btn-secondary">Cancel</a>
+                                </div>
+                            </div>
+                        </form>
+
+
+
+
+                    </div><!--  Card body end-->
+                </div><!--  Card  end-->
+            </div><!--  Main Content  end-->
+        </div>
+    </div>
+</div>   <!--  Layout end-->
+

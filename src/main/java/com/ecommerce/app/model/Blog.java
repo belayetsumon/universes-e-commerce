@@ -57,7 +57,7 @@ public class Blog {
 
     private int viewcount;
 
-/// Audit /// 
+/// Audit ///
     @CreatedBy
     @Column(nullable = false, updatable = false)
     private String createdBy;
@@ -74,7 +74,7 @@ public class Blog {
     @Column(insertable = false)
     private LocalDateTime modified;
 
-    /// End Audit //// 
+    /// End Audit ////
     public Blog() {
     }
 
@@ -189,4 +189,4 @@ public class Blog {
         this.modified = modified;
     }
 
- }
+}

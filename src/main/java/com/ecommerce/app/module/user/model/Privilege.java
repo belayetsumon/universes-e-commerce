@@ -5,6 +5,8 @@
  */
 package com.ecommerce.app.module.user.model;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import java.util.Set;
@@ -14,7 +16,8 @@ import java.util.Set;
  * @author Md Belayet Hossin
  */
 @Entity
-@Table(name="usermodule_application_privilege")
+@Table(name = "usermodule_application_privilege")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Privilege {
 
     @Id

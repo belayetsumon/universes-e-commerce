@@ -6,6 +6,7 @@ package com.ecommerce.app.vendor.services;
 
 import com.ecommerce.app.vendor.model.VendorStatusEnum;
 import com.ecommerce.app.vendor.model.Vendorprofile;
+import com.ecommerce.app.vendor.repository.VendorprofileRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Tuple;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -28,6 +30,55 @@ public class VendorprofileService {
 
     @PersistenceContext
     private EntityManager em;
+
+    @Autowired
+    VendorprofileRepository repository;
+
+    public List<Vendorprofile> findAll() {
+        return repository.findAll();
+    }
+
+    public Vendorprofile findById(Long id) {
+        return repository.findById(id).orElse(null);
+    }
+
+    public List<Map<String, Object>> all_vendor_list_for_Dropdown() {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Tuple> cq = cb.createTupleQuery();
+        Root<Vendorprofile> root = cq.from(Vendorprofile.class);
+        // Collect predicates dynamically
+        List<Predicate> predicates = new ArrayList<>();
+
+        predicates.add(cb.equal(root.get("vendorStatusEnum"), VendorStatusEnum.Active));
+
+        cq.multiselect(
+                root.get("id").alias("id"),
+                root.get("uuid").alias("uuid"),
+                root.get("vendorCode").alias("vendorCode"),
+                root.get("companyName").alias("companyName")
+        );
+
+        if (!predicates.isEmpty()) {
+            cq.where(cb.and(predicates.toArray(new Predicate[0])));
+        }
+
+        cq.orderBy(cb.desc(root.get("id")));
+        List<Tuple> resultList = em.createQuery(cq).getResultList();
+
+        // Avoid streams, use loop instead
+        List<Map<String, Object>> finalList = new ArrayList<>();
+        for (Tuple tuple : resultList) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", tuple.get("id"));
+            map.put("uuid", tuple.get("uuid"));
+            map.put("vendorCode", tuple.get("vendorCode"));
+            map.put("companyName", tuple.get("companyName"));
+
+            finalList.add(map);
+        }
+
+        return finalList;
+    }
 
     public List<Map<String, Object>> all_vendor_list(
             VendorStatusEnum status,

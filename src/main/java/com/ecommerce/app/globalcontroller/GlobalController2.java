@@ -6,10 +6,12 @@
 package com.ecommerce.app.globalcontroller;
 
 import com.ecommerce.app.globalComponant.EntityNameResolver;
+import com.ecommerce.app.globalServices.District;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.product.model.ProductStatusEnum;
 import com.ecommerce.app.product.model.Productcategory;
 import com.ecommerce.app.product.ripository.ProductcategoryRepository;
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +24,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
  * @author User
  */
 @ControllerAdvice
-public class GlobalController {
+public class GlobalController2 {
 
     @Autowired
     private EntityNameResolver entityNameResolver;
@@ -64,4 +66,28 @@ public class GlobalController {
         return productcategoryRepository.findByStatusAndParentIsNull(ProductStatusEnum.Active);
     }
 
+    // Expose enum values for Thymeleaf dropdown
+    @ModelAttribute("shippinglocations")
+    public District[] shippingLocations() {
+        return District.values();
+    }
+
+    @ModelAttribute("currentShippingDistrict")
+    public District currentShippingDistrict(HttpSession session) {
+        Object obj = session.getAttribute("shippingdistrict");
+        if (obj == null) {
+            return null;
+        }
+        if (obj instanceof District) {
+            return (District) obj;
+        }
+        if (obj instanceof String) {
+            try {
+                return District.valueOf((String) obj);
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        }
+        return null;
+    }
 }

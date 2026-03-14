@@ -34,7 +34,7 @@ public class ProductDimension {
     private BigDecimal length;  // cm
     private BigDecimal width;   // cm
     private BigDecimal height;  // cm
-    private BigDecimal weight;  // cm
+    private BigDecimal weight;  // kg
 
     @OneToOne
     private Product product;

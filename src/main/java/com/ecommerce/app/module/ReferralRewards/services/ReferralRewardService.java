@@ -45,17 +45,17 @@ public class ReferralRewardService {
 
     @Transactional
     public void processSignupReferral(Users newUser) {
-        referralRepository.findByReferredUser(newUser).ifPresent(referral -> {
-            if (!referral.isRewardGranted()) {
-                Users referrer = referral.getUsers();
-                Wallet wallet = referrer.getWallet();
-
-                if (creditReward(wallet, SIGNUP_REWARD, "Referral signup reward for " + newUser.getEmail())) {
-                    referral.setRewardGranted(true);
-                    referralRepository.save(referral);
-                }
-            }
-        });
+//        referralRepository.findByReferredUser(newUser).ifPresent(referral -> {
+//            if (!referral.isRewardGranted()) {
+//                Users referrer = referral.getUsers();
+//                Wallet wallet = referrer.getWallet();
+//
+//                if (creditReward(wallet, SIGNUP_REWARD, "Referral signup reward for " + newUser.getEmail())) {
+//                    referral.setRewardGranted(true);
+//                    referralRepository.save(referral);
+//                }
+//            }
+//        });
     }
 
     @Transactional

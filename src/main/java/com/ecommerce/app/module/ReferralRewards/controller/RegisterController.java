@@ -121,18 +121,17 @@ public class RegisterController {
         Users user = usersRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        Wallet wallet = user.getWallet();
-        if (wallet == null) {
-            model.addAttribute("walletBalance", BigDecimal.ZERO);
-            model.addAttribute("transactions", Collections.emptyList());
-        } else {
-            List<WalletTransaction> transactions = walletTransactionRepository
-                    .findByWallet_UsersOrderByCreatedAtDesc(user);
-
-            model.addAttribute("walletBalance", wallet.getBalance()); // Assuming Wallet has getBalance()
-            model.addAttribute("transactions", transactions);
-        }
-
+//        Wallet wallet = user.getWallet();
+//        if (wallet == null) {
+//            model.addAttribute("walletBalance", BigDecimal.ZERO);
+//            model.addAttribute("transactions", Collections.emptyList());
+//        } else {
+//            List<WalletTransaction> transactions = walletTransactionRepository
+//                    .findByWallet_UsersOrderByCreatedAtDesc(user);
+//
+//            model.addAttribute("walletBalance", wallet.getBalance()); // Assuming Wallet has getBalance()
+//            model.addAttribute("transactions", transactions);
+//        }
         return "wallet";
     }
 

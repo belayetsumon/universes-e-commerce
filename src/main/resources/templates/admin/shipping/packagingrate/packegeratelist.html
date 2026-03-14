@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment = "main_content">
+        <section>
+            <div class="row">
+                <div class="col-sm-3"><h4>Packaging Rates </h4></div>
+                <div class="col-sm-7">   <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Packaging Rates</li>
+                            <li class="breadcrumb-item active" aria-current="page">Packaging Rates List</li>
+                        </ol>
+                    </nav>
+                </div></div>
+        </section>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i>
+                                    Packaging Rates                               </strong> </div>
+                            <div class="col-sm-7 text-end">
+                                <div class="btn-group ">
+                                    <a class="btn btn-success btn-sm " th:href="@{/packagingrates/new}"> <i class="bi bi-plus-circle"></i> Add Packaging Rates</a>
+                                    <a th:href="@{/admin/index}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- Flash Messages -->
+                        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                        <table class="table table-bordered table-striped align-middle">
+                            <thead class="">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Vendor</th>
+                                    <th>Packaging Type</th>
+                                    <th>Base Price</th>
+                                    <th>Additional Price</th>
+                                    <th>Active</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="rate, iStat : ${rates}">
+                                    <td th:text="${iStat.index + 1}"></td>
+                                    <td th:text="${rate.vendor != null ? rate.vendor.companyName : 'N/A'}"></td>
+                                    <td th:text="${rate.packagingType}"></td>
+                                    <td th:text="${rate.basePrice}"></td>
+                                    <td th:text="${rate.additionalPrice}"></td>
+                                    <td>
+                                        <span th:text="${rate.active ? 'Yes' : 'No'}"></span>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/packagingrates/edit/{id}(id=${rate.id})}"
+                                           class="btn btn-sm btn-warning">Edit</a>
+                                        <a th:href="@{/packagingrates/delete/{id}(id=${rate.id})}"
+                                           onclick="return confirm('Are you sure?')"
+                                           class="btn btn-sm btn-danger">Delete</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div th:if="${#lists.isEmpty(rates)}" class="text-center p-5">
+                            <p class="lead text-muted">No active packaging rates found.</p>
+                        </div>
+
+                    </div>
+                </div><!--  Card  end-->
+
+
+            </div><!--  Main Content  end-->
+
+        </div>   <!--  Layout end-->      </div><!--  Main Content  end-->
+</div>

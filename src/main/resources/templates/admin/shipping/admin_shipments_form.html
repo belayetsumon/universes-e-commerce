@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment = "main_content">
+
+
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4><i class="bi bi-person-badge-fill me-2 text-primary"></i>Shipment Management</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Shipment Create</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="card">
+                    <div class="card-header">
+
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold "> </div>
+
+                            <div class="col-sm-7 text-end">
+                                <div class="btn-group ">
+                                    <a class="btn btn-success btn-sm " th:href="@{/admin/shipments/create}"> <i class="bi bi-plus-circle"></i> Add New </a>
+                                    <a th:href="@{/admin/shipments/list}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+
+                        <form th:action="@{/admin/shipments/save}" th:object="${shipment}" method="post" class="row g-3">
+
+
+                            <div th:if="${#fields.hasErrors('*')}"
+                                 style="color:red; margin-bottom:10px; display:flex; justify-content:center;">
+                                <ul>
+                                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"
+                                        style="list-style:none; text-align:center;"></li>
+                                </ul>
+                            </div>
+
+                            <input type="hidden" th:field="*{id}" />
+                            <input type="hidden" th:field="*{uuid}" />
+
+                            <!-- Carrier -->
+                            <div class="col-md-4">
+                                <label class="form-label">Vendor Id</label>
+                                <input type="text"  class="form-control" th:field="*{vendorId}" />
+                                <label class="form-label">Sales Order Id</label>
+                                <input type="text"  class="form-control" th:field="*{salesOrderId}" />
+                            </div>
+
+                            <!-- Carrier -->
+                            <div class="col-md-4">
+                                <label class="form-label">Carrier</label>
+                                <select th:field="*{carrier}" class="form-select" required>
+                                    <option th:each="c : ${carriers}" th:value="${c.id}" th:text="${c.name}"></option>
+                                </select>
+                                <div class="form-text">Select the courier or delivery company.</div>
+                                <div class="text-danger small" th:if="${#fields.hasErrors('carrier')}" th:errors="*{carrier}"></div>
+                            </div>
+
+                            <!-- Delivery Person -->
+                            <div class="col-md-4">
+                                <label class="form-label">Delivery Person</label>
+                                <select th:field="*{deliveryPerson}" class="form-select">
+                                    <option th:each="d : ${deliveryPersons}" th:value="${d}" th:text="${d.name}"></option>
+                                </select>
+                                <div class="form-text">Optional: Assign a delivery person.</div>
+                                <div class="text-danger small" th:if="${#fields.hasErrors('deliveryPerson')}" th:errors="*{deliveryPerson}"></div>
+                            </div>
+
+                            <!-- District -->
+                            <div class="col-md-4">
+                                <label class="form-label">District</label>
+                                <input type="text" th:field="*{district}" class="form-control" placeholder="e.g. Dhaka" required/>
+                                <div class="form-text">Enter the delivery district.</div>
+                                <div class="text-danger small" th:if="${#fields.hasErrors('district')}" th:errors="*{district}"></div>
+                            </div>
+
+                            <!-- Tracking Number -->
+                            <!--                            <div class="col-md-4">
+                                                            <label class="form-label">Tracking Number</label>
+                                                            <input type="text" th:field="*{trackingNumber}" class="form-control"/>
+                                                            <div class="form-text">Unique shipment tracking number (optional).</div>
+                                                            <div class="text-danger small" th:if="${#fields.hasErrors('trackingNumber')}" th:errors="*{trackingNumber}"></div>
+                                                        </div>-->
+
+                            <!-- Shipping Cost -->
+                            <div class="col-md-4">
+                                <label class="form-label">Shipping Cost</label>
+                                <input type="number" step="0.01" th:field="*{shippingCost}" class="form-control"/>
+                                <div class="form-text">Cost for this shipment.</div>
+                                <div class="text-danger small" th:if="${#fields.hasErrors('shippingCost')}" th:errors="*{shippingCost}"></div>
+                            </div>
+
+                            <!-- Speed -->
+                            <!--                            <div class="col-md-4">
+                                                            <label class="form-label">Speed</label>
+                                                            <select th:field="*{speed}" class="form-select">
+                                                                <option th:each="s : ${T(com.example.model.DeliverySpeed).values()}" th:value="${s}" th:text="${s}"></option>
+                                                            </select>
+                                                            <div class="form-text">Delivery speed (Standard / Express).</div>
+                                                        </div>-->
+
+                            <!-- Delivery Type -->
+                            <!--                            <div class="col-md-4">
+                                                            <label class="form-label">Delivery Type</label>
+                                                            <select th:field="*{deliveryType}" class="form-select">
+                                                                <option th:each="t : ${T(com.example.model.DeliveryType).values()}" th:value="${t}" th:text="${t}"></option>
+                                                            </select>
+                                                            <div class="form-text">Home delivery or office pickup.</div>
+                                                        </div>-->
+
+                            <!-- Status -->
+                            <!--                            <div class="col-md-4">
+                                                            <label class="form-label">Status</label>
+                                                            <select th:field="*{status}" class="form-select">
+                                                                <option th:each="st : ${T(com.example.model.ShipmentStatus).values()}" th:value="${st}" th:text="${st}"></option>
+                                                            </select>
+                                                            <div class="form-text">Current shipment status.</div>
+                                                        </div>-->
+
+                            <!-- COD -->
+                            <div class="col-md-2">
+                                <label class="form-label">COD</label>
+                                <input type="checkbox" th:field="*{cod}" class="form-check-input"/>
+                                <div class="form-text">Check if this is a Cash-on-Delivery shipment.</div>
+                            </div>
+
+                            <!-- Total / Collected / Pending -->
+                            <div class="col-md-2">
+                                <label class="form-label">Total Amount</label>
+                                <input type="number" step="0.01" th:field="*{totalOrderAmount}" class="form-control"/>
+                            </div>
+
+
+                            <!-- COD Collected / Pending -->
+                            <div class="col-md-2">
+                                <label class="form-label">COD Collected</label>
+                                <input type="number" step="0.01" th:field="*{codCollected}" class="form-control"/>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">COD Pending</label>
+                                <input type="number" step="0.01" th:field="*{codPending}" class="form-control"/>
+                            </div>
+
+                            <!-- Packaging -->
+                            <!--                            <div class="col-md-4">
+                                                            <label class="form-label">Packaging</label>
+                                                            <select th:field="*{packagingRate}" class="form-select">
+                                                                <option th:each="p : ${packagingRates}" th:value="${p}" th:text="${p.packagingType} + ' - ' + ${p.basePrice}"></option>
+                                                            </select>
+                                                            <div class="form-text">Select packaging type and cost.</div>
+                                                        </div>-->
+
+                            <!-- Metadata JSON -->
+                            <div class="col-12">
+                                <label class="form-label">Metadata JSON</label>
+                                <textarea th:field="*{metadataJson}" class="form-control" rows="3"></textarea>
+                                <div class="form-text">Optional: JSON metadata for this shipment.</div>
+                            </div>
+
+                            <!-- Buttons -->
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">Save</button>
+                                <a th:href="@{/admin/shipments/list}" class="btn btn-secondary">Cancel</a>
+                            </div>
+                        </form>
+
+
+                    </div><!--  Card body end-->
+                </div><!--  Card  end-->
+            </div><!--  Main Content  end-->
+        </div>
+    </div>
+</div>   <!--  Layout end-->

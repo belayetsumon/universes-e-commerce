@@ -51,7 +51,7 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 @Controller
 @RequestMapping("/vendor-order")
 //@PreAuthorize("hasAuthority('vendor-order')")
-public class SalesOrderVendorController {
+public class VendorSalesOrderController {
 
     @Autowired
     LoggedUserService loggedUserService;

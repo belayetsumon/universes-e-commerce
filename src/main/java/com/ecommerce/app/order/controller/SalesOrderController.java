@@ -8,7 +8,6 @@ package com.ecommerce.app.order.controller;
 import com.ecommerce.app.module.ReferralRewards.services.ReferralService;
 import com.ecommerce.app.module.cart.services.CartService;
 import com.ecommerce.app.module.cart.model.CartItem;
-import com.ecommerce.app.module.shipping.services.ShippingChargeService;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.user.services.LoggedUserService;
@@ -37,9 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
@@ -77,9 +74,6 @@ public class SalesOrderController {
 
     @Autowired
     SalesOrderCodeGeneratorService salesOrderCodeGeneratorService;
-
-    @Autowired
-    ShippingChargeService shippingChargeService;
 
     @RequestMapping(value = {"", "/", "/index"})
     public String index(Model model) {
@@ -338,15 +332,6 @@ public class SalesOrderController {
         session.removeAttribute("session_Billing_address");
 
         return "redirect:/customerorder/index";
-    }
-
-    @PostMapping("/calculate-charge")
-    public String calculateCharge(@RequestParam("zoneType") String zoneType,
-            @RequestParam("weightKg") BigDecimal weight,
-            Model model) {
-        BigDecimal charge = shippingChargeService.calculateCharge(zoneType, weight);
-        model.addAttribute("charge", charge);
-        return "shipping/charge-summary :: chargeFragment";
     }
 
 }

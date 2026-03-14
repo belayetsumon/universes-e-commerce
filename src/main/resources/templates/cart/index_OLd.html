@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="front-layout-inner-page">
+    <div layout:fragment="main_content">
+
+        <section  class="breadcrumb_section">
+            <div class="container">
+                <nav aria-label="breadcrumb" class="pt-3 pb-1">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/" class="nav-link">  <i class="bi bi-house"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Cart</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+        <section>
+            <div class="container pt-5 pb-5">
+                <div class="row ">
+                    <div class="col-sm-8">
+
+                        <div class="card row" >
+                            <div class="card-header">
+                                <i class="fas fa-shopping-cart text-warning"></i>  Your cart
+                                <!--                                <span th:text="${session.sessioncart.size()}"></span>-->
+                            </div>
+
+                            <div class="card-body">
+
+                                <div class="modal fade" id="districtModal" tabindex="-1" aria-hidden="true"
+                                     th:data-show="${showDistrictModal}">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Select Your Shipping District</h5>
+                                            </div>
+                                            <div class="modal-body">
+                                                <select id="districtSelect" class="form-select">
+                                                    <option th:each="d : ${shippinglocations}"
+                                                            th:value="${d}"
+                                                            th:text="${d}">
+                                                    </option>
+                                                </select>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button id="saveDistrict" class="btn btn-primary">Save</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+
+
+
+
+
+
+
+                                <div class="" th:if="${session.sessioncart==null}" >
+                                    <h1>  Your Cart is Currently Empty</h1>
+                                    Before proceed to checkout you must add some products to your shopping cart.
+                                    You will find a lot of interesting products on our "PRODUCT" page.
+                                </div>
+
+                                <div th:if="${groupedCart != null}">
+                                    <div th:each="entry : ${groupedCart}">
+                                        <!-- Vendor Header -->
+                                        <h4 class="mt-4 text-primary">
+                                            Vendor: [[${entry.value[0].product.vendorprofile.companyName}]]
+                                        </h4>
+
+                                        <!-- Products Table -->
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Product</th>
+                                                        <th>Photo</th>
+                                                        <th>Sales Price</th>
+                                                        <th>Quantity</th>
+                                                        <th>Unit</th>
+                                                        <th>Weight</th>
+                                                        <th>Discount %</th>
+                                                        <th>VAT %</th>
+                                                        <th>Item Total</th>
+                                                        <th>Remove</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr th:each="cart, status : ${entry.value}">
+                                                        <td>[[${status.count}]]</td>
+                                                        <td>[[${cart.product.title}]]</td>
+                                                        <td><!-- image here --></td>
+                                                        <td th:text="${#numbers.formatDecimal(cart.salesPrice,1,2)}"></td>
+                                                        <td>
+                                                            <form
+                                                                th:attr="hx-post=@{/cart/quantityUpdate}"
+                                                                hx-params="*"
+                                                                hx-trigger="change from:input[name='quantity']"
+
+                                                                hx-target="body"
+                                                                hx-swap="outerHTML">
+
+                                                                <input type="hidden" name="product_id" th:value="${cart.product.id}" />
+                                                                <input type="number" name="quantity" min="1" th:value="${cart.quantity}" />
+                                                            </form>
+                                                            <!--                                                            [[${cart.quantity}]]-->
+
+                                                        </td>
+                                                        <td>[[${cart.uom.name}]]</td>
+                                                        <td th:text="${cart.weight != null ? #numbers.formatDecimal(cart.weight,1,2) : '0.00'} + ' kg'"></td>
+                                                        <td th:text="${cart.discountRate != null ? cart.discountRate : '0.00'}"></td>
+                                                        <td th:text="${cart.vatRate != null ? cart.vatRate : '0.00'}"></td>
+                                                        <td th:text="${#numbers.formatDecimal(cart.itemTotal,1,2)}"></td>
+                                                        <td class="text-center">
+                                                            <a th:href="@{/cart/remove/{id}(id=${cart.product.id})}">Delete</a>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+
+                                            <!-- Shipping & Packaging & Summary -->
+                                            <div class="d-flex gap-4 mt-3 justify-content-between align-items-start">
+                                                <!-- Left: Shipping & Packaging -->
+                                                <div class="d-flex flex-column gap-3">
+
+                                                    <!-- Shipping -->
+                                                    <div class="d-flex flex-column">
+                                                        <label class="form-label fw-bold">Shipping:</label>
+                                                        <select class="form-select"
+                                                                th:name="'shippingOption_' + ${entry.key}"
+                                                                th:hx-post="@{/cart/updateshipping/{vendorId}(vendorId=${entry.key})}"
+                                                                th:hx-target="'#vendorSummary_' + ${entry.key}"
+                                                                hx-trigger="change"
+                                                                th:hx-include="'[name=\'shippingOption_' + ${entry.key} + '\']'">
+                                                            <option value="">-- Choose Shipping --</option>
+                                                            <option th:each="opt : ${vendorShippingOptions[entry.key]}"
+                                                                    th:value="${opt.code}"
+                                                                    th:text="${opt.title + ' - ৳' + opt.price}">
+                                                            </option>
+                                                        </select>
+                                                    </div>
+
+                                                    <!-- Packaging -->
+                                                    <div class="d-flex flex-column">
+                                                        <label class="form-label fw-bold">Packaging:</label>
+                                                        <select class="form-select"
+                                                                th:name="'packaging_' + ${entry.key}"
+                                                                th:hx-post="@{/cart/updatePackaging/{vendorId}(vendorId=${entry.key})}"
+                                                                th:hx-target="'#vendorSummary_' + ${entry.key}"
+                                                                hx-trigger="change"
+                                                                th:hx-include="'[name=\'packaging_' + ${entry.key} + '\']'">
+                                                            <option value="">-- Select Packaging --</option>
+                                                            <option th:each="pack : ${vendorPackagingOptions[entry.key]}"
+                                                                    th:value="${pack.id}"
+                                                                    th:text="${pack.packagingType + ' - Base: ৳' + pack.basePrice + ' + Additional: ৳' + pack.additionalPrice + '/kg'}">
+                                                            </option>
+                                                        </select>
+                                                    </div>
+
+                                                </div>
+
+                                                <!-- Right: Vendor Summary -->
+                                                <div th:id="'vendorSummary_' + ${entry.key}" class="text-end">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div class="fw-bold">Subtotal:</div>
+                                                        <div>৳ <span th:text="${#numbers.formatDecimal(vendorSubtotals[entry.key], 1, 2)}">0.00</span></div>
+                                                    </div>
+
+                                                    <div class="d-flex justify-content-between">
+                                                        <div class="fw-bold">Shipping:</div>
+                                                        <div>৳ <span th:text="${vendorShippingCost[entry.key] != null
+                                                                     ? #numbers.formatDecimal(vendorShippingCost[entry.key], 1, 2)
+                                                                     : '0.00'}">0.00</span></div>
+                                                    </div>
+
+                                                    <div class="d-flex justify-content-between">
+                                                        <div class="fw-bold">Packaging:</div>
+                                                        <div>৳ <span th:text="${vendorPackagingCost[entry.key] != null
+                                                                     ? #numbers.formatDecimal(vendorPackagingCost[entry.key], 1, 2)
+                                                                     : '0.00'}">0.00</span></div>
+                                                    </div>
+
+                                                    <div class="d-flex justify-content-between border-top pt-1 mt-1">
+                                                        <div class="fw-bold">Total:</div>
+                                                        <div>৳ <span th:text="${#numbers.formatDecimal(
+                                                                     (vendorSubtotals[entry.key] != null ? vendorSubtotals[entry.key] : 0)
+                                                                     + (vendorShippingCost[entry.key] != null ? vendorShippingCost[entry.key] : 0)
+                                                                     + (vendorPackagingCost[entry.key] != null ? vendorPackagingCost[entry.key] : 0), 1, 2)}">0.00</span></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="card-footer">
+                                            <a th:href="@{/public/product}" type="button" class="btn btn-sm btn-success"> Continue Shopping</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-money-check text-warning"></i>  Order   Summary
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">Sub Total:<span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">10.00</span> /-</li>
+
+                                <li class="list-group-item">Order Total: <span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">10.00</span>/-</li>
+                                <!--                                <li class="list-group-item">
+                                                                    <a type="button" class="btn btn-block btn-sm btn-warning">Update Shopping  Cart</a>
+                                                                </li>-->
+                                <li class="list-group-item">
+                                    <a type="button" class="btn btn-block btn-sm btn-warning" th:href="@{/order/create}">Proceed To Checkout</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

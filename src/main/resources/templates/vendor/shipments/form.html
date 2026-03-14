@@ -1,0 +1,42 @@
+<form th:action="@{/vendor/shipments}" th:object="${shipment}" method="post">
+
+    <input type="hidden" th:field="*{vendorId}" />
+
+    <div class="mb-2">
+        <label>Order ID</label>
+        <input th:field="*{salesOrderId}" class="form-control"/>
+    </div>
+
+    <div class="mb-2">
+        <label>Delivery Type</label><br>
+        <input type="radio" name="deliveryType" value="carrier" checked onclick="toggleDelivery()"> Carrier
+        <input type="radio" name="deliveryType" value="personal" onclick="toggleDelivery()"> Personal Delivery
+    </div>
+
+    <div id="carrierDiv">
+        <select th:field="*{carrier}" class="form-select">
+            <option th:each="c : ${carriers}" th:value="${c}" th:text="${c.name}"></option>
+        </select>
+    </div>
+
+    <div id="personalDiv" style="display:none;">
+        <select th:field="*{deliveryPerson}" class="form-select">
+            <option th:each="d : ${deliveryPersons}" th:value="${d}" th:text="${d.name}"></option>
+        </select>
+    </div>
+
+    <div class="mb-2">
+        <label>Is COD?</label>
+        <input type="checkbox" th:field="*{cod}"/>
+    </div>
+
+    <button class="btn btn-primary">Save</button>
+</form>
+
+<script>
+    function toggleDelivery() {
+        var type = document.querySelector('input[name="deliveryType"]:checked').value;
+        document.getElementById('carrierDiv').style.display = (type == 'carrier') ? 'block' : 'none';
+        document.getElementById('personalDiv').style.display = (type == 'personal') ? 'block' : 'none';
+    }
+</script>

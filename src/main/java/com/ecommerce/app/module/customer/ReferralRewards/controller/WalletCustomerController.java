@@ -82,16 +82,15 @@ public class WalletCustomerController {
     public String generateGiftCard(@RequestParam BigDecimal points, Principal principal, RedirectAttributes redirect) {
         Users user = usersRepository.findByEmail(principal.getName()).orElseThrow();
 
-        BigDecimal availablePoints = walletTransactionRepository
-                .sumAmountByWalletAndExpiryDateAfterAndRedeemedFalse(
-                        user.getWallet(), LocalDateTime.now()
-                ).orElse(BigDecimal.ZERO);
-
-        if (points.compareTo(availablePoints) > 0) {
-            redirect.addFlashAttribute("error", "Insufficient points.");
-            return "redirect:/wallet";
-        }
-
+//        BigDecimal availablePoints = walletTransactionRepository
+//                .sumAmountByWalletAndExpiryDateAfterAndRedeemedFalse(
+//                        user.getId(), LocalDateTime.now()
+//                ).orElse(BigDecimal.ZERO);
+//
+//        if (points.compareTo(availablePoints) > 0) {
+//            redirect.addFlashAttribute("error", "Insufficient points.");
+//            return "redirect:/wallet";
+//        }
         BigDecimal conversionRate = new BigDecimal("0.01"); // 1 point = $0.01
         BigDecimal value = points.multiply(conversionRate);
 
@@ -115,16 +114,14 @@ public class WalletCustomerController {
     public String cashOutPoints(@RequestParam BigDecimal points, Principal principal, RedirectAttributes redirect) {
         Users user = usersRepository.findByEmail(principal.getName()).orElseThrow();
 
-        BigDecimal availablePoints = walletTransactionRepository
-                .sumAmountByWalletAndExpiryDateAfterAndRedeemedFalse(
-                        user.getWallet(), LocalDateTime.now()
-                ).orElse(BigDecimal.ZERO);
-
-        if (points.compareTo(availablePoints) > 0) {
-            redirect.addFlashAttribute("error", "Insufficient reward points.");
-            return "redirect:/wallet";
-        }
-
+//        BigDecimal availablePoints = walletTransactionRepository
+//                .sumAmountByWalletAndExpiryDateAfterAndRedeemedFalse(
+//                        user.getWallet(), LocalDateTime.now()
+//                ).orElse(BigDecimal.ZERO);
+//        if (points.compareTo(availablePoints) > 0) {
+//            redirect.addFlashAttribute("error", "Insufficient reward points.");
+//            return "redirect:/wallet";
+//        }
         BigDecimal conversionRate = new BigDecimal("0.01"); // 1 point = $0.01
         BigDecimal cashAmount = points.multiply(conversionRate);
 

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+
+    <div layout:fragment = "main_content">
+        <section>
+            <div class="row">
+                <div class="col-sm-3"><h4> Ads </h4></div>
+                <div class="col-sm-5">   <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Ads</li>
+                            <li class="breadcrumb-item active" aria-current="page">Ads List</li>
+                        </ol>
+                    </nav>
+                </div></div>
+        </section>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i> Ads List  List</strong> </div>
+
+                            <div class="col-sm-7 text-end">
+                                <div class="btn-group ">
+                                    <a class="btn btn-success btn-sm " th:href="@{/admin/ads/create}"> <i class="bi bi-plus-circle"></i> Add Ads </a>
+                                    <a th:href="@{/admin/index}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+
+
+
+                    <div class="card-body table-responsive">
+                        <!-- Flash Messages -->
+                        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
+                            <span th:text="${successMessage}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+                            <span th:text="${errorMessage}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+
+
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <table class="table table-bordered table-striped mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Image</th>
+                                            <th>Title</th>
+                                            <th>Placement</th>
+                                            <th>Target</th>
+                                            <th>Active</th>
+                                            <th>Order</th>
+                                            <th>Version</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        <tr th:each="ad : ${adsPage}">
+
+                                            <td th:text="${ad.id}"></td>
+
+                                            <!-- Image Preview -->
+                                            <td>
+
+                                                <span th:if="${ not #strings.isEmpty(ad.imageUrl)}" class="badge bg-green pull-right">
+                                                    <img  class="img-responsive" th:src="@{/files/banner/}+${ad.imageUrl}" width="100px"  height="100px"/>
+                                                </span>
+
+                                                <span th:if="${#strings.isEmpty(ad.imageUrl)}" > Image Not Found </span>
+                                            </td>
+
+
+
+
+                                            <td th:text="${ad.title}"></td>
+
+                                            <td>
+                                                <span class="badge bg-info text-dark"
+                                                      th:text="${ad.placement}"></span>
+                                            </td>
+
+                                            <!-- Show target info -->
+                                            <td>
+                                                <span>
+                                                    Category: <span th:text="${ad.categoryId}"></span>
+                                                </span>
+
+                                                <!--      <span th:if="${ad.targetType == T(com.example.enums.TargetType).PRODUCT}">
+                                                        Product: <span th:text="${ad.productId}"></span>
+                                                    </span>
+
+                                                    <span th:if="${ad.targetType == T(com.example.enums.TargetType).VENDOR}">
+                                                        Vendor: <span th:text="${ad.vendorId}"></span>
+                                                    </span>
+
+                                                    <span th:if="${ad.targetType == T(com.example.enums.TargetType).EXTERNAL}">
+                                                        External: <span th:text="${ad.externalUrl}"></span>
+                                                    </span>-->
+                                            </td>
+
+                                            <!-- Active / Inactive badge -->
+                                            <td>
+                                                <span th:if="${ad.active}" class="badge bg-success">Active</span>
+                                                <span th:if="${!ad.active}" class="badge bg-danger">Inactive</span>
+                                            </td>
+
+                                            <td th:text="${ad.displayOrder}"></td>
+                                            <td th:text="${ad.version}"></td>
+
+                                            <td>
+                                                <a th:href="@{|/admin/ads/edit/${ad.id}|}" class="btn btn-sm btn-warning">Edit</a>
+
+                                                <a th:href="@{|/admin/ads/delete/${ad.id}|}"
+                                                   class="btn btn-sm btn-danger"
+                                                   onclick="return confirm('Are you sure you want to delete this ad?')">
+                                                    Delete
+                                                </a>
+                                            </td>
+
+                                        </tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div><!--  Card  end-->
+
+
+            </div><!--  Main Content  end-->
+        </div>   <!--  Layout end-->      </div><!--  Main Content  end-->
+</div>

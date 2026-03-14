@@ -5,15 +5,21 @@
 package com.ecommerce.app.product.services;
 
 import com.ecommerce.app.product.model.Product;
+import com.ecommerce.app.product.model.SortingType;
+import static com.ecommerce.app.product.model.SortingType.ASC;
+import static com.ecommerce.app.product.model.SortingType.DESC;
+import static com.ecommerce.app.product.model.SortingType.RANDOM;
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.Tuple;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.math.BigDecimal;
@@ -41,6 +47,37 @@ public class ProductService {
 
     @Value("${app.upload.dir}")
     String imagePath;
+
+    public List<Map<String, Object>> product_List_For_Dropdown() {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Tuple> cq = cb.createQuery(Tuple.class);
+
+        // Step 2: Define root entity
+        Root<Product> productRoot = cq.from(Product.class);
+        cq.multiselect(
+                productRoot.get("id").alias("productId"),
+                productRoot.get("sku").alias("productSku"),
+                productRoot.get("uuid").alias("uuid"),
+                productRoot.get("title").alias("productTitle")
+        );
+        cq.orderBy(cb.desc(productRoot.get("id")));
+
+        List<Tuple> resultTuples = em.createQuery(cq).getResultList();
+        List<Map<String, Object>> resultList = new ArrayList<>();
+
+        for (Tuple tuple : resultTuples) {
+            Map<String, Object> resultMap = new HashMap<>();
+            resultMap.put("id", tuple.get("productId"));
+            resultMap.put("sku", tuple.get("productSku"));
+            resultMap.put("uuid", tuple.get("uuid"));
+//            resultMap.put("userId", tuple.get("productUserId"));
+            // resultMap.put("vendorProfile", tuple.get("productVendorProfile"));
+//            resultMap.put("category", tuple.get("productCategory"));
+            resultMap.put("title", tuple.get("productTitle"));
+            resultList.add(resultMap);
+        }
+        return resultList;
+    }
 
     public List<Map<String, Object>> allProduct() {
 
@@ -214,7 +251,6 @@ public class ProductService {
             resultMap.put("shortDescription", tuple.get("productShortDescription"));
             resultMap.put("description", tuple.get("productDescription"));
             resultMap.put("video", tuple.get("productVideo"));
-
             resultMap.put("purchasePrice", tuple.get("productPurchasePrice"));
             resultMap.put("salesPrice", tuple.get("productSalesPrice"));
             resultMap.put("marketPlaceCommissionRate", tuple.get("marketPlaceCommissionRate"));
@@ -238,7 +274,6 @@ public class ProductService {
             resultMap.put("created", tuple.get("productCreated"));
             resultMap.put("modifiedBy", tuple.get("productModifiedBy"));
             resultMap.put("modified", tuple.get("productModified"));
-
             resultList.add(resultMap);
         }
         return resultList;
@@ -444,6 +479,485 @@ public class ProductService {
         return resultList;
     }
 
+    public List<Map<String, Object>> vendor_random_product_by_category(
+            Long vendorId,
+            Long categoryId,
+            SortingType sortingType,
+            Integer limit
+    ) {
+
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Tuple> cq = cb.createQuery(Tuple.class);
+
+        Root<Product> productRoot = cq.from(Product.class);
+
+        // Base URL
+        String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .build()
+                .toUriString();
+
+        Expression<String> imageUrl = cb.concat(
+                cb.literal(baseUrl + "/files/"),
+                productRoot.get("imageName")
+        );
+
+        // Fields
+        cq.multiselect(
+                productRoot.get("id").alias("productId"),
+                productRoot.get("sku").alias("productSku"),
+                productRoot.get("userId").alias("productUserId"),
+                productRoot.get("productcategory").get("name").alias("productCategory"),
+                productRoot.get("vendorprofile").get("id").alias("vendorprofileId"),
+                productRoot.get("vendorprofile").get("companyName").alias("vendorprName"),
+                productRoot.get("title").alias("productTitle"),
+                productRoot.get("slug").alias("productSlug"),
+                productRoot.get("orderno").alias("productOrderno"),
+                productRoot.get("shortDescription").alias("productShortDescription"),
+                productRoot.get("description").alias("productDescription"),
+                productRoot.get("video").alias("productVideo"),
+                productRoot.get("purchasePrice").alias("productPurchasePrice"),
+                productRoot.get("salesPrice").alias("productSalesPrice"),
+                productRoot.get("marketPlaceCommissionRate").alias("marketPlaceCommissionRate"),
+                productRoot.get("productType").alias("productType"),
+                productRoot.get("marketPlaceDiscount").alias("marketPlaceDiscount"),
+                productRoot.get("vendordiscount").alias("productVendorDiscount"),
+                productRoot.get("discountStartDate").alias("productDiscountStartDate"),
+                productRoot.get("discountEndDate").alias("productDiscountEndDate"),
+                productRoot.get("uom").get("name").alias("productUOM"),
+                imageUrl.alias("imageUrl"),
+                productRoot.get("imageName").alias("productImageName"),
+                productRoot.get("newProduct").alias("productNewProduct"),
+                productRoot.get("featuredProduct").alias("productFeaturedProduct"),
+                productRoot.get("onlineShow").alias("productOnlineShow"),
+                productRoot.get("manageStock").alias("productManageStock"),
+                productRoot.get("emiavailable").alias("productEmiAvailable"),
+                productRoot.get("status").alias("productStatus"),
+                productRoot.get("metaTitle").alias("productMetaTitle"),
+                productRoot.get("metaDescription").alias("productMetaDescription"),
+                productRoot.get("metaKeywords").alias("productMetaKeywords"),
+                productRoot.get("createdBy").alias("productCreatedBy"),
+                productRoot.get("created").alias("productCreated"),
+                productRoot.get("modifiedBy").alias("productModifiedBy"),
+                productRoot.get("modified").alias("productModified")
+        );
+
+        // WHERE vendor + category
+        cq.where(
+                cb.and(
+                        cb.equal(productRoot.get("vendorprofile").get("id"), vendorId),
+                        cb.equal(productRoot.get("productcategory").get("id"), categoryId)
+                )
+        );
+
+        // ORDER BY
+        // ORDER BY
+        if (sortingType != null) {
+
+            switch (sortingType) {
+
+                case ASC:
+                    cq.orderBy(cb.asc(productRoot.get("id")));
+                    break;
+
+                case DESC:
+                    cq.orderBy(cb.desc(productRoot.get("id")));
+                    break;
+
+                case RANDOM:
+                    cq.orderBy(cb.asc(cb.function("RAND", Double.class)));
+                    break;
+            }
+
+        } else {
+            // sortingType == null → default id DESC
+            cq.orderBy(cb.desc(productRoot.get("id")));
+        }
+
+        // Execute query
+        TypedQuery<Tuple> query = em.createQuery(cq);
+
+        // LIMIT
+        if (limit != null && limit > 0) {
+            query.setMaxResults(limit);
+        }
+
+        List<Tuple> resultTuples = query.getResultList();
+
+        // Mapping result
+        List<Map<String, Object>> resultList = new ArrayList<>();
+
+        for (Tuple tuple : resultTuples) {
+            Map<String, Object> resultMap = new HashMap<>();
+            resultMap.put("id", tuple.get("productId"));
+            resultMap.put("sku", tuple.get("productSku"));
+            resultMap.put("userId", tuple.get("productUserId"));
+//            resultMap.put("vendorProfile", tuple.get("productVendorProfile"));
+            resultMap.put("category", tuple.get("productCategory"));
+            resultMap.put("title", tuple.get("productTitle"));
+            resultMap.put("slug", tuple.get("productSlug"));
+            resultMap.put("orderno", tuple.get("productOrderno"));
+            resultMap.put("shortDescription", tuple.get("productShortDescription"));
+            resultMap.put("description", tuple.get("productDescription"));
+            resultMap.put("video", tuple.get("productVideo"));
+
+            BigDecimal vendorDiscount = tuple.get("productVendorDiscount", BigDecimal.class);
+            BigDecimal marketPlaceDiscount = tuple.get("marketPlaceDiscount", BigDecimal.class);
+            BigDecimal salesPrice = tuple.get("productSalesPrice", BigDecimal.class);
+
+            BigDecimal totalDiscountPercent = totalDiscountPercentCalculate(vendorDiscount, marketPlaceDiscount);
+            BigDecimal totalDiscountAmount = totalDiscountCalculate(salesPrice, totalDiscountPercent);
+            BigDecimal afterDiscountAmount = finalNetPrice(salesPrice, totalDiscountPercent);
+
+            resultMap.put("totalDiscountPercent", totalDiscountPercent);
+            resultMap.put("totalDiscountedAmount", totalDiscountAmount);
+            resultMap.put("afterDiscountRemainingAmount", afterDiscountAmount);
+
+            resultMap.put("purchasePrice", tuple.get("productPurchasePrice"));
+            resultMap.put("salesPrice", tuple.get("productSalesPrice"));
+            resultMap.put("marketPlaceCommissionRate", tuple.get("marketPlaceCommissionRate"));
+            resultMap.put("productType", tuple.get("productType"));
+            resultMap.put("marketPlaceDiscount", tuple.get("marketPlaceDiscount"));
+            resultMap.put("vendorDiscount", tuple.get("productVendorDiscount"));
+            resultMap.put("discountStartDate", tuple.get("productDiscountStartDate"));
+            resultMap.put("discountEndDate", tuple.get("productDiscountEndDate"));
+            resultMap.put("uom", tuple.get("productUOM"));
+            resultMap.put("imageUrl", tuple.get("imageUrl"));
+            resultMap.put("imageName", tuple.get("productImageName"));
+            resultMap.put("newProduct", tuple.get("productNewProduct"));
+            resultMap.put("onlineShow", tuple.get("productOnlineShow"));
+            resultMap.put("featuredProduct", tuple.get("productFeaturedProduct"));
+            resultMap.put("manageStock", tuple.get("productManageStock"));
+            resultMap.put("emiAvailable", tuple.get("productEmiAvailable"));
+            resultMap.put("status", tuple.get("productStatus"));
+            resultMap.put("metaTitle", tuple.get("productMetaTitle"));
+            resultMap.put("metaDescription", tuple.get("productMetaDescription"));
+            resultMap.put("metaKeywords", tuple.get("productMetaKeywords"));
+            resultMap.put("createdBy", tuple.get("productCreatedBy"));
+            resultMap.put("created", tuple.get("productCreated"));
+            resultMap.put("modifiedBy", tuple.get("productModifiedBy"));
+            resultMap.put("modified", tuple.get("productModified"));
+            resultList.add(resultMap);
+        }
+
+        return resultList;
+    }
+
+    public List<Map<String, Object>> product_By_Vendor(
+            Long vendorId,
+            SortingType sortingType,
+            Integer limit
+    ) {
+
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Tuple> cq = cb.createQuery(Tuple.class);
+
+        Root<Product> productRoot = cq.from(Product.class);
+
+        // Base URL
+        String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .build()
+                .toUriString();
+
+        Expression<String> imageUrl = cb.concat(
+                cb.literal(baseUrl + "/files/"),
+                productRoot.get("imageName")
+        );
+
+        // Fields
+        cq.multiselect(
+                productRoot.get("id").alias("productId"),
+                productRoot.get("sku").alias("productSku"),
+                productRoot.get("userId").alias("productUserId"),
+                productRoot.get("productcategory").get("name").alias("productCategory"),
+                productRoot.get("vendorprofile").get("id").alias("vendorprofileId"),
+                productRoot.get("vendorprofile").get("companyName").alias("vendorprName"),
+                productRoot.get("title").alias("productTitle"),
+                productRoot.get("slug").alias("productSlug"),
+                productRoot.get("orderno").alias("productOrderno"),
+                productRoot.get("shortDescription").alias("productShortDescription"),
+                productRoot.get("description").alias("productDescription"),
+                productRoot.get("video").alias("productVideo"),
+                productRoot.get("purchasePrice").alias("productPurchasePrice"),
+                productRoot.get("salesPrice").alias("productSalesPrice"),
+                productRoot.get("marketPlaceCommissionRate").alias("marketPlaceCommissionRate"),
+                productRoot.get("productType").alias("productType"),
+                productRoot.get("marketPlaceDiscount").alias("marketPlaceDiscount"),
+                productRoot.get("vendordiscount").alias("productVendorDiscount"),
+                productRoot.get("discountStartDate").alias("productDiscountStartDate"),
+                productRoot.get("discountEndDate").alias("productDiscountEndDate"),
+                productRoot.get("uom").get("name").alias("productUOM"),
+                imageUrl.alias("imageUrl"),
+                productRoot.get("imageName").alias("productImageName"),
+                productRoot.get("newProduct").alias("productNewProduct"),
+                productRoot.get("featuredProduct").alias("productFeaturedProduct"),
+                productRoot.get("onlineShow").alias("productOnlineShow"),
+                productRoot.get("manageStock").alias("productManageStock"),
+                productRoot.get("emiavailable").alias("productEmiAvailable"),
+                productRoot.get("status").alias("productStatus"),
+                productRoot.get("metaTitle").alias("productMetaTitle"),
+                productRoot.get("metaDescription").alias("productMetaDescription"),
+                productRoot.get("metaKeywords").alias("productMetaKeywords"),
+                productRoot.get("createdBy").alias("productCreatedBy"),
+                productRoot.get("created").alias("productCreated"),
+                productRoot.get("modifiedBy").alias("productModifiedBy"),
+                productRoot.get("modified").alias("productModified")
+        );
+
+        // WHERE vendor + category
+        cq.where(
+                cb.equal(productRoot.get("vendorprofile").get("id"), vendorId)
+        );
+
+        // ORDER BY
+        // ORDER BY
+        if (sortingType != null) {
+
+            switch (sortingType) {
+
+                case ASC:
+                    cq.orderBy(cb.asc(productRoot.get("id")));
+                    break;
+
+                case DESC:
+                    cq.orderBy(cb.desc(productRoot.get("id")));
+                    break;
+
+                case RANDOM:
+                    cq.orderBy(cb.asc(cb.function("RAND", Double.class)));
+                    break;
+            }
+
+        } else {
+            // sortingType == null → default id DESC
+            cq.orderBy(cb.desc(productRoot.get("id")));
+        }
+
+        // Execute query
+        TypedQuery<Tuple> query = em.createQuery(cq);
+
+        // LIMIT
+        if (limit != null && limit > 0) {
+            query.setMaxResults(limit);
+        }
+
+        List<Tuple> resultTuples = query.getResultList();
+
+        // Mapping result
+        List<Map<String, Object>> resultList = new ArrayList<>();
+
+        for (Tuple tuple : resultTuples) {
+            Map<String, Object> resultMap = new HashMap<>();
+            resultMap.put("id", tuple.get("productId"));
+            resultMap.put("sku", tuple.get("productSku"));
+            resultMap.put("userId", tuple.get("productUserId"));
+//            resultMap.put("vendorProfile", tuple.get("productVendorProfile"));
+            resultMap.put("category", tuple.get("productCategory"));
+            resultMap.put("title", tuple.get("productTitle"));
+            resultMap.put("slug", tuple.get("productSlug"));
+            resultMap.put("orderno", tuple.get("productOrderno"));
+            resultMap.put("shortDescription", tuple.get("productShortDescription"));
+            resultMap.put("description", tuple.get("productDescription"));
+            resultMap.put("video", tuple.get("productVideo"));
+
+            BigDecimal vendorDiscount = tuple.get("productVendorDiscount", BigDecimal.class);
+            BigDecimal marketPlaceDiscount = tuple.get("marketPlaceDiscount", BigDecimal.class);
+            BigDecimal salesPrice = tuple.get("productSalesPrice", BigDecimal.class);
+
+            BigDecimal totalDiscountPercent = totalDiscountPercentCalculate(vendorDiscount, marketPlaceDiscount);
+            BigDecimal totalDiscountAmount = totalDiscountCalculate(salesPrice, totalDiscountPercent);
+            BigDecimal afterDiscountAmount = finalNetPrice(salesPrice, totalDiscountPercent);
+
+            resultMap.put("totalDiscountPercent", totalDiscountPercent);
+            resultMap.put("totalDiscountedAmount", totalDiscountAmount);
+            resultMap.put("afterDiscountRemainingAmount", afterDiscountAmount);
+
+            resultMap.put("purchasePrice", tuple.get("productPurchasePrice"));
+            resultMap.put("salesPrice", tuple.get("productSalesPrice"));
+            resultMap.put("marketPlaceCommissionRate", tuple.get("marketPlaceCommissionRate"));
+            resultMap.put("productType", tuple.get("productType"));
+            resultMap.put("marketPlaceDiscount", tuple.get("marketPlaceDiscount"));
+            resultMap.put("vendorDiscount", tuple.get("productVendorDiscount"));
+            resultMap.put("discountStartDate", tuple.get("productDiscountStartDate"));
+            resultMap.put("discountEndDate", tuple.get("productDiscountEndDate"));
+            resultMap.put("uom", tuple.get("productUOM"));
+            resultMap.put("imageUrl", tuple.get("imageUrl"));
+            resultMap.put("imageName", tuple.get("productImageName"));
+            resultMap.put("newProduct", tuple.get("productNewProduct"));
+            resultMap.put("onlineShow", tuple.get("productOnlineShow"));
+            resultMap.put("featuredProduct", tuple.get("productFeaturedProduct"));
+            resultMap.put("manageStock", tuple.get("productManageStock"));
+            resultMap.put("emiAvailable", tuple.get("productEmiAvailable"));
+            resultMap.put("status", tuple.get("productStatus"));
+            resultMap.put("metaTitle", tuple.get("productMetaTitle"));
+            resultMap.put("metaDescription", tuple.get("productMetaDescription"));
+            resultMap.put("metaKeywords", tuple.get("productMetaKeywords"));
+            resultMap.put("createdBy", tuple.get("productCreatedBy"));
+            resultMap.put("created", tuple.get("productCreated"));
+            resultMap.put("modifiedBy", tuple.get("productModifiedBy"));
+            resultMap.put("modified", tuple.get("productModified"));
+            resultList.add(resultMap);
+        }
+
+        return resultList;
+    }
+
+    public List<Map<String, Object>> all_random_product(
+            SortingType sortingType,
+            Integer limit
+    ) {
+
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Tuple> cq = cb.createQuery(Tuple.class);
+
+        Root<Product> productRoot = cq.from(Product.class);
+
+        // Base URL
+        String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .build()
+                .toUriString();
+
+        Expression<String> imageUrl = cb.concat(
+                cb.literal(baseUrl + "/files/"),
+                productRoot.get("imageName")
+        );
+
+        // Fields
+        cq.multiselect(
+                productRoot.get("id").alias("productId"),
+                productRoot.get("sku").alias("productSku"),
+                productRoot.get("userId").alias("productUserId"),
+                productRoot.get("productcategory").get("name").alias("productCategory"),
+                productRoot.get("vendorprofile").get("id").alias("vendorprofileId"),
+                productRoot.get("vendorprofile").get("companyName").alias("vendorprName"),
+                productRoot.get("title").alias("productTitle"),
+                productRoot.get("slug").alias("productSlug"),
+                productRoot.get("orderno").alias("productOrderno"),
+                productRoot.get("shortDescription").alias("productShortDescription"),
+                productRoot.get("description").alias("productDescription"),
+                productRoot.get("video").alias("productVideo"),
+                productRoot.get("purchasePrice").alias("productPurchasePrice"),
+                productRoot.get("salesPrice").alias("productSalesPrice"),
+                productRoot.get("marketPlaceCommissionRate").alias("marketPlaceCommissionRate"),
+                productRoot.get("productType").alias("productType"),
+                productRoot.get("marketPlaceDiscount").alias("marketPlaceDiscount"),
+                productRoot.get("vendordiscount").alias("productVendorDiscount"),
+                productRoot.get("discountStartDate").alias("productDiscountStartDate"),
+                productRoot.get("discountEndDate").alias("productDiscountEndDate"),
+                productRoot.get("uom").get("name").alias("productUOM"),
+                imageUrl.alias("imageUrl"),
+                productRoot.get("imageName").alias("productImageName"),
+                productRoot.get("newProduct").alias("productNewProduct"),
+                productRoot.get("featuredProduct").alias("productFeaturedProduct"),
+                productRoot.get("onlineShow").alias("productOnlineShow"),
+                productRoot.get("manageStock").alias("productManageStock"),
+                productRoot.get("emiavailable").alias("productEmiAvailable"),
+                productRoot.get("status").alias("productStatus"),
+                productRoot.get("metaTitle").alias("productMetaTitle"),
+                productRoot.get("metaDescription").alias("productMetaDescription"),
+                productRoot.get("metaKeywords").alias("productMetaKeywords"),
+                productRoot.get("createdBy").alias("productCreatedBy"),
+                productRoot.get("created").alias("productCreated"),
+                productRoot.get("modifiedBy").alias("productModifiedBy"),
+                productRoot.get("modified").alias("productModified")
+        );
+
+        // WHERE vendor + category
+//        cq.where(
+//                cb.equal(productRoot.get("vendorprofile").get("id"), vendorId)
+//        );
+        // ORDER BY
+        // ORDER BY
+        if (sortingType != null) {
+
+            switch (sortingType) {
+
+                case ASC:
+                    cq.orderBy(cb.asc(productRoot.get("id")));
+                    break;
+
+                case DESC:
+                    cq.orderBy(cb.desc(productRoot.get("id")));
+                    break;
+
+                case RANDOM:
+                    cq.orderBy(cb.asc(cb.function("RAND", Double.class)));
+                    break;
+            }
+
+        } else {
+            // sortingType == null → default id DESC
+            cq.orderBy(cb.desc(productRoot.get("id")));
+        }
+
+        // Execute query
+        TypedQuery<Tuple> query = em.createQuery(cq);
+
+        // LIMIT
+        if (limit != null && limit > 0) {
+            query.setMaxResults(limit);
+        }
+
+        List<Tuple> resultTuples = query.getResultList();
+
+        // Mapping result
+        List<Map<String, Object>> resultList = new ArrayList<>();
+
+        for (Tuple tuple : resultTuples) {
+            Map<String, Object> resultMap = new HashMap<>();
+            resultMap.put("id", tuple.get("productId"));
+            resultMap.put("sku", tuple.get("productSku"));
+            resultMap.put("userId", tuple.get("productUserId"));
+//            resultMap.put("vendorProfile", tuple.get("productVendorProfile"));
+            resultMap.put("category", tuple.get("productCategory"));
+            resultMap.put("title", tuple.get("productTitle"));
+            resultMap.put("slug", tuple.get("productSlug"));
+            resultMap.put("orderno", tuple.get("productOrderno"));
+            resultMap.put("shortDescription", tuple.get("productShortDescription"));
+            resultMap.put("description", tuple.get("productDescription"));
+            resultMap.put("video", tuple.get("productVideo"));
+
+            BigDecimal vendorDiscount = tuple.get("productVendorDiscount", BigDecimal.class);
+            BigDecimal marketPlaceDiscount = tuple.get("marketPlaceDiscount", BigDecimal.class);
+            BigDecimal salesPrice = tuple.get("productSalesPrice", BigDecimal.class);
+
+            BigDecimal totalDiscountPercent = totalDiscountPercentCalculate(vendorDiscount, marketPlaceDiscount);
+            BigDecimal totalDiscountAmount = totalDiscountCalculate(salesPrice, totalDiscountPercent);
+            BigDecimal afterDiscountAmount = finalNetPrice(salesPrice, totalDiscountPercent);
+
+            resultMap.put("totalDiscountPercent", totalDiscountPercent);
+            resultMap.put("totalDiscountedAmount", totalDiscountAmount);
+            resultMap.put("afterDiscountRemainingAmount", afterDiscountAmount);
+
+            resultMap.put("purchasePrice", tuple.get("productPurchasePrice"));
+            resultMap.put("salesPrice", tuple.get("productSalesPrice"));
+            resultMap.put("marketPlaceCommissionRate", tuple.get("marketPlaceCommissionRate"));
+            resultMap.put("productType", tuple.get("productType"));
+            resultMap.put("marketPlaceDiscount", tuple.get("marketPlaceDiscount"));
+            resultMap.put("vendorDiscount", tuple.get("productVendorDiscount"));
+            resultMap.put("discountStartDate", tuple.get("productDiscountStartDate"));
+            resultMap.put("discountEndDate", tuple.get("productDiscountEndDate"));
+            resultMap.put("uom", tuple.get("productUOM"));
+            resultMap.put("imageUrl", tuple.get("imageUrl"));
+            resultMap.put("imageName", tuple.get("productImageName"));
+            resultMap.put("newProduct", tuple.get("productNewProduct"));
+            resultMap.put("onlineShow", tuple.get("productOnlineShow"));
+            resultMap.put("featuredProduct", tuple.get("productFeaturedProduct"));
+            resultMap.put("manageStock", tuple.get("productManageStock"));
+            resultMap.put("emiAvailable", tuple.get("productEmiAvailable"));
+            resultMap.put("status", tuple.get("productStatus"));
+            resultMap.put("metaTitle", tuple.get("productMetaTitle"));
+            resultMap.put("metaDescription", tuple.get("productMetaDescription"));
+            resultMap.put("metaKeywords", tuple.get("productMetaKeywords"));
+            resultMap.put("createdBy", tuple.get("productCreatedBy"));
+            resultMap.put("created", tuple.get("productCreated"));
+            resultMap.put("modifiedBy", tuple.get("productModifiedBy"));
+            resultMap.put("modified", tuple.get("productModified"));
+            resultList.add(resultMap);
+        }
+
+        return resultList;
+    }
+
     public Map<String, Object> product_details_for_front_view_single_product_page_by_Id(Long id) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Tuple> cq = cb.createQuery(Tuple.class);
@@ -458,6 +972,7 @@ public class ProductService {
                 productRoot.get("sku").alias("productSku"),
                 productRoot.get("userId").alias("productUserId"),
                 productRoot.get("productcategory").get("name").alias("productCategory"),
+                productRoot.get("productcategory").get("id").alias("productCategoryId"),
                 vendorJoin.get("id").alias("vendorProfileId"),
                 vendorJoin.get("companyName").alias("vendorProfileName"),
                 productRoot.get("title").alias("productTitle"),
@@ -512,6 +1027,7 @@ public class ProductService {
         resultMap.put("vendorProfileId", tuple.get("vendorProfileId"));
         resultMap.put("vendorProfileName", tuple.get("vendorProfileName"));
         resultMap.put("category", tuple.get("productCategory"));
+        resultMap.put("categoryId", tuple.get("productCategoryId"));
         resultMap.put("title", tuple.get("productTitle", String.class));
         resultMap.put("manufacturerName", tuple.get("manufacturerName", String.class));
         resultMap.put("slug", tuple.get("productSlug"));

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+
+        <section>
+            <div class="row">
+                <div class="col-sm-3"><h4>Packaging Rate</h4></div>
+                <div class="col-sm-7">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Packaging Rate</li>
+                            <li class="breadcrumb-item active" aria-current="page">Packaging Rate Create</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </section>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold">
+                                Packaging Rate Create
+                            </div>
+                            <div class="col-sm-7 text-end">
+                                <div class="btn-group">
+                                    <a th:href="@{/packagingrates/list}" class="btn btn-danger btn-sm">
+                                        <i class="bi bi-x-circle"></i> Close
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+
+                        <!-- Global error message -->
+                        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <span th:text="${error}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <!--                        <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger rounded-3" role="alert">
+                                                    <p th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
+                                                </div>-->
+
+
+                        <form th:action="@{/packagingrates/save}" th:object="${packagingRate}" method="post">
+                            <input type="hidden" th:field="*{id}" />
+
+                            <!-- ✅ Vendor Dropdown -->
+                            <div class="mb-3">
+                                <label class="form-label">Vendor</label>
+                                <select class="form-select" th:field="*{vendor}" required>
+                                    <option value="">-- Select Vendor --</option>
+                                    <option th:each="vendor : ${vendors}"
+                                            th:value="${vendor.id}"
+                                            th:text="${vendor.companyName}">
+                                    </option>
+                                </select>
+                                <small class="text-muted">Choose the vendor this packaging rate belongs to.</small>
+                                <div class="text-danger" th:errors="*{vendor}"></div>
+                            </div>
+
+                            <!-- ✅ Packaging Type -->
+                            <div class="mb-3">
+                                <label class="form-label">Packaging Type</label>
+                                <select class="form-select" th:field="*{packagingType}" required>
+                                    <option value="">-- Select Type --</option>
+                                    <option th:each="pt : ${T(com.ecommerce.app.module.shipping.model.PackagingType).values()}"
+                                            th:value="${pt}" th:text="${pt}"></option>
+                                </select>
+                                <small class="text-muted">Select the type of packaging (e.g., BOX_SMALL, ENVELOPE).</small>
+                                <div class="text-danger" th:errors="*{packagingType}"></div>
+                            </div>
+
+                            <!-- ✅ Base Price -->
+                            <div class="mb-3">
+                                <label class="form-label">Base Price</label>
+                                <input type="number" step="0.01" class="form-control" th:field="*{basePrice}" placeholder="e.g., 50.00" required>
+                                <small class="text-muted">Enter the starting cost for this packaging.</small>
+                                <div class="text-danger" th:errors="*{basePrice}"></div>
+                            </div>
+
+                            <!-- ✅ Additional Price -->
+                            <div class="mb-3">
+                                <label class="form-label">Additional Price (per extra kg)</label>
+                                <input type="number" step="0.01" class="form-control" th:field="*{additionalPrice}" placeholder="e.g., 10.00" required>
+                                <small class="text-muted">Extra price for each additional kg after the base limit.</small>
+                                <div class="text-danger" th:errors="*{additionalPrice}"></div>
+                            </div>
+
+                            <!-- ✅ Description -->
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" th:field="*{description}" rows="3" placeholder="e.g., Standard box up to 5kg"></textarea>
+                                <small class="text-muted">Optional notes or help text for this packaging type.</small>
+                                <div class="text-danger" th:errors="*{description}"></div>
+                            </div>
+
+                            <!-- ✅ Active -->
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" th:field="*{active}">
+                                <label class="form-check-label">Active</label>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <button type="submit" class="btn btn-success">Save</button>
+                            </div>
+                        </form>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

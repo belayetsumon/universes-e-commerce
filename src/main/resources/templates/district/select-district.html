@@ -1,0 +1,46 @@
+<!--<div xmlns:th="http://www.thymeleaf.org"
+          xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+          layout:decorate="front-layout-inner-page">
+         <div layout:fragment="main_content">-->
+
+<div class="modal fade" id="districtModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Your Shipping District</h5>
+            </div>
+            <div class="modal-body">
+                <form hx-post="/district/select"
+                      hx-trigger="submit"
+                      hx-target="none"
+                      hx-swap="none">
+                    <select name="district" class="form-select" required>
+                        <option value="" disabled selected>Select District</option>
+                        <th:block th:each="district : ${shippinglocations}">
+                            <option th:value="${district}" th:text="${district}"></option>
+                        </th:block>
+                    </select>
+                    <button type="submit" class="btn btn-primary mt-3 w-100">Save</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const modalElement = document.getElementById('districtModal');
+        const modal = new bootstrap.Modal(modalElement, {
+            backdrop: 'static',
+            keyboard: false
+        });
+        modal.show();
+
+        // When HTMX request finishes, hide the modal
+        modalElement.addEventListener('htmx:afterOnLoad', function () {
+            modal.hide();
+        });
+    });
+</script>
+

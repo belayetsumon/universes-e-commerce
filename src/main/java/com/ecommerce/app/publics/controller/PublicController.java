@@ -14,7 +14,9 @@ import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.user.services.LoginEventService;
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.ProductStatusEnum;
+import com.ecommerce.app.product.model.ProductVariants;
 import com.ecommerce.app.product.model.Productcategory;
+import com.ecommerce.app.product.model.SortingType;
 import com.ecommerce.app.product.ripository.AvailableDeliveryAreaRepository;
 import com.ecommerce.app.product.ripository.DeliveryChargeRepository;
 import com.ecommerce.app.product.ripository.DeliveryTimelineRepository;
@@ -42,7 +44,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.ecommerce.app.product.ripository.ProductRepository;
 import com.ecommerce.app.product.ripository.WarrantyRepository;
 import com.ecommerce.app.product.services.ProductService;
+import com.ecommerce.app.product.services.ProductVariantsService;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
@@ -119,6 +124,9 @@ public class PublicController {
 
     @Autowired
     WarrantyRepository warrantyRepository;
+
+    @Autowired
+    ProductVariantsService productVariantsService;
 
     @RequestMapping("/about-us")
     public String aboutUs(Model model) {
@@ -243,12 +251,44 @@ public class PublicController {
     public String single_product(Model model, @PathVariable long prodid, Product product) {
 
         // model.addAttribute("product_details", productRepository.getReferenceById(prodid));
-        model.addAttribute("product_details", productService.product_details_for_front_view_single_product_page_by_Id(prodid));
+        Map<String, Object> product_details = productService.product_details_for_front_view_single_product_page_by_Id(prodid);
+
+        model.addAttribute("product_details", product_details);
+
+        Object vendorIdObj = product_details.get("vendorProfileId");
+        Long vendorId = null;
+        if (vendorIdObj != null) {
+            if (vendorIdObj instanceof Number) {
+                vendorId = ((Number) vendorIdObj).longValue();
+            } else if (vendorIdObj instanceof String) {
+                vendorId = Long.parseLong((String) vendorIdObj);
+            }
+        }
+
+        Object catIdObj = product_details.get("categoryId");
+        Long catId = null;
+        if (catIdObj != null) {
+            if (catIdObj instanceof Number) {
+                catId = ((Number) catIdObj).longValue();
+            } else if (catIdObj instanceof String) {
+                catId = Long.parseLong((String) catIdObj);
+            }
+        }
+
+        //System.out.println("vendor id " + vendorId);
+        model.addAttribute("vProduct", productService.vendor_random_product_by_category(vendorId, catId, SortingType.RANDOM, 10));
+
+        model.addAttribute("vReandomProduct", productService.product_By_Vendor(vendorId, SortingType.RANDOM, 10));
+
+        model.addAttribute("allReandomProduct", productService.all_random_product(SortingType.RANDOM, 10));
+
         model.addAttribute("img_list", productImageRepository.findByProductIdOrderByIdDesc(prodid));
         model.addAttribute("d_a_list", availableDeliveryAreaRepository.findByProductIdOrderByIdDesc(prodid));
         model.addAttribute("d_c_list", deliveryChargeRepository.findByProductIdOrderByIdDesc(prodid));
         model.addAttribute("d_t_list", deliveryTimelineRepository.findByProductIdOrderByIdDesc(prodid));
         model.addAttribute("w_list", warrantyRepository.findByProductIdOrderByIdDesc(prodid));
+        List<ProductVariants> variants = productVariantsService.findByProductId(prodid);
+        model.addAttribute("variants", variants);
         return "frontview/single-product";
     }
 
