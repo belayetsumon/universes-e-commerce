@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section>
+            <div class="row">
+                <div class="col-sm-4"><h4>Promotion Fraud Flags</h4></div>
+                <div class="col-sm-8">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Promotions</li>
+                            <li class="breadcrumb-item active" aria-current="page">Fraud Flags</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </section>
+        <hr/>
+
+        <div class="card">
+            <div class="card-header">
+                <strong><i class="bi bi-shield-exclamation"></i> Fraud Review Queue</strong>
+            </div>
+            <div class="card-body table-responsive">
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <table id="example" class="table table-bordered table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Customer</th>
+                            <th>Order</th>
+                            <th>Source</th>
+                            <th>Severity</th>
+                            <th>Status</th>
+                            <th>Reason</th>
+                            <th>Reviewed</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(flags)}">
+                            <td colspan="9" class="text-center">No fraud flags found.</td>
+                        </tr>
+                        <tr th:each="flag,status:${flags}">
+                            <td th:text="${status.count}">1</td>
+                            <td th:text="${flag.customer != null ? flag.customer.email : '-'}">user</td>
+                            <td th:text="${flag.orderId != null ? flag.orderId : '-'}">-</td>
+                            <td>
+                                <span th:text="${flag.sourceType != null ? flag.sourceType : '-'}">SOURCE</span>
+                                <small class="d-block text-muted" th:text="${flag.sourceReference != null ? flag.sourceReference : '-'}">REF</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-danger" th:if="${flag.severity == 'HIGH'}">HIGH</span>
+                                <span class="badge bg-warning text-dark" th:if="${flag.severity == 'MEDIUM'}">MEDIUM</span>
+                                <span class="badge bg-secondary" th:if="${flag.severity != 'HIGH' and flag.severity != 'MEDIUM'}" th:text="${flag.severity != null ? flag.severity : '-'}">-</span>
+                            </td>
+                            <td th:text="${flag.status != null ? flag.status : '-'}">OPEN</td>
+                            <td th:text="${flag.reason != null ? flag.reason : '-'}">Reason</td>
+                            <td>
+                                <span th:text="${flag.reviewedBy != null ? flag.reviewedBy : '-'}">-</span>
+                                <small class="d-block text-muted" th:text="${flag.reviewedAt != null ? flag.reviewedAt : '-'}">-</small>
+                            </td>
+                            <td>
+                                <form th:if="${flag.status == 'OPEN'}" th:action="@{|/admin/promotions/fraud-flags/${flag.id}/review|}" method="post" class="d-flex gap-1">
+                                    <select name="status" class="form-select form-select-sm">
+                                        <option value="REVIEWED">Review</option>
+                                        <option value="CLEARED">Clear</option>
+                                        <option value="BLOCKED">Block</option>
+                                    </select>
+                                    <input type="text" name="reviewedBy" class="form-control form-control-sm" placeholder="Reviewer"/>
+                                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                                </form>
+                                <span th:if="${flag.status != 'OPEN'}" class="text-muted">Closed</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

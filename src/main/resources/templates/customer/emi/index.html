@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-customar-page">
+    <div layout:fragment="main_content">
+        <div><h4>Meritten EMI <small>Home&gt;Meritten EMI Plans</small></h4></div>
+        <hr/>
+
+        <div th:if="${successMessage}" class="alert alert-success">
+            <span th:text="${successMessage}"></span>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-danger">
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <strong>Your Meritten EMI Plans</strong>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    Meritten EMI is provider-managed. After approval, monthly installments are collected by the bank or gateway, not by this shop.
+                </div>
+                <div class="table-responsive" th:if="${plans != null and !#lists.isEmpty(plans)}">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Order</th>
+                                <th>Tenure</th>
+                                <th>Est. Monthly Installment</th>
+                                <th>Provider</th>
+                                <th>Provider Status</th>
+                                <th>Merchant Settlement</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="plan, status : ${plans}">
+                                <td th:text="${status.count}">1</td>
+                                <td>
+                                    <div th:text="${plan.salesOrder.orderCode}">ORDER</div>
+                                    <div class="small text-muted" th:text="'BDT ' + ${#numbers.formatDecimal(plan.orderAmount, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</div>
+                                </td>
+                                <td th:text="${plan.tenureMonths} + ' months'">3 months</td>
+                                <td th:text="'BDT ' + ${#numbers.formatDecimal(plan.installmentAmount, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</td>
+                                <td th:text="${plan.providerName != null ? plan.providerName : 'Awaiting provider response'}">Provider</td>
+                                <td th:text="${plan.statusLabel}">Pending Provider Approval</td>
+                                <td th:text="'BDT ' + ${#numbers.formatDecimal(plan.merchantSettledAmount != null ? plan.merchantSettledAmount : 0, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</td>
+                                <td>
+                                    <a class="btn btn-sm btn-primary" th:href="@{/customer-meritten-emi/details/{planId}(planId=${plan.id})}">
+                                        View Plan
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${plans == null or #lists.isEmpty(plans)}" class="text-muted">
+                    No Meritten EMI plan has been created yet.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

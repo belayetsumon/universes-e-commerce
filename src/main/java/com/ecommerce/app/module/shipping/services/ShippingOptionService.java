@@ -8,12 +8,12 @@ import com.ecommerce.app.globalServices.District;
 import com.ecommerce.app.module.shipping.dto.ShippingOption;
 import com.ecommerce.app.module.shipping.model.Carrier;
 import com.ecommerce.app.module.shipping.model.CarrierRate;
-import com.ecommerce.app.module.shipping.model.DeliverySpeed;
 import com.ecommerce.app.module.shipping.model.ShippingProfile;
 import com.ecommerce.app.module.shipping.repository.CarrierRateRepository;
 import com.ecommerce.app.module.shipping.repository.ShippingProfileRepository;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,12 +31,19 @@ public class ShippingOptionService {
     @Autowired
     private CarrierRateRepository rateRepo;
 
+    @Autowired
+    private CarrierRateService carrierRateService;
+
     public List<ShippingOption> getShippingOptions(
             Long vendorId,
             District customerDistrict,
             BigDecimal totalWeight
     ) {
         List<ShippingOption> options = new ArrayList<>();
+
+        if (customerDistrict == null) {
+            return options;
+        }
 
         List<ShippingProfile> profiles = profileRepo.findByVendorIdAndActiveTrue(vendorId);
         if (profiles.isEmpty()) {
@@ -59,30 +66,73 @@ public class ShippingOptionService {
                 // ✅ Fetch rates for customer district or fallback ALL
                 List<CarrierRate> rates = rateRepo.findByCarrierAndDistrictIn(
                         carrier,
-                        List.of(customerDistrict, District.All) // Make sure District.ALL exists in your enum
+                        List.of(customerDistrict)
                 );
 
                 for (CarrierRate rate : rates) {
                     ShippingOption option = new ShippingOption();
-                    option.setCarrierCode(carrier.getCode());   // e.g. 'SA'
-                    option.setCode(rate.getUuid());             // use the UUID
-                    option.setTitle(carrier.getName() + " - " + rate.getSpeed().name());
+                    String rateUuid = rate.getUuid();
+                    BigDecimal weightToUse = (totalWeight == null || totalWeight.compareTo(BigDecimal.ZERO) <= 0)
+                            ? BigDecimal.ONE
+                            : totalWeight;
 
-                    // ✅ Calculate price = basePrice + perKg * weight
-                    BigDecimal weightToUse = (totalWeight == null ? BigDecimal.ONE : totalWeight);
-                    BigDecimal weightCost = rate.getPerKg().multiply(weightToUse);
-                    BigDecimal price = rate.getBasePrice().add(weightCost);
-
-                    option.setPrice(price);
-                    option.setEstimatedDelivery(
-                            rate.getSpeed() == DeliverySpeed.EXPRESS ? "1-2 days" : "3-5 days"
-                    );
+                    option.setCarrierCode(carrier.getCode());
+                    option.setCarrierName(carrier.getName());
+                    option.setCarrierMode(carrier.getMode());
+                    option.setSettlementMode(carrier.getSettlementMode());
+                    option.setShippingChargeOwner(carrier.getShippingChargeOwner());
+                    option.setCodCollectionMode(carrier.getCodCollectionMode());
+                    option.setCode(rateUuid);
+                    option.setRateUuid(rateUuid);
+                    option.setSpeed(rate.getSpeed());
+                    option.setDeliveryType(rate.getDeliveryType());
+                    option.setCodFee(rate.getCodFee());
+                    option.setCodAvailable(rate.isCodAvailable());
+                    option.setTitle(buildOptionTitle(carrier, rate));
+                    option.setPrice(carrierRateService.calculateShippingRateByUuid(rateUuid, weightToUse, false));
+                    option.setEstimatedDelivery(buildEstimatedDelivery(rate));
 
                     options.add(option);
                 }
             }
         }
+
+        // 2026-04-22: Stable ordering keeps shipping options predictable in the cart UI.
+        options.sort(Comparator
+                .comparing(ShippingOption::getCarrierName, Comparator.nullsLast(String::compareToIgnoreCase))
+                .thenComparing(opt -> opt.getSpeed() != null ? opt.getSpeed().name() : "")
+                .thenComparing(opt -> opt.getDeliveryType() != null ? opt.getDeliveryType().name() : ""));
+
         return options;
+    }
+
+    private String buildOptionTitle(Carrier carrier, CarrierRate rate) {
+        String carrierName = carrier.getName();
+        String speed = rate.getSpeed() != null ? rate.getSpeed().name() : "STANDARD";
+        String deliveryType = rate.getDeliveryType() != null ? rate.getDeliveryType().name().replace('_', ' ') : "DELIVERY";
+        return carrierName + " - " + speed + " - " + deliveryType;
+    }
+
+    private String buildEstimatedDelivery(CarrierRate rate) {
+        if (rate.getEstimatedMinDays() != null && rate.getEstimatedMaxDays() != null) {
+            if (rate.getEstimatedMinDays().equals(rate.getEstimatedMaxDays())) {
+                return rate.getEstimatedMinDays() + " day";
+            }
+            return rate.getEstimatedMinDays() + "-" + rate.getEstimatedMaxDays() + " days";
+        }
+
+        if (rate.getSpeed() == null) {
+            return "Delivery time unavailable";
+        }
+
+        return switch (rate.getSpeed()) {
+            case EXPRESS ->
+                "1-2 days";
+            case STANDARD ->
+                "3-5 days";
+            default ->
+                "Delivery time unavailable";
+        };
     }
 
 }

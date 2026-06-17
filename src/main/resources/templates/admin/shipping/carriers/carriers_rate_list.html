@@ -1,90 +1,123 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
-    <div layout:fragment = "main_content">
-
+    <div layout:fragment="main_content">
 
         <section class="mb-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <h4><i class="bi bi-person-badge-fill me-2 text-primary"></i>Carrier Management</h4>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h4 class="mb-1"><i class="bi bi-truck me-2 text-primary"></i>Carrier Rates</h4>
+                    <div class="text-muted small">Manage district, weight, speed, COD, and estimated delivery charges.</div>
+                </div>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="#" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Carrier Rate List</li>
+                        <li class="breadcrumb-item"><a th:href="@{/admin/index}" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Carrier Rates</li>
                     </ol>
                 </nav>
             </div>
         </section>
+
         <div class="row">
             <div class="col-sm-12">
-
                 <div class="card">
                     <div class="card-header">
-
-                        <div class="row">
-                            <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i> Carrier Rate  List. Total: [[${rates.size()}]]</strong> </div>
-
-                            <div class="col-sm-7 text-end">
-                                <div class="btn-group ">
-                                    <a class="btn btn-success btn-sm " th:href="@{/admin/carrier-rates/create}"> <i class="bi bi-plus-circle"></i> Add New Rate </a>
-                                    <a th:href="@{/admin/index}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>
-                                </div>
+                        <div class="row align-items-center g-2">
+                            <div class="col-sm-5 font-weight-bold">
+                                <strong><i class="bi bi-list-task"></i> Rate List. Total: [[${rates != null ? rates.size() : 0}]]</strong>
                             </div>
 
+                            <div class="col-sm-7 text-end">
+                                <div class="btn-group">
+                                    <a class="btn btn-success btn-sm" th:href="@{/admin/carrier-rates/create}">
+                                        <i class="bi bi-plus-circle"></i> Add Rate
+                                    </a>
+                                    <a th:href="@{/admin/index}" type="button" class="btn btn-danger btn-sm">
+                                        <i class="bi bi-x-circle"></i> Close
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="card-body">
 
-                        <!-- Success message -->
+                    <div class="card-body">
                         <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
                             <span th:text="${successMessage}"></span>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
 
-                        <!-- Error message -->
                         <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
                             <span th:text="${errorMessage}"></span>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
 
-                        <div class="table-responsive">
-                            <table class="table table-striped table-bordered">
-                                <thead>
+                        <div th:if="${rates == null or #lists.isEmpty(rates)}" class="alert alert-info mb-0">
+                            No carrier rates have been created yet.
+                        </div>
+
+                        <div class="table-responsive" th:unless="${rates == null or #lists.isEmpty(rates)}">
+                            <table class="table table-striped table-bordered table-sm align-middle">
+                                <thead class="table-light">
                                     <tr>
-                                        <th>ID</th><th>Carrier</th><th>District</th><th>Speed</th><th>Delivery Type</th>
-                                        <th>Base</th><th>/Kg</th>
-                                        <!--                                        <th>/Km</th>-->
-                                        <th>COD Fee</th><th>Actions</th>
+                                        <th>#</th>
+                                        <th>Carrier</th>
+                                        <th>Districts</th>
+                                        <th>Speed</th>
+                                        <th>Delivery Type</th>
+                                        <th class="text-end">Base</th>
+                                        <th class="text-end">Base Weight</th>
+                                        <th class="text-end">Extra Unit</th>
+                                        <th class="text-end">Per Slab</th>
+                                        <th>COD</th>
+                                        <th class="text-end">COD Fee</th>
+                                        <th>ETA</th>
+                                        <th class="text-nowrap">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr th:each="r ,status: ${rates}">
+                                    <tr th:each="r, status : ${rates}">
                                         <td th:text="${status.count}"></td>
-                                        <td th:text="${r.carrier != null ? r.carrier.name : '—'}"></td>
-                                        <td th:text="${r.district}"></td>
-                                        <td th:text="${r.speed}"></td>
-                                        <td th:text="${r.deliveryType}"></td>
-                                        <td th:text="${r.basePrice}"></td>
-                                        <td th:text="${r.perKg}"></td>
-                                        <!--                                        <td th:text="${r.perKm}"></td>-->
-                                        <td th:text="${r.codFee}"></td>
                                         <td>
-                                            <a th:href="@{'/admin/carrier-rates/edit/' + ${r.id}}" class="btn btn-sm btn-primary">Edit</a>
-                                            <a th:href="@{'/admin/carrier-rates/delete/' + ${r.id}}" class="btn btn-sm btn-danger"
-                                               onclick="return confirm('Delete rate?')">Delete</a>
+                                            <div class="fw-semibold" th:text="${r.carrier != null ? r.carrier.name : '-'}"></div>
+                                            <div class="small text-muted" th:if="${r.carrier != null}" th:text="${r.carrier.code}"></div>
+                                        </td>
+                                        <td>
+                                            <span th:if="${r.district == null or #lists.isEmpty(r.district)}">-</span>
+                                            <span th:each="d : ${r.district}"
+                                                  class="badge bg-info text-dark me-1 mb-1"
+                                                  th:text="${d.displayName}">District</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary" th:text="${r.speed}">STANDARD</span>
+                                        </td>
+                                        <td th:text="${r.deliveryType != null ? #strings.replace(r.deliveryType.name(), '_', ' ') : '-'}"></td>
+                                        <td class="text-end" th:text="${r.basePrice != null ? #numbers.formatDecimal(r.basePrice, 0, 'COMMA', 2, 'POINT') : '-'}"></td>
+                                        <td class="text-end" th:text="${r.baseWeight != null ? #numbers.formatDecimal(r.baseWeight, 0, 'COMMA', 2, 'POINT') : '-'}"></td>
+                                        <td class="text-end" th:text="${r.additionalWeightUnit != null ? #numbers.formatDecimal(r.additionalWeightUnit, 0, 'COMMA', 2, 'POINT') : '-'}"></td>
+                                        <td class="text-end" th:text="${r.perKg != null ? #numbers.formatDecimal(r.perKg, 0, 'COMMA', 2, 'POINT') : '-'}"></td>
+                                        <td>
+                                            <span th:classappend="${r.codAvailable} ? ' bg-success' : ' bg-secondary'"
+                                                  class="badge"
+                                                  th:text="${r.codAvailable ? 'Yes' : 'No'}">Yes</span>
+                                        </td>
+                                        <td class="text-end" th:text="${r.codFee != null ? #numbers.formatDecimal(r.codFee, 0, 'COMMA', 2, 'POINT') : '-'}"></td>
+                                        <td th:text="${r.estimatedMinDays != null and r.estimatedMaxDays != null ? r.estimatedMinDays + ' - ' + r.estimatedMaxDays + ' days' : '-'}"></td>
+                                        <td class="text-nowrap">
+                                            <a th:href="@{'/admin/carrier-rates/edit/' + ${r.id}}" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-pencil-square"></i> Edit
+                                            </a>
+                                            <a th:href="@{'/admin/carrier-rates/delete/' + ${r.id}}"
+                                               class="btn btn-sm btn-danger"
+                                               onclick="return confirm('Delete this carrier rate?')">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </a>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
-
                         </div>
-                    </div><!--  Card body end-->
-                </div><!--  Card  end-->
-            </div><!--  Main Content  end-->
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>   <!--  Layout end-->
+</div>

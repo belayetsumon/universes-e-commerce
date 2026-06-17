@@ -38,6 +38,14 @@ and open the template in the editor.
                         </div>
                     </div>
                     <div class="card-body">
+                        <div th:if="${not #strings.isEmpty(successMessage)}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <span th:text="${successMessage}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        <div th:if="${not #strings.isEmpty(errorMessage)}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <span th:text="${errorMessage}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
 
 
                         <form th:action="@{/admin/shipments/save}" th:object="${shipment}" method="post" class="row g-3">
@@ -57,9 +65,24 @@ and open the template in the editor.
                             <!-- Carrier -->
                             <div class="col-md-4">
                                 <label class="form-label">Vendor Id</label>
-                                <input type="text"  class="form-control" th:field="*{vendorId}" />
+                                <select class="form-select" th:field="*{vendorId}" id="vendorIdSelect" required>
+                                    <option value="">Select vendor</option>
+                                    <option th:each="vendor : ${vendors}"
+                                            th:value="${vendor.id}"
+                                            th:text="${vendor.vendorCode + ' - ' + vendor.companyName}"></option>
+                                </select>
+                                <div class="form-text">Choose the vendor for this shipment.</div>
+                                <div class="text-danger small" th:if="${#fields.hasErrors('vendorId')}" th:errors="*{vendorId}"></div>
                                 <label class="form-label">Sales Order Id</label>
-                                <input type="text"  class="form-control" th:field="*{salesOrderId}" />
+                                <select class="form-select" th:field="*{salesOrderId}" id="salesOrderIdSelect" required>
+                                    <option value="">Select sales order</option>
+                                    <option th:each="order : ${salesOrders}"
+                                            th:value="${order['id']}"
+                                            th:text="${order['orderCode'] + ' | ID: ' + order['id'] + ' | Vendor: ' + order['vendorId']}"
+                                            th:attr="data-vendor-id=${order['vendorId']},data-district=${order['district']},data-shipping-cost=${order['shippingCost']}"></option>
+                                </select>
+                                <div class="form-text">Orders are filtered by vendor and will auto-fill the shipping district.</div>
+                                <div class="text-danger small" th:if="${#fields.hasErrors('salesOrderId')}" th:errors="*{salesOrderId}"></div>
                             </div>
 
                             <!-- Carrier -->
@@ -75,8 +98,12 @@ and open the template in the editor.
                             <!-- Delivery Person -->
                             <div class="col-md-4">
                                 <label class="form-label">Delivery Person</label>
-                                <select th:field="*{deliveryPerson}" class="form-select">
-                                    <option th:each="d : ${deliveryPersons}" th:value="${d}" th:text="${d.name}"></option>
+                                <select th:field="*{deliveryPerson}" class="form-select" id="deliveryPersonSelect">
+                                    <option value="">Select delivery person</option>
+                                    <option th:each="d : ${deliveryPersons}"
+                                            th:value="${d}"
+                                            th:text="${d.name}"
+                                            th:attr="data-vendor-id=${d.vendorId}"></option>
                                 </select>
                                 <div class="form-text">Optional: Assign a delivery person.</div>
                                 <div class="text-danger small" th:if="${#fields.hasErrors('deliveryPerson')}" th:errors="*{deliveryPerson}"></div>
@@ -85,8 +112,8 @@ and open the template in the editor.
                             <!-- District -->
                             <div class="col-md-4">
                                 <label class="form-label">District</label>
-                                <input type="text" th:field="*{district}" class="form-control" placeholder="e.g. Dhaka" required/>
-                                <div class="form-text">Enter the delivery district.</div>
+                                <input type="text" th:field="*{district}" id="districtInput" class="form-control" readonly required/>
+                                <div class="form-text">This is loaded from the selected sales order shipping address.</div>
                                 <div class="text-danger small" th:if="${#fields.hasErrors('district')}" th:errors="*{district}"></div>
                             </div>
 
@@ -101,9 +128,30 @@ and open the template in the editor.
                             <!-- Shipping Cost -->
                             <div class="col-md-4">
                                 <label class="form-label">Shipping Cost</label>
-                                <input type="number" step="0.01" th:field="*{shippingCost}" class="form-control"/>
-                                <div class="form-text">Cost for this shipment.</div>
+                                <input type="number" step="0.01" th:field="*{shippingCost}" id="shippingCostInput" class="form-control" readonly/>
+                                <div class="form-text">This is loaded from the selected sales order delivery charge.</div>
                                 <div class="text-danger small" th:if="${#fields.hasErrors('shippingCost')}" th:errors="*{shippingCost}"></div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Settlement Mode</label>
+                                <select th:field="*{settlementMode}" class="form-select">
+                                    <option th:each="mode : ${T(com.ecommerce.app.module.shipping.model.SettlementMode).values()}" th:value="${mode}" th:text="${#strings.replace(mode.name(), '_', ' ')}"></option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Shipping Charge Owner</label>
+                                <select th:field="*{shippingChargeOwner}" class="form-select">
+                                    <option th:each="owner : ${T(com.ecommerce.app.module.shipping.model.ShippingChargeOwner).values()}" th:value="${owner}" th:text="${#strings.replace(owner.name(), '_', ' ')}"></option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">COD Collection Mode</label>
+                                <select th:field="*{codCollectionMode}" class="form-select">
+                                    <option th:each="mode : ${T(com.ecommerce.app.module.shipping.model.CodCollectionMode).values()}" th:value="${mode}" th:text="${#strings.replace(mode.name(), '_', ' ')}"></option>
+                                </select>
                             </div>
 
                             <!-- Speed -->
@@ -157,6 +205,36 @@ and open the template in the editor.
                                 <input type="number" step="0.01" th:field="*{codPending}" class="form-control"/>
                             </div>
 
+                            <div class="col-md-3">
+                                <label class="form-label">Product Net Amount</label>
+                                <input type="number" step="0.01" th:field="*{productNetAmount}" class="form-control"/>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Marketplace Commission</label>
+                                <input type="number" step="0.01" th:field="*{marketplaceCommissionAmount}" class="form-control"/>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">COD Fee Amount</label>
+                                <input type="number" step="0.01" th:field="*{codFeeAmount}" class="form-control"/>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label d-block">Shipping Paid To Marketplace</label>
+                                <input type="checkbox" th:field="*{shippingPaidToMarketplace}" class="form-check-input"/>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Vendor Payable</label>
+                                <input type="number" step="0.01" th:field="*{vendorPayableAmount}" class="form-control"/>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Marketplace Payable</label>
+                                <input type="number" step="0.01" th:field="*{marketplacePayableAmount}" class="form-control"/>
+                            </div>
+
                             <!-- Packaging -->
                             <!--                            <div class="col-md-4">
                                                             <label class="form-label">Packaging</label>
@@ -179,6 +257,86 @@ and open the template in the editor.
                                 <a th:href="@{/admin/shipments/list}" class="btn btn-secondary">Cancel</a>
                             </div>
                         </form>
+
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function () {
+                                const vendorSelect = document.getElementById('vendorIdSelect');
+                                const salesOrderSelect = document.getElementById('salesOrderIdSelect');
+                                const deliveryPersonSelect = document.getElementById('deliveryPersonSelect');
+                                const districtInput = document.getElementById('districtInput');
+                                const shippingCostInput = document.getElementById('shippingCostInput');
+
+                                function filterOptions(select) {
+                                    if (!select) {
+                                        return;
+                                    }
+
+                                    const selectedVendorId = vendorSelect ? vendorSelect.value : '';
+                                    Array.from(select.options).forEach(function (option, index) {
+                                        if (index === 0) {
+                                            option.hidden = false;
+                                            return;
+                                        }
+
+                                        const optionVendorId = option.getAttribute('data-vendor-id');
+                                        option.hidden = selectedVendorId !== '' && optionVendorId !== selectedVendorId;
+
+                                        if (option.hidden && option.selected) {
+                                            select.value = '';
+                                        }
+                                    });
+                                }
+
+                                function syncDistrictFromOrder() {
+                                    if (!salesOrderSelect || !districtInput) {
+                                        return;
+                                    }
+
+                                    const selectedOption = salesOrderSelect.options[salesOrderSelect.selectedIndex];
+                                    const district = selectedOption ? (selectedOption.getAttribute('data-district') || '') : '';
+                                    districtInput.value = district;
+                                }
+
+                                function syncShippingCostFromOrder() {
+                                    if (!salesOrderSelect || !shippingCostInput) {
+                                        return;
+                                    }
+
+                                    const selectedOption = salesOrderSelect.options[salesOrderSelect.selectedIndex];
+                                    const shippingCost = selectedOption ? (selectedOption.getAttribute('data-shipping-cost') || '') : '';
+                                    shippingCostInput.value = shippingCost;
+                                }
+
+                                function syncVendorOptions() {
+                                    filterOptions(salesOrderSelect);
+                                    filterOptions(deliveryPersonSelect);
+                                    syncDistrictFromOrder();
+                                    syncShippingCostFromOrder();
+                                }
+
+                                if (vendorSelect) {
+                                    vendorSelect.addEventListener('change', syncVendorOptions);
+                                }
+
+                                if (salesOrderSelect) {
+                                    salesOrderSelect.addEventListener('change', function () {
+                                        const selectedOption = salesOrderSelect.options[salesOrderSelect.selectedIndex];
+                                        if (selectedOption && vendorSelect) {
+                                            const orderVendorId = selectedOption.getAttribute('data-vendor-id') || '';
+                                            if (orderVendorId && vendorSelect.value !== orderVendorId) {
+                                                vendorSelect.value = orderVendorId;
+                                                filterOptions(deliveryPersonSelect);
+                                                filterOptions(salesOrderSelect);
+                                            }
+                                        }
+                                        syncDistrictFromOrder();
+                                        syncShippingCostFromOrder();
+                                    });
+                                }
+
+                                syncVendorOptions();
+                            });
+                        </script>
 
 
                     </div><!--  Card body end-->

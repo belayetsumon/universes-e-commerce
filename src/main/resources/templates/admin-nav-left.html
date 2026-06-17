@@ -1,8 +1,7 @@
-<div  th:fragment="nav-left">
+<div class="sidebar-shell" th:fragment="nav-left">
     <div class="sidebar-header text-center ">
-        <a class="navbar-brand" href="#">mUSAPIR</a>
+        <a class="navbar-brand" th:href="@{/admin/index}">mUSAPIR</a>
     </div>
-
     <div class="sidebar-search">
         <form class="d-flex" role="search">
             <div class="input-group">
@@ -14,7 +13,7 @@
     <div class="sidebar-content">
         <ul class="nav flex-column sidebar-nav" id="sidebar-accordion">
             <li class="nav-item">
-                <a class="nav-link active" aria-current="page" th:href="@{/admin/index}">
+                <a class="nav-link" th:href="@{/admin/index}">
                     <i class="bi-speedometer2"></i>
                     <span>Dashboard</span>
                 </a>
@@ -27,18 +26,31 @@
                 </a>
                 <ul class="nav flex-column collapse" id="sales-collapse">
                     <li class="nav-item"><a class="nav-link"  th:href="@{/admin-customer/orderlist}"><i class="bi-box-seam me-2"></i>Orders</a></li>
-                    <li class="nav-item"><a class="nav-link" th:href="@{/shippingcharge/list}" ><i class="bi-truck me-2"></i>Shipping Charge</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-arrow-left-circle me-2"></i>Refunds</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-receipt me-2"></i>Transactions</a></li>
-                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/shipments/list}"><i class="bi-bag-check me-2"></i>Shipments</a></li>
-                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/carriers/list}"><i class="bi-bag-check me-2"></i>Carrier</a></li>
-                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/carrier-rates/list}"><i class="bi-bag-check me-2"></i>Carrier Rate</a></li>
-                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/shipping-profiles/list}"><i class="bi-bag-check me-2"></i>Shipping Profiles</a></li>
-                    <li class="nav-item"><a class="nav-link" th:href="@{/packagingrates/list}"><i class="bi-bag-check me-2"></i>Packaging Rates</a></li>
 
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-receipt me-2"></i>Transactions</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-arrow-left-circle me-2"></i>Refunds</a></li>
                     <li class="nav-item"><a class="nav-link" href="#"><i class="bi-arrow-return-left me-2"></i>Returns</a></li>
                 </ul>
             </li>
+
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#shipping-collapse" role="button" aria-expanded="false" aria-controls="sales-collapse">
+                    <i class="bi-cart4"></i>
+                    <span>Shipping & Fulfillment</span>
+                    <i class="bi-chevron-right ms-auto"></i>
+                </a>
+                <ul class="nav flex-column collapse" id="shipping-collapse">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/carriers/list}"><i class="bi-bag-check me-2"></i>Carrier</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/carrier-rates/list}"><i class="bi-bag-check me-2"></i>Carrier Rates</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/shipments/list}"><i class="bi-bag-check me-2"></i>Shipments</a></li>
+
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/shipping-profiles/list}"><i class="bi-bag-check me-2"></i>Shipping Profiles</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/packagingrates/list}"><i class="bi-bag-check me-2"></i>Packaging Rates</a></li>
+                </ul>
+            </li>
+
+
+
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#customers-collapse" role="button" aria-expanded="false" aria-controls="customers-collapse">
                     <i class="bi-people-fill"></i>
@@ -62,6 +74,8 @@
                 <ul class="nav flex-column collapse" id="vendor-collapse">
                     <li class="nav-item"><a class="nav-link" th:href="@{/adminvendor/list}"><i class="bi-list-ul me-2"></i>Vendor List</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/admin/payouts/list}"><i class="bi-cash-coin me-2"></i>Vendor Payout List</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/finance/dashboard}"><i class="bi bi-bar-chart-line me-2"></i>Finance Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/finance/settlements}"><i class="bi bi-journal-text me-2"></i>Settlement Ledger</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/adminvendorusers/rolelist}"><i class="bi-person-gear me-2"></i>Vendor Role List</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/adminvendorusers/privilegeslist}"><i class="bi-shield-check me-2"></i>Vendor Privilege list</a></li>
                 </ul>
@@ -74,11 +88,16 @@
                 </a>
                 <ul class="nav flex-column collapse" id="products-collapse">
                     <li class="nav-item"><a class="nav-link" th:href="@{/productcategory/index}"><i class="bi-tags me-2"></i>Product Category</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/catalog-attributes/list}"><i class="bi-tags me-2"></i>Catalog Attributes</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/manufacturer/list}"><i class="bi-building me-2"></i>Manufacturer</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/product/index}"><i class="bi-box me-2"></i>Product</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/stock/transactions}"><i class="bi-boxes me-2"></i>Stock Transactions</a></li>
                     <li class="nav-item"><a class="nav-link"th:href="@{/uom/list}"><i class="bi-rulers me-2"></i>Units</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/productsize/list}"><i class="bi-aspect-ratio me-2"></i>Product Size</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/productcolor/list}"><i class="bi-palette me-2"></i>Product Color</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/public/browsing-history}">Browsing History</a>
+                    </li>
                 </ul>
             </li>
             <li class="nav-item">
@@ -89,11 +108,24 @@
                 </a>
                 <ul class="nav flex-column collapse" id="referral-collapse">
                     <li class="nav-item"><a class="nav-link" th:href="@{/referral/list}"><i class="bi-person-plus me-2"></i>Referral</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/coupon/list}"><i class="bi-ticket-perforated me-2"></i>Coupons</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/coupon-redemption/list}"><i class="bi-receipt-cutoff me-2"></i>Coupon Redemptions</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/giftcard/list}"><i class="bi-gift me-2"></i>Gift Cards</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/giftcard-transaction/list}"><i class="bi-card-checklist me-2"></i>Gift Card Transactions</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/cashback-policy/list}"><i class="bi-percent me-2"></i>Cashback Policies</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/cashback/list}"><i class="bi-cash-stack me-2"></i>Cashback Transactions</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/cashouts}"><i class="bi-bank me-2"></i>Cashout Requests</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/promotions/order-incentives}"><i class="bi-clipboard-data me-2"></i>Order Incentives</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/promotions/notifications}"><i class="bi-bell me-2"></i>Notification Log</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/promotions/fraud-flags}"><i class="bi-shield-exclamation me-2"></i>Fraud Flags</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/promotions/reports}"><i class="bi-graph-up-arrow me-2"></i>Promotion Reports</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/wallet/walletlist}"><i class="bi-credit-card-2-front me-2"></i>Wallet</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/wallettransaction/list}"><i class="bi-arrow-down-up me-2"></i>Wallet Transaction</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/reward-redemption/list}"><i class="bi-trophy me-2"></i>Redemption</a></li>
-                    <li class="nav-item"><a class="nav-link" th:href="@{/referral-reward/referral-reward-list}"><i class="bi-award me-2"></i>Reword</a></li>
-                    <li class="nav-item"><a class="nav-link"th:href="@{/lavelratesettings/list}"><i class="bi-sliders me-2"></i>Level & Rate Settings</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/referral-reward/reward-dashboard}"><i class="bi-speedometer me-2"></i>Reward Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/referral-reward/rewards-history}"><i class="bi-clock-history me-2"></i>Reward History</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/referral-reward/referral-reward-list}"><i class="bi-award me-2"></i>Reward</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/lavelratesettings/list}"><i class="bi-sliders me-2"></i>Multi Level & Rate Settings</a></li>
                 </ul>
             </li>
 
@@ -155,8 +187,8 @@
                     <i class="bi-chevron-right ms-auto"></i>
                 </a>
                 <ul class="nav flex-column collapse" id="config-collapse">
-                    <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Access control list</a></li>
+                    <li class="nav-item"><a class="nav-link"th:href="@{/admin/settings}">Settings</a></li>
+                    <!--                    <li class="nav-item"><a class="nav-link" href="#">Access control list</a></li>-->
                 </ul>
             </li>
             <!--            <li class="nav-item">

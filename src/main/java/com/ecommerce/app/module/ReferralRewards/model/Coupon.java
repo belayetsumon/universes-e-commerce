@@ -6,87 +6,71 @@ package com.ecommerce.app.module.ReferralRewards.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 /**
  *
  * @author libertyerp_local
  */
 @Entity
-@EntityListeners(AuditingEntityListener.class)
-public class Coupon {
+//@EntityListeners(AuditingEntityListener.class)
+@Table(name = "promotions_coupon")
+public class Coupon extends BaseEntityPromotions {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String title;
 
     @Column(unique = true)
     private String code;
+
+    private String description;
 
     @Enumerated(EnumType.STRING)
     private CouponType type; // FIXED or PERCENT
 
     private BigDecimal value;
+    private BigDecimal maxDiscount;
+    private BigDecimal minimumOrder;
     private LocalDateTime expiryDate;
+    private LocalDateTime startDate;
 
     private int usageLimit; // e.g., 100 uses
+    private int perUserUsageLimit;
+
     private int timesUsed;
+    private boolean stackable;
+    private boolean newCustomerOnly;
+    private boolean firstOrderOnly;
+    private String vendorScope;
+    private String campaignScope;
 
-    private boolean active;
-
-    /// Audit ///
-    @CreatedBy
-    @Column(nullable = false, updatable = false)
-    private String createdBy;
-
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime created;
-
-    @LastModifiedBy
-    @Column(insertable = false)
-    private String modifiedBy;
-
-    @LastModifiedDate
-    @Column(insertable = false)
-    private LocalDateTime modified;
+    @Enumerated(EnumType.STRING)
+    private CouponStatus status;
 
     public Coupon() {
     }
 
-    public Coupon(Long id, String code, CouponType type, BigDecimal value, LocalDateTime expiryDate, int usageLimit, int timesUsed, boolean active, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
-        this.id = id;
+    public Coupon(String title, String code, String description, CouponType type, BigDecimal value, LocalDateTime expiryDate, int usageLimit, int timesUsed, CouponStatus status) {
+        this.title = title;
         this.code = code;
+        this.description = description;
         this.type = type;
         this.value = value;
         this.expiryDate = expiryDate;
         this.usageLimit = usageLimit;
         this.timesUsed = timesUsed;
-        this.active = active;
-        this.createdBy = createdBy;
-        this.created = created;
-        this.modifiedBy = modifiedBy;
-        this.modified = modified;
+        this.status = status;
     }
 
-    public Long getId() {
-        return id;
+    public String getTitle() {
+        return title;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getCode() {
@@ -95,6 +79,14 @@ public class Coupon {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public CouponType getType() {
@@ -113,12 +105,36 @@ public class Coupon {
         this.value = value;
     }
 
+    public BigDecimal getMaxDiscount() {
+        return maxDiscount;
+    }
+
+    public void setMaxDiscount(BigDecimal maxDiscount) {
+        this.maxDiscount = maxDiscount;
+    }
+
+    public BigDecimal getMinimumOrder() {
+        return minimumOrder;
+    }
+
+    public void setMinimumOrder(BigDecimal minimumOrder) {
+        this.minimumOrder = minimumOrder;
+    }
+
     public LocalDateTime getExpiryDate() {
         return expiryDate;
     }
 
     public void setExpiryDate(LocalDateTime expiryDate) {
         this.expiryDate = expiryDate;
+    }
+
+    public LocalDateTime getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDateTime startDate) {
+        this.startDate = startDate;
     }
 
     public int getUsageLimit() {
@@ -129,6 +145,14 @@ public class Coupon {
         this.usageLimit = usageLimit;
     }
 
+    public int getPerUserUsageLimit() {
+        return perUserUsageLimit;
+    }
+
+    public void setPerUserUsageLimit(int perUserUsageLimit) {
+        this.perUserUsageLimit = perUserUsageLimit;
+    }
+
     public int getTimesUsed() {
         return timesUsed;
     }
@@ -137,44 +161,52 @@ public class Coupon {
         this.timesUsed = timesUsed;
     }
 
-    public boolean isActive() {
-        return active;
+    public boolean isStackable() {
+        return stackable;
     }
 
-    public void setActive(boolean active) {
-        this.active = active;
+    public void setStackable(boolean stackable) {
+        this.stackable = stackable;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
+    public boolean isNewCustomerOnly() {
+        return newCustomerOnly;
     }
 
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
+    public void setNewCustomerOnly(boolean newCustomerOnly) {
+        this.newCustomerOnly = newCustomerOnly;
     }
 
-    public LocalDateTime getCreated() {
-        return created;
+    public boolean isFirstOrderOnly() {
+        return firstOrderOnly;
     }
 
-    public void setCreated(LocalDateTime created) {
-        this.created = created;
+    public void setFirstOrderOnly(boolean firstOrderOnly) {
+        this.firstOrderOnly = firstOrderOnly;
     }
 
-    public String getModifiedBy() {
-        return modifiedBy;
+    public String getVendorScope() {
+        return vendorScope;
     }
 
-    public void setModifiedBy(String modifiedBy) {
-        this.modifiedBy = modifiedBy;
+    public void setVendorScope(String vendorScope) {
+        this.vendorScope = vendorScope;
     }
 
-    public LocalDateTime getModified() {
-        return modified;
+    public String getCampaignScope() {
+        return campaignScope;
     }
 
-    public void setModified(LocalDateTime modified) {
-        this.modified = modified;
+    public void setCampaignScope(String campaignScope) {
+        this.campaignScope = campaignScope;
+    }
+
+    public CouponStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(CouponStatus status) {
+        this.status = status;
     }
 
 }

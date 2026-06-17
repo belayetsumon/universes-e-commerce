@@ -4,16 +4,15 @@
  */
 package com.ecommerce.app.module.user.componant;
 
+import com.ecommerce.app.module.browsinghistory.service.BrowsingHistoryService;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -27,8 +26,14 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
     @Autowired
     UsersRepository usersRepository;
 
+    @Autowired
+    private BrowsingHistoryService browsingHistoryService;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+        if (authentication != null) {
+            browsingHistoryService.mergeGuestHistoryToUser(authentication.getName(), request, response);
+        }
         handle(request, response, authentication);
     }
 
@@ -43,10 +48,12 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
     }
 
     protected String determineTargetUrl(Authentication authentication) {
-        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         String username = authentication.getName();
 
         Users users = usersRepository.findByEmail(username).orElse(null);
+        if (users == null || users.getUserType() == null) {
+            return "/access-denied";
+        }
 
         switch (users.getUserType()) {
             case administrator:
@@ -56,7 +63,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
             case customer:
                 return "/customer/index";
             default:
-                return "/access-denied"; // Default redirect if userType does not match
+                return "/access-denied";
         }
-
-    }   }
+    }
+}

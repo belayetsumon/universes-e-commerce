@@ -7,7 +7,6 @@ package com.ecommerce.app.module.ReferralRewards.services;
 import com.ecommerce.app.module.ReferralRewards.model.TransactionType;
 import com.ecommerce.app.module.ReferralRewards.model.Wallet;
 import com.ecommerce.app.module.ReferralRewards.model.WalletTransaction;
-import com.ecommerce.app.module.ReferralRewards.repository.WalletRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.WalletTransactionRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -24,56 +23,28 @@ import org.springframework.transaction.annotation.Transactional;
 public class WalletTransactionService {
 
     @Autowired
-    private WalletRepository walletRepository;
-
-    @Autowired
     private WalletTransactionRepository walletTransactionRepository;
 
+    @Autowired
+    private WalletService walletService;
+
     public boolean hasSufficientBalance(Wallet wallet, BigDecimal amount) {
-        return wallet.getBalance().compareTo(amount) >= 0;
+        return wallet != null && wallet.getBalance() != null && wallet.getBalance().compareTo(amount) >= 0;
     }
 
     @Transactional
     public boolean deductFromWallet(Wallet wallet, BigDecimal amount, String description) {
-        if (hasSufficientBalance(wallet, amount)) {
-            // Update wallet balance
-            BigDecimal updatedBalance = wallet.getBalance().subtract(amount);
-            wallet.setBalance(updatedBalance);
-
-            walletRepository.save(wallet);
-
-            // Create transaction
-            WalletTransaction txn = new WalletTransaction();
-            txn.setWallet(wallet);
-            txn.setAmount(amount.negate()); // Debit
-            txn.setType(TransactionType.PURCHASE);
-            txn.setDescription(description);
-            txn.setCreatedAt(LocalDateTime.now());
-            txn.setRedeemed(true); // Always redeemed for purchase
-
-            walletTransactionRepository.save(txn);
-            return true;
-        }
-        return false;
+        return deductFromWallet(wallet, amount, description, TransactionType.PURCHASE, "PURCHASE", null);
     }
 
     @Transactional
-    public void creditWallet(Wallet wallet, BigDecimal amount, String description, TransactionType type, LocalDateTime expiryDate) {
-        BigDecimal updatedBalance = wallet.getBalance().add(amount);
-        wallet.setBalance(updatedBalance);
+    public boolean deductFromWallet(Wallet wallet, BigDecimal amount, String description, TransactionType type,
+            String sourceType, String sourceReference) {
+        if (wallet == null || wallet.getUsers() == null) {
+            return false;
+        }
 
-        walletRepository.save(wallet);
-
-        WalletTransaction txn = new WalletTransaction();
-        txn.setWallet(wallet);
-        txn.setAmount(amount);
-        txn.setType(type);
-        txn.setDescription(description);
-        txn.setCreatedAt(LocalDateTime.now());
-        txn.setExpiryDate(expiryDate); // Nullable for non-reward types
-        txn.setRedeemed(false);
-
-        walletTransactionRepository.save(txn);
+        return walletService.debitWallet(wallet.getUsers(), amount, description, type, sourceType, sourceReference);
     }
 
     @Transactional
@@ -82,24 +53,31 @@ public class WalletTransactionService {
     }
 
     @Transactional
+    public void creditWallet(Wallet wallet, BigDecimal amount, String description, TransactionType type, LocalDateTime expiryDate) {
+        creditWallet(wallet, amount, description, type, expiryDate, type.name(), null, null);
+    }
+
+    @Transactional
+    public void creditWallet(Wallet wallet, BigDecimal amount, String description, TransactionType type,
+            LocalDateTime expiryDate, String sourceType, String sourceReference, Integer levelNumber) {
+        if (wallet == null || wallet.getUsers() == null) {
+            throw new IllegalArgumentException("Wallet user is required.");
+        }
+
+        walletService.creditWallet(wallet.getUsers(), amount, description, type, expiryDate, sourceType, sourceReference, levelNumber);
+    }
+
+    @Transactional
+    public void expireRewardTransaction(WalletTransaction transaction) {
+        walletService.expireRewardTransaction(transaction);
+    }
+
+    @Transactional
     public void expireOldRewards() {
         List<WalletTransaction> rewards = walletTransactionRepository.findExpiredUnredeemed(LocalDateTime.now());
 
         for (WalletTransaction txn : rewards) {
-            Wallet wallet = txn.getWallet();
-            BigDecimal rewardAmount = txn.getAmount();
-
-            if (wallet != null && rewardAmount.compareTo(BigDecimal.ZERO) > 0) {
-                BigDecimal currentBalance = wallet.getBalance();  // already BigDecimal
-                if (currentBalance.compareTo(rewardAmount) >= 0) {
-                    BigDecimal updatedBalance = currentBalance.subtract(rewardAmount);
-                    wallet.setBalance(updatedBalance);
-                }
-            }
-
-            txn.setRedeemed(true);
-            walletRepository.save(wallet);
-            walletTransactionRepository.save(txn);
+            walletService.expireRewardTransaction(txn);
         }
     }
 }

@@ -12,6 +12,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedBy;
@@ -26,6 +29,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
  */
 @Entity
 @EntityListeners(AuditingEntityListener.class)
+@Table(name = "promotions_wallet")
 public class Wallet {
 
     @Id
@@ -121,6 +125,32 @@ public class Wallet {
 
     public void setModified(LocalDateTime modified) {
         this.modified = modified;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        LocalDateTime now = LocalDateTime.now();
+
+        if (created == null) {
+            created = now;
+        }
+
+        if (modified == null) {
+            modified = now;
+        }
+
+        if (createdBy == null || createdBy.isBlank()) {
+            createdBy = "system";
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        modified = LocalDateTime.now();
+
+        if (modifiedBy == null || modifiedBy.isBlank()) {
+            modifiedBy = "system";
+        }
     }
 
 }

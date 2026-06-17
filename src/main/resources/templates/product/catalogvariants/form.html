@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org">
+    <div class="modal-header">
+        <h5 class="modal-title" th:text="${catalogVariant.id == null ? 'Add Catalog Variant' : 'Edit Catalog Variant'}">Add Catalog Variant</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+
+    <form th:action="@{/catalog-variants/save}"
+          th:hx-post="@{/catalog-variants/save}"
+          hx-target="#deliveryOptionsModal .modal-content"
+          hx-swap="innerHTML"
+          method="post">
+        <div class="modal-body">
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <input type="hidden" name="productUuid" th:value="${productUuid}" />
+            <input type="hidden" name="variantUuid" th:value="${catalogVariant.id == null ? '' : catalogVariant.uuid}" />
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">SKU</label>
+                    <input type="text" name="sku" class="form-control" th:value="${catalogVariant.sku}" placeholder="Leave blank to auto-generate">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Barcode</label>
+                    <input type="text" name="barcode" class="form-control" th:value="${catalogVariant.barcode}">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Selling Price</label>
+                    <input type="number" name="sellingPrice" step="0.01" min="0" class="form-control" th:value="${catalogVariant.sellingPrice}" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Special Price</label>
+                    <input type="number" name="specialPrice" step="0.01" min="0" class="form-control" th:value="${catalogVariant.specialPrice}">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Stock Quantity</label>
+                    <input type="number" name="stockQuantity" step="0.001" min="0" class="form-control" th:value="${catalogVariant.stockQuantity}" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option th:each="status : ${statusList}"
+                                th:value="${status}"
+                                th:selected="${catalogVariant.status == status}"
+                                th:text="${status}">Active</option>
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Variant Options</label>
+                    <div class="row g-3" th:if="${variantSelections != null and !#lists.isEmpty(variantSelections)}">
+                        <div class="col-md-6" th:each="selection : ${variantSelections}">
+                            <label class="form-label" th:for="${'variant-' + selection.attributeUuid}">
+                                <span th:text="${selection.attributeName}">Attribute</span>
+                                <span class="text-danger" th:if="${selection.required}">*</span>
+                            </label>
+                            <select class="form-select"
+                                    th:id="${'variant-' + selection.attributeUuid}"
+                                    th:name="${'variantAttribute_' + selection.attributeUuid}">
+                                <option value="">-- Choose Option --</option>
+                                <option th:each="optionRow : ${selection.options}"
+                                        th:value="${optionRow.uuid}"
+                                        th:selected="${selection.selectedOptionUuid == optionRow.uuid}"
+                                        th:text="${optionRow.label}">Option</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning mb-0" th:if="${variantSelections == null or #lists.isEmpty(variantSelections)}">
+                        No variant-capable attributes are mapped to this product category yet.
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="active" value="true" id="catalogVariantActive"
+                               th:checked="${catalogVariant.active == null or catalogVariant.active}">
+                        <label class="form-check-label" for="catalogVariantActive">Active</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-success">Save Variant</button>
+        </div>
+    </form>
+</div>

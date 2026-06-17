@@ -15,4 +15,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ProductImageRepository extends JpaRepository<ProductImage, Long> {
     
     List<ProductImage> findByProductIdOrderByIdDesc(Long productId);
+
+    List<ProductImage> findByProduct_UuidOrderByIdDesc(String productUuid);
 }

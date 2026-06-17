@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-customar-page">
+    <div layout:fragment="main_content">
+        <div><h4>Meritten EMI <small>Home&gt;Meritten EMI Details</small></h4></div>
+        <hr/>
+
+        <div th:if="${successMessage}" class="alert alert-success">
+            <span th:text="${successMessage}"></span>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-danger">
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <strong>Meritten EMI Plan Summary</strong>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="small text-muted">Order</div>
+                            <div class="fw-bold" th:text="${plan.salesOrder.orderCode}">ORDER</div>
+                            <div class="small mt-2">
+                                <a th:href="@{/customerorder/details/{oid}(oid=${plan.salesOrder.id})}">View order</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="small text-muted">Provider</div>
+                            <div class="fw-bold" th:text="${plan.providerName != null ? plan.providerName : 'Awaiting provider response'}">Provider</div>
+                            <div class="small text-muted mt-2">Provider Reference</div>
+                            <div th:text="${plan.providerReference != null ? plan.providerReference : '-'}">-</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="small text-muted">Estimated Monthly Installment</div>
+                            <div class="fw-bold"
+                                 th:text="'BDT ' + ${#numbers.formatDecimal(plan.installmentAmount, 0, 'COMMA', 2, 'POINT')}">
+                                BDT 0.00
+                            </div>
+                            <div class="small text-muted mt-2">Tenure</div>
+                            <div th:text="${plan.tenureMonths} + ' months'">3 months</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="small text-muted">Provider Status</div>
+                            <div class="fw-bold" th:text="${plan.statusLabel}">Pending Provider Approval</div>
+                            <div class="small text-muted mt-2">Provider Response Time</div>
+                            <div th:text="${plan.providerRespondedOn != null ? plan.providerRespondedOn : '-'}">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="small text-muted">Provider-managed Balance</div>
+                            <div class="fw-bold text-danger"
+                                 th:text="'BDT ' + ${#numbers.formatDecimal(plan.remainingBalance, 0, 'COMMA', 2, 'POINT')}">
+                                BDT 0.00
+                            </div>
+                            <div class="small text-muted mt-2">Requested On</div>
+                            <div th:text="${plan.providerRequestedOn != null ? plan.providerRequestedOn : '-'}">-</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="small text-muted">Merchant Settlement</div>
+                            <div class="fw-bold text-success"
+                                 th:text="'BDT ' + ${#numbers.formatDecimal(plan.merchantSettledAmount != null ? plan.merchantSettledAmount : 0, 0, 'COMMA', 2, 'POINT')}">
+                                BDT 0.00
+                            </div>
+                            <div class="small text-muted mt-2">Settled On</div>
+                            <div th:text="${plan.merchantSettledOn != null ? plan.merchantSettledOn : '-'}">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning" th:if="${plan.providerPending}">
+                    Your Meritten EMI request has been submitted to the provider. The order remains pending until the bank or gateway approves or rejects it.
+                </div>
+
+                <div class="alert alert-success" th:if="${plan.providerApproved}">
+                    The provider approved this Meritten EMI request and settled the full order amount to the merchant. Future installments will be collected directly by the provider, not by this shop.
+                </div>
+
+                <div class="alert alert-danger" th:if="${plan.providerRejected}">
+                    The provider rejected this Meritten EMI request. You can go back to the order payment page and choose another payment method.
+                    <div class="mt-2" th:if="${paymentSummary != null and !paymentSummary.fullyPaid}">
+                        <a class="btn btn-sm btn-outline-danger"
+                           th:href="@{/customerorder/payment/{oid}(oid=${plan.salesOrder.id})}">
+                            Choose Another Payment Method
+                        </a>
+                    </div>
+                </div>
+
+                <div class="alert alert-secondary" th:if="${plan.cancelledPlan}">
+                    This Meritten EMI request was cancelled before provider approval.
+                </div>
+
+                <div class="alert alert-secondary" th:if="${plan.providerDecisionNote != null}">
+                    Provider note:
+                    <strong th:text="${plan.providerDecisionNote}">Note</strong>
+                </div>
+
+                <div class="alert alert-info" th:if="${paymentSummary != null}">
+                    Order payment summary:
+                    paid
+                    <strong th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.totalPaid, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</strong>,
+                    remaining
+                    <strong th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.remainingAmount, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</strong>.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

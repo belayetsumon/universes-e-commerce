@@ -1,0 +1,143 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h4>Category Attribute Mappings</h4>
+                <p class="text-muted mb-0">Choose which attributes appear for each category and whether they drive variants.</p>
+            </div>
+            <a class="btn btn-outline-secondary btn-sm" th:href="@{/catalog-attributes/list}">Back to Attributes</a>
+        </div>
+
+        <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <form th:action="@{/catalog-attributes/category-mappings}" method="get" class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" name="categoryUuid" required onchange="this.form.submit()">
+                            <option value="">Select category</option>
+                            <option th:each="category : ${categories}"
+                                    th:value="${category.uuid}"
+                                    th:text="${category.name}"
+                                    th:selected="${category.uuid == activeCategoryUuid}"></option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="mb-3" th:text="${categoryAttribute.id == null ? 'Add Mapping' : 'Edit Mapping'}">Add Mapping</h6>
+                        <form th:action="@{/catalog-attributes/category-mappings/save}" th:object="${categoryAttribute}" method="post">
+                            <input type="hidden" th:field="*{id}">
+                            <input type="hidden" th:field="*{uuid}">
+                            <input type="hidden" th:field="*{version}">
+                            <input type="hidden" name="categoryUuid" th:value="${activeCategoryUuid}" th:if="${activeCategoryUuid != null and !#strings.isEmpty(activeCategoryUuid)}">
+
+                            <div class="mb-3" th:if="${activeCategoryUuid != null and !#strings.isEmpty(activeCategoryUuid)}">
+                                <label class="form-label">Category</label>
+                                <input type="text"
+                                       class="form-control"
+                                       th:value="${activeCategoryName}"
+                                       readonly>
+                                <small class="text-muted">Change the category from the selector above.</small>
+                            </div>
+                            <div class="mb-3" th:if="${activeCategoryUuid == null or #strings.isEmpty(activeCategoryUuid)}">
+                                <label class="form-label">Category</label>
+                                <select class="form-select" name="categoryUuid" required>
+                                    <option value="">Select category</option>
+                                    <option th:each="category : ${categories}"
+                                            th:value="${category.uuid}"
+                                            th:text="${category.name}"
+                                            th:selected="${categoryAttribute.category != null and categoryAttribute.category.uuid == category.uuid}"></option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Attribute</label>
+                                <select class="form-select" name="attributeUuid" required>
+                                    <option value="">Select attribute</option>
+                                    <option th:each="attribute : ${attributes}"
+                                            th:value="${attribute.uuid}"
+                                            th:text="${attribute.name}"
+                                            th:selected="${categoryAttribute.attribute != null and categoryAttribute.attribute.uuid == attribute.uuid}"></option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Attribute Group</label>
+                                <input type="text" class="form-control" th:field="*{attributeGroup}" placeholder="Display, Performance, Camera">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Helper Text</label>
+                                <textarea class="form-control" rows="3" th:field="*{helperText}" placeholder="Optional form hint for vendors/admins"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Display Order</label>
+                                <input type="number" class="form-control" th:field="*{displayOrder}">
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" th:field="*{required}" id="mappingRequired">
+                                <label class="form-check-label" for="mappingRequired">Required</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" th:field="*{variantAttribute}" id="mappingVariant">
+                                <label class="form-check-label" for="mappingVariant">Variant Attribute</label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" th:field="*{active}" id="mappingActive">
+                                <label class="form-check-label" for="mappingActive">Active</label>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-sm">Save Mapping</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body table-responsive">
+                        <table class="table table-bordered table-striped align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Attribute</th>
+                                    <th>Group</th>
+                                    <th>Flags</th>
+                                    <th>Order</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="mapping : ${mappings}">
+                                    <td>
+                                        <div class="fw-semibold" th:text="${mapping.attribute.name}">Attribute</div>
+                                        <small class="text-muted" th:text="${mapping.helperText}">Helper text</small>
+                                    </td>
+                                    <td th:text="${mapping.attributeGroup}">Group</td>
+                                    <td>
+                                        <span class="badge bg-danger me-1" th:if="${mapping.required}">Required</span>
+                                        <span class="badge bg-warning text-dark me-1" th:if="${mapping.variantAttribute}">Variant</span>
+                                        <span class="badge bg-success" th:if="${mapping.active}">Active</span>
+                                    </td>
+                                    <td th:text="${mapping.displayOrder}">0</td>
+                                    <td class="text-nowrap">
+                                        <a class="btn btn-sm btn-outline-primary"
+                                           th:href="@{/catalog-attributes/category-mappings(categoryUuid=${activeCategoryUuid}, editUuid=${mapping.uuid})}">Edit</a>
+                                        <a class="btn btn-sm btn-outline-danger"
+                                           th:href="@{/catalog-attributes/category-mappings/delete/{uuid}(uuid=${mapping.uuid})}">Delete</a>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(mappings)}">
+                                    <td colspan="5" class="text-center text-muted">No mappings for the selected category yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

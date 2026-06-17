@@ -1,137 +1,913 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-customar-page">
-    <div layout:fragment = "main_content">
+    <th:block layout:fragment="page_css">
+        <style>
+            .customer-dashboard-page {
+                --cd-surface: #ffffff;
+                --cd-border: rgba(15, 23, 42, 0.08);
+                --cd-text-strong: #0f172a;
+                --cd-text-soft: #64748b;
+                --cd-navy: #0f4c81;
+                --cd-navy-deep: #12304d;
+                --cd-teal: #0f766e;
+                --cd-emerald: #15803d;
+                --cd-amber: #b45309;
+                --cd-rose: #be123c;
+                --cd-slate: #475569;
+                --cd-shadow: 0 24px 55px rgba(15, 23, 42, 0.08);
+            }
 
+            .customer-dashboard-page .dashboard-shell {
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+            }
 
-        <section class=" ">
+            .customer-dashboard-page .hero-card {
+                position: relative;
+                overflow: hidden;
+                border: 0;
+                border-radius: 1.6rem;
+                background:
+                    radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 32%),
+                    linear-gradient(135deg, #0f4c81 0%, #0f766e 50%, #12304d 100%);
+                color: #fff;
+                box-shadow: var(--cd-shadow);
+            }
 
-            <div class="card">
-                <div class="card-header">
+            .customer-dashboard-page .hero-card::after {
+                content: "";
+                position: absolute;
+                inset: auto -4.5rem -4.5rem auto;
+                width: 16rem;
+                height: 16rem;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.08);
+            }
 
-                    <h5 class="font-weight-bold "><i class="fas fa-list"></i> Customer Dashboards </h5>
+            .customer-dashboard-page .hero-card .card-body {
+                position: relative;
+                z-index: 1;
+                padding: 2rem;
+            }
 
+            .customer-dashboard-page .hero-chip,
+            .customer-dashboard-page .hero-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.14);
+                color: #fff;
+                font-weight: 600;
+            }
+
+            .customer-dashboard-page .hero-chip {
+                padding: 0.45rem 0.85rem;
+                font-size: 0.8rem;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+            }
+
+            .customer-dashboard-page .hero-badge {
+                padding: 0.55rem 0.9rem;
+                font-size: 0.92rem;
+            }
+
+            .customer-dashboard-page .hero-title {
+                margin-bottom: 0.55rem;
+                font-size: clamp(1.9rem, 2.4vw, 2.8rem);
+                font-weight: 700;
+                letter-spacing: -0.03em;
+            }
+
+            .customer-dashboard-page .hero-copy {
+                max-width: 44rem;
+                color: rgba(255, 255, 255, 0.84);
+                margin-bottom: 0;
+            }
+
+            .customer-dashboard-page .hero-meta {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+                margin-top: 1.15rem;
+            }
+
+            .customer-dashboard-page .hero-actions .btn {
+                min-width: 11rem;
+                border-radius: 1rem;
+                font-weight: 600;
+            }
+
+            .customer-dashboard-page .hero-actions .btn-light {
+                color: var(--cd-navy-deep);
+            }
+
+            .customer-dashboard-page .hero-side {
+                min-width: 20rem;
+                max-width: 24rem;
+            }
+
+            .customer-dashboard-page .hero-side-card {
+                border-radius: 1.35rem;
+                padding: 1.4rem;
+                background: rgba(255, 255, 255, 0.12);
+                border: 1px solid rgba(255, 255, 255, 0.18);
+                backdrop-filter: blur(10px);
+            }
+
+            .customer-dashboard-page .hero-avatar-wrap {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .customer-dashboard-page .hero-avatar {
+                width: 4.5rem;
+                height: 4.5rem;
+                border-radius: 1.25rem;
+                overflow: hidden;
+                background: rgba(255, 255, 255, 0.18);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.35rem;
+                font-weight: 700;
+                letter-spacing: 0.06em;
+            }
+
+            .customer-dashboard-page .hero-avatar img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .customer-dashboard-page .hero-side-label {
+                margin-bottom: 0.2rem;
+                color: rgba(255, 255, 255, 0.74);
+                font-size: 0.78rem;
+                font-weight: 700;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+            }
+
+            .customer-dashboard-page .hero-side-value {
+                margin-bottom: 0;
+                font-size: 1rem;
+                font-weight: 600;
+            }
+
+            .customer-dashboard-page .surface-card,
+            .customer-dashboard-page .metric-card,
+            .customer-dashboard-page .action-card {
+                border: 1px solid var(--cd-border);
+                border-radius: 1.3rem;
+                background: var(--cd-surface);
+                box-shadow: 0 14px 35px rgba(15, 23, 42, 0.05);
+            }
+
+            .customer-dashboard-page .metric-card,
+            .customer-dashboard-page .action-card {
+                height: 100%;
+            }
+
+            .customer-dashboard-page .surface-card .card-body,
+            .customer-dashboard-page .metric-card .card-body,
+            .customer-dashboard-page .action-card .card-body {
+                padding: 1.45rem;
+            }
+
+            .customer-dashboard-page .metric-topline,
+            .customer-dashboard-page .section-title {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 1rem;
+            }
+
+            .customer-dashboard-page .metric-topline {
+                margin-bottom: 1rem;
+            }
+
+            .customer-dashboard-page .metric-label,
+            .customer-dashboard-page .eyebrow-label {
+                color: var(--cd-text-soft);
+                font-size: 0.8rem;
+                font-weight: 700;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+            }
+
+            .customer-dashboard-page .metric-icon,
+            .customer-dashboard-page .action-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 2.9rem;
+                height: 2.9rem;
+                border-radius: 1rem;
+                font-size: 1.15rem;
+            }
+
+            .customer-dashboard-page .metric-value {
+                color: var(--cd-text-strong);
+                font-size: clamp(1.45rem, 1.8vw, 2rem);
+                font-weight: 700;
+                margin-bottom: 0.35rem;
+            }
+
+            .customer-dashboard-page .metric-copy,
+            .customer-dashboard-page .section-copy,
+            .customer-dashboard-page .support-copy,
+            .customer-dashboard-page .table-copy {
+                color: var(--cd-text-soft);
+                font-size: 0.92rem;
+                margin-bottom: 0;
+            }
+
+            .customer-dashboard-page .section-heading {
+                margin-bottom: 0.2rem;
+                color: var(--cd-text-strong);
+                font-size: 1.08rem;
+                font-weight: 700;
+            }
+
+            .customer-dashboard-page .chart-wrap {
+                position: relative;
+                min-height: 19rem;
+            }
+
+            .customer-dashboard-page .chart-wrap--compact {
+                min-height: 17rem;
+            }
+
+            .customer-dashboard-page .support-stack,
+            .customer-dashboard-page .summary-stack {
+                display: grid;
+                gap: 1rem;
+            }
+
+            .customer-dashboard-page .support-item,
+            .customer-dashboard-page .summary-item {
+                padding: 1rem 1.05rem;
+                border-radius: 1rem;
+                background: #f8fafc;
+                border: 1px solid rgba(15, 23, 42, 0.06);
+            }
+
+            .customer-dashboard-page .support-item strong,
+            .customer-dashboard-page .summary-item strong {
+                display: block;
+                color: var(--cd-text-strong);
+                margin-bottom: 0.2rem;
+                font-size: 0.93rem;
+            }
+
+            .customer-dashboard-page .support-item span,
+            .customer-dashboard-page .summary-item span {
+                color: var(--cd-text-soft);
+                font-size: 0.9rem;
+                line-height: 1.55;
+            }
+
+            .customer-dashboard-page .progress-shell {
+                height: 0.75rem;
+                border-radius: 999px;
+                background: #e2e8f0;
+                overflow: hidden;
+            }
+
+            .customer-dashboard-page .progress-bar-custom {
+                height: 100%;
+                border-radius: inherit;
+                background: linear-gradient(90deg, #0f4c81 0%, #0f766e 100%);
+            }
+
+            .customer-dashboard-page .status-pill {
+                display: inline-flex;
+                align-items: center;
+                border-radius: 999px;
+                padding: 0.4rem 0.75rem;
+                font-size: 0.78rem;
+                font-weight: 700;
+            }
+
+            .customer-dashboard-page .status-pill.tone-navy,
+            .customer-dashboard-page .metric-icon.tone-navy,
+            .customer-dashboard-page .action-icon.tone-navy {
+                background: rgba(15, 76, 129, 0.12);
+                color: var(--cd-navy);
+            }
+
+            .customer-dashboard-page .status-pill.tone-teal,
+            .customer-dashboard-page .metric-icon.tone-teal,
+            .customer-dashboard-page .action-icon.tone-teal {
+                background: rgba(15, 118, 110, 0.12);
+                color: var(--cd-teal);
+            }
+
+            .customer-dashboard-page .status-pill.tone-emerald,
+            .customer-dashboard-page .metric-icon.tone-emerald,
+            .customer-dashboard-page .action-icon.tone-emerald {
+                background: rgba(21, 128, 61, 0.12);
+                color: var(--cd-emerald);
+            }
+
+            .customer-dashboard-page .status-pill.tone-amber,
+            .customer-dashboard-page .metric-icon.tone-amber,
+            .customer-dashboard-page .action-icon.tone-amber {
+                background: rgba(180, 83, 9, 0.12);
+                color: var(--cd-amber);
+            }
+
+            .customer-dashboard-page .status-pill.tone-rose,
+            .customer-dashboard-page .metric-icon.tone-rose,
+            .customer-dashboard-page .action-icon.tone-rose {
+                background: rgba(190, 18, 60, 0.12);
+                color: var(--cd-rose);
+            }
+
+            .customer-dashboard-page .status-pill.tone-slate,
+            .customer-dashboard-page .metric-icon.tone-slate,
+            .customer-dashboard-page .action-icon.tone-slate {
+                background: rgba(71, 85, 105, 0.12);
+                color: var(--cd-slate);
+            }
+
+            .customer-dashboard-page .action-value {
+                margin-bottom: 0.35rem;
+                color: var(--cd-text-strong);
+                font-size: 1.18rem;
+                font-weight: 700;
+            }
+
+            .customer-dashboard-page .action-title {
+                margin-bottom: 0.3rem;
+                color: var(--cd-text-strong);
+                font-size: 1rem;
+                font-weight: 700;
+            }
+
+            .customer-dashboard-page .recent-orders-table thead th {
+                color: var(--cd-text-soft);
+                font-size: 0.78rem;
+                font-weight: 700;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+                border-bottom-color: rgba(15, 23, 42, 0.08);
+            }
+
+            .customer-dashboard-page .recent-orders-table tbody td {
+                vertical-align: middle;
+                border-bottom-color: rgba(15, 23, 42, 0.06);
+            }
+
+            .customer-dashboard-page .order-code {
+                color: var(--cd-text-strong);
+                font-weight: 700;
+            }
+
+            .customer-dashboard-page .empty-state {
+                padding: 1.4rem;
+                border-radius: 1rem;
+                background: #f8fafc;
+                border: 1px dashed rgba(15, 23, 42, 0.12);
+                color: var(--cd-text-soft);
+            }
+
+            @media (max-width: 1199.98px) {
+                .customer-dashboard-page .hero-side {
+                    min-width: auto;
+                    max-width: none;
+                }
+            }
+
+            @media (max-width: 991.98px) {
+                .customer-dashboard-page .hero-card .card-body,
+                .customer-dashboard-page .surface-card .card-body,
+                .customer-dashboard-page .metric-card .card-body,
+                .customer-dashboard-page .action-card .card-body {
+                    padding: 1.25rem;
+                }
+            }
+        </style>
+    </th:block>
+
+    <div layout:fragment="main_content">
+        <section class="customer-dashboard-page">
+            <div class="dashboard-shell">
+                <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+                <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+                <div class="card hero-card">
+                    <div class="card-body">
+                        <div class="d-flex flex-column flex-xl-row justify-content-between gap-4">
+                            <div>
+                                <div class="hero-chip mb-3">
+                                    <i class="bi bi-layout-text-window-reverse"></i>
+                                    Customer Command Center
+                                </div>
+                                <h1 class="hero-title" th:text="${customerName}">Customer Name</h1>
+                                <p class="hero-copy">
+                                    Keep orders, wishlist, rewards, and your seller-side access aligned from one enterprise-ready account dashboard designed for repeat customers.
+                                </p>
+                                <div class="hero-meta">
+                                    <div class="hero-badge">
+                                        <i class="bi bi-calendar2-check"></i>
+                                        <span th:text="${'Member since ' + customerSinceLabel}">Member since 01 Jan 2026</span>
+                                    </div>
+                                    <div class="hero-badge">
+                                        <i class="bi bi-heart"></i>
+                                        <span th:text="${wishlistCount + ' wishlist item(s)'}">0 wishlist item(s)</span>
+                                    </div>
+                                    <div class="hero-badge">
+                                        <i class="bi bi-shop"></i>
+                                        <span th:text="${storeCount + ' connected store(s)'}">0 connected store(s)</span>
+                                    </div>
+                                </div>
+                                <div class="hero-actions d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2 mt-4">
+                                    <a class="btn btn-light" th:href="@{/customerorder/index}">
+                                        <i class="bi bi-bag-check me-2"></i>Manage Orders
+                                    </a>
+                                    <a class="btn btn-outline-light" th:href="@{/wishlist/index}">
+                                        <i class="bi bi-heart me-2"></i>Open Wishlist
+                                    </a>
+                                    <a class="btn btn-outline-light" th:href="@{/customerwallet/wallet}">
+                                        <i class="bi bi-wallet2 me-2"></i>Rewards Wallet
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="hero-side">
+                                <div class="hero-side-card">
+                                    <div class="hero-avatar-wrap">
+                                        <div class="hero-avatar" th:if="${profileImageName == null}" th:text="${customerInitials}">CU</div>
+                                        <div class="hero-avatar" th:if="${profileImageName != null}">
+                                            <img th:src="@{/files/}+${profileImageName}" alt="Customer avatar"/>
+                                        </div>
+                                        <div>
+                                            <div class="hero-side-label">Account Coverage</div>
+                                            <p class="hero-side-value" th:text="${profileCompletionLabel}">80% of your account checklist is complete.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="progress-shell">
+                                            <div class="progress-bar-custom"
+                                                 th:style="'width:' + ${profileCompletionPercent} + '%'"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="summary-stack">
+                                        <div class="summary-item">
+                                            <strong>Primary Contact</strong>
+                                            <span th:text="${customerEmail != null ? customerEmail : 'Email not available'}">customer@example.com</span><br/>
+                                            <span th:text="${customerMobile != null ? customerMobile : 'Mobile not available'}">01700000000</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <strong>Billing Address</strong>
+                                            <span th:text="${billingAddressSummary}">No billing address saved yet.</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <strong>Recent Account Activity</strong>
+                                            <span th:text="${'Last login: ' + lastLoginLabel}">Last login: Not captured yet</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-sm-12">
 
-
+                <div class="row g-4">
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <div class="metric-card">
                             <div class="card-body">
-                                <div class="row">
+                                <div class="metric-topline">
+                                    <div class="metric-label">Total Orders</div>
+                                    <div class="metric-icon tone-navy"><i class="bi bi-receipt"></i></div>
+                                </div>
+                                <div class="metric-value" th:text="${totalOrders}">0</div>
+                                <p class="metric-copy" th:text="${fulfilledOrders + ' fulfilled | ' + cancelledOrders + ' cancelled'}">0 fulfilled | 0 cancelled</p>
+                            </div>
+                        </div>
+                    </div>
 
-                                    <div class="col-sm-6">
-                                        <div class="card mb-3">
-                                            <div class="card-header">
-                                                <i class="fas fa-list"></i> Your Wallet
-                                            </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <div class="metric-card">
+                            <div class="card-body">
+                                <div class="metric-topline">
+                                    <div class="metric-label">Open Pipeline</div>
+                                    <div class="metric-icon tone-teal"><i class="bi bi-truck"></i></div>
+                                </div>
+                                <div class="metric-value" th:text="${openOrders}">0</div>
+                                <p class="metric-copy" th:text="${returnOrders + ' return-related order(s) currently active.'}">0 return-related order(s) currently active.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-xl-2">
+                        <div class="metric-card">
+                            <div class="card-body">
+                                <div class="metric-topline">
+                                    <div class="metric-label">Gross Order Value</div>
+                                    <div class="metric-icon tone-emerald"><i class="bi bi-cash-stack"></i></div>
+                                </div>
+                                <div class="metric-value" th:text="${grossOrderValueLabel}">Tk 0</div>
+                                <p class="metric-copy" th:text="${'Average order ' + averageOrderValueLabel}">Average order Tk 0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-xl-2">
+                        <div class="metric-card">
+                            <div class="card-body">
+                                <div class="metric-topline">
+                                    <div class="metric-label">Rewards Wallet</div>
+                                    <div class="metric-icon tone-amber"><i class="bi bi-wallet2"></i></div>
+                                </div>
+                                <div class="metric-value" th:text="${walletBalanceLabel}">Tk 0</div>
+                                <p class="metric-copy" th:text="${referredCustomerCount + ' referral customer(s) linked.'}">0 referral customer(s) linked.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-xl-2">
+                        <div class="metric-card">
+                            <div class="card-body">
+                                <div class="metric-topline">
+                                    <div class="metric-label">Attention Queue</div>
+                                    <div class="metric-icon tone-rose"><i class="bi bi-shield-exclamation"></i></div>
+                                </div>
+                                <div class="metric-value" th:text="${attentionCount}">0</div>
+                                <p class="metric-copy" th:text="${outstandingPayments + ' payment issue(s) and ' + pendingStoreCount + ' store approval item(s).'}">0 payment issue(s) and 0 store approval item(s).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-12 col-xl-8">
+                        <div class="surface-card h-100">
+                            <div class="card-body">
+                                <div class="section-title mb-3">
+                                    <div>
+                                        <h2 class="section-heading">Spend And Order Trend</h2>
+                                        <p class="section-copy">A six-month view of customer-side spend momentum and order volume.</p>
+                                    </div>
+                                </div>
+                                <div class="chart-wrap">
+                                    <canvas id="orderTrendChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-4">
+                        <div class="surface-card h-100">
+                            <div class="card-body">
+                                <div class="section-title mb-3">
+                                    <div>
+                                        <h2 class="section-heading">Order Status Mix</h2>
+                                        <p class="section-copy">Track where current and historical orders are concentrated.</p>
+                                    </div>
+                                </div>
+                                <div class="chart-wrap chart-wrap--compact">
+                                    <canvas id="orderStatusChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-12 col-xl-5">
+                        <div class="surface-card h-100">
+                            <div class="card-body">
+                                <div class="section-title mb-3">
+                                    <div>
+                                        <h2 class="section-heading">Account Health</h2>
+                                        <p class="section-copy">The key items that keep checkout, rewards, and support moving smoothly.</p>
+                                    </div>
+                                    <a class="btn btn-sm btn-outline-primary" th:href="@{/customerprofileimage/index}">
+                                        <i class="bi bi-image me-1"></i>Profile Image
+                                    </a>
+                                </div>
+
+                                <div class="support-stack">
+                                    <div class="support-item">
+                                        <strong>Setup Progress</strong>
+                                        <span th:text="${profileCompletionLabel}">80% of your account checklist is complete.</span>
+                                    </div>
+                                    <div class="support-item">
+                                        <strong>Account Coverage</strong>
+                                        <span th:text="${accountSupportLabel}">profile on file | billing address saved | photo uploaded</span>
+                                    </div>
+                                    <div class="support-item">
+                                        <strong>Store Connectivity</strong>
+                                        <span th:text="${storeSummaryLabel}">0 active store(s), 0 pending approval, 0 total.</span>
+                                    </div>
+                                    <div class="support-item">
+                                        <strong>Cash-Out Activity</strong>
+                                        <span th:text="${latestCashOutSummary}">No cash-out request has been submitted yet.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-7">
+                        <div class="surface-card h-100">
+                            <div class="card-body">
+                                <div class="section-title mb-3">
+                                    <div>
+                                        <h2 class="section-heading">Recent Orders</h2>
+                                        <p class="section-copy">Latest customer-side orders with payment and status visibility.</p>
+                                    </div>
+                                    <a class="btn btn-sm btn-outline-primary" th:href="@{/customerorder/index}">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i>Full Order List
+                                    </a>
+                                </div>
+
+                                <div th:if="${#lists.isEmpty(recentOrders)}" class="empty-state">
+                                    No customer orders have been placed yet. When orders arrive, this panel will surface status, amount, and payment follow-up in one place.
+                                </div>
+
+                                <div class="table-responsive" th:if="${!#lists.isEmpty(recentOrders)}">
+                                    <table class="table recent-orders-table align-middle mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Order</th>
+                                                <th>Placed</th>
+                                                <th>Status</th>
+                                                <th>Payment</th>
+                                                <th>Total</th>
+                                                <th class="text-end">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="order : ${recentOrders}">
+                                                <td>
+                                                    <div class="order-code" th:text="${order.orderCode}">SO-0001</div>
+                                                </td>
+                                                <td class="table-copy" th:text="${order.createdLabel}">01 Jan 2026, 10:00 AM</td>
+                                                <td>
+                                                    <span class="status-pill" th:classappend="${' ' + order.statusTone}" th:text="${order.statusLabel}">Pending</span>
+                                                </td>
+                                                <td>
+                                                    <span class="status-pill" th:classappend="${' ' + order.paymentTone}" th:text="${order.paymentStateLabel}">Unpaid</span>
+                                                </td>
+                                                <td class="fw-semibold" th:text="${order.totalLabel}">Tk 0</td>
+                                                <td class="text-end">
+                                                    <a class="btn btn-sm btn-outline-primary" th:href="${order.detailsHref}">
+                                                        Details
+                                                    </a>
+                                                    <a class="btn btn-sm btn-primary ms-2" th:if="${order.canPay}" th:href="${order.paymentHref}">
+                                                        Pay Now
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-12 col-xl-8">
+                        <div class="surface-card h-100">
+                            <div class="card-body">
+                                <div class="section-title mb-3">
+                                    <div>
+                                        <h2 class="section-heading">Priority Actions</h2>
+                                        <p class="section-copy">Fast paths into the modules customers use most often.</p>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-6" th:each="action : ${priorityActions}">
+                                        <div class="action-card">
                                             <div class="card-body">
-                                                <div class="alert alert-info">
-                                                    Balance: <strong th:text="${walletBalance}">0</strong> USD
+                                                <div class="metric-topline">
+                                                    <div>
+                                                        <div class="action-title" th:text="${action.title}">Orders</div>
+                                                        <div class="action-value" th:text="${action.value}">0 tracked</div>
+                                                    </div>
+                                                    <div class="action-icon" th:classappend="${' ' + action.tone}">
+                                                        <i th:class="${action.icon}"></i>
+                                                    </div>
                                                 </div>
-
-                                            </div>
-                                        </div>
-                                    </div>
-
-
-
-
-                                    <div class="col-sm-6">
-                                        <div class="card mb-3">
-                                            <div class="card-header">
-                                                <i class="fas fa-list"></i>  Transactions
-                                            </div>
-                                            <div class="card-body">
-                                                <table class="table table-bordered">
-                                                    <tr>
-                                                        <th>Date</th><th>Type</th><th>Description</th><th>Amount</th>
-                                                    </tr>
-                                                    <tr th:each="txn : ${transactions}">
-                                                        <td th:text="${txn.timestamp}"></td>
-                                                        <td th:text="${txn.type}"></td>
-                                                        <td th:text="${txn.description}"></td>
-                                                        <td th:text="${txn.amount}"></td>
-                                                    </tr>
-                                                </table></p>
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <div class="card mb-3">
-                                            <div class="card-header">
-                                                <i class="fas fa-list"></i>  SMS Whatsapp & Emails Details Report
-                                            </div>
-                                            <div class="card-body">
-                                                <h5 class="card-title"></h5>
-                                                <p class="card-text"></p>
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <div class="card mb-3">
-                                            <div class="card-header">
-                                                <i class="fas fa-list"></i>  New User
-                                            </div>
-                                            <div class="card-body">
-                                                <h5 class="card-title"></h5>
-                                                <p class="card-text"></p>
-
-                                            </div>
-                                        </div>
-                                    </div>
-
-
-                                    <div class="col-sm-6">
-                                        <div class="card mb-3">
-                                            <div class="card-header">
-                                                <i class="fas fa-list"></i>  Latest Payment
-                                            </div>
-                                            <div class="card-body">
-                                                <h5 class="card-title"></h5>
-                                                <p class="card-text"></p>
-
-                                            </div>
-                                        </div>
-                                    </div>
-
-
-                                    <div class="col-sm-6">
-                                        <div class="card mb-3">
-                                            <div class="card-header">
-                                                <i class="fas fa-list"></i>  Amount
-                                            </div>
-                                            <div class="card-body">
-                                                <h5 class="card-title"></h5>
-                                                <p class="card-text"></p>
-
+                                                <p class="support-copy mb-3" th:text="${action.copy}">Review recent orders, delivery progress, and returns from one place.</p>
+                                                <a class="btn btn-sm btn-outline-primary" th:href="${action.href}" th:text="${action.ctaLabel}">Open</a>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
 
+                    <div class="col-12 col-xl-4">
+                        <div class="surface-card h-100">
+                            <div class="card-body">
+                                <div class="section-title mb-3">
+                                    <div>
+                                        <h2 class="section-heading">Growth And Rewards Snapshot</h2>
+                                        <p class="section-copy">A quick pulse on team growth, store presence, and wallet utility.</p>
+                                    </div>
+                                </div>
 
-
-
-                        </div>      </div>
+                                <div class="summary-stack">
+                                    <div class="summary-item">
+                                        <strong>Referral Network</strong>
+                                        <span th:text="${referredCustomerCount + ' customer(s) joined through your referral network.'}">0 customer(s) joined through your referral network.</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <strong>Seller Access</strong>
+                                        <span th:text="${storeSummaryLabel}">No vendor store is connected to this customer account yet.</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <strong>Wallet Utility</strong>
+                                        <span th:text="${walletBalanceLabel + ' available in rewards balance right now.'}">Tk 0 available in rewards balance right now.</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <strong>Next Good Move</strong>
+                                        <span th:text="${attentionCount > 0 ? 'Clear your attention queue first, then keep wishlist, rewards, and store access aligned.' : 'Your account is in a healthy state. Use the dashboard to keep orders and rewards organized.'}">Your account is in a healthy state.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
         </section>
-
-
-
-
-
-
-
-
     </div>
+
+    <th:block layout:fragment="page_js">
+        <script th:src="@{/webjars/chartjs/4.5.1/dist/chart.umd.min.js}"></script>
+        <script th:inline="javascript">
+            const monthlyLabels = /*[[${monthlyLabels}]]*/ [];
+            const monthlySpendValues = /*[[${monthlySpendValues}]]*/ [];
+            const monthlyOrderCounts = /*[[${monthlyOrderCounts}]]*/ [];
+            const orderStatusLabels = /*[[${orderStatusLabels}]]*/ [];
+            const orderStatusCounts = /*[[${orderStatusCounts}]]*/ [];
+
+            const currencyFormatter = new Intl.NumberFormat('en-BD', {
+                style: 'currency',
+                currency: 'BDT',
+                maximumFractionDigits: 0
+            });
+
+            function hasPositiveValues(values) {
+                return Array.isArray(values) && values.some(value => Number(value) > 0);
+            }
+
+            function buildDoughnutData(labels, values, colors, emptyLabel) {
+                if (!hasPositiveValues(values)) {
+                    return {
+                        labels: [emptyLabel],
+                        datasets: [{
+                            data: [1],
+                            backgroundColor: ['#cbd5e1'],
+                            borderWidth: 0
+                        }]
+                    };
+                }
+
+                return {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors,
+                        borderWidth: 0
+                    }]
+                };
+            }
+
+            if (typeof Chart !== 'undefined') {
+                const trendCanvas = document.getElementById('orderTrendChart');
+                if (trendCanvas) {
+                    new Chart(trendCanvas, {
+                        type: 'bar',
+                        data: {
+                            labels: monthlyLabels,
+                            datasets: [
+                                {
+                                    type: 'bar',
+                                    label: 'Orders',
+                                    data: monthlyOrderCounts,
+                                    yAxisID: 'yOrders',
+                                    backgroundColor: 'rgba(15, 76, 129, 0.14)',
+                                    borderColor: 'rgba(15, 76, 129, 0.82)',
+                                    borderWidth: 1.5,
+                                    borderRadius: 10,
+                                    maxBarThickness: 28
+                                },
+                                {
+                                    type: 'line',
+                                    label: 'Spend',
+                                    data: monthlySpendValues,
+                                    yAxisID: 'ySpend',
+                                    borderColor: '#0f766e',
+                                    backgroundColor: 'rgba(15, 118, 110, 0.16)',
+                                    fill: true,
+                                    tension: 0.35,
+                                    pointRadius: 3,
+                                    pointHoverRadius: 5
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: {
+                                mode: 'index',
+                                intersect: false
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                    labels: {
+                                        usePointStyle: true,
+                                        boxWidth: 10
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label(context) {
+                                            const label = context.dataset.label || '';
+                                            if (context.dataset.yAxisID === 'ySpend') {
+                                                return `${label}: ${currencyFormatter.format(context.parsed.y || 0)}`;
+                                            }
+                                            return `${label}: ${context.parsed.y || 0}`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                ySpend: {
+                                    type: 'linear',
+                                    position: 'left',
+                                    ticks: {
+                                        callback(value) {
+                                            return currencyFormatter.format(value);
+                                        }
+                                    },
+                                    grid: {
+                                        color: 'rgba(15, 23, 42, 0.06)'
+                                    }
+                                },
+                                yOrders: {
+                                    type: 'linear',
+                                    position: 'right',
+                                    grid: {
+                                        drawOnChartArea: false
+                                    },
+                                    ticks: {
+                                        precision: 0
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                const orderStatusCanvas = document.getElementById('orderStatusChart');
+                if (orderStatusCanvas) {
+                    new Chart(orderStatusCanvas, {
+                        type: 'doughnut',
+                        data: buildDoughnutData(
+                            orderStatusLabels,
+                            orderStatusCounts,
+                            ['#0f4c81', '#0f766e', '#15803d', '#b45309', '#be123c', '#475569', '#f97316', '#14b8a6'],
+                            'No order activity yet'
+                        ),
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '65%',
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        usePointStyle: true,
+                                        boxWidth: 10
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        </script>
+    </th:block>
 </div>

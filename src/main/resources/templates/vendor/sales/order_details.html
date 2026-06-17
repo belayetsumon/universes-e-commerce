@@ -20,6 +20,16 @@ and open the template in the editor.
                         </div>
                         <!-- Right Button -->
                         <div>
+                            <a class="btn btn-primary btn-sm"
+                               th:if="${shipmentEligible}"
+                               th:href="@{/vendor/shipments/new(orderId=${orderdetails.id})}">
+                                Create Shipment
+                            </a>
+                            <a class="btn btn-outline-primary btn-sm"
+                               th:if="${existingShipmentId != null}"
+                               th:href="@{/vendor/shipments/edit/{id}(id=${existingShipmentId})}">
+                                Edit Shipment
+                            </a>
 
                             <a class="btn btn-danger btn-sm float-right" th:href="@{/vendor-order/index}">Close</a>
                         </div>
@@ -27,6 +37,14 @@ and open the template in the editor.
 
 
                     <div class="card-body row">
+                        <div class="col-sm-12">
+                            <div th:if="${errorMessage}" class="alert alert-danger">
+                                <span th:text="${errorMessage}"></span>
+                            </div>
+                            <div th:if="${successMessage}" class="alert alert-success">
+                                <span th:text="${successMessage}"></span>
+                            </div>
+                        </div>
 
                         <div class="col-sm-3">
                             <div class="card">
@@ -75,24 +93,16 @@ and open the template in the editor.
 
                                                 <label class="my-2" > Update Status </label>
 
-                                                <form  th:action="@{/vendor-order/statuschange}">
+                                                <form th:if="${not #lists.isEmpty(statusType)}"
+                                                      th:action="@{/vendor-order/statuschange}" method="post">
+                                                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
                                                     <input type="hidden" name="id" th:value="${orderdetails.id}"  />
                                                     <select id="" class="form-control col-sm-3"  name="status" required>
                                                         <option value=""> Select one </option>
-                                                        <option value="PENDING"> Pending for Confirm </option>
-                                                        <option value="CONFIRMED">  Confirmed </option>
-                                                        <option value="PROCESSING"> Processing  </option>
-                                                        <option value="PACKED"> Packed </option>
-                                                        <option value="SHIPPED"> Shipped </option>
-                                                        <option value="IN_TRANSIT"> In Transit </option>
-                                                        <option value="OUT_FOR_DELIVERY"> Out For Delivery </option>
-                                                        <option value="DELIVERED">Delivered</option>
-                                                        <option value="CANCELLED"> Cancelled </option>
-
-                                                        <!--                                                        <option th:each =" statusTypes : ${statusType}"
-                                                                                                                        th:value="${statusTypes} "
-                                                                                                                        th:text="${statusTypes}"> Select one</option>-->
+                                                        <option th:each ="statusTypes : ${statusType}"
+                                                                th:value="${statusTypes}"
+                                                                th:text="${statusTypes}"> Select one</option>
                                                     </select>
                                                     <div class="form-group">
                                                         <label class="my-2" >Remark </label>
@@ -104,6 +114,19 @@ and open the template in the editor.
                                                     </div>
 
                                                 </form>
+                                                <div class="small text-muted mt-3" th:if="${#lists.isEmpty(statusType)}">
+                                                    This order is already closed and no further status updates are available.
+                                                </div>
+                                                <div class="small text-muted mt-3">
+                                                    <span th:text="${vendorCancellationMessage}">Vendor cancellation is allowed through the processing stage.</span>
+                                                </div>
+                                                <div class="alert alert-info mt-3 mb-0" th:if="${existingShipmentId != null}">
+                                                    Shipment already created for this order.
+                                                    <a th:href="@{/vendor/shipments/edit/{id}(id=${existingShipmentId})}">Open shipment</a>
+                                                </div>
+                                                <div class="small text-muted mt-3" th:if="${existingShipmentId == null and shipmentBlockReason != null}">
+                                                    Shipment not ready: <span th:text="${shipmentBlockReason}">Order status is not eligible for shipment creation.</span>
+                                                </div>
 
                                             </td>
 
@@ -160,7 +183,7 @@ and open the template in the editor.
                                                     <th scope="col">Vat Rate %</th>
                                                     <th scope="col">Vat Amount</th>
                                                     <th scope="col">Item Total</th>
-                                                    <th scope="col">Action</th>
+                                                    <th scope="col">Return Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -188,8 +211,63 @@ and open the template in the editor.
                                                     <td th:text="${orderItems.vendorAmount}"></td>
                                                     <td th:text="${orderItems.vatRate}"></td>
                                                     <td th:text="${orderItems.vatAmount}"></td>
-                                                    <td th:text="${orderItems.itemTotal}"></td>
-                                                    <td><button class="btn btn-sm btn-danger">Delete</button></td>
+                                                    <td>
+                                                        <span th:text="${orderItems.itemTotal}"></span>
+                                                        <div th:if="${orderItems.digitalAccessUrl != null or orderItems.digitalLicenseCode != null or orderItems.digitalDeliveryNote != null}" class="small text-success mt-1">
+                                                            <div>
+                                                                Digital:
+                                                                <span th:text="${orderItems.digitalDelivered} ? 'Delivered' : 'Pending delivery'"></span>
+                                                                <span th:if="${orderItems.digitalDeliveredAt != null}" th:text="' on ' + ${orderItems.digitalDeliveredAt}"></span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="mb-2">
+                                                            <span class="badge bg-warning text-dark"
+                                                                  th:if="${orderItems.itemReturnRequested}"
+                                                                  th:text="${orderItems.returnStatusLabel}">Return Requested</span>
+                                                            <span class="badge bg-success"
+                                                                  th:if="${orderItems.itemReturned}"
+                                                                  th:text="${orderItems.returnStatusLabel}">Returned</span>
+                                                            <span class="badge bg-secondary"
+                                                                  th:if="${!orderItems.itemReturnRequested and !orderItems.itemReturned}"
+                                                                  th:text="${orderItems.virtualItem ? 'No return' : orderItems.returnStatusLabel}">Not Requested</span>
+                                                        </div>
+                                                        <div class="small text-muted mb-2" th:if="${orderItems.returnRequestedAt != null}">
+                                                            Requested: <span th:text="${orderItems.returnRequestedAt}">2026-04-28T00:00</span>
+                                                        </div>
+                                                        <div class="small text-muted mb-2" th:if="${orderItems.returnRequestRemark != null}">
+                                                            Customer note: <span th:text="${orderItems.returnRequestRemark}">Changed mind</span>
+                                                        </div>
+                                                        <div class="small text-muted mb-2" th:if="${orderItems.returnedAt != null}">
+                                                            Returned: <span th:text="${orderItems.returnedAt}">2026-04-28T00:00</span>
+                                                        </div>
+                                                        <div class="small text-muted mb-2" th:if="${orderItems.returnProcessedRemark != null}">
+                                                            Process note: <span th:text="${orderItems.returnProcessedRemark}">Approved</span>
+                                                        </div>
+                                                        <div class="small text-success mb-2"
+                                                             th:if="${orderItems.returnRefundAmount != null and orderItems.returnRefundAmount > 0}">
+                                                            Customer refund:
+                                                            <span th:text="'BDT ' + ${#numbers.formatDecimal(orderItems.returnRefundAmount, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</span>
+                                                        </div>
+                                                        <form th:if="${orderItems.staffCanMarkReturned}"
+                                                              th:action="@{/vendor-order/item-return}"
+                                                              method="post">
+                                                            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                                            <input type="hidden" name="orderId" th:value="${orderdetails.id}"/>
+                                                            <input type="hidden" name="orderItemId" th:value="${orderItems.id}"/>
+                                                            <input type="text"
+                                                                   class="form-control form-control-sm mb-2"
+                                                                   name="remark"
+                                                                   placeholder="Return processing note"/>
+                                                            <button type="submit" class="btn btn-sm btn-warning text-dark w-100">
+                                                                Mark Returned
+                                                            </button>
+                                                        </form>
+                                                        <div class="small text-muted" th:unless="${orderItems.staffCanMarkReturned}">
+                                                            No item return action pending.
+                                                        </div>
+                                                    </td>
                                                 </tr>
 
                                                 <!-- Totals Row -->

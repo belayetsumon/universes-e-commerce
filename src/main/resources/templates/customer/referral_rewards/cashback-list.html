@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="customer-layout">
+    <div layout:fragment="main_content">
+        <section>
+            <div class="row">
+                <div class="col-sm-6"><h4>My Cashback</h4></div>
+            </div>
+        </section>
+        <hr/>
+
+        <div class="card">
+            <div class="card-header">
+                <strong><i class="bi bi-percent"></i> Cashback History</strong>
+            </div>
+            <div class="card-body table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Order</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Credited To</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="cb,status:${cashbacks}">
+                            <td th:text="${status.count}">1</td>
+                            <td th:text="${cb.orderId}">0</td>
+                            <td th:text="${cb.amount}">0</td>
+                            <td th:text="${cb.status}">PENDING</td>
+                            <td th:text="${cb.creditedTo}">WALLET</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+

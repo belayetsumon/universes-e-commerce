@@ -1,23 +1,20 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
 
-    <div layout:fragment = "main_content">
+    <div layout:fragment="main_content">
         <section>
             <div class="row">
-                <div class="col-sm-3"><h4> Referral Rewards </h4></div>
-                <div class="col-sm-5">   <nav aria-label="breadcrumb">
+                <div class="col-sm-3"><h4>Referral Rewards</h4></div>
+                <div class="col-sm-5">
+                    <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
                             <li class="breadcrumb-item active" aria-current="page">Referral Rewards</li>
-                            <li class="breadcrumb-item active" aria-current="page">Wallet Transaction</li>
+                            <li class="breadcrumb-item active" aria-current="page">Reward Transaction</li>
                         </ol>
                     </nav>
-                </div></div>
+                </div>
+            </div>
         </section>
         <hr/>
         <div class="row">
@@ -26,95 +23,68 @@ and open the template in the editor.
                 <div class="card">
                     <div class="card-header">
                         <div class="row">
-                            <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i> Wallet Transaction  List</strong> </div>
-
-                            <div class="col-sm-7 text-end">
-                                <!--                                <div class="btn-group ">
-                                                                    <a class="btn btn-success btn-sm " th:href="@{/product/create}"> <i class="bi bi-plus-circle"></i> Add Product </a>
-                                                                    <a th:href="@{/admin/index}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>
-                                                                </div>-->
+                            <div class="col-sm-5 font-weight-bold">
+                                <strong><i class="bi bi-list-task"></i> Reward Transaction List</strong>
                             </div>
 
+                            <div class="col-sm-7 text-end">
+                            </div>
                         </div>
                     </div>
 
-
-
-
-
                     <div class="card-body table-responsive">
+                        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <span th:text="${errorMessage}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+
                         <table id="example" class="table table-bordered table-hover table-striped">
                             <thead class="thead-light">
                                 <tr>
                                     <th>#</th>
-                                    <th>Wallet</th>
-                                    <th>User </th>
-                                    <th>Amount </th>
-                                    <th>Description </th>
-                                    <th>type </th>
-                                    <th>Created At </th>
-                                    <th>Expiry Date </th>
-                                    <th>Redeemed </th>
-                                    <th>Expired </th>
-
-
-
+                                    <th>Reward Owner</th>
+                                    <th>Transaction User</th>
+                                    <th>Amount</th>
+                                    <th>Description</th>
+                                    <th>Transaction Type</th>
+                                    <th>Created At</th>
+                                    <th>Expiry Date</th>
+                                    <th>Redeemed</th>
+                                    <th>Expired</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="lists,status:${list}">
-
+                                <tr th:each="txn, status : ${list}">
                                     <th th:text="${status.count}">1</th>
-
-                                    <td th:text="${lists.wallet.users.firstName}">Otto</td>
-
-                                    <td th:text="${lists.user.firstName}">  </td>
-                                    <td th:text="${lists.amount}">  </td>
-                                    <td th:text="${lists.description}">  </td>
-
-                                    <td th:text="${lists.createdAt}">  </td>
-
-                                    <td th:text="${lists.expiryDate}">  </td>
-
-                                    <td th:text="${lists.type}">  </td>
-
-                                    <td th:text="${lists.redeemed}">  </td>
-
-                                    <td th:text="${lists.expired}">  </td>
-
+                                    <td th:text="${txn.wallet.users.firstName + (txn.wallet.users.lastName != null and !#strings.isEmpty(txn.wallet.users.lastName) ? ' ' + txn.wallet.users.lastName : '')}">Wallet Owner</td>
+                                    <td th:text="${txn.users.firstName + (txn.users.lastName != null and !#strings.isEmpty(txn.users.lastName) ? ' ' + txn.users.lastName : '')}">Transaction User</td>
+                                    <td th:text="${txn.amount}">0.00</td>
+                                    <td th:text="${txn.description}">Description</td>
+                                    <td th:text="${txn.type}">CREDIT</td>
+                                    <td th:text="${txn.createdAt != null ? #temporals.format(txn.createdAt, 'dd-MM-yyyy HH:mm') : '-'}">01-01-2026 10:00</td>
+                                    <td th:text="${txn.expiryDate != null ? #temporals.format(txn.expiryDate, 'dd-MM-yyyy HH:mm') : '-'}">01-02-2026 10:00</td>
+                                    <td th:text="${txn.redeemed}">false</td>
+                                    <td th:text="${txn.expired}">false</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
 
-
-
-
-                </div><!--  Card  end-->
-
-
-            </div><!--  Main Content  end-->
             <div class="col-sm-3">
-
                 <div class="card">
                     <div class="card-header">
                         <div class="row">
-                            <div class="col-sm-5 font-weight-bold ">  <strong><i class="fas fa-list"></i> Filter</strong> </div>
-
-
-
+                            <div class="col-sm-5 font-weight-bold">
+                                <strong><i class="fas fa-list"></i> Filter</strong>
+                            </div>
                         </div>
                     </div>
                     <div class="card-body">
-
-
-
-                    </div><!--  Card body end-->
-
-
-                </div><!--  Card  end-->
-
-
+                    </div>
+                </div>
             </div>
-        </div>   <!--  Layout end-->      </div><!--  Main Content  end-->
+        </div>
+    </div>
 </div>

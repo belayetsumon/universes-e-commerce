@@ -6,6 +6,7 @@
 package com.ecommerce.app;
 
 import com.ecommerce.app.module.user.componant.CustomLoginSuccessHandler;
+import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 import org.springframework.security.authentication.*;
@@ -15,7 +16,9 @@ import org.springframework.security.config.annotation.web.builders.*;
 import org.springframework.security.config.annotation.web.configuration.*;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.security.crypto.bcrypt.*;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.*;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableWebSecurity
@@ -26,12 +29,23 @@ public class SecurityConfig {
     private CustomLoginSuccessHandler customLoginSuccessHandler;
 
     public static final String[] STATIC_WHITELIST = {
-        "/resources/**", "/static/**", "/css/**", "/bootstrap-5.2.3-dist/**", "/bootstrap-5.2.3-dist/css/**", "/bootstrap-5.2.3-dist/js/**", "/plugin/owlcarousel/**", "/fontawesome/css/**", "/fontawesome/webfonts/**", "/plugin/owlcarousel/assets/**", "/js/**", "/img/**", "/webjars/**", "/files/**"
+        "/assets/**",
+        "/css/**",
+        "/js/**",
+        "/img/**",
+        "/plugin/**",
+        "/webjars/**",
+        "/files/**"
     };
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public ServletListenerRegistrationBean<HttpSessionEventPublisher> httpSessionEventPublisher() {
+        return new ServletListenerRegistrationBean<>(new HttpSessionEventPublisher());
     }
 
     @Bean
@@ -44,24 +58,33 @@ public class SecurityConfig {
         return authenticationManagerBuilder.build();
     }
 
+    String[] PUBLIC_URLS = {
+        "/",
+        "/public/**",
+        "/cart/**",
+        "/carts/**",
+        "/users/uregistrations",
+        "/users/usave",
+        "/users/frontRegistrationSave",
+        "/users/userforgotpassword",
+        "/forgotpassword/**",
+        "/district/select-district",
+        "/district/save-district",
+        "/error"
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Disable CSRF if not needed
+                .csrf(
+                        csrf -> csrf.disable()
+                //                        csrf -> csrf
+                //                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                //                .ignoringRequestMatchers(PUBLIC_URLS)
+                )
                 .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                        "/",
-                        "/public/**",
-                        "/cart/**",
-                        "/carts/**",
-                        "/users/uregistrations",
-                        "/users/usave",
-                        "/users/userforgotpassword",
-                        "/forgotpassword/**",
-                        "/district/select-district",
-                        "/district/save-district",
-                        "/error").permitAll()
-                .requestMatchers("/users/frontRegistrationSave").permitAll()
+                .requestMatchers(STATIC_WHITELIST).permitAll()
+                .requestMatchers(PUBLIC_URLS).permitAll()
                 .anyRequest().authenticated()
                 )
                 .formLogin(login -> login
@@ -73,35 +96,18 @@ public class SecurityConfig {
                 )
                 .logout(logout -> logout
                 .logoutUrl("/users/logout")
+                .logoutRequestMatcher(new AntPathRequestMatcher("/users/logout"))
                 .logoutSuccessUrl("/public/member-login")
                 .deleteCookies("JSESSIONID")
                 .invalidateHttpSession(true)
+                .clearAuthentication(true)
+                .permitAll()
                 )
                 .exceptionHandling(ex -> ex
                 .accessDeniedPage("/access-denied")
                 );
 
         return http.build();
-    }
-
-    @Bean
-    public WebSecurityCustomizer ignoringCustomizer() {
-        return web -> web.ignoring().requestMatchers(
-                "/resources/**",
-                "/static/**",
-                "/css/**",
-                //                "/bootstrap/**",
-                //                "/bootstrap-5.2.3-dist/css/**",
-                //                "/bootstrap-5.2.3-dist/js/**",
-                //                "/plugin/owlcarousel/**",
-                //                "/fontawesome/css/**",
-                //                "/fontawesome/webfonts/**",
-                //                "/plugin/owlcarousel/assets/**",
-                "/js/**",
-                "/img/**",
-                "/webjars/**",
-                "/files/**"
-        );
     }
 
 }

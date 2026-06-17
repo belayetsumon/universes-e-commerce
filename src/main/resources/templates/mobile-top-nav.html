@@ -12,7 +12,7 @@
 
                 <div sec:authorize="!isAuthenticated()">
                     <a class="text-white"
-                       th:href="@{/front-view/member-login}"><i class="fas fa-sign-in-alt"></i> Login</a>
+                       th:href="@{/public/member-login}"><i class="fas fa-sign-in-alt"></i> Login</a>
                 </div>  </div></div>
         <div class="col-2 text-white text-center"><div class="row"> <a class="text-white" th:href="@{/cart/index}"> <i class="fas fa-shopping-cart"></i> <span class="badge badge-pill badge-warning" th:text="${totaltest}">4</span></a> </div> </div>
     </div>   
@@ -33,11 +33,11 @@
         <li class="list-group-item"><a th:class="textMaroon"  th:href="@{/front-view/all-instructor}"> <i class="fas fa-book-open"></i> All Instructor</a></li>
         <li class="list-group-item"><a th:class="textMaroon"  th:href="@{/front-view/blog}"><i class="fas fa-blog"></i> Blog</a></li>-->
         <li sec:authorize="!isAuthenticated()" class="list-group-item">
-            <a class="textMaroon" th:href="@{/front-view/front-registration}"> <i class="fab fa-wpforms"></i> Registration</a>
+            <a class="textMaroon" th:href="@{/public/front-registration}"> <i class="fab fa-wpforms"></i> Registration</a>
         </li>
 
         <li class="list-group-item">
-            <a class="textMaroon" th:href="@{/front-view/contactUs}"> <i class="fas fa-id-card-alt"></i> Contact Us</a>
+            <a class="textMaroon" th:href="@{/public/contact-us}"> <i class="fas fa-id-card-alt"></i> Contact Us</a>
         </li>
 
         <li class="list-group-item">
@@ -47,13 +47,13 @@
 
             <div sec:authorize="!isAuthenticated()">
                 <a class="textMaroon"
-                   th:href="@{/front-view/member-login}"><i class="fas fa-sign-in-alt"></i> Login</a>
+                   th:href="@{/public/member-login}"><i class="fas fa-sign-in-alt"></i> Login</a>
             </div>
         </li>
 
 
         <li class="list-group-item">
-            <a class="textMaroon" th:href="@{/front-view/contactUs}"> <i class="fas fa-info-circle"></i> Help</a>
+            <a class="textMaroon" th:href="@{/public/help}"> <i class="fas fa-info-circle"></i> Help</a>
         </li>
        </ul>
     

@@ -12,6 +12,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -25,6 +26,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
  */
 @Entity
 @EntityListeners(AuditingEntityListener.class)
+@Table(name = "promotions_notification_log")
 public class CustomerNotifications {
 
     @Id
@@ -37,6 +39,21 @@ public class CustomerNotifications {
     private String message;
     private boolean seen = false;
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    private String eventName;
+
+    private String channel;
+
+    private String recipient;
+
+    @Column(columnDefinition = "TEXT")
+    private String payloadSummary;
+
+    private String status;
+
+    private int retryCount = 0;
+
+    private LocalDateTime sentAt;
 
     /// Audit ///
     @CreatedBy
@@ -106,6 +123,62 @@ public class CustomerNotifications {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getEventName() {
+        return eventName;
+    }
+
+    public void setEventName(String eventName) {
+        this.eventName = eventName;
+    }
+
+    public String getChannel() {
+        return channel;
+    }
+
+    public void setChannel(String channel) {
+        this.channel = channel;
+    }
+
+    public String getRecipient() {
+        return recipient;
+    }
+
+    public void setRecipient(String recipient) {
+        this.recipient = recipient;
+    }
+
+    public String getPayloadSummary() {
+        return payloadSummary;
+    }
+
+    public void setPayloadSummary(String payloadSummary) {
+        this.payloadSummary = payloadSummary;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public int getRetryCount() {
+        return retryCount;
+    }
+
+    public void setRetryCount(int retryCount) {
+        this.retryCount = retryCount;
+    }
+
+    public LocalDateTime getSentAt() {
+        return sentAt;
+    }
+
+    public void setSentAt(LocalDateTime sentAt) {
+        this.sentAt = sentAt;
     }
 
     public String getCreatedBy() {

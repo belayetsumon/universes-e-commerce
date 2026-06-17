@@ -1,169 +1,218 @@
-/* ---------------------------------------------------
-    SIDEBAR STYLE
------------------------------------------------------ */
-body{
-    font-family: 'Roboto', sans-serif;
-    /*    font-size: 14px;*/
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #f0f2f5;
+    /*    overflow-x: hidden;  Prevents horizontal scrolling */
 }
 
-#header {
-    border-bottom: 1px solid #d8d8d8;
-    box-shadow: 0 0 3px #ccc;
-    z-index: 1000;
-    margin: 0;
-    padding: 0;
-
+body.admin-dashboard-layout {
+    overflow: hidden;
 }
 
-#page-header{
-    vertical-align: middle;
-    margin: 20px 0 15px;
-    padding: 0;
-    padding-bottom: 0px;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #e9e9e9;
+.sidebar {
+    width: 280px;
+    background-color: #343a40;
+    color: white;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s ease;
+    flex-shrink: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1030;
+    box-shadow: 0 14px 28px rgba(0,0,0,.25),0 10px 10px rgba(0,0,0,.22) !important;
+    overflow: hidden; /* keep scroll inside .sidebar-content */
 }
-#sidebar {
-    background: #19222e;
-    color: #fff;
-    transition: all 0.3s;
-    font-family: 'Roboto', sans-serif;
-    font-size: 16px;
+.sidebar-header {
+    height: 54px; /* Matches navbar height */
+    padding: 0 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
 }
-
-.menu-item{
-    border: #9900cc!important;
-
-
+.sidebar-header .navbar-brand {
+    color: white;
+    text-decoration: none;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0;
 }
-.accordion-header a:hover {
-    background-color: #fff; /* Hover color */
+.sidebar-search {
+    padding: 1rem;
 }
-.menu-item{
-    background-color:#242d37!important;
-    border-bottom: 1px solid #2b3642;
-    color: #b3cbdd;
-    padding: 10px;
-    font-size: 1em;
-    display: block;
+.sidebar-search .form-control {
+    background-color: #495057;
+    border: none;
+    color: white;
 }
-.menu-header{
-    background-color:#242d37!important;
-    border-bottom: 1px solid #2b3642;
-    color: #b3cbdd;
-    padding: 10px;
-    font-size: 1em;
-    display: block;
+.sidebar-search .form-control::placeholder {
+    color: #ced4da;
 }
-
-
-
-
-#sidebar.active {
-    margin-left: -250px;
+.sidebar-content {
+    flex: 1 1 auto;
+    min-height: 0; /* critical: allow flex child to actually scroll */
+    overflow-y: auto; /* This makes the content area scrollable */
+    overflow-x: hidden;
+    padding-bottom: 1.5rem;
+    overscroll-behavior: contain;
+    scroll-behavior: smooth;
+    scrollbar-width: thin; /* For Firefox */
+    scrollbar-color: rgba(255,255,255,.35) transparent; /* thumb / track */
 }
-
-#sidebar .sidebar-header {
-    background:#19222e;
+.sidebar-content::-webkit-scrollbar {
+    width: 8px;
 }
-
-
-#sidebar ul p {
-    color: #fff;
-    padding: 10px;
+.sidebar-content::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,.25);
+    border-radius: 999px;
 }
-
-#sidebar ul li  {
-    background-color:#242d37;
-    border-bottom: 1px solid #2b3642;
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,.35);
 }
-
-#sidebar ul li:hover  {
-    background-color:  #242d37;
+.sidebar-content::-webkit-scrollbar-track {
+    background: transparent;
 }
-
-
-#sidebar ul li a {
-    color: #b3cbdd;
-    padding: 10px;
-    font-size: 1em;
-    display: block;
+.sidebar-nav .nav-item .nav-link {
+    color: rgba(255, 255, 255, 0.7);
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s;
 }
-
-#sidebar ul li a:hover {
-    color: #7386D5;
-    background:#444444;
+.sidebar-nav {
+    padding-bottom: 1rem;
 }
-
-#sidebar ul li.active>a,
-a[aria-expanded="true"] {
-    /*    color: #fff;*/
-    background: #242d37;
+.sidebar-nav .nav-item .nav-link:hover,
+.sidebar-nav .nav-item .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-left: 4px solid #0d6efd;
+    padding-left: 1.25rem;
 }
-
-a[data-toggle="collapse"] {
-    position: relative;
-}
-
-.dropdown-toggle::after {
-    display: block;
-    position: absolute;
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
-}
-
-ul ul a {
-    font-size: 0.9em !important;
-    padding-left: 30px !important;
-    background: #293141;
-}
-
-ul ul  a:hover {
-    background: #19222e;
-}
-
-ul.CTAs {
-    padding: 20px;
-}
-
-ul.CTAs a {
+.sidebar-nav .nav-item .nav-link i {
+    margin-right: 0.75rem;
+    width: 20px;
     text-align: center;
-    font-size: 0.9em !important;
-    display: block;
-    border-radius: 5px;
-    margin-bottom: 5px;
+}
+.sidebar-nav .nav-item .nav-link span {
+    flex-grow: 1;
+}
+.main-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
+}
+.main-container {
+    margin-left: 280px;
+    transition: margin-left 0.3s ease;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow: hidden;
+}
+.navbar {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    position: fixed;
+    top: 0;
+    left: 280px;
+    right: 0;
+    z-index: 1040;
+    transition: left 0.3s ease;
+    background-color: #343a40 !important;
+}
+/* Reduce font size of top navbar items */
+.navbar .nav-link {
+    font-size: 0.9rem;
+}
+.main-content {
+    margin-top: 56px; /* Height of the navbar */
+    overflow-y: auto; /* Enables vertical scrolling within this container */
+    overflow-x: hidden; /* Prevents horizontal scrolling */
+    flex-grow: 1; /* Allows the content area to fill available vertical space */
+    min-height: 0;
+    overscroll-behavior: contain;
+    padding-bottom: 1.5rem;
+}
+.card {
+    border-radius: 0.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+.card-title {
+    font-weight: 600;
+}
+.card-icon {
+    font-size: 2.5rem;
+    padding: 1.25rem;
+    border-radius: 50%;
+    color: white;
+}
+.navbar-dark .navbar-nav .nav-link {
+    color: rgba(255,255,255,.55);
+}
+.navbar-dark .navbar-nav .nav-link.active, .navbar-dark .navbar-nav .nav-link:hover {
+    color: rgba(255,255,255,.75);
 }
 
-a.download {
-    background: #fff;
-    color: #7386D5;
+/* Submenu styles */
+.sidebar-nav .nav-item .nav-link[data-bs-toggle="collapse"] i.bi-chevron-right {
+    transition: transform 0.2s ease-in-out;
+}
+.sidebar-nav .nav-item .nav-link[aria-expanded="true"] i.bi-chevron-right {
+    transform: rotate(90deg);
+}
+.sidebar-nav .nav-item .collapse .nav-link {
+    padding-left: 2.75rem;
+    border-left: none;
+}
+.sidebar-nav .nav-item .collapse .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+.sidebar-nav .nav-item .collapse .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
-
-
-/*
- * Navbar
- */
-
-
-/*
- * Utilities
- */
-
-.border-top {
-    border-top: 1px solid #e5e5e5;
+/* Collapsed sidebar styles */
+.sidebar-collapsed .sidebar {
+    width: 70px;
 }
-.border-bottom {
-    border-bottom: 1px solid #e5e5e5;
+.sidebar-collapsed .sidebar .sidebar-header,
+.sidebar-collapsed .sidebar .sidebar-search,
+.sidebar-collapsed .sidebar .sidebar-nav span {
+    display: none;
+}
+.sidebar-collapsed .sidebar .sidebar-nav .nav-item .nav-link {
+    padding: 0.75rem 0;
+    justify-content: center;
+}
+.sidebar-collapsed .sidebar .sidebar-nav .nav-item .nav-link i {
+    margin-right: 0;
+}
+.sidebar-collapsed .sidebar .nav-item .nav-link[data-bs-toggle="collapse"] i.bi-chevron-right {
+    display: none;
+}
+.sidebar-collapsed .sidebar .collapse {
+    display: none !important;
+}
+.sidebar-collapsed .main-container {
+    margin-left: 70px;
+}
+.sidebar-collapsed .navbar {
+    left: 70px;
+}
+.footer {
+    box-shadow: 0 -0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+#sidebar-toggle-btn {
+    background-color: #343a40;
+    border-color: #343a40;
+    color: rgba(255, 255, 255, 0.7); /* Slightly grayed out text color for a better hover effect */
+    transition: color 0.2s ease-in-out;
 }
 
-.textMaroon{
-    color:#992337;
-}
-.bgMaroon {
-    background-color: #992337;
-}
-.borderColor{
-    border-color: #992337;
+#sidebar-toggle-btn:hover {
+    color: white; /* Change to pure white on hover */
 }

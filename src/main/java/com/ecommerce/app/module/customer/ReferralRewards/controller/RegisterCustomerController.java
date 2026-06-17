@@ -10,6 +10,7 @@ import com.ecommerce.app.module.ReferralRewards.model.WalletTransaction;
 import com.ecommerce.app.module.ReferralRewards.repository.ReferralRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.WalletRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.WalletTransactionRepository;
+import com.ecommerce.app.module.ReferralRewards.services.ReferralService;
 import com.ecommerce.app.module.ReferralRewards.services.ReferralRewardService;
 import com.ecommerce.app.module.ReferralRewards.services.WalletTransactionService;
 import com.ecommerce.app.module.user.model.Users;
@@ -57,6 +58,9 @@ public class RegisterCustomerController {
     @Autowired
     WalletRepository walletRepository;
 
+    @Autowired
+    private ReferralService referralService;
+
     @GetMapping("/register")
     public String showRegisterForm(@RequestParam(required = false) String ref, Model model) {
         model.addAttribute("user", new Users());
@@ -76,21 +80,8 @@ public class RegisterCustomerController {
 //        user.setEmailVerificationToken(UUID.randomUUID().toString());
         usersRepository.save(user);
 
-        // Create referral code for this user
-        Referral referral = new Referral();
-        referral.setReferralCode(generateReferralCode());
-        referral.setUsers(user);
-        referralRepository.save(referral);
-
-        // Link referral if ref param present
-        if (ref != null && !ref.isEmpty()) {
-            Optional<Referral> referringReferral = referralRepository.findByReferralCode(ref);
-            if (referringReferral.isPresent() && referringReferral.get().getReferredUser() == null) {
-                Referral r = referringReferral.get();
-                r.setReferredUser(user);
-                referralRepository.save(r);
-            }
-        }
+        Users referrer = referralService.resolveReferrerByCode(ref);
+        referralService.createReferralProfileAndGrantSignupReward(user, referrer);
 
         // TODO: Send verification email with token (user.getEmailVerificationToken())
         redirect.addFlashAttribute("message", "Registration successful! Please verify your email.");
@@ -110,11 +101,6 @@ public class RegisterCustomerController {
 //            redirect.addFlashAttribute("error", "Invalid verification token.");
 //        }
         return "redirect:/login";
-    }
-
-    private String generateReferralCode() {
-        // Generate a UUID, remove dashes, and take the first 6 uppercase characters
-        return UUID.randomUUID().toString().replaceAll("-", "").substring(0, 6).toUpperCase();
     }
 
     @GetMapping("/wallet")

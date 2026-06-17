@@ -6,15 +6,19 @@
 package com.ecommerce.app.module.user.controller;
 
 import com.ecommerce.app.exception.ForeignKeyConstraintException;
+import com.ecommerce.app.module.ReferralRewards.services.ReferralService;
 import com.ecommerce.app.module.ReferralRewards.model.Referral;
 import com.ecommerce.app.module.ReferralRewards.model.Wallet;
 import com.ecommerce.app.module.ReferralRewards.repository.ReferralRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.WalletRepository;
 import com.ecommerce.app.module.user.componant.UserValidator;
+import com.ecommerce.app.module.user.dto.AdminUserPasswordForm;
+import com.ecommerce.app.module.user.model.LoginHistory;
 import com.ecommerce.app.module.user.model.Role;
 import com.ecommerce.app.module.user.model.Status;
 import com.ecommerce.app.module.user.model.UserType;
 import com.ecommerce.app.module.user.model.Users;
+import com.ecommerce.app.module.user.ripository.LoginHistoryRepository;
 import com.ecommerce.app.module.user.ripository.RoleRepository;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.user.services.LoginEventService;
@@ -34,6 +38,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -57,6 +63,9 @@ public class UsersController {
     RoleRepository roleRepository;
 
     @Autowired
+    LoginHistoryRepository loginHistoryRepository;
+
+    @Autowired
     UserValidator userValidator;
 
     @Autowired
@@ -70,6 +79,9 @@ public class UsersController {
 
     @Autowired
     WalletRepository walletRepository;
+
+    @Autowired
+    ReferralService referralService;
 
     @RequestMapping(value = {"", "/", "/index"})
     public String index(Model model) {
@@ -85,9 +97,93 @@ public class UsersController {
     }
 
     @RequestMapping("/view/{uid}")
-    public String view(Model model, @PathVariable Long uid) {
-        model.addAttribute("users", usersRepository.findById(uid));
+    public String view(Model model, @PathVariable Long uid, RedirectAttributes redirectAttributes) {
+        Users user = usersRepository.findById(uid).orElse(null);
+        if (user == null) {
+            redirectAttributes.addFlashAttribute("error", "User not found.");
+            return "redirect:/users/index";
+        }
+        model.addAttribute("users", user);
         return "user/view";
+    }
+
+    @GetMapping("/login-history")
+    public String loginHistory(Model model) {
+        model.addAttribute("historyEntries", loginHistoryRepository.findAllForAdminList());
+        model.addAttribute("historyTitle", "All User Login History");
+        model.addAttribute("historySubtitle", "Recent login, logout, failed attempt, and session activity records across all users.");
+        model.addAttribute("backUrl", "/users/index");
+        model.addAttribute("backLabel", "Back to Users");
+        model.addAttribute("selectedUser", null);
+        return "user/login_history";
+    }
+
+    @GetMapping("/login-history/{uid}")
+    public String userLoginHistory(Model model, @PathVariable Long uid, RedirectAttributes redirectAttributes) {
+        Users user = usersRepository.findById(uid).orElse(null);
+        if (user == null) {
+            redirectAttributes.addFlashAttribute("error", "User not found.");
+            return "redirect:/users/index";
+        }
+
+        List<LoginHistory> historyEntries = loginHistoryRepository.findByUserIdForAdminList(uid);
+        model.addAttribute("historyEntries", historyEntries);
+        model.addAttribute("historyTitle", "Login History");
+        model.addAttribute("historySubtitle", "Detailed login activity for " + buildDisplayName(user) + ".");
+        model.addAttribute("backUrl", "/users/view/" + uid);
+        model.addAttribute("backLabel", "Back to Profile");
+        model.addAttribute("selectedUser", user);
+        return "user/login_history";
+    }
+
+    @GetMapping("/change-password/{id}")
+    public String changePasswordForm(Model model, @PathVariable Long id, RedirectAttributes redirectAttributes) {
+        Users user = usersRepository.findById(id).orElse(null);
+        if (user == null) {
+            redirectAttributes.addFlashAttribute("error", "User not found.");
+            return "redirect:/users/index";
+        }
+
+        model.addAttribute("users", user);
+        model.addAttribute("passwordForm", new AdminUserPasswordForm());
+        return "user/change_password";
+    }
+
+    @PostMapping("/change-password/{id}")
+    public String changePassword(
+            Model model,
+            @PathVariable Long id,
+            @Valid @ModelAttribute("passwordForm") AdminUserPasswordForm passwordForm,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes) {
+
+        Users user = usersRepository.findById(id).orElse(null);
+        if (user == null) {
+            redirectAttributes.addFlashAttribute("error", "User not found.");
+            return "redirect:/users/index";
+        }
+
+        if (!bindingResult.hasFieldErrors("confirmPassword")
+                && passwordForm.getNewPassword() != null
+                && !passwordForm.getNewPassword().equals(passwordForm.getConfirmPassword())) {
+            bindingResult.rejectValue("confirmPassword", "mismatch", "New password and confirmation password must match.");
+        }
+
+        if (!bindingResult.hasFieldErrors("newPassword")
+                && passwordMatches(passwordForm.getNewPassword(), user.getPassword())) {
+            bindingResult.rejectValue("newPassword", "same", "Choose a new password that is different from the current one.");
+        }
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("users", user);
+            return "user/change_password";
+        }
+
+        user.setPassword(bCryptPasswordEncoder.encode(passwordForm.getNewPassword()));
+        usersRepository.save(user);
+
+        redirectAttributes.addFlashAttribute("success", "Password updated successfully for " + user.getFirstName() + ".");
+        return "redirect:/users/view/" + user.getId();
     }
 
     @RequestMapping("/registrations")
@@ -242,33 +338,47 @@ public class UsersController {
 
         usersRepository.save(users);
 
-        Users referringUsers = null;
-
-        if (ref != null && !ref.isEmpty()) {
-            Optional<Referral> referringReferral = referralRepository.findByReferralCode(ref);
-
-            if (referringReferral.isPresent()) {
-                referringUsers = referringReferral.get().getUsers();
-            }
-        }
-
-        // Create referral code for this user
-        Referral referral = new Referral();
-
-        referral.setReferralCode(usersService.generateRefaraleCode());
-        referral.setUsers(users);
-        referral.setReferredUser(referringUsers);
-
-        referralRepository.save(referral);
-        Wallet wallet = new Wallet();
-
-        wallet.setBalance(BigDecimal.ZERO);
-        wallet.setUsers(users);
-        walletRepository.save(wallet);
+        Users referringUsers = referralService.resolveReferrerByCode(ref);
+        referralService.createReferralProfileAndGrantSignupReward(users, referringUsers);
         redirectAttributes.addFlashAttribute(
                 "success", "Congratulations! You have successfully registered.");
 
         return "redirect:/public/member-login";
+    }
+
+    private boolean passwordMatches(String rawPassword, String storedPassword) {
+        if (rawPassword == null || storedPassword == null) {
+            return false;
+        }
+
+        if (storedPassword.startsWith("$2a$") || storedPassword.startsWith("$2b$") || storedPassword.startsWith("$2y$")) {
+            return bCryptPasswordEncoder.matches(rawPassword, storedPassword);
+        }
+
+        return rawPassword.equals(storedPassword);
+    }
+
+    private String buildDisplayName(Users user) {
+        if (user == null) {
+            return "Unknown User";
+        }
+
+        String firstName = user.getFirstName() == null ? "" : user.getFirstName().trim();
+        String lastName = user.getLastName() == null ? "" : user.getLastName().trim();
+        String fullName = (firstName + " " + lastName).trim();
+        if (!fullName.isEmpty()) {
+            return fullName;
+        }
+
+        if (user.getEmail() != null && !user.getEmail().isBlank()) {
+            return user.getEmail().trim();
+        }
+
+        if (user.getMobile() != null && !user.getMobile().isBlank()) {
+            return user.getMobile().trim();
+        }
+
+        return "User #" + user.getId();
     }
 
 }

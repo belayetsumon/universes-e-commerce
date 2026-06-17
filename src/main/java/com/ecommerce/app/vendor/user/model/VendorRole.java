@@ -5,6 +5,7 @@
 package com.ecommerce.app.vendor.user.model;
 
 import com.ecommerce.app.module.user.model.Users;
+import com.ecommerce.app.vendor.model.Vendorprofile;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -14,6 +15,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.ManyToMany;
 import jakarta.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
@@ -42,6 +44,9 @@ public class VendorRole {
 
     @NotEmpty(message = "Slug cannot be blank.")
     private String slug;
+
+    @ManyToOne
+    private Vendorprofile vendor;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -111,6 +116,14 @@ public class VendorRole {
 
     public void setSlug(String slug) {
         this.slug = slug;
+    }
+
+    public Vendorprofile getVendor() {
+        return vendor;
+    }
+
+    public void setVendor(Vendorprofile vendor) {
+        this.vendor = vendor;
     }
 
     public Set<VendorPrivilege> getVendorPrivilege() {

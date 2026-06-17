@@ -1,36 +1,40 @@
-// product details active tab
-$(document).ready(function () {
-        // Function to reset and remove active state from all tabs
-        function resetTabs() {
-            $('#myTab button').removeClass('active');  // Remove active class from all tabs
-            $('.tab-content .tab-pane').removeClass('show active');  // Remove active content
+// Date: 2026-04-26
+// Persist active Bootstrap tabs on pages like single-product.
+// The previous code only targeted #myTab buttons, while this page uses
+// <a data-bs-toggle="tab"> inside #productTabs, so tab state and activation
+// could drift or stop working after reloads.
+document.addEventListener('DOMContentLoaded', function () {
+    const tabContainers = document.querySelectorAll('.nav-tabs[id]');
+
+    tabContainers.forEach((tabContainer) => {
+        const tabTriggers = Array.from(tabContainer.querySelectorAll('[data-bs-toggle="tab"]'));
+        if (!tabTriggers.length || typeof bootstrap === 'undefined' || !bootstrap.Tab) {
+            return;
         }
 
-        // Retrieve the last active tab from sessionStorage
-        var activeTab = sessionStorage.getItem("activeTab");
+        const storageKey = 'activeTab:' + tabContainer.id;
+        const getTargetSelector = (trigger) => trigger.getAttribute('data-bs-target') || trigger.getAttribute('href');
+        const savedTarget = sessionStorage.getItem(storageKey);
 
-        // If an active tab exists, show it
-        if (activeTab) {
-            // Reset previous active tabs
-            resetTabs();
-            // Activate the last active tab and show the corresponding content
-            $('#myTab button[data-bs-target="' + activeTab + '"]').addClass('active');
-            $(activeTab).addClass('show active');
-        } else {
-            // Default to the first tab if no active tab is stored
-            $('#myTab button:first').addClass('active');
-            $('.tab-content .tab-pane:first').addClass('show active');
+        const matchingSavedTrigger = savedTarget
+                ? tabTriggers.find((trigger) => getTargetSelector(trigger) === savedTarget)
+                : null;
+
+        const initialTrigger = matchingSavedTrigger || tabTriggers.find((trigger) => trigger.classList.contains('active')) || tabTriggers[0];
+        if (initialTrigger) {
+            bootstrap.Tab.getOrCreateInstance(initialTrigger).show();
         }
 
-        // Store the active tab in sessionStorage when tab changes
-        $('#myTab button').on('shown.bs.tab', function (e) {
-            var tabId = $(e.target).attr('data-bs-target');
-            sessionStorage.setItem('activeTab', tabId);
-
-            // Reset the tabs before adding the active class to the new tab
-            resetTabs();
-            // Add active class to the selected tab and content
-            $(e.target).addClass('active');
-            $(tabId).addClass('show active');
+        tabTriggers.forEach((trigger) => {
+            trigger.addEventListener('shown.bs.tab', function (event) {
+                const targetSelector = getTargetSelector(event.target);
+                if (targetSelector) {
+                    sessionStorage.setItem(storageKey, targetSelector);
+                }
+            });
         });
     });
+});
+
+
+    

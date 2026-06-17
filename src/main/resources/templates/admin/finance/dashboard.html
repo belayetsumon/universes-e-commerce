@@ -1,0 +1,82 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4><i class="bi bi-cash-stack me-2 text-primary"></i>Finance Dashboard</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Finance Dashboard</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+
+        <div th:if="${not #strings.isEmpty(errorMessage)}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-3"><div class="card alert alert-warning mb-0"><div class="card-body"><strong>Vendor Pending</strong><div th:text="${dashboard.totalVendorPending}"></div></div></div></div>
+            <div class="col-md-3"><div class="card alert alert-success mb-0"><div class="card-body"><strong>Vendor Available</strong><div th:text="${dashboard.totalVendorAvailable}"></div></div></div></div>
+            <div class="col-md-3"><div class="card alert alert-secondary mb-0"><div class="card-body"><strong>Vendor Reserved</strong><div th:text="${dashboard.totalVendorReserved}"></div></div></div></div>
+            <div class="col-md-3"><div class="card alert alert-primary mb-0"><div class="card-body"><strong>Vendor Paid</strong><div th:text="${dashboard.totalVendorPaid}"></div></div></div></div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-3"><div class="card alert alert-info mb-0"><div class="card-body"><strong>Marketplace Due To Vendors</strong><div th:text="${dashboard.totalMarketplaceDueToVendors}"></div></div></div></div>
+            <div class="col-md-3"><div class="card"><div class="card-body"><strong>Marketplace Share</strong><div th:text="${dashboard.totalMarketplaceShare}"></div></div></div></div>
+            <div class="col-md-3"><div class="card"><div class="card-body"><strong>Requested Payout</strong><div th:text="${dashboard.totalRequestedPayout}"></div></div></div></div>
+            <div class="col-md-3"><div class="card"><div class="card-body"><strong>Processing Payout</strong><div th:text="${dashboard.totalProcessedPayout}"></div></div></div></div>
+            <div class="col-md-3"><div class="card"><div class="card-body"><strong>Paid Payout</strong><div th:text="${dashboard.totalPaidPayout}"></div></div></div></div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Vendor Due Summary</strong>
+                <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/finance/settlements}">Settlement Ledger</a>
+            </div>
+            <div class="card-body table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Vendor</th>
+                            <th>Pending</th>
+                            <th>Available</th>
+                            <th>Reserved</th>
+                            <th>Paid</th>
+                            <th>Shipment Vendor Payable</th>
+                            <th>Marketplace Share</th>
+                            <th>Requested Payout</th>
+                            <th>Processing</th>
+                            <th>Paid Payout</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(dashboard.vendorDueRows)}">
+                            <td colspan="11" class="text-center">No vendor due summary available.</td>
+                        </tr>
+                        <tr th:each="row, status : ${dashboard.vendorDueRows}">
+                            <td th:text="${status.count}"></td>
+                            <td>
+                                <span th:text="${row.companyName}"></span><br>
+                                <small th:text="${row.vendorCode}"></small>
+                            </td>
+                            <td th:text="${row.pendingAmount}"></td>
+                            <td th:text="${row.availableAmount}"></td>
+                            <td th:text="${row.reservedAmount}"></td>
+                            <td th:text="${row.paidAmount}"></td>
+                            <td th:text="${row.shipmentVendorPayable}"></td>
+                            <td th:text="${row.shipmentMarketplacePayable}"></td>
+                            <td th:text="${row.requestedPayoutAmount}"></td>
+                            <td th:text="${row.processedPayoutAmount}"></td>
+                            <td th:text="${row.paidPayoutAmount}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -14,4 +14,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface AvailableDeliveryAreaRepository extends JpaRepository<AvailableDeliveryArea, Long> {
     List<AvailableDeliveryArea> findByProductIdOrderByIdDesc(Long id);
+
+    List<AvailableDeliveryArea> findByProduct_UuidOrderByIdDesc(String productUuid);
 }

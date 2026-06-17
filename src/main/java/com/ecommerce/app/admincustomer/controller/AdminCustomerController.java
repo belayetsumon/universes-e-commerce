@@ -5,21 +5,17 @@
  */
 package com.ecommerce.app.admincustomer.controller;
 
+import com.ecommerce.app.module.shipping.model.Shipment;
+import com.ecommerce.app.module.shipping.services.ShipmentService;
 import com.ecommerce.app.module.user.model.Role;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.RoleRepository;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.order.model.OrderHistory;
 import com.ecommerce.app.order.model.OrderStatus;
-import com.ecommerce.app.order.model.OrderStatusChangedBy;
 import com.ecommerce.app.order.model.SalesOrder;
 import com.ecommerce.app.order.repository.BillingAddressRepository;
 import com.ecommerce.app.order.repository.OrderHistoryRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import com.ecommerce.app.order.repository.SalesOrderRepository;
 import com.ecommerce.app.order.repository.ShippingAddressRepository;
 import com.ecommerce.app.order.services.OrderItemService;
@@ -29,11 +25,19 @@ import com.google.zxing.BarcodeFormat;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
+import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
@@ -74,6 +78,8 @@ public class AdminCustomerController {
     BarcodeService barcodeService;
     @Autowired
     private SpringTemplateEngine templateEngine;
+    @Autowired
+    private ShipmentService shipmentService;
 
     @RequestMapping(value = {"", "/", "/index"})
     public String customerlist(Model model) {
@@ -87,9 +93,10 @@ public class AdminCustomerController {
 
     @RequestMapping("/orderlist")
     public String orderlist(Model model) {
-        model.addAttribute("orderlist", salesOrderService.admin_all_Sales_order_list(null, null));
+        List<Map<String, Object>> orderRows = salesOrderService.admin_all_Sales_order_list(null, null);
+        model.addAttribute("orderlist", shipmentService.enrichOrderRowsWithShipmentData(orderRows));
         // model.addAttribute("orderlist", salesOrderRepository.findAllByOrderByIdDesc());
-        return "admin/customer/orderlist";
+        return "admin/sales/orderlist";
     }
 
     @RequestMapping("/order-by-customer/{cid}")
@@ -103,9 +110,14 @@ public class AdminCustomerController {
     @RequestMapping("/order-details/{oid}")
     public String order_details(Model model, @PathVariable Long oid) {
         SalesOrder salesOrder = salesOrderRepository.getReferenceById(oid);
+        Shipment existingShipment = shipmentService.getLatestByOrderId(oid);
         long customerId = salesOrder.getCustomer().getId();
+        List<Map<String, Object>> orderItems = salesOrderService.enrichOrderItemsWithReturnData(
+                orderItemService.item_List_By_SalesOrder(oid),
+                salesOrder.getStatus()
+        );
         model.addAttribute("orderdetails", salesOrderRepository.getReferenceById(oid));
-        model.addAttribute("orderitem", orderItemService.item_List_By_SalesOrder(oid));
+        model.addAttribute("orderitem", orderItems);
         model.addAttribute("total_sales_price", orderItemService.getTotalSalesPriceBySalesOrder(oid));
         model.addAttribute("total_quantity", orderItemService.getTotalQuantityBySalesOrder(oid));
         model.addAttribute("total_discount", orderItemService.getTotalDiscountBySalesOrder(oid));
@@ -114,34 +126,54 @@ public class AdminCustomerController {
         model.addAttribute("total_vendorAmount", orderItemService.getTotalVendorAmountBySalesOrder(oid));
         model.addAttribute("item_total", orderItemService.getitemTotalBySalesOrder(oid));
 
-        model.addAttribute("statusType", OrderStatus.values());
+        model.addAttribute(
+                "statusType",
+                salesOrderService.getMarketplaceStatusOptions(salesOrder)
+        );
         List<OrderHistory> history = orderHistoryRepository.findBySalesOrderIdOrderByIdDesc(oid);
         model.addAttribute("orderhistory", history);
-        model.addAttribute("billingAddress", billingAddressRepository.findByUserId_Id(customerId).get());
+        model.addAttribute("shipmentEligible", shipmentService.canCreateNewShipment(salesOrder));
+        model.addAttribute("existingShipmentId", existingShipment != null ? existingShipment.getId() : null);
+        model.addAttribute("shipmentBlockReason", existingShipment == null ? shipmentService.getShipmentBlockReason(salesOrder) : null);
+        model.addAttribute("marketplaceCanCancelOrder", salesOrderService.canMarketplaceCancelOrder(salesOrder));
+        model.addAttribute("marketplaceCancellationMessage", salesOrderService.getMarketplaceCancellationPolicyMessage(salesOrder));
+        // Date: 2026-04-20: some customers have multiple billing addresses; pick latest.
+        model.addAttribute("billingAddress", billingAddressRepository.findFirstByUserId_IdOrderByIdDesc(customerId).orElse(null));
         model.addAttribute("shippingAddress", shippingAddressRepository.findByOrder_Id(oid));
-        return "admin/customer/order_details";
+        return "admin/sales/order_details";
     }
 
-    @RequestMapping(value = {"/statuschange"})
+    @PostMapping("/statuschange")
     public String statusChange(Model model,
             SalesOrder salesOrder,
             @RequestParam(name = "id", required = false) Long id,
             @RequestParam(name = "status", required = false) OrderStatus status,
-            @RequestParam(name = "remark", required = false) String remark
+            @RequestParam(name = "remark", required = false) String remark,
+            RedirectAttributes redirectAttributes
     ) {
-        salesOrder = salesOrderRepository.getReferenceById(id);
-
-        salesOrder.setStatus(status);
-
-        salesOrderRepository.save(salesOrder);
-
-        OrderHistory orderHistory = new OrderHistory();
-        orderHistory.setStatus(status);
-        orderHistory.setOrderStatusChanged(OrderStatusChangedBy.MarketPlace);
-        orderHistory.setSalesOrder(salesOrder);
-        orderHistory.setRemark(remark);
-        orderHistoryRepository.save(orderHistory);
+        try {
+            salesOrderService.changeStatusAsMarketplace(id, status, remark);
+            redirectAttributes.addFlashAttribute("successMessage", "Order status updated successfully.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
         return "redirect:/admin-customer/order-details/" + id;
+    }
+
+    @PostMapping("/item-return")
+    public String itemReturn(
+            @RequestParam(name = "orderId") Long orderId,
+            @RequestParam(name = "orderItemId") Long orderItemId,
+            @RequestParam(name = "remark", required = false) String remark,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            salesOrderService.processItemReturnAsMarketplace(orderId, orderItemId, remark);
+            redirectAttributes.addFlashAttribute("successMessage", "Selected item marked as returned.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/admin-customer/order-details/" + orderId;
     }
 
     @GetMapping("/orders/{id}/pdf")

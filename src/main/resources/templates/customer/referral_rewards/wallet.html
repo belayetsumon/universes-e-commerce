@@ -14,7 +14,7 @@ and open the template in the editor.
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
                             <li class="breadcrumb-item active" aria-current="page">Referral Rewards</li>
-                            <li class="breadcrumb-item active" aria-current="page">Wallet </li>
+                            <li class="breadcrumb-item active" aria-current="page">Reward Account</li>
                         </ol>
                     </nav>
                 </div></div>
@@ -26,7 +26,7 @@ and open the template in the editor.
                 <div class="card">
                     <div class="card-header">
                         <div class="row">
-                            <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i> Wallet </strong> </div>
+                            <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i> Reward Account </strong> </div>
 
                             <div class="col-sm-7 text-end">
                                 <!--                                <div class="btn-group ">
@@ -38,8 +38,18 @@ and open the template in the editor.
                         </div>
                     </div>
                     <div class="card-body table-responsive">
+                        <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+                        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
                         <div class="alert alert-info">
-                            Balance: <strong th:text="${wallet}">0</strong> Taka
+                            Reward Balance: <strong th:text="${wallet}">0</strong>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a class="btn btn-primary btn-sm" th:href="@{/customerwallet/wallet/cashout}">
+                                Request Cash Out
+                            </a>
+                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/cashoutcustomerrequest/list}">
+                                View Cash Out Requests
+                            </a>
                         </div>
 
                     </div>

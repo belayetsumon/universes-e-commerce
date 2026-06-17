@@ -1,0 +1,70 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
+    <div layout:fragment="main_content">
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center alert alert-secondary">
+                <h4>Vendor Stock Transactions</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Stock Transactions</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+
+        <div th:if="${not #strings.isEmpty(errorMessage)}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Your Inventory Movement History</strong>
+                <div class="d-flex gap-2">
+                    <a class="btn btn-sm btn-outline-success" th:href="@{/vendor/stock/receive}">Receive Stock</a>
+                    <a class="btn btn-sm btn-outline-warning" th:href="@{/vendor/stock/adjust}">Adjust Stock</a>
+                    <span class="badge bg-secondary" th:text="${#lists.size(transactions)} + ' rows'"></span>
+                </div>
+            </div>
+            <div class="card-body table-responsive">
+                <table class="table table-bordered table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Date</th>
+                            <th>Product</th>
+                            <th>Variant</th>
+                            <th>Type</th>
+                            <th>Move</th>
+                            <th>Qty</th>
+                            <th>Available</th>
+                            <th>Reserved</th>
+                            <th>Sold</th>
+                            <th>Order</th>
+                            <th>Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(transactions)}">
+                            <td colspan="12" class="text-center">No stock transactions found.</td>
+                        </tr>
+                        <tr th:each="tx, status : ${transactions}">
+                            <td th:text="${status.count}"></td>
+                            <td th:text="${tx.created}"></td>
+                            <td th:text="${tx.product != null ? tx.product.title : '-'}"></td>
+                            <td th:text="${tx.catalogVariant != null ? ('Catalog SKU: ' + tx.catalogVariant.sku) : 'Product Stock'}"></td>
+                            <td th:text="${tx.transactionType}"></td>
+                            <td th:text="${(tx.fromBucket != null ? tx.fromBucket : '-') + ' -> ' + (tx.toBucket != null ? tx.toBucket : '-')}"></td>
+                            <td th:text="${tx.quantity}"></td>
+                            <td th:text="${tx.availableAfter}"></td>
+                            <td th:text="${tx.reservedAfter}"></td>
+                            <td th:text="${tx.soldAfter}"></td>
+                            <td th:text="${tx.salesOrder != null ? tx.salesOrder.orderCode : '-'}"></td>
+                            <td th:text="${tx.note != null ? tx.note : '-'}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

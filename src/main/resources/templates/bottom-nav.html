@@ -9,8 +9,8 @@
         </div>
         <div class="col-2 text-white text-center"> 
             
-            <div sec:authorize="!isAuthenticated()">
-                <a class="text-white" th:href="@{/front-view/front-registration}"> <i class="fab fa-wpforms"></i> Registration</a> </div>
+                   <div sec:authorize="!isAuthenticated()">
+                <a class="text-white" th:href="@{/public/front-registration}"> <i class="fab fa-wpforms"></i> Registration</a> </div>
                 
                    <div sec:authorize="isAuthenticated()">
                 <a class="text-white" th:href="@{/customer/index}"> <i class="fab fa-wpforms"></i>Customer </a> </div>
@@ -31,11 +31,11 @@
         </li>
 
         <li sec:authorize="!isAuthenticated()" class="list-group-item">
-            <a class="textMaroon" th:href="@{/front-view/front-registration}"> <i class="fab fa-wpforms"></i> Registration</a>
+            <a class="textMaroon" th:href="@{/public/front-registration}"> <i class="fab fa-wpforms"></i> Registration</a>
         </li>      
 
         <li class="list-group-item">
-            <a class="textMaroon" th:href="@{/front-view/contactUs}"> <i class="fas fa-id-card-alt"></i> Contact Us</a>
+            <a class="textMaroon" th:href="@{/public/contact-us}"> <i class="fas fa-id-card-alt"></i> Contact Us</a>
         </li>
 
         <li class="list-group-item">
@@ -45,12 +45,12 @@
 
             <div sec:authorize="!isAuthenticated()">
                 <a class="textMaroon"
-                   th:href="@{/front-view/member-login}"><i class="fas fa-sign-in-alt"></i> Login</a>
+                   th:href="@{/public/member-login}"><i class="fas fa-sign-in-alt"></i> Login</a>
             </div>
         </li>
 
         <li class="list-group-item">
-            <a class="textMaroon" th:href="@{/front-view/contactUs}"> <i class="fas fa-info-circle"></i> Help</a>
+            <a class="textMaroon" th:href="@{/public/help}"> <i class="fas fa-info-circle"></i> Help</a>
         </li>
 
     </ul>

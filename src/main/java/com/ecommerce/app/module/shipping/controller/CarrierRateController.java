@@ -11,7 +11,6 @@ import com.ecommerce.app.module.shipping.model.DeliveryType;
 import com.ecommerce.app.module.shipping.repository.CarrierRateRepository;
 import com.ecommerce.app.module.shipping.repository.CarrierRepository;
 import jakarta.validation.Valid;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
@@ -45,10 +44,8 @@ public class CarrierRateController {
 
     @GetMapping("/create")
     public String createForm(Model model, CarrierRate carrierRate) {
-        model.addAttribute("carriers", carrierRepo.findAll());
-        model.addAttribute("districts", District.values());
-        model.addAttribute("speeds", DeliverySpeed.values());
-        model.addAttribute("types", DeliveryType.values());
+        model.addAttribute("carrierRate", carrierRate);
+        populateFormOptions(model);
         return "admin/shipping/carriers/carriers_rate_form";
     }
 
@@ -57,30 +54,47 @@ public class CarrierRateController {
             BindingResult result,
             RedirectAttributes redirectAttributes) {
 
+        if (carrierRate.getEstimatedMinDays() != null
+                && carrierRate.getEstimatedMaxDays() != null
+                && carrierRate.getEstimatedMinDays() > carrierRate.getEstimatedMaxDays()) {
+            result.rejectValue("estimatedMaxDays", "carrierRate.estimatedMaxDays.invalid",
+                    "Estimated max days must be greater than or equal to estimated min days");
+        }
+
         if (result.hasErrors()) {
-            model.addAttribute("carriers", carrierRepo.findAll());
-            model.addAttribute("districts", District.values());
-            model.addAttribute("speeds", DeliverySpeed.values());
-            model.addAttribute("types", DeliveryType.values());
+            populateFormOptions(model);
             return "admin/shipping/carriers/carriers_rate_form";
         }
 
-        rateRepo.save(carrierRate);
+        try {
+            rateRepo.save(carrierRate);
+        } catch (DataIntegrityViolationException ex) {
+            result.reject("carrierRate.save.failed", "Carrier rate could not be saved because it conflicts with existing data.");
+            populateFormOptions(model);
+            return "admin/shipping/carriers/carriers_rate_form";
+        }
 
-        // add success flash message
         redirectAttributes.addFlashAttribute("successMessage", "Carrier Rate saved successfully!");
         return "redirect:/admin/carrier-rates/list";
     }
 
     @GetMapping("/edit/{id}")
-    public String edit(@PathVariable Long id, Model model, CarrierRate carrierRate) {
-        carrierRate = rateRepo.findById(id).orElse(new CarrierRate());
+    public String edit(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        CarrierRate carrierRate = rateRepo.findById(id).orElse(null);
+        if (carrierRate == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Carrier rate not found.");
+            return "redirect:/admin/carrier-rates/list";
+        }
         model.addAttribute("carrierRate", carrierRate);
+        populateFormOptions(model);
+        return "admin/shipping/carriers/carriers_rate_form";
+    }
+
+    private void populateFormOptions(Model model) {
         model.addAttribute("carriers", carrierRepo.findAll());
         model.addAttribute("districts", District.values());
         model.addAttribute("speeds", DeliverySpeed.values());
         model.addAttribute("types", DeliveryType.values());
-        return "admin/shipping/carriers/carriers_rate_form";
     }
 
     @GetMapping("/delete/{id}")

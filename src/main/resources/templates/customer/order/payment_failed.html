@@ -1,27 +1,31 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-customar-page">
-    <div layout:fragment = "main_content">
-        <div> <h4> Order <small>Home>Order Payment</small></h4>
-        </div>
+    <div layout:fragment="main_content">
+        <div><h4>Order <small>Home&gt;Order Payment</small></h4></div>
         <hr/>
         <div class="row">
             <div class="col-sm-12">
-
                 <div class="card">
                     <div class="card-header bgMaroon text-white">
-                        <div class="row">  <div class="col-sm-5 font-weight-bold "><i class="fas fa-list"></i> Payment</div>
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold"><i class="fas fa-list"></i> Payment</div>
                         </div>
                     </div>
                     <div class="card-body">
-                <h1>Your payment is fail. Please try again</h1>
-                    </div><!--  Card body end-->
-                </div><!--  Card  end-->
-            </div><!--  Main Content  end-->
+                        <h1 class="h4">Payment could not be completed.</h1>
+                        <p th:if="${orderinfo != null}">
+                            Order <strong th:text="${orderinfo.orderCode}">Order Code</strong> still has a remaining due of
+                            <strong th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.remainingAmount, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</strong>.
+                        </p>
+                        <a class="btn btn-primary" th:if="${orderinfo != null}" th:href="@{/customerorder/payment/{orderid}(orderid=${orderinfo.id})}">
+                            Try Again
+                        </a>
+                        <a class="btn btn-outline-secondary ms-2" th:href="@{/customerorder/index}">
+                            Back to Orders
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>   <!--  Layout end-->
+</div>

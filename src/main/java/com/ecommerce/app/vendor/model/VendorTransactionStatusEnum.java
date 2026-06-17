@@ -9,5 +9,5 @@ package com.ecommerce.app.vendor.model;
  * @author libertyerp_local
  */
 public enum VendorTransactionStatusEnum {
-    PENDING, AVAILABLE, PAID
+    PENDING, AVAILABLE, REQUESTED, PAID
 }

@@ -5,6 +5,7 @@
 package com.ecommerce.app.order.services;
 
 import com.ecommerce.app.order.model.OrderItem;
+import com.ecommerce.app.order.model.OrderItemReturnStatus;
 import com.ecommerce.app.order.model.SalesOrder;
 import com.ecommerce.app.product.model.Product;
 import jakarta.persistence.EntityManager;
@@ -15,6 +16,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -53,12 +55,24 @@ public class OrderItemService {
                 orderItem.get("vatRate").alias("vatRate"),
                 orderItem.get("vatAmount").alias("vatAmount"),
                 orderItem.get("itemTotal").alias("itemTotal"),
+                orderItem.get("digitalAccessUrl").alias("digitalAccessUrl"),
+                orderItem.get("digitalLicenseCode").alias("digitalLicenseCode"),
+                orderItem.get("digitalDeliveryNote").alias("digitalDeliveryNote"),
+                orderItem.get("digitalDelivered").alias("digitalDelivered"),
+                orderItem.get("digitalDeliveredAt").alias("digitalDeliveredAt"),
+                orderItem.get("returnStatus").alias("returnStatus"),
+                orderItem.get("returnRequestRemark").alias("returnRequestRemark"),
+                orderItem.get("returnProcessedRemark").alias("returnProcessedRemark"),
+                orderItem.get("returnRequestedAt").alias("returnRequestedAt"),
+                orderItem.get("returnedAt").alias("returnedAt"),
+                orderItem.get("returnRefundAmount").alias("returnRefundAmount"),
                 orderItem.get("createdBy").alias("createdBy"),
                 orderItem.get("created").alias("created"),
                 orderItem.get("modifiedBy").alias("modifiedBy"),
                 orderItem.get("modified").alias("modified"),
                 product.get("title").alias("title"),
-                product.get("imageName").alias("imageName")
+                product.get("imageName").alias("imageName"),
+                product.get("productType").alias("productType")
         );
 
         cq.where(cb.equal(orderItem.get("salesOrder").get("id"), id));
@@ -84,7 +98,7 @@ public class OrderItemService {
         Root<OrderItem> root = query.from(OrderItem.class);
 
         query.select(cb.sum(root.get("quantity")));
-        query.where(cb.equal(root.get("salesOrder").get("id"), id));
+        query.where(buildActiveOrderPredicate(cb, root, id));
 
         return em.createQuery(query).getSingleResult();
     }
@@ -95,7 +109,7 @@ public class OrderItemService {
         Root<OrderItem> root = query.from(OrderItem.class);
 
         query.select(cb.sum(root.get("salesPrice")));
-        query.where(cb.equal(root.get("salesOrder").get("id"), id));
+        query.where(buildActiveOrderPredicate(cb, root, id));
 
         return em.createQuery(query).getSingleResult();
     }
@@ -106,7 +120,7 @@ public class OrderItemService {
         Root<OrderItem> root = query.from(OrderItem.class);
 
         query.select(cb.sum(root.get("discountAmount")));
-        query.where(cb.equal(root.get("salesOrder").get("id"), id));
+        query.where(buildActiveOrderPredicate(cb, root, id));
 
         return em.createQuery(query).getSingleResult();
     }
@@ -117,7 +131,7 @@ public class OrderItemService {
         Root<OrderItem> root = query.from(OrderItem.class);
 
         query.select(cb.sum(root.get("vatAmount")));
-        query.where(cb.equal(root.get("salesOrder").get("id"), id));
+        query.where(buildActiveOrderPredicate(cb, root, id));
 
         return em.createQuery(query).getSingleResult();
     }
@@ -128,7 +142,7 @@ public class OrderItemService {
         Root<OrderItem> root = query.from(OrderItem.class);
 
         query.select(cb.sum(root.get("marketPlaceCommissionAmount")));
-        query.where(cb.equal(root.get("salesOrder").get("id"), id));
+        query.where(buildActiveOrderPredicate(cb, root, id));
 
         return em.createQuery(query).getSingleResult();
     }
@@ -139,7 +153,7 @@ public class OrderItemService {
         Root<OrderItem> root = query.from(OrderItem.class);
 
         query.select(cb.sum(root.get("vendorAmount")));
-        query.where(cb.equal(root.get("salesOrder").get("id"), id));
+        query.where(buildActiveOrderPredicate(cb, root, id));
 
         return em.createQuery(query).getSingleResult();
     }
@@ -150,7 +164,7 @@ public class OrderItemService {
         Root<OrderItem> root = query.from(OrderItem.class);
 
         query.select(cb.sum(root.get("itemTotal")));
-        query.where(cb.equal(root.get("salesOrder").get("id"), id));
+        query.where(buildActiveOrderPredicate(cb, root, id));
 
         return em.createQuery(query).getSingleResult();
     }
@@ -161,7 +175,7 @@ public class OrderItemService {
         Root<OrderItem> root = query.from(OrderItem.class);
 
         query.select(cb.sum(root.get("discountAmount")));
-        query.where(cb.equal(root.get("salesOrder").get("id"), orderId));
+        query.where(buildActiveOrderPredicate(cb, root, orderId));
 
         BigDecimal total = em.createQuery(query).getSingleResult();
         if (total == null) {
@@ -179,7 +193,7 @@ public class OrderItemService {
         Root<OrderItem> root = query.from(OrderItem.class);
 
         query.select(cb.sum(root.get("vatAmount")));
-        query.where(cb.equal(root.get("salesOrder").get("id"), orderId));
+        query.where(buildActiveOrderPredicate(cb, root, orderId));
 
         BigDecimal total = em.createQuery(query).getSingleResult();
         if (total == null) {
@@ -197,7 +211,7 @@ public class OrderItemService {
         Root<OrderItem> root = query.from(OrderItem.class);
 
         query.select(cb.sum(root.get("itemTotal")));
-        query.where(cb.equal(root.get("salesOrder").get("id"), orderId));
+        query.where(buildActiveOrderPredicate(cb, root, orderId));
 
         BigDecimal total = em.createQuery(query).getSingleResult();
         if (total == null) {
@@ -215,7 +229,7 @@ public class OrderItemService {
         Root<OrderItem> root = query.from(OrderItem.class);
 
         query.select(cb.sum(root.get("marketPlaceCommissionAmount")));
-        query.where(cb.equal(root.get("salesOrder").get("id"), orderId));
+        query.where(buildActiveOrderPredicate(cb, root, orderId));
 
         BigDecimal total = em.createQuery(query).getSingleResult();
         if (total == null) {
@@ -234,7 +248,7 @@ public class OrderItemService {
 
         // SELECT SUM(itemTotal) FROM OrderItem WHERE salesOrder.id = :id
         cq.select(cb.sum(root.get("itemTotal")))
-                .where(cb.equal(root.get("salesOrder").get("id"), orderId));
+                .where(buildActiveOrderPredicate(cb, root, orderId));
 
         BigDecimal total = em.createQuery(cq).getSingleResult();
 
@@ -249,6 +263,16 @@ public class OrderItemService {
         em.merge(order); // optional if inside transaction and managed
 
         //System.out.println("Updated order total: " + total);
+    }
+
+    private Predicate buildActiveOrderPredicate(CriteriaBuilder cb, Root<OrderItem> root, Long orderId) {
+        return cb.and(
+                cb.equal(root.get("salesOrder").get("id"), orderId),
+                cb.or(
+                        cb.isNull(root.get("returnStatus")),
+                        cb.notEqual(root.get("returnStatus"), OrderItemReturnStatus.RETURNED)
+                )
+        );
     }
 
 }

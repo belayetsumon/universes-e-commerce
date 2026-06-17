@@ -5,102 +5,64 @@
         <meta charset="utf-8">
         <meta name="viewport"
               content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <meta name="description" content="">
-        <meta name="keywords" content="">
-        <meta name="author" content="Engr.Md Belayet Hossain Sumon">
+        <meta name="description" th:content="${pageDescription != null ? pageDescription : session.globalSettings.metaDescription}" content="">
+        <meta name="keywords" th:content="${session.globalSettings.metaKeywords}" content="">
+        <meta name="author" th:content="${session.globalSettings.siteName}" content="Engr.Md Belayet Hossain Sumon">
 
         <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.1/css/bootstrap.min.css}">
         <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.css}">
 
         <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
-        <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.7/dist/htmx.js" integrity="sha384-yWakaGAFicqusuwOYEmoRjLNOC+6OFsdmwC2lbGQaRELtuVEqNzt11c2J711DeCZ" crossorigin="anonymous"></script>
+        <script th:src="@{/webjars/htmx.org/1.9.5/dist/htmx.min.js}" defer></script>
         <!--  Font Awsome  -->
         <link rel="stylesheet" href="/webjars/font-awesome/6.5.1/css/all.min.css">
 
         <!--        Hover css-->
         <link rel="stylesheet" th:href="@{/css/hover-min.css}">
-        <!-- Custom css -->
-        <link rel="stylesheet" th:href="@{/css/app.css}"/>
-
-        <link rel="stylesheet" th:href="@{/css/mobile_apps.css}"/>
-        <!-- Meta Pixel Code -->
-        <script>
-            !function (f, b, e, v, n, t, s)
-            {
-                if (f.fbq)
-                    return;
-                n = f.fbq = function () {
-                    n.callMethod ?
-                            n.callMethod.apply(n, arguments) : n.queue.push(arguments)
-                };
-                if (!f._fbq)
-                    f._fbq = n;
-                n.push = n;
-                n.loaded = !0;
-                n.version = '2.0';
-                n.queue = [];
-                t = b.createElement(e);
-                t.async = !0;
-                t.src = v;
-                s = b.getElementsByTagName(e)[0];
-                s.parentNode.insertBefore(t, s)
-            }(window, document, 'script',
-                    'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '1365852474985195');
-            fbq('track', 'PageView');
-        </script>
-    <noscript><img height="1" width="1" style="display:none"
+        <link rel="stylesheet" th:href="@{/assets/customer/css/customer-panel.css}"/>
+        <link rel="icon" th:if="${session.globalSettings.favicon != null}" th:href="@{${session.globalSettings.favicon}}">
+    <th:block layout:fragment="page_css"></th:block>
+    <noscript><img height="1" width="1" class="facebook-pixel-fallback"
                    src="https://www.facebook.com/tr?id=1365852474985195&ev=PageView&noscript=1"
                    /></noscript>
     <!-- End Meta Pixel Code -->
 
 
-    <title> Musapir</title>
+    <title th:text="${pageTitle != null ? pageTitle : (session.globalSettings.siteTitle != null ? session.globalSettings.siteTitle : session.globalSettings.siteName)}">Musapir</title>
 
 </head>
-<body>
-    <header>
-        <!-- Site wrapper -->
-        <div th:replace="front-header">
+<body class="customer-app customer-dashboard-layout">
+    <header class="customer-shell__header">
+        <div th:replace="~{customer-header :: customerHeader}">
 
             <!-- Header  -->
 
         </div>
-        <!-- =============================================== -->
     </header>
-    <section class="mt-4 mb-4 row">
-        <div class="col-sm-3">
 
-            <div   th:replace="customer-left-menu">
-                Left side column. contains the sidebar
+    <section class="customer-shell__section">
+        <div class="container-fluid">
+            <div class="row g-4 align-items-start">
+                <aside class="col-12 col-lg-3 col-xl-2 d-none d-lg-block">
+                    <div class="vendor-shell__sidebar">
+                        <div th:replace="~{customer-left-menu :: customerSidebar}">
+                            Left side column. contains the sidebar
+                        </div>
+                    </div>
+                </aside>
 
-                Left Side
-                ===============================================
+                <div class="col-12 col-lg-9 col-xl-10">
+                    <div class="vendor-shell__content" layout:fragment="main_content">main Content</div>
+                </div>
             </div>
-
-
-
-        </div>
-
-        <div class="col-sm-9">
-
-            <!-- main -->
-            <div layout:fragment="main_content">main Content</div>
-
-
         </div>
     </section>
-
-
-
-
-
 
     <div class="row ma"></div>
     <!-- /.content-wrapper -->
     <footer>
 
-        <div  th:replace="front-footer">
+        <div  th:replace="~{customer-footer}">
             footer
         </div>
     </footer>
@@ -110,7 +72,7 @@
     <script th:src="@{/js/jquery-3.2.1.slim.min.js}"></script>
 
     <!-- Bootstrap -->
-    <script th:src="@{/bootstrap-5.2.3-dist/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/5.3.1/js/bootstrap.bundle.min.js}"></script>
 
     <!--owlcarousel-->
 
@@ -121,8 +83,8 @@
 
     <script th:src="@{/webjars/tinymce/5.0.9/tinymce.min.js}" referrerpolicy="origin"></script>
 
-    <!--        All Custom Js-->
-    <script th:src="@{/js/app.js}"></script>
+    <script th:src="@{/assets/customer/js/customer-panel.js}"></script>
+<th:block layout:fragment="page_js"></th:block>
 
 </body>
 </html>

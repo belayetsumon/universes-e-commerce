@@ -147,11 +147,35 @@ public class Product implements Serializable {
 
     private Boolean manageStock;
 
+    private Boolean allowPreorder = Boolean.FALSE;
+
+    @DateTimeFormat(pattern = "dd-MM-yyyy")
+    private LocalDate preorderAvailableFrom;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String digitalAccessUrl;
+
+    private String digitalLicenseCode;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String digitalDeliveryNote;
+
     private Boolean manageProductVariants;
 
     private Boolean emiavailable;
 
     private Boolean onlineShow;
+
+    @Column(nullable = false, precision = 12, scale = 3)
+    private BigDecimal stockAvailableQuantity = BigDecimal.ZERO;
+
+    @Column(nullable = false, precision = 12, scale = 3)
+    private BigDecimal stockReservedQuantity = BigDecimal.ZERO;
+
+    @Column(nullable = false, precision = 12, scale = 3)
+    private BigDecimal stockSoldQuantity = BigDecimal.ZERO;
 
     @NotNull(message = "Status is required.")
     @Enumerated(EnumType.STRING)
@@ -171,6 +195,9 @@ public class Product implements Serializable {
     private String metaKeywords;
 
     /// Audit ///
+//    @Version
+//    @Column(name = "version")
+//    private Long version;
     @CreatedBy
     @Column(nullable = false, updatable = false)
     private String createdBy;
@@ -446,6 +473,46 @@ public class Product implements Serializable {
         this.manageStock = manageStock;
     }
 
+    public Boolean getAllowPreorder() {
+        return allowPreorder;
+    }
+
+    public void setAllowPreorder(Boolean allowPreorder) {
+        this.allowPreorder = allowPreorder;
+    }
+
+    public LocalDate getPreorderAvailableFrom() {
+        return preorderAvailableFrom;
+    }
+
+    public void setPreorderAvailableFrom(LocalDate preorderAvailableFrom) {
+        this.preorderAvailableFrom = preorderAvailableFrom;
+    }
+
+    public String getDigitalAccessUrl() {
+        return digitalAccessUrl;
+    }
+
+    public void setDigitalAccessUrl(String digitalAccessUrl) {
+        this.digitalAccessUrl = digitalAccessUrl;
+    }
+
+    public String getDigitalLicenseCode() {
+        return digitalLicenseCode;
+    }
+
+    public void setDigitalLicenseCode(String digitalLicenseCode) {
+        this.digitalLicenseCode = digitalLicenseCode;
+    }
+
+    public String getDigitalDeliveryNote() {
+        return digitalDeliveryNote;
+    }
+
+    public void setDigitalDeliveryNote(String digitalDeliveryNote) {
+        this.digitalDeliveryNote = digitalDeliveryNote;
+    }
+
     public Boolean getManageProductVariants() {
         return manageProductVariants;
     }
@@ -468,6 +535,30 @@ public class Product implements Serializable {
 
     public void setOnlineShow(Boolean onlineShow) {
         this.onlineShow = onlineShow;
+    }
+
+    public BigDecimal getStockAvailableQuantity() {
+        return stockAvailableQuantity;
+    }
+
+    public void setStockAvailableQuantity(BigDecimal stockAvailableQuantity) {
+        this.stockAvailableQuantity = stockAvailableQuantity;
+    }
+
+    public BigDecimal getStockReservedQuantity() {
+        return stockReservedQuantity;
+    }
+
+    public void setStockReservedQuantity(BigDecimal stockReservedQuantity) {
+        this.stockReservedQuantity = stockReservedQuantity;
+    }
+
+    public BigDecimal getStockSoldQuantity() {
+        return stockSoldQuantity;
+    }
+
+    public void setStockSoldQuantity(BigDecimal stockSoldQuantity) {
+        this.stockSoldQuantity = stockSoldQuantity;
     }
 
     public ProductStatusEnum getStatus() {

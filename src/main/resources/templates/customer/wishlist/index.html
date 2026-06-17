@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="front-layout-inner-customar-page">
+    <div layout:fragment="main_content">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-6 font-weight-bold">
+                                <i class="far fa-heart"></i> Wishlist, Total : [[${wishlistItems.size()}]]
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+                        <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+
+                        <div class="table-responsive" th:if="${wishlistItems != null and !#lists.isEmpty(wishlistItems)}">
+                            <table class="table table-bordered align-middle">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Image</th>
+                                        <th>Product</th>
+                                        <th>Price</th>
+                                        <th>Added On</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="item,status : ${wishlistItems}">
+                                        <td th:text="${status.count}">1</td>
+                                        <td>
+                                            <a th:href="@{/public/single-product/{prodid}(prodid=${item.product.uuid})}">
+                                                <img th:if="${item.product != null and item.product.imageName != null and !#strings.isEmpty(#strings.trim(item.product.imageName))}"
+                                                     th:src="@{/files/{image}(image=${item.product.imageName})}"
+                                                     th:alt="${item.product.title}"
+                                                     style="width:72px;height:72px;object-fit:cover;"
+                                                     onerror="this.onerror=null;this.src='/img/image-not-available.png';" />
+                                                <img th:if="${item.product == null or item.product.imageName == null or #strings.isEmpty(#strings.trim(item.product.imageName))}"
+                                                     th:src="@{/img/image-not-available.png}"
+                                                     th:alt="${item.product != null ? item.product.title : 'Product image'}"
+                                                     style="width:72px;height:72px;object-fit:cover;" />
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a class="text-decoration-none"
+                                               th:href="@{/public/single-product/{prodid}(prodid=${item.product.uuid})}"
+                                               th:text="${item.product.title}">
+                                                Product title
+                                            </a>
+                                        </td>
+                                        <td>
+                                            Tk <span th:text="${item.product.salesPrice}">0</span>
+                                        </td>
+                                        <td th:text="${#temporals.format(item.createdOn, 'dd MMM yyyy hh:mm a')}">29 Apr 2026 10:00 AM</td>
+                                        <td>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <a class="btn btn-sm btn-outline-primary"
+                                                   th:href="@{/public/single-product/{prodid}(prodid=${item.product.uuid})}">
+                                                    View
+                                                </a>
+                                                <form th:action="@{/cart/add}" method="post" enctype="multipart/form-data">
+                                                    <input type="hidden" name="product_uuid" th:value="${item.product.uuid}" />
+                                                    <input type="hidden" name="quantity" value="1" />
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="bi bi-cart-plus"></i> Add to Cart
+                                                    </button>
+                                                </form>
+                                                <form th:action="@{/wishlist/remove}" method="post">
+                                                    <input type="hidden" name="product_uuid" th:value="${item.product.uuid}" />
+                                                    <input type="hidden" name="redirectUrl" th:value="@{/wishlist/index}" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="bi bi-heart-fill"></i> Remove
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="text-center py-5" th:if="${wishlistItems == null or #lists.isEmpty(wishlistItems)}">
+                            <div class="mb-3">
+                                <i class="bi bi-suit-heart fs-1 text-danger"></i>
+                            </div>
+                            <h5 class="mb-2">Your wishlist is empty</h5>
+                            <p class="text-muted mb-4">Save products you like and come back to them anytime.</p>
+                            <a class="btn btn-danger" th:href="@{/public/product}">Browse Products</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

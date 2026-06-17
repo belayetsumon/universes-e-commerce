@@ -1,107 +1,757 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
-    <div layout:fragment = "main_content">
-        <section class="mb-4">
-            <div class="d-flex justify-content-between align-items-center alert alert-secondary">
-                <h5><i class="bi bi-speedometer2"></i> <span th:text="${vendorprofile.companyName}"></span> Dashboard</h5>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="#" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Vendor Dashboard</li>
-                    </ol>
-                </nav>
-            </div>
-        </section>
+    <th:block layout:fragment="page_css">
+        <style>
+            .vendor-dashboard-page {
+                --vd-surface: #ffffff;
+                --vd-border: rgba(15, 23, 42, 0.08);
+                --vd-text-soft: #667085;
+                --vd-text-strong: #0f172a;
+                --vd-accent: #0f4c81;
+                --vd-accent-deep: #163a5f;
+                --vd-accent-soft: #eaf3fb;
+                --vd-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+            }
 
+            .vendor-dashboard-page .dashboard-shell {
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+            }
 
+            .vendor-dashboard-page .hero-card {
+                position: relative;
+                overflow: hidden;
+                border: 0;
+                border-radius: 1.5rem;
+                background:
+                    radial-gradient(circle at top right, rgba(255, 255, 255, 0.16), transparent 30%),
+                    linear-gradient(135deg, #0f4c81 0%, #163a5f 52%, #1f2937 100%);
+                color: #fff;
+                box-shadow: var(--vd-shadow);
+            }
 
-        <section class="">
-            <div class="row">
+            .vendor-dashboard-page .hero-card::after {
+                content: "";
+                position: absolute;
+                inset: auto -5rem -5rem auto;
+                width: 17rem;
+                height: 17rem;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.07);
+            }
 
-                <div class="col-sm-12">
+            .vendor-dashboard-page .hero-card .card-body {
+                position: relative;
+                z-index: 1;
+                padding: 2rem;
+            }
 
+            .vendor-dashboard-page .hero-chip {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+                padding: 0.45rem 0.85rem;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.14);
+                font-size: 0.8rem;
+                font-weight: 700;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+            }
 
+            .vendor-dashboard-page .hero-title {
+                font-size: clamp(1.8rem, 2.2vw, 2.6rem);
+                font-weight: 700;
+                letter-spacing: -0.03em;
+                margin-bottom: 0.6rem;
+            }
 
+            .vendor-dashboard-page .hero-copy {
+                max-width: 44rem;
+                color: rgba(255, 255, 255, 0.82);
+                margin-bottom: 0;
+            }
 
-                    <div class="row">
+            .vendor-dashboard-page .hero-meta {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+                margin-top: 1rem;
+            }
 
-                        <div class="col-sm-4">
-                            <div class="card alert alert-info">
+            .vendor-dashboard-page .hero-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+                padding: 0.55rem 0.9rem;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.12);
+                font-weight: 600;
+                font-size: 0.9rem;
+            }
 
-                                <p>Pending Amount :<span th:text="${pending}"></span>Taka </p>
-                            </div>
-                        </div>
+            .vendor-dashboard-page .hero-actions .btn {
+                min-width: 11rem;
+                border-radius: 0.95rem;
+                font-weight: 600;
+            }
 
-                        <div class="col-sm-4">
-                            <div class="card  alert alert-success">
-                                <p>  Available Balance: <span th:text="${available}"></span>Taka </p>
-                            </div>
-                        </div>
-                        <div class="col-sm-4 ">
-                            <div class="card alert alert-primary">
-                                <p>   Total Paid: <span th:text="${paid}"></span>Taka </p>
-                            </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="card alert alert-warning">
-                                <p>   Pending : <span th:text="${paid}"></span>Taka </p>
-                            </div>
-                            <div class="card alert alert-info">
-                                <p>   Confirmed: <span th:text="${paid}"></span>Taka </p>
-                            </div>
-                            <div class="card alert alert-light">
-                                <p>  Processing: <span th:text="${paid}"></span>Taka </p>
-                            </div>
-                            <div class="card alert alert-warning">
-                                <p>Packed : <span th:text="${paid}"></span>Taka </p>
-                            </div>
-                            <div class="card alert alert-info">
-                                <p> Shipped : <span th:text="${paid}"></span>Taka </p>
-                            </div>
-                            <div class="card alert alert-light">
-                                <p> Transit: <span th:text="${paid}"></span>Taka </p>
-                            </div>  </div>
+            .vendor-dashboard-page .hero-actions .btn-light {
+                color: var(--vd-accent-deep);
+            }
 
-                        <div class="col-sm-4">
-                            <div class="card alert alert-warning">
-                                <p>Out For Delivery : <span th:text="${paid}"></span>Taka </p>
-                            </div>
-                            <div class="card alert alert-info">
-                                <p>Delivery : <span th:text="${paid}"></span>Taka </p>
+            .vendor-dashboard-page .surface-card,
+            .vendor-dashboard-page .metric-card {
+                border: 1px solid var(--vd-border);
+                border-radius: 1.25rem;
+                background: var(--vd-surface);
+                box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+            }
+
+            .vendor-dashboard-page .surface-card .card-body,
+            .vendor-dashboard-page .metric-card .card-body {
+                padding: 1.5rem;
+            }
+
+            .vendor-dashboard-page .metric-card {
+                height: 100%;
+            }
+
+            .vendor-dashboard-page .metric-topline {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.75rem;
+                margin-bottom: 1rem;
+            }
+
+            .vendor-dashboard-page .metric-label {
+                color: var(--vd-text-soft);
+                font-size: 0.8rem;
+                font-weight: 700;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+            }
+
+            .vendor-dashboard-page .metric-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 2.6rem;
+                height: 2.6rem;
+                border-radius: 0.95rem;
+                background: var(--vd-accent-soft);
+                color: var(--vd-accent);
+                font-size: 1.1rem;
+            }
+
+            .vendor-dashboard-page .metric-value {
+                color: var(--vd-text-strong);
+                font-size: clamp(1.45rem, 1.7vw, 1.9rem);
+                font-weight: 700;
+                margin-bottom: 0.35rem;
+            }
+
+            .vendor-dashboard-page .metric-copy {
+                color: var(--vd-text-soft);
+                font-size: 0.9rem;
+                margin-bottom: 0;
+            }
+
+            .vendor-dashboard-page .section-title {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .vendor-dashboard-page .section-heading {
+                margin-bottom: 0.15rem;
+                color: var(--vd-text-strong);
+                font-size: 1.05rem;
+                font-weight: 700;
+            }
+
+            .vendor-dashboard-page .section-copy {
+                margin-bottom: 0;
+                color: var(--vd-text-soft);
+                font-size: 0.92rem;
+            }
+
+            .vendor-dashboard-page .chart-wrap {
+                position: relative;
+                min-height: 20rem;
+            }
+
+            .vendor-dashboard-page .chart-wrap--compact {
+                min-height: 18rem;
+            }
+
+            .vendor-dashboard-page .insight-list {
+                display: grid;
+                gap: 0.85rem;
+            }
+
+            .vendor-dashboard-page .insight-item {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.8rem;
+                padding: 1rem 1.05rem;
+                border-radius: 1rem;
+                background: #f8fafc;
+                border: 1px solid rgba(15, 23, 42, 0.06);
+            }
+
+            .vendor-dashboard-page .insight-item i {
+                color: var(--vd-accent);
+                font-size: 1rem;
+                margin-top: 0.15rem;
+            }
+
+            .vendor-dashboard-page .insight-item strong {
+                display: block;
+                margin-bottom: 0.2rem;
+                color: var(--vd-text-strong);
+                font-size: 0.92rem;
+            }
+
+            .vendor-dashboard-page .insight-item span {
+                color: var(--vd-text-soft);
+                font-size: 0.88rem;
+                line-height: 1.5;
+            }
+
+            .vendor-dashboard-page .placeholder-note {
+                color: var(--vd-text-soft);
+                font-size: 0.88rem;
+                margin-top: 0.9rem;
+                margin-bottom: 0;
+            }
+
+            @media (max-width: 991.98px) {
+                .vendor-dashboard-page .hero-card .card-body {
+                    padding: 1.5rem;
+                }
+            }
+        </style>
+    </th:block>
+
+    <div layout:fragment="main_content">
+        <section class="vendor-dashboard-page">
+            <div class="dashboard-shell">
+                <div class="card hero-card">
+                    <div class="card-body">
+                        <div class="d-flex flex-column flex-xl-row justify-content-between gap-4">
+                            <div>
+                                <div class="hero-chip mb-3">
+                                    <i class="bi bi-bar-chart-line"></i>
+                                    Vendor Analytics Dashboard
+                                </div>
+                                <h1 class="hero-title" th:text="${dashboard.vendorName != null and !#strings.isEmpty(dashboard.vendorName) ? dashboard.vendorName : 'Vendor Performance'}">Vendor Performance</h1>
+                                <p class="hero-copy">
+                                    Track sales momentum, order health, inventory spread, and wallet movement from one operational dashboard designed for daily vendor decisions.
+                                </p>
+                                <div class="hero-meta">
+                                    <div class="hero-badge">
+                                        <i class="bi bi-upc-scan"></i>
+                                        <span th:text="${dashboard.vendorCode != null and !#strings.isEmpty(dashboard.vendorCode) ? dashboard.vendorCode : 'Vendor code pending'}">Vendor code pending</span>
+                                    </div>
+                                    <div class="hero-badge">
+                                        <i class="bi bi-box-seam"></i>
+                                        <span th:text="${dashboard.totalProducts + ' products tracked'}">0 products tracked</span>
+                                    </div>
+                                    <div class="hero-badge">
+                                        <i class="bi bi-receipt"></i>
+                                        <span th:text="${dashboard.totalOrders + ' orders tracked'}">0 orders tracked</span>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="card alert alert-light">
-                                <p>Completed: <span th:text="${paid}"></span>Taka </p>
-                            </div>
-                            <div class="card alert alert-light">
-                                <p>Return Requested : <span th:text="${paid}"></span>Taka </p>
-                            </div>
-                            <div class="card alert alert-warning">
-                                <p>Returned : <span th:text="${paid}"></span>Taka </p>
-                            </div>
-                            <div class="card alert alert-info">
-                                <p>Canceled : <span th:text="${paid}"></span>Taka </p>
-                            </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="card alert alert-secondary">
-                                <p>                                       Today Sale: <span th:text="${paid}"></span>Taka </p>
-                            </div>
-                            <div class="card alert alert-success">
-                                <p>                                         Current Month Sale: <span th:text="${paid}"></span>Taka </p>
-                            </div>
-                            <div class="card alert alert alert-danger">
-                                <p>   Current Year Sale: <span th:text="${paid}"></span>Taka </p>
+                            <div class="hero-actions d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2">
+                                <a class="btn btn-light" th:href="@{/productvendor/index}">
+                                    <i class="bi bi-box-arrow-up-right me-2"></i>Manage Products
+                                </a>
+                                <a class="btn btn-outline-light" th:href="@{/vendor/finance/dashboard}">
+                                    <i class="bi bi-cash-stack me-2"></i>Finance Dashboard
+                                </a>
                             </div>
                         </div>
                     </div>
-                </div><!--  Card body end-->
+                </div>
 
+                <div class="row g-4">
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <div class="metric-card">
+                            <div class="card-body">
+                                <div class="metric-topline">
+                                    <div class="metric-label">Available Balance</div>
+                                    <div class="metric-icon"><i class="bi bi-wallet2"></i></div>
+                                </div>
+                                <div class="metric-value" th:text="${'Tk ' + dashboard.availableBalance}">Tk 0</div>
+                                <p class="metric-copy">Ready for payout or future vendor settlement actions.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <div class="metric-card">
+                            <div class="card-body">
+                                <div class="metric-topline">
+                                    <div class="metric-label">Pending Balance</div>
+                                    <div class="metric-icon"><i class="bi bi-hourglass-split"></i></div>
+                                </div>
+                                <div class="metric-value" th:text="${'Tk ' + dashboard.pendingBalance}">Tk 0</div>
+                                <p class="metric-copy">Earnings still waiting to move into the available ledger.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <div class="metric-card">
+                            <div class="card-body">
+                                <div class="metric-topline">
+                                    <div class="metric-label">Total Products</div>
+                                    <div class="metric-icon"><i class="bi bi-box-seam"></i></div>
+                                </div>
+                                <div class="metric-value" th:text="${dashboard.totalProducts}">0</div>
+                                <p class="metric-copy">
+                                    <span th:text="${dashboard.activeProducts}">0</span> active,
+                                    <span th:text="${dashboard.featuredProducts}">0</span> featured,
+                                    <span th:text="${dashboard.lowStockProducts}">0</span> low stock.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <div class="metric-card">
+                            <div class="card-body">
+                                <div class="metric-topline">
+                                    <div class="metric-label">Order Health</div>
+                                    <div class="metric-icon"><i class="bi bi-truck"></i></div>
+                                </div>
+                                <div class="metric-value" th:text="${dashboard.totalOrders}">0</div>
+                                <p class="metric-copy">
+                                    <span th:text="${dashboard.openOrders}">0</span> open,
+                                    <span th:text="${dashboard.completedOrders}">0</span> fulfilled,
+                                    <span th:text="${dashboard.returnIssueOrders}">0</span> return/cancel issues.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-12 col-xl-8">
+                        <div class="surface-card h-100">
+                            <div class="card-body">
+                                <div class="section-title">
+                                    <div>
+                                        <h2 class="section-heading">Sales And Earnings Trend</h2>
+                                        <p class="section-copy">Six-month view of gross sales, vendor earnings, and order count.</p>
+                                    </div>
+                                </div>
+                                <div class="chart-wrap">
+                                    <canvas id="salesTrendChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-4">
+                        <div class="surface-card h-100">
+                            <div class="card-body">
+                                <div class="section-title">
+                                    <div>
+                                        <h2 class="section-heading">Balance Composition</h2>
+                                        <p class="section-copy">Wallet distribution across pending, available, requested, and paid funds.</p>
+                                    </div>
+                                </div>
+                                <div class="chart-wrap chart-wrap--compact">
+                                    <canvas id="balanceMixChart"></canvas>
+                                </div>
+                                <p class="placeholder-note">Use this view to spot how much of your earnings are still locked versus already withdrawable.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-5">
+                        <div class="surface-card h-100">
+                            <div class="card-body">
+                                <div class="section-title">
+                                    <div>
+                                        <h2 class="section-heading">Order Status Distribution</h2>
+                                        <p class="section-copy">See where vendor orders are stacking up across the fulfillment pipeline.</p>
+                                    </div>
+                                </div>
+                                <div class="chart-wrap chart-wrap--compact">
+                                    <canvas id="orderStatusChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-7">
+                        <div class="surface-card h-100">
+                            <div class="card-body">
+                                <div class="section-title">
+                                    <div>
+                                        <h2 class="section-heading">Top Product Categories</h2>
+                                        <p class="section-copy">Current product spread across the strongest categories in this vendor catalog.</p>
+                                    </div>
+                                </div>
+                                <div class="chart-wrap chart-wrap--compact">
+                                    <canvas id="categoryMixChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-12 col-xl-6">
+                        <div class="surface-card h-100">
+                            <div class="card-body">
+                                <div class="section-title">
+                                    <div>
+                                        <h2 class="section-heading">Inventory Snapshot</h2>
+                                        <p class="section-copy">Quick readouts for merchandising and replenishment priorities.</p>
+                                    </div>
+                                </div>
+                                <div class="insight-list">
+                                    <div class="insight-item">
+                                        <i class="bi bi-stars"></i>
+                                        <div>
+                                            <strong>Featured products</strong>
+                                            <span th:text="${dashboard.featuredProducts + ' products are marked as featured and can be prioritized in storefront campaigns.'}">0 products are marked as featured.</span>
+                                        </div>
+                                    </div>
+                                    <div class="insight-item">
+                                        <i class="bi bi-exclamation-diamond"></i>
+                                        <div>
+                                            <strong>Low stock watchlist</strong>
+                                            <span th:text="${dashboard.lowStockProducts + ' stocked items are currently at or below the low-stock threshold.'}">0 stocked items are below the threshold.</span>
+                                        </div>
+                                    </div>
+                                    <div class="insight-item">
+                                        <i class="bi bi-check2-circle"></i>
+                                        <div>
+                                            <strong>Active catalog coverage</strong>
+                                            <span th:text="${dashboard.activeProducts + ' products are active and available for customer discovery.'}">0 products are active.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-6">
+                        <div class="surface-card h-100">
+                            <div class="card-body">
+                                <div class="section-title">
+                                    <div>
+                                        <h2 class="section-heading">Order Operations Snapshot</h2>
+                                        <p class="section-copy">Focus your team on order movement, fulfilment, and exception handling.</p>
+                                    </div>
+                                </div>
+                                <div class="insight-list">
+                                    <div class="insight-item">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                        <div>
+                                            <strong>Open operational workload</strong>
+                                            <span th:text="${dashboard.openOrders + ' orders are still in the active fulfilment pipeline and need ongoing vendor attention.'}">0 orders are active.</span>
+                                        </div>
+                                    </div>
+                                    <div class="insight-item">
+                                        <i class="bi bi-patch-check"></i>
+                                        <div>
+                                            <strong>Completed order momentum</strong>
+                                            <span th:text="${dashboard.completedOrders + ' orders have already reached delivered or completed status.'}">0 orders are completed.</span>
+                                        </div>
+                                    </div>
+                                    <div class="insight-item">
+                                        <i class="bi bi-shield-exclamation"></i>
+                                        <div>
+                                            <strong>Exceptions to resolve</strong>
+                                            <span th:text="${dashboard.returnIssueOrders + ' orders are currently tied to returns or cancellations and may need manual review.'}">0 orders need exception handling.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
-    </div></div>
+    </div>
+
+    <th:block layout:fragment="page_js">
+        <script th:src="@{/webjars/chartjs/4.5.1/dist/chart.umd.min.js}"></script>
+        <script th:inline="javascript">
+            const monthlyLabels = /*[[${dashboard.monthlyLabels}]]*/ [];
+            const monthlyGrossSales = /*[[${dashboard.monthlyGrossSales}]]*/ [];
+            const monthlyVendorEarnings = /*[[${dashboard.monthlyVendorEarnings}]]*/ [];
+            const monthlyOrderCounts = /*[[${dashboard.monthlyOrderCounts}]]*/ [];
+            const orderStatusLabels = /*[[${dashboard.orderStatusLabels}]]*/ [];
+            const orderStatusCounts = /*[[${dashboard.orderStatusCounts}]]*/ [];
+            const categoryLabels = /*[[${dashboard.productCategoryLabels}]]*/ [];
+            const categoryCounts = /*[[${dashboard.productCategoryCounts}]]*/ [];
+            const balanceLabels = /*[[${dashboard.balanceLabels}]]*/ [];
+            const balanceAmounts = /*[[${dashboard.balanceAmounts}]]*/ [];
+
+            const currencyFormatter = new Intl.NumberFormat('en-BD', {
+                style: 'currency',
+                currency: 'BDT',
+                maximumFractionDigits: 0
+            });
+
+            function hasPositiveValues(values) {
+                return Array.isArray(values) && values.some(value => Number(value) > 0);
+            }
+
+            function buildDoughnutConfig(labels, values, colors, emptyLabel) {
+                if (!hasPositiveValues(values)) {
+                    return {
+                        labels: [emptyLabel],
+                        datasets: [{
+                            data: [1],
+                            backgroundColor: ['#d0d5dd'],
+                            borderWidth: 0
+                        }]
+                    };
+                }
+
+                return {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors,
+                        borderWidth: 0
+                    }]
+                };
+            }
+
+            if (typeof Chart !== 'undefined') {
+                const salesTrendCanvas = document.getElementById('salesTrendChart');
+                if (salesTrendCanvas) {
+                    new Chart(salesTrendCanvas, {
+                        type: 'bar',
+                        data: {
+                            labels: monthlyLabels,
+                            datasets: [
+                                {
+                                    type: 'bar',
+                                    label: 'Order Count',
+                                    data: monthlyOrderCounts,
+                                    yAxisID: 'yOrders',
+                                    backgroundColor: 'rgba(15, 76, 129, 0.15)',
+                                    borderColor: 'rgba(15, 76, 129, 0.85)',
+                                    borderWidth: 1.5,
+                                    borderRadius: 10,
+                                    maxBarThickness: 28
+                                },
+                                {
+                                    type: 'line',
+                                    label: 'Gross Sales',
+                                    data: monthlyGrossSales,
+                                    yAxisID: 'yMoney',
+                                    borderColor: '#14b8a6',
+                                    backgroundColor: 'rgba(20, 184, 166, 0.15)',
+                                    fill: true,
+                                    tension: 0.35,
+                                    pointRadius: 3,
+                                    pointHoverRadius: 5
+                                },
+                                {
+                                    type: 'line',
+                                    label: 'Vendor Earnings',
+                                    data: monthlyVendorEarnings,
+                                    yAxisID: 'yMoney',
+                                    borderColor: '#f97316',
+                                    backgroundColor: 'rgba(249, 115, 22, 0.14)',
+                                    fill: false,
+                                    tension: 0.35,
+                                    pointRadius: 3,
+                                    pointHoverRadius: 5
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: {
+                                mode: 'index',
+                                intersect: false
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                    labels: {
+                                        usePointStyle: true,
+                                        boxWidth: 10
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label(context) {
+                                            const label = context.dataset.label || '';
+                                            if (context.dataset.yAxisID === 'yMoney') {
+                                                return `${label}: ${currencyFormatter.format(context.parsed.y || 0)}`;
+                                            }
+                                            return `${label}: ${context.parsed.y || 0}`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                yMoney: {
+                                    type: 'linear',
+                                    position: 'left',
+                                    ticks: {
+                                        callback(value) {
+                                            return currencyFormatter.format(value);
+                                        }
+                                    },
+                                    grid: {
+                                        color: 'rgba(15, 23, 42, 0.06)'
+                                    }
+                                },
+                                yOrders: {
+                                    type: 'linear',
+                                    position: 'right',
+                                    grid: {
+                                        drawOnChartArea: false
+                                    },
+                                    ticks: {
+                                        precision: 0
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                const balanceCanvas = document.getElementById('balanceMixChart');
+                if (balanceCanvas) {
+                    new Chart(balanceCanvas, {
+                        type: 'doughnut',
+                        data: buildDoughnutConfig(
+                            balanceLabels,
+                            balanceAmounts,
+                            ['#0f4c81', '#14b8a6', '#f59e0b', '#6366f1'],
+                            'No balance data yet'
+                        ),
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '68%',
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        usePointStyle: true,
+                                        boxWidth: 10
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label(context) {
+                                            return `${context.label}: ${currencyFormatter.format(context.parsed || 0)}`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                const orderStatusCanvas = document.getElementById('orderStatusChart');
+                if (orderStatusCanvas) {
+                    new Chart(orderStatusCanvas, {
+                        type: 'doughnut',
+                        data: buildDoughnutConfig(
+                            orderStatusLabels,
+                            orderStatusCounts,
+                            ['#0f4c81', '#14b8a6', '#8b5cf6', '#f97316', '#ef4444', '#6366f1', '#22c55e', '#f59e0b'],
+                            'No order activity yet'
+                        ),
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '62%',
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        usePointStyle: true,
+                                        boxWidth: 10
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                const categoryCanvas = document.getElementById('categoryMixChart');
+                if (categoryCanvas) {
+                    const categoryData = hasPositiveValues(categoryCounts)
+                        ? {
+                            labels: categoryLabels,
+                            datasets: [{
+                                label: 'Products',
+                                data: categoryCounts,
+                                backgroundColor: ['#0f4c81', '#14b8a6', '#8b5cf6', '#f97316', '#22c55e', '#f59e0b'],
+                                borderRadius: 12,
+                                maxBarThickness: 24
+                            }]
+                        }
+                        : {
+                            labels: ['No products yet'],
+                            datasets: [{
+                                label: 'Products',
+                                data: [0],
+                                backgroundColor: ['#d0d5dd'],
+                                borderRadius: 12,
+                                maxBarThickness: 24
+                            }]
+                        };
+
+                    new Chart(categoryCanvas, {
+                        type: 'bar',
+                        data: categoryData,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            indexAxis: 'y',
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        precision: 0
+                                    },
+                                    grid: {
+                                        color: 'rgba(15, 23, 42, 0.06)'
+                                    }
+                                },
+                                y: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        </script>
+    </th:block>
+</div>

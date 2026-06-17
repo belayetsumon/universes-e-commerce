@@ -14,4 +14,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface DeliveryChargeRepository extends JpaRepository<DeliveryCharge, Long> {
     List<DeliveryCharge> findByProductIdOrderByIdDesc(Long id);
+
+    List<DeliveryCharge> findByProduct_UuidOrderByIdDesc(String productUuid);
 }

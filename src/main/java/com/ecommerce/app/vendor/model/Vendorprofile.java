@@ -13,7 +13,6 @@ import jakarta.validation.constraints.Pattern;
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
-
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -68,6 +67,8 @@ public class Vendorprofile {  // vendor or store
     @Enumerated(EnumType.STRING)
     private VendorStatusEnum vendorStatusEnum;
 
+    private String vendorLogo;
+
     /// Audit ///
     @CreatedBy
     @Column(nullable = false, updatable = false)
@@ -88,7 +89,7 @@ public class Vendorprofile {  // vendor or store
     public Vendorprofile() {
     }
 
-    public Vendorprofile(Long id, String vendorCode, String companyName, Users userId, Set<Users> users, String firstName, String lastName, String designation, String phone, String email, String address, String description, VendorStatusEnum vendorStatusEnum, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
+    public Vendorprofile(Long id, String vendorCode, String companyName, Users userId, Set<Users> users, String firstName, String lastName, String designation, String phone, String email, String address, String description, VendorStatusEnum vendorStatusEnum, String vendorLogo, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
         this.id = id;
         this.vendorCode = vendorCode;
         this.companyName = companyName;
@@ -102,6 +103,7 @@ public class Vendorprofile {  // vendor or store
         this.address = address;
         this.description = description;
         this.vendorStatusEnum = vendorStatusEnum;
+        this.vendorLogo = vendorLogo;
         this.createdBy = createdBy;
         this.created = created;
         this.modifiedBy = modifiedBy;
@@ -218,6 +220,14 @@ public class Vendorprofile {  // vendor or store
 
     public void setVendorStatusEnum(VendorStatusEnum vendorStatusEnum) {
         this.vendorStatusEnum = vendorStatusEnum;
+    }
+
+    public String getVendorLogo() {
+        return vendorLogo;
+    }
+
+    public void setVendorLogo(String vendorLogo) {
+        this.vendorLogo = vendorLogo;
     }
 
     public String getCreatedBy() {

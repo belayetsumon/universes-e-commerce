@@ -31,6 +31,7 @@ and open the template in the editor.
                         <div class="row">  <div class="col-sm-5"> <strong>  <i class="fas fa-list"></i> User  List   Total Employee :  <span th:text="${alluser.size()}"></span></strong></div>
                             <div class="col-sm-7 text-end">
                                 <div class="btn-group ">
+                                    <a th:href="@{/users/login-history}" type="button" class="btn btn-info btn-sm">Login History</a>
                                     <a th:href="@{/users/registrations}" type="button" class="btn  btn-success btn-sm bg-green">New Employee Registration</a>
                                     <a th:href="@{/users/index}" type="button" class="btn  btn-danger btn-sm">Close</a>
                                 </div></div>
@@ -55,7 +56,10 @@ and open the template in the editor.
                                     <th>Role</th>
                                     <th>Status</th>
                                     <th>Remark</th>
+                                    <th>View</th>
                                     <th>Edit</th>
+                                    <th>Password</th>
+                                    <th>History</th>
                                     <th style="width: 40px">Delete</th>
                                 </tr>
                             </thead>
@@ -73,7 +77,16 @@ and open the template in the editor.
                                     <td th:text="${alluser.status}">Chakma</td>
                                     <td th:text="${alluser.remarks}">Chakma</td>
                                     <td>
+                                        <a type="button" class="btn btn-info btn-sm" th:href="@{/users/view/{uid}(uid=${alluser.id})}">View</a>
+                                    </td>
+                                    <td>
                                         <a type="button" class="btn  btn-success btn-sm" th:href="@{/users/edit/{id} (id=${alluser.id})}" > Edit</a>
+                                    </td>
+                                    <td>
+                                        <a type="button" class="btn btn-warning btn-sm" th:href="@{/users/change-password/{id}(id=${alluser.id})}">Password</a>
+                                    </td>
+                                    <td>
+                                        <a type="button" class="btn btn-info btn-sm" th:href="@{/users/login-history/{uid}(uid=${alluser.id})}">History</a>
                                     </td>
                                     <td> <a  type="button" class="btn  btn-danger btn-sm" th:href="@{/users/deletewithexception/{id} (id=${alluser.id})}" > Delete </a></td>
                                 </tr>

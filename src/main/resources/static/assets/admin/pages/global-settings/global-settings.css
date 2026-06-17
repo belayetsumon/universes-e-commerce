@@ -1,0 +1,34 @@
+/*
+ * Page: Admin global settings
+ * Used by: templates/admin/settings/global-settings.html
+ * Purpose: preview sizing for uploaded branding assets on the global settings page
+ */
+
+.settings-media-preview {
+    object-fit: contain;
+}
+
+.settings-media-preview--logo-desktop {
+    max-width: 100%;
+    height: 70px;
+}
+
+.settings-media-preview--logo-mobile {
+    width: 100%;
+    height: 56px;
+}
+
+.settings-media-preview--logo-square {
+    width: 72px;
+    height: 72px;
+}
+
+.settings-media-preview--favicon {
+    width: 40px;
+    height: 40px;
+}
+
+.settings-media-preview--og-image {
+    max-width: 300px;
+    height: auto;
+}

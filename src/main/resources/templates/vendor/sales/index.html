@@ -41,6 +41,7 @@ and open the template in the editor.
                                             <th scope="col">C.Mobile</th>
                                             <th scope="col">C.Email</th>
                                             <th scope="col"> Status </th>
+                                            <th scope="col"> Shipment </th>
                                             <th scope="col"> Discount Amount </th>
                                             <th scope="col">Market Place Commission Amount</th>
                                             <th scope="col">Vendor Amount</th>
@@ -62,13 +63,29 @@ and open the template in the editor.
                                             <td th:text="${orderlists.mobile}">Otto</td>
                                             <td th:text="${orderlists.email}">Otto</td>
                                             <td th:text="${orderlists.status}">Otto</td>
+                                            <td>
+                                                <a class="btn btn-sm btn-primary"
+                                                   th:if="${orderlists.shipmentEligible}"
+                                                   th:href="@{/vendor/shipments/new(orderId=${orderlists.orderId})}">
+                                                    Create Shipment
+                                                </a>
+                                                <a class="btn btn-sm btn-outline-primary"
+                                                   th:if="${orderlists.hasShipment and orderlists.existingShipmentId != null}"
+                                                   th:href="@{/vendor/shipments/edit/{id}(id=${orderlists.existingShipmentId})}">
+                                                    Edit Shipment
+                                                </a>
+                                                <span class="badge bg-secondary"
+                                                      th:if="${!orderlists.shipmentEligible and !orderlists.hasShipment}">
+                                                    Not Ready
+                                                </span>
+                                            </td>
                                             <td th:text="${orderlists.totalDiscountAmount}">Otto</td>
                                             <td th:text="${orderlists.totalMarketPlaceCommissionAmount}">Otto</td>
                                             <td th:text="${orderlists.totalVendorAmount}">Otto</td>
                                             <td th:text="${orderlists.totalVatAmount}">Otto</td>
                                             <td th:text="${orderlists.itemTotal}">Otto</td>
-                                            <td scope="col">[[${orderlists.shippingChargeAmount}]]</td>
-                                            <td scope="col">[[${orderlists.packagingCost}]]</td>
+                                            <td scope="col">[[${orderlists.deliveryCharge}]]</td>
+                                            <td scope="col">[[${orderlists.packingCharge}]]</td>
                                             <td scope="col">[[${orderlists.grandTotal}]] </td>
                                             <td th:text="${orderlists.created}">Otto</td>
                                             <td th:text="${orderlists.modified}">@mdo</td>

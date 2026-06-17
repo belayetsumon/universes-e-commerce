@@ -68,19 +68,21 @@ public class AdsController {
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String placement,
             @RequestParam(required = false) String targetType,
-            @RequestParam(defaultValue = "0") int page,
             Model model) {
 
-        List<Ads> adsPage = adsService.getAds();
+        List<Ads> adsPage = adsService.getAds(title, placement, targetType);
 
         model.addAttribute("adsPage", adsPage);
+        model.addAttribute("currentTitle", title);
+        model.addAttribute("currentPlacement", placement);
+        model.addAttribute("currentTargetType", targetType);
 
         return "ads/ads_list";
     }
 
     @GetMapping("/create")
     public String createForm(Model model, Ads ads) {
-
+        model.addAttribute("ads", ads);
         return "ads/ads_form";
     }
 
@@ -92,45 +94,22 @@ public class AdsController {
             Model model,
             RedirectAttributes redirectAttributes) {
 
-        // Validate Target Type
         if (ads.getTargetType() == null) {
             bindingResult.rejectValue("targetType", "error.ads", "Target type is required");
+        } else {
+            validateTargetSelection(ads, bindingResult);
         }
-//        else {
-//            switch (ads.getTargetType()) {
-//                case CATEGORY -> {
-//                    if (ads.getCategoryId() == null || ads.getCategoryId().isEmpty()) {
-//                        bindingResult.rejectValue("categoryId", "error.ads", "Category must be selected");
-//                    }
-//                }
-//                case PRODUCT -> {
-//                    if (ads.getProductId() == null || ads.getProductId().isEmpty()) {
-//                        bindingResult.rejectValue("productId", "error.ads", "Product must be selected");
-//                    }
-//                }
-//                case VENDOR -> {
-//                    if (ads.getVendorId() == null || ads.getVendorId().isEmpty()) {
-//                        bindingResult.rejectValue("vendorId", "error.ads", "Vendor must be selected");
-//                    }
-//                }
-//                case EXTERNAL -> {
-//                    if (ads.getExternalUrl() == null || ads.getExternalUrl().isEmpty()) {
-//                        bindingResult.rejectValue("externalUrl", "error.ads", "External URL is required");
-//                    }
-//                }
-//            }
-//        }
 
-        // Handle Banner Image Upload
         Ads existingAds = null;
         if (ads.getId() != null) {
-            existingAds = adsService.getById(ads.getId());
+            existingAds = adsService.findByIdOrNull(ads.getId());
             if (existingAds == null) {
                 bindingResult.rejectValue("id", "error.ads", "Ad not found");
             }
         }
 
-        // Handle Banner Image Upload
+        normalizeTargetFields(ads);
+
         if ((existingAds == null) && (file == null || file.isEmpty())) {
             bindingResult.rejectValue("imageUrl", "error.ads", "Banner image is required for new ads");
         } else if (file != null && !file.isEmpty()) {
@@ -146,15 +125,9 @@ public class AdsController {
                 bindingResult.rejectValue("imageUrl", "error.ads", "Image upload failed: " + e.getMessage());
             }
         } else if (existingAds != null) {
-            // preserve existing image
             ads.setImageUrl(existingAds.getImageUrl());
         }
 
-        // Return form with errors
-        if (bindingResult.hasErrors()) {
-            return "ads/ads_form";
-        }
-        // Return form with errors
         if (bindingResult.hasErrors()) {
             return "ads/ads_form";
         }
@@ -166,8 +139,12 @@ public class AdsController {
     }
 
     @GetMapping("/edit/{id}")
-    public String editForm(@PathVariable Long id, Model model) {
-        Ads ads = adsService.getById(id);
+    public String editForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        Ads ads = adsService.findByIdOrNull(id);
+        if (ads == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Ad not found.");
+            return "redirect:/admin/ads/list";
+        }
         model.addAttribute("ads", ads);  // Use "ad" to match form th:object
 
         return "ads/ads_form";
@@ -179,7 +156,7 @@ public class AdsController {
         String BASE_FOLDER = Paths.get(System.getProperty("user.home"), "universesecommerce").toString();
 
         try {
-            Ads ads = adsService.getById(id);
+            Ads ads = adsService.findByIdOrNull(id);
 
             if (ads == null) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Ad not found or already deleted.");
@@ -209,6 +186,82 @@ public class AdsController {
         }
 
         return "redirect:/admin/ads/list";
+    }
+
+    private void validateTargetSelection(Ads ads, BindingResult bindingResult) {
+        switch (ads.getTargetType()) {
+            case CATEGORY -> {
+                String categoryId = trimToNull(ads.getCategoryId());
+                if (categoryId == null) {
+                    bindingResult.rejectValue("categoryId", "error.ads", "Category must be selected");
+                } else if (!adsService.hasCategory(categoryId)) {
+                    bindingResult.rejectValue("categoryId", "error.ads", "Selected category is invalid");
+                }
+            }
+            case PRODUCT -> {
+                String productId = trimToNull(ads.getProductId());
+                if (productId == null) {
+                    bindingResult.rejectValue("productId", "error.ads", "Product must be selected");
+                } else if (!adsService.hasProduct(productId)) {
+                    bindingResult.rejectValue("productId", "error.ads", "Selected product is invalid");
+                }
+            }
+            case VENDOR -> {
+                String vendorId = trimToNull(ads.getVendorId());
+                if (vendorId == null) {
+                    bindingResult.rejectValue("vendorId", "error.ads", "Vendor must be selected");
+                } else if (!adsService.hasVendor(vendorId)) {
+                    bindingResult.rejectValue("vendorId", "error.ads", "Selected vendor is invalid");
+                }
+            }
+            case EXTERNAL -> {
+                if (trimToNull(ads.getExternalUrl()) == null) {
+                    bindingResult.rejectValue("externalUrl", "error.ads", "External URL is required");
+                }
+            }
+        }
+    }
+
+    private void normalizeTargetFields(Ads ads) {
+        ads.setCategoryId(trimToNull(ads.getCategoryId()));
+        ads.setProductId(trimToNull(ads.getProductId()));
+        ads.setVendorId(trimToNull(ads.getVendorId()));
+        ads.setExternalUrl(trimToNull(ads.getExternalUrl()));
+
+        if (ads.getTargetType() == null) {
+            return;
+        }
+
+        switch (ads.getTargetType()) {
+            case CATEGORY -> {
+                ads.setProductId(null);
+                ads.setVendorId(null);
+                ads.setExternalUrl(null);
+            }
+            case PRODUCT -> {
+                ads.setCategoryId(null);
+                ads.setVendorId(null);
+                ads.setExternalUrl(null);
+            }
+            case VENDOR -> {
+                ads.setCategoryId(null);
+                ads.setProductId(null);
+                ads.setExternalUrl(null);
+            }
+            case EXTERNAL -> {
+                ads.setCategoryId(null);
+                ads.setProductId(null);
+                ads.setVendorId(null);
+            }
+        }
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
 }

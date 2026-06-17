@@ -57,6 +57,39 @@ and open the template in the editor.
 
 
                         <div class="card">
+                            <div class="card-body border-bottom">
+                                <form class="row g-2 align-items-end" method="get" th:action="@{/admin/ads/list}">
+                                    <div class="col-md-4">
+                                        <label class="form-label mb-1">Title</label>
+                                        <input type="text" name="title" class="form-control form-control-sm"
+                                               th:value="${currentTitle}" placeholder="Search by title">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label mb-1">Placement</label>
+                                        <select name="placement" class="form-select form-select-sm">
+                                            <option value="">All placements</option>
+                                            <option th:each="p : ${placements}"
+                                                    th:value="${p}"
+                                                    th:selected="${currentPlacement == p.name()}"
+                                                    th:text="${p}"></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label mb-1">Target Type</label>
+                                        <select name="targetType" class="form-select form-select-sm">
+                                            <option value="">All targets</option>
+                                            <option th:each="t : ${targetTypes}"
+                                                    th:value="${t}"
+                                                    th:selected="${currentTargetType == t.name()}"
+                                                    th:text="${t}"></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2 d-flex gap-2">
+                                        <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
+                                        <a th:href="@{/admin/ads/list}" class="btn btn-sm btn-outline-secondary w-100">Reset</a>
+                                    </div>
+                                </form>
+                            </div>
                             <div class="card-body p-0">
                                 <table class="table table-bordered table-striped mb-0">
                                     <thead class="table-light">
@@ -100,21 +133,19 @@ and open the template in the editor.
 
                                             <!-- Show target info -->
                                             <td>
-                                                <span>
+                                                <span class="badge bg-secondary" th:text="${ad.targetType}"></span>
+                                                <div class="small mt-1" th:if="${ad.targetType != null and ad.targetType.name() == 'CATEGORY'}">
                                                     Category: <span th:text="${ad.categoryId}"></span>
-                                                </span>
-
-                                                <!--      <span th:if="${ad.targetType == T(com.example.enums.TargetType).PRODUCT}">
-                                                        Product: <span th:text="${ad.productId}"></span>
-                                                    </span>
-
-                                                    <span th:if="${ad.targetType == T(com.example.enums.TargetType).VENDOR}">
-                                                        Vendor: <span th:text="${ad.vendorId}"></span>
-                                                    </span>
-
-                                                    <span th:if="${ad.targetType == T(com.example.enums.TargetType).EXTERNAL}">
-                                                        External: <span th:text="${ad.externalUrl}"></span>
-                                                    </span>-->
+                                                </div>
+                                                <div class="small mt-1" th:if="${ad.targetType != null and ad.targetType.name() == 'PRODUCT'}">
+                                                    Product: <span th:text="${ad.productId}"></span>
+                                                </div>
+                                                <div class="small mt-1" th:if="${ad.targetType != null and ad.targetType.name() == 'VENDOR'}">
+                                                    Vendor: <span th:text="${ad.vendorId}"></span>
+                                                </div>
+                                                <div class="small mt-1" th:if="${ad.targetType != null and ad.targetType.name() == 'EXTERNAL'}">
+                                                    External: <span th:text="${ad.externalUrl}"></span>
+                                                </div>
                                             </td>
 
                                             <!-- Active / Inactive badge -->
@@ -136,6 +167,9 @@ and open the template in the editor.
                                                 </a>
                                             </td>
 
+                                        </tr>
+                                        <tr th:if="${#lists.isEmpty(adsPage)}">
+                                            <td colspan="9" class="text-center text-muted py-4">No ads matched the current filters.</td>
                                         </tr>
 
                                     </tbody>

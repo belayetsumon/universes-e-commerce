@@ -17,6 +17,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -28,6 +29,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 // import javax.persistence.*;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
+@Table(name = "promotions_wallet_transaction")
 public class WalletTransaction {
 
     @Id
@@ -56,13 +58,24 @@ public class WalletTransaction {
     @Column(nullable = false)
     private TransactionType type; // CREDIT / DEBIT
 
+    private String sourceType;
+
+    private String sourceReference;
+
+    private Integer levelNumber;
+
     private boolean redeemed = false;
 
     private boolean expired = false;
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+        if (this.users == null && this.wallet != null) {
+            this.users = this.wallet.getUsers();
+        }
     }
 
     public WalletTransaction() {
@@ -140,6 +153,30 @@ public class WalletTransaction {
 
     public void setType(TransactionType type) {
         this.type = type;
+    }
+
+    public String getSourceType() {
+        return sourceType;
+    }
+
+    public void setSourceType(String sourceType) {
+        this.sourceType = sourceType;
+    }
+
+    public String getSourceReference() {
+        return sourceReference;
+    }
+
+    public void setSourceReference(String sourceReference) {
+        this.sourceReference = sourceReference;
+    }
+
+    public Integer getLevelNumber() {
+        return levelNumber;
+    }
+
+    public void setLevelNumber(Integer levelNumber) {
+        this.levelNumber = levelNumber;
     }
 
     public boolean isRedeemed() {

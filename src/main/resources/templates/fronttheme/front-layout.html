@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8"/>
         <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-        <title>Welcome To Our School Web Site </title>
+        <title th:text="${pageTitle != null ? pageTitle : (session.globalSettings.siteTitle != null ? session.globalSettings.siteTitle : session.globalSettings.siteName)}">Welcome To Our School Web Site</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport"/>
         <!-- Bootstrap 3.3.6 -->
@@ -42,7 +42,7 @@
         <!-- Site wrapper -->
         <div class="wrapper">
 
-            <div th:replace="front-header">
+            <div th:replace="~{front-header}">
 
                 <!-- Header  -->
 
@@ -70,7 +70,7 @@
             </div>
 
             <!-- /.content-wrapper -->
-            <div th:replace="front-footer">        
+            <div th:replace="~{front-footer}">        
 
 
             </div>

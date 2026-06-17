@@ -16,6 +16,7 @@ import com.ecommerce.app.vendor.user.repository.VendorRoleRepository;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,7 +46,12 @@ public class VendorAccessControllController {
     VendorRoleRepository vendorRoleRepository;
 
     @RequestMapping("/userlist")
-    //  @PreAuthorize("@vendorRoleChecker.hasVendorRole(authentication, 'ADMIN')")
+    @PreAuthorize("""
+            @vendorAccessAuthorityChecker.hasAuthority(authentication, 'vendor.staff.manage')
+            or @vendorRoleChecker.hasVendorRole(authentication, 'ADMIN')
+            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
+            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
+            """)
     public String vendoruserlist(Model model) {
         Vendorprofile vendor = vendorUserContext.getActiveVendor();
 
@@ -55,18 +61,28 @@ public class VendorAccessControllController {
     }
 
     @RequestMapping("/add_vendor_user")
-    //  @PreAuthorize("@vendorRoleChecker.hasVendorRole(authentication, 'ADMIN')")
+    @PreAuthorize("""
+            @vendorAccessAuthorityChecker.hasAuthority(authentication, 'vendor.staff.manage')
+            or @vendorRoleChecker.hasVendorRole(authentication, 'ADMIN')
+            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
+            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
+            """)
     public String addVendorUser(Model model, UserVendorRole userVendorRole) {
         Vendorprofile vendor = vendorUserContext.getActiveVendor();
         userVendorRole.setVendor(vendor);
         model.addAttribute("companyName", vendor.getCompanyName());
 
-        model.addAttribute("rolelist", vendorRoleRepository.findAll());
+        model.addAttribute("rolelist", vendorRoleRepository.findAssignableRoles(vendor));
         return "vendor/users/vendor_users_form";
     }
 
     @PostMapping("/save")
-    //  @PreAuthorize("@vendorRoleChecker.hasVendorRole(authentication, 'ADMIN')")
+    @PreAuthorize("""
+            @vendorAccessAuthorityChecker.hasAuthority(authentication, 'vendor.staff.manage')
+            or @vendorRoleChecker.hasVendorRole(authentication, 'ADMIN')
+            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
+            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
+            """)
     public String assignExistingUserToVendor(
             @RequestParam(value = "email", required = true) String usersEmail,
             @RequestParam(value = "vendorRoleId", required = true) Long vendorRoleId,
@@ -110,7 +126,9 @@ public class VendorAccessControllController {
         }
 
         // 2️⃣ Check if vendor is active
-        VendorRole vendorRole = vendorRoleRepository.findById(vendorRoleId).orElseThrow();
+        VendorRole vendorRole = vendorRoleRepository
+                .findAssignableRoleById(vendorRoleId, vendor)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid vendor role selection"));
 
         UserVendorRole uvr = new UserVendorRole();
         uvr.setUsers(user);
@@ -122,7 +140,12 @@ public class VendorAccessControllController {
     }
 
     @RequestMapping("/delete/{id}")
-    //  @PreAuthorize("@vendorRoleChecker.hasVendorRole(authentication, 'ADMIN')")
+    @PreAuthorize("""
+            @vendorAccessAuthorityChecker.hasAuthority(authentication, 'vendor.staff.manage')
+            or @vendorRoleChecker.hasVendorRole(authentication, 'ADMIN')
+            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
+            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
+            """)
     public String delete(Model model, @PathVariable long id, RedirectAttributes redirectAttributes) {
 
         userVendorRoleRepository.deleteById(id);

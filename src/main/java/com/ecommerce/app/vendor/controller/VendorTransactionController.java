@@ -4,17 +4,13 @@
  */
 package com.ecommerce.app.vendor.controller;
 
-import com.ecommerce.app.vendor.model.VendorTransactionStatusEnum;
-import com.ecommerce.app.vendor.model.VendorTransactionTypeEnum;
-import com.ecommerce.app.vendor.services.VendorTransactionService;
+import com.ecommerce.app.finance.services.FinanceReportService;
 import com.ecommerce.app.vendor.user.componant.VendorUserContext;
-import java.util.List;
-import java.util.Map;
+import java.util.ArrayList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  *
@@ -25,25 +21,28 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class VendorTransactionController {
 
     @Autowired
-    VendorTransactionService vendorTransactionService;
+    private FinanceReportService financeReportService;
     @Autowired
     private VendorUserContext vendorUserContext;
 
     @RequestMapping("/list")
-    public String list(Model model,
-            @RequestParam(name = "fromDate", required = false) String fromDate,
-            @RequestParam(name = "toDate", required = false) String toDate,
-            @RequestParam(name = "typeStr", required = false) VendorTransactionTypeEnum typeStr,
-            @RequestParam(name = "statusStr", required = false) VendorTransactionStatusEnum statusStr,
-            @RequestParam(name = "salesOrderStr", required = false) String salesOrderStr,
-            @RequestParam(name = "vendorId", required = false) Long vendorId
-    ) {
-        Long vId = vendorUserContext.getActiveVendor().getId();
-        List<Map<String, Object>> transactionList = vendorTransactionService.findTransactions(vId, fromDate, toDate, statusStr, typeStr, salesOrderStr);
-        model.addAttribute("transactionStatus", VendorTransactionStatusEnum.values());
-        model.addAttribute("transactionType", VendorTransactionTypeEnum.values());
-        model.addAttribute("list", transactionList);
-        return "vendor/transaction/transaction-list";
+    public String list(Model model) {
+        try {
+            if (vendorUserContext.getActiveVendor() == null || vendorUserContext.getActiveVendor().getId() == null) {
+                model.addAttribute("errorMessage", "Vendor session not found. Please select or login to your vendor account again.");
+                model.addAttribute("ledgerRows", new ArrayList<>());
+                return "vendor/finance/ledger";
+            }
+
+            Long vId = vendorUserContext.getActiveVendor().getId();
+            model.addAttribute("ledgerRows", financeReportService.getVendorLedger(vId));
+            model.addAttribute("vendorprofile", vendorUserContext.getActiveVendor());
+        } catch (Exception ex) {
+            model.addAttribute("errorMessage", "Runtime error while loading vendor transaction ledger: " + ex.getMessage());
+            model.addAttribute("ledgerRows", new ArrayList<>());
+            model.addAttribute("vendorprofile", vendorUserContext.getActiveVendor());
+        }
+        return "vendor/finance/ledger";
     }
 
 }

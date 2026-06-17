@@ -5,12 +5,11 @@
 package com.ecommerce.app.module.customer.ReferralRewards.controller;
 
 import com.ecommerce.app.module.ReferralRewards.model.Referral;
-import com.ecommerce.app.module.ReferralRewards.model.Wallet;
 import com.ecommerce.app.module.ReferralRewards.repository.CashOutRequestRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.GiftCardRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.ReferralRepository;
-import com.ecommerce.app.module.ReferralRewards.repository.WalletRepository;
-import com.ecommerce.app.module.ReferralRewards.repository.WalletTransactionRepository;
+import com.ecommerce.app.module.ReferralRewards.repository.RewardAccountRepository;
+import com.ecommerce.app.module.ReferralRewards.repository.RewardTransactionRepository;
 import com.ecommerce.app.module.ReferralRewards.services.RedemptionService;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
@@ -39,13 +38,13 @@ public class ReferralRewardsController {
     @Autowired
     CashOutRequestRepository cashOutRequestRepository;
     @Autowired
-    WalletRepository walletRepository;
+    RewardAccountRepository rewardAccountRepository;
 
     @Autowired
     private UsersRepository usersRepository;
 
     @Autowired
-    WalletTransactionRepository walletTransactionRepository;
+    RewardTransactionRepository rewardTransactionRepository;
 
     @Autowired
     ReferralRepository referralRepository;
@@ -54,26 +53,30 @@ public class ReferralRewardsController {
     public String deshbords(Model model, Principal principal) {
 
         Optional<Users> users = usersRepository.findByEmail(principal.getName());
+        if (users.isEmpty()) {
+            return "redirect:/login";
+        }
+        Users currentUser = users.get();
 
         BigDecimal walletBalance = users
-                .flatMap(user -> walletRepository.findByUsers(user)
-                .map(Wallet::getBalance)
+                .flatMap(user -> rewardAccountRepository.findByUsers(user)
+                .map(com.ecommerce.app.module.ReferralRewards.model.RewardAccount::getBalance)
                 .map(balance -> balance != null ? balance : BigDecimal.ZERO)
                 )
                 .orElse(BigDecimal.ZERO);
 
         model.addAttribute("walletBalance", walletBalance);
 
-        Optional<BigDecimal> sumCreditsByUser = walletTransactionRepository.sumCreditsByUser(users.get());
+        Optional<BigDecimal> sumCreditsByUser = rewardTransactionRepository.sumCreditsByUser(currentUser);
 
-        model.addAttribute("totalCredits", sumCreditsByUser.get());
+        model.addAttribute("totalCredits", sumCreditsByUser.orElse(BigDecimal.ZERO));
 
-        Long totalref = referralRepository.countByUsers(users.get());
+        Long totalref = referralRepository.countByReferredUser(currentUser);
 
         model.addAttribute("totalref", totalref);
-        Optional<Referral> referral = referralRepository.findByUsers(users.get());
+        Optional<Referral> referral = referralRepository.findByUsers(currentUser);
 
-        model.addAttribute("referral_code", referral.get().getReferralCode());
+        model.addAttribute("referral_code", referral.map(Referral::getReferralCode).orElse(""));
 
         return "customer/referral_rewards/customer_referrallist_dashbords";
     }

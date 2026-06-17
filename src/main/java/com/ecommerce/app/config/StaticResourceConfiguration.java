@@ -6,8 +6,8 @@
 package com.ecommerce.app.config;
 
 import com.ecommerce.app.globalComponant.DistrictInterceptor;
+import com.ecommerce.app.module.user.componant.LoginActivityInterceptor;
 import com.ecommerce.app.services.StorageProperties;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.*;
@@ -25,6 +25,9 @@ public class StaticResourceConfiguration implements WebMvcConfigurer {
     @Autowired
     private DistrictInterceptor districtInterceptor;
 
+    @Autowired
+    private LoginActivityInterceptor loginActivityInterceptor;
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/files/**")
@@ -37,4 +40,22 @@ public class StaticResourceConfiguration implements WebMvcConfigurer {
 //        registry.addInterceptor(districtInterceptor)
 //                .addPathPatterns("/cart/**"); // apply to all paths
 //    }
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(loginActivityInterceptor)
+                .addPathPatterns("/**")
+                .excludePathPatterns(
+                        "/assets/**",
+                        "/css/**",
+                        "/js/**",
+                        "/img/**",
+                        "/images/**",
+                        "/plugin/**",
+                        "/webjars/**",
+                        "/files/**",
+                        "/favicon.ico",
+                        "/public/**",
+                        "/error"
+                );
+    }
 }

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section>
+            <div class="d-flex align-items-center mb-4">
+                <h2 th:text="${historyTitle}">Login History</h2>
+                <nav aria-label="breadcrumb" class="align-middle">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a th:href="@{/admin/index}">Home</a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/users/index}">Users</a></li>
+                        <li class="breadcrumb-item active" aria-current="page" th:text="${historyTitle}">Login History</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row align-items-center">
+                            <div class="col-sm-8">
+                                <strong><i class="bi bi-clock-history me-1"></i> <span th:text="${historyTitle}">Login History</span></strong>
+                                <div class="text-muted small mt-1" th:text="${historySubtitle}">Detailed login history</div>
+                            </div>
+                            <div class="col-sm-4 text-end">
+                                <div class="btn-group">
+                                    <a class="btn btn-info btn-sm" th:if="${selectedUser != null}" th:href="@{/users/login-history}">All Login History</a>
+                                    <a class="btn btn-danger btn-sm" th:href="${backUrl}" th:text="${backLabel}">Back</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body table-responsive">
+                        <table id="tablesdata" class="table table-bordered table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th style="width: 10px;">#</th>
+                                    <th>User</th>
+                                    <th>Attempted Username</th>
+                                    <th>Status</th>
+                                    <th>Failure Reason</th>
+                                    <th>Login Time</th>
+                                    <th>Last Activity</th>
+                                    <th>Logout Time</th>
+                                    <th>Logout Reason</th>
+                                    <th>IP Address</th>
+                                    <th>Session ID</th>
+                                    <th>User Agent</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${#lists.isEmpty(historyEntries)}">
+                                    <td colspan="12" class="text-center text-muted">No login history found.</td>
+                                </tr>
+                                <tr th:each="entry, status : ${historyEntries}">
+                                    <td th:text="${status.count}">1</td>
+                                    <td>
+                                        <span th:if="${entry.user != null}">
+                                            <a th:href="@{/users/view/{uid}(uid=${entry.user.id})}"
+                                               th:text="${(entry.user.firstName != null ? entry.user.firstName : '') + ((entry.user.lastName != null and !#strings.isEmpty(entry.user.lastName)) ? ' ' + entry.user.lastName : '')}">User Name</a>
+                                            <span th:text="${' (' + (entry.user.email != null and !#strings.isEmpty(entry.user.email) ? entry.user.email : (entry.user.mobile != null and !#strings.isEmpty(entry.user.mobile) ? entry.user.mobile : '-')) + ')'}"></span>
+                                        </span>
+                                        <span th:if="${entry.user == null}" th:text="${entry.attemptedUsername != null and !#strings.isEmpty(entry.attemptedUsername) ? 'Unknown (' + entry.attemptedUsername + ')' : 'Unknown'}">Unknown</span>
+                                    </td>
+                                    <td th:text="${entry.attemptedUsername != null and !#strings.isEmpty(entry.attemptedUsername) ? entry.attemptedUsername : '-'}">attempted@example.com</td>
+                                    <td th:text="${entry.loginStatus != null ? entry.loginStatus : '-'}">ACTIVE</td>
+                                    <td th:text="${entry.failureReason != null and !#strings.isEmpty(entry.failureReason) ? entry.failureReason : '-'}">-</td>
+                                    <td th:text="${entry.loginTime != null ? #temporals.format(entry.loginTime, 'dd-MM-yyyy hh:mm a') : '-'}">-</td>
+                                    <td th:text="${entry.lastActivityAt != null ? #temporals.format(entry.lastActivityAt, 'dd-MM-yyyy hh:mm a') : '-'}">-</td>
+                                    <td th:text="${entry.logoutTime != null ? #temporals.format(entry.logoutTime, 'dd-MM-yyyy hh:mm a') : '-'}">-</td>
+                                    <td th:text="${entry.logoutReason != null ? entry.logoutReason : '-'}">-</td>
+                                    <td th:text="${entry.ipAddress != null and !#strings.isEmpty(entry.ipAddress) ? entry.ipAddress : '-'}">-</td>
+                                    <td th:text="${entry.sessionId != null and !#strings.isEmpty(entry.sessionId) ? entry.sessionId : '-'}">-</td>
+                                    <td th:title="${entry.userAgent != null ? entry.userAgent : ''}"
+                                        th:text="${entry.userAgent != null and !#strings.isEmpty(entry.userAgent) ? (#strings.length(entry.userAgent) > 80 ? #strings.substring(entry.userAgent, 0, 80) + '...' : entry.userAgent) : '-'}">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

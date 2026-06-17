@@ -5,9 +5,11 @@
  */
 package com.ecommerce.app.admin.controller;
 
+import com.ecommerce.app.admin.services.AdminDashboardService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
@@ -19,12 +21,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @PreAuthorize("hasAuthority('admin')")
 public class AdminController {
 
+    @Autowired
+    private AdminDashboardService adminDashboardService;
+
     @RequestMapping(value = {"", "/", "/index"})
-
     public String page(Model model) {
-
-        model.addAttribute("attribute", "value");
-
+        model.addAttribute("pageTitle", "Admin Dashboard");
+        try {
+            model.addAttribute("dashboard", adminDashboardService.buildDashboard());
+        } catch (RuntimeException ex) {
+            model.addAttribute("errorMessage", "Runtime error while loading admin dashboard: " + ex.getMessage());
+            model.addAttribute("dashboard", adminDashboardService.emptyDashboard());
+        }
         return "/admin/index";
     }
 

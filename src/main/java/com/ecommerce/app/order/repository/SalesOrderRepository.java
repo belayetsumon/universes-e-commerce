@@ -9,6 +9,7 @@ import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.order.model.OrderStatus;
 import com.ecommerce.app.order.model.SalesOrder;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -24,6 +25,10 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
 
     List<SalesOrder> findByCustomerOrderByIdDesc(Users users);
 
+    long countByCustomer(Users users);
+
+    Optional<SalesOrder> findByIdAndCustomer_Id(Long id, Long customerId);
+
     List<SalesOrder> findByCustomerAndStatusOrderByIdDesc(Users users, OrderStatus status);
 
     List<SalesOrder> findAllByOrderByIdDesc();
@@ -31,6 +36,8 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
     SalesOrder findFirstByOrderByIdDesc();
 
     List<SalesOrder> findByVendorIdOrderByIdDesc(Long Id);
+
+    Optional<SalesOrder> findByIdAndVendorId(Long id, Long vendorId);
 
     @Query("""
   SELECT s.orderCode

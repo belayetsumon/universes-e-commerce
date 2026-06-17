@@ -1,12 +1,25 @@
-<div class="card">
+<div xmlns:th="http://www.thymeleaf.org"
+     th:fragment="customerSidebar"
+     class="card customer-sidebar-menu vendor-sidebar-menu border-0 shadow-sm">
 
-    <div class="card-header  ">
+    <div class="card-header bg-white border-bottom-0 fw-semibold">
         <i class="fas fa-list"></i> Navigation : Customer
     </div>
 
-    <div class="card-body">
-        <ul class="list-group fa-ul  list-group-flush">
-            <li class="list-group-item"><a class="nav-link" th:href="@{/customer/}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>Home</a></li>
+    <div class="card-body p-0">
+        <ul class="list-group list-group-flush customer-sidebar-nav" id="customerSidebarAccordion">
+            <li class="list-group-item">
+                <a class="nav-link" data-path-match="/customer,/customer/index,/customer/dashboards" th:href="@{/customer/}">
+                    <i class="bi bi-house-door"></i>
+                    <span>Home</span>
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a class="nav-link" data-path-match="/customer-profile,/customerprofileimage" th:href="@{/customer-profile/index}">
+                    <i class="bi bi-person-circle"></i>
+                    <span>My Profile</span>
+                </a>
+            </li>
             <!--            <li class="list-group-item"  >
                             <a class="dropdown-toggle btn-toggle-nav " type="button" data-bs-toggle="collapse" data-bs-target="#sms" aria-expanded="false" aria-controls="sms"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>SMS</a>
                               <div class="collapse" id="sms">
@@ -120,9 +133,24 @@
                             </div>
                         </li>-->
 
-            <li class="list-group-item"><a class="nav-link" th:href="@{/customer/storelist}"> <span class="fa-li"><i class="fas fa-wallet"></i></span> Vendor Panel</a></li>
-            <li class="list-group-item"><a class="nav-link" th:href="@{/customer_registration/registration}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>New User Registration</a></li>
-            <li class="list-group-item"><a class="nav-link" th:href="@{/customer-team/index}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>Your Team</a></li>
+            <li class="list-group-item">
+                <a class="nav-link" data-path-match="/customer/storelist" th:href="@{/customer/storelist}">
+                    <i class="bi bi-shop"></i>
+                    <span>Vendor Panel</span>
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a class="nav-link" data-path-match="/customer_registration" th:href="@{/customer_registration/registration}">
+                    <i class="bi bi-person-plus"></i>
+                    <span>New User Registration</span>
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a class="nav-link" data-path-match="/customer-team" th:href="@{/customer-team/index}">
+                    <i class="bi bi-people"></i>
+                    <span>Your Team</span>
+                </a>
+            </li>
             <!--      <li class="list-group-item"><a class="textMaroon " th:href="@{/customer-profile/index}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>Profile</a></li>
           <li class="list-group-item"><a class="textMaroon " th:href="@{/customerprofileimage/index}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>Profile Image</a></li>
           <li class="list-group-item"><a class="textMaroon " th:href="@{/customerprofileimage/index}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>Address</a></li>-->
@@ -130,72 +158,85 @@
             <!--            <li class="list-group-item"><a class="textMaroon " th:href="@{/customerblog/index}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>Blog</a></li>
                         <li class="list-group-item"><a class="textMaroon " th:href="@{/customerexamcomment/index}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>Comments</a></li>
                         <li class="list-group-item"><a class="textMaroon " th:href="@{/customerrate/index}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>Rate</a></li>-->
-            <!--            <li class="list-group-item"><a class="textMaroon" th:href="@{/customer}"> <span class="fa-li"><i class="far fa-heart"></i> </span>Wishlist</a></li>-->
-            <li class="list-group-item"><a class="nav-link" th:href="@{/customerorder/index}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Your Orders</a></li>
+            <li class="list-group-item">
+                <a class="nav-link" data-path-match="/customerorder" th:href="@{/customerorder/index}">
+                    <i class="bi bi-bag-check"></i>
+                    <span>Your Orders</span>
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a class="nav-link" data-path-match="/wishlist" th:href="@{/wishlist/index}">
+                    <i class="bi bi-heart"></i>
+                    <span>Wishlist</span>
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a class="nav-link" data-path-match="/public/browsing-history" th:href="@{/public/browsing-history}">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Browsing History</span>
+                </a>
+            </li>
             <!--            <li class="list-group-item"><a class="textMaroon " th:href="@{/customerorder/index}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Downloadable Product</a></li>
                         <li class="list-group-item"><a class="textMaroon " th:href="@{/customerorder/index}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Reviews</a></li>
                         <li class="list-group-item"><a class="textMaroon " th:href="@{/customerorder/index}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Wishlist</a></li>-->
-            <li class="list-group-item"><a class=" " th:href="@{/customer-bonus/index}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Referral Rewards</a>
-                <ul class="list-unstyled "  >
-                    <!--                    <li>
-                                            <a class="nav-link" th:href="@{/referralrewards/dashbords}">
-                                                <i class="bi bi-check"></i>
-                                                Dashboards
-                                            </a>
-                                        </li>-->
-                    <li>
-                        <a class="nav-link" th:href="@{/customerreferral/list}">
-                            <i class="bi bi-check"></i>
-                            Referral
-                        </a>
-                    </li>
-                    <li>
-                        <a class="nav-link" th:href="@{/customerwallet/wallet}">
-                            <i class="bi bi-check"></i>
-                            Wallet
-                        </a>
-                    </li>
+            <li class="list-group-item customer-sidebar-item customer-sidebar-item--has-children">
+                <button class="nav-link customer-submenu-toggle collapsed" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#customerReferralRewardsMenu"
+                        aria-expanded="false"
+                        aria-controls="customerReferralRewardsMenu">
+                    <span class="customer-submenu-label">
+                        <i class="fas fa-gift"></i>
+                        <span>Referral Rewards</span>
+                    </span>
+                    <i class="bi bi-chevron-down customer-submenu-chevron" aria-hidden="true"></i>
+                </button>
 
-                    <li>
-                        <a class="nav-link" th:href="@{/cashoutcustomerrequest/list}">
-                            <i class="bi bi-check"></i>
-                            Cash Out Request
-                        </a>
-                    </li>
-
-                    <li>
-                        <a class="nav-link" th:href="@{/customerwallettransaction/list}">
-                            <i class="bi bi-check"></i>
-                            Wallet Transaction
-                        </a>
-                    </li>
-
-                    <!--                    <li>
-                                            <a class="nav-link" th:href="@{/customerredeem/redeem-points}">
-                                                <i class="bi bi-check"></i>
-                                                Redemption
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="nav-link" th:href="@{/customerreward/rewards}">
-                                                <i class="bi bi-check"></i>
-                                                Reword
-                                            </a>
-                                        </li>-->
-
-
-
-                </ul>
-
-
-
+                <div class="collapse customer-submenu" id="customerReferralRewardsMenu" data-bs-parent="#customerSidebarAccordion">
+                    <ul class="list-unstyled customer-submenu-list mb-0">
+                        <li>
+                            <a class="nav-link customer-submenu-link" data-path-match="/customer-bonus" th:href="@{/customer-bonus/index}">
+                                <i class="bi bi-grid-1x2"></i>
+                                <span>Overview</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link customer-submenu-link" data-path-match="/customerreferral" th:href="@{/customerreferral/list}">
+                                <i class="bi bi-diagram-3"></i>
+                                <span>Referral</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link customer-submenu-link" data-path-match="/customerwallet" th:href="@{/customerwallet/wallet}">
+                                <i class="bi bi-wallet2"></i>
+                                <span>Wallet</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link customer-submenu-link" data-path-match="/cashoutcustomerrequest" th:href="@{/cashoutcustomerrequest/list}">
+                                <i class="bi bi-cash-coin"></i>
+                                <span>Cash Out Request</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link customer-submenu-link" data-path-match="/customerwallettransaction" th:href="@{/customerwallettransaction/list}">
+                                <i class="bi bi-receipt"></i>
+                                <span>Wallet Transaction</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </li>
             <!--    <li class="list-group-item"><a class="textMaroon " th:href="@{/customer-transaction/index}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Transaction</a></li>-->
-            <li class="list-group-item"><a class="nav-link" th:href="@{/users/logout}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Logout</a></li>
+            <li class="list-group-item">
+                <a class="nav-link" th:href="@{/users/logout}">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
             <!--            <li class="list-group-item"> <a class="textMaroon " th:href="@{/customer-billingaddress/index}"> <span class="fa-li"><i class="fas fa-map-marked"></i> </span>Addresses</a></li>-->
         </ul>
 
 
     </div>
 </div>
-

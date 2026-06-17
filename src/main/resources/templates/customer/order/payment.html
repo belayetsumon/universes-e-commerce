@@ -1,68 +1,231 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-customar-page">
-    <div layout:fragment = "main_content">
-        <div> <h4> Order <small>Home>Order Payment</small></h4>
-        </div>
+    <div layout:fragment="main_content">
+        <div><h4>Order <small>Home&gt;Order Payment</small></h4></div>
         <hr/>
         <div class="row">
             <div class="col-sm-12">
-
                 <div class="card">
                     <div class="card-header bgMaroon text-white">
-                        <div class="row">  <div class="col-sm-5 font-weight-bold "><i class="fas fa-list"></i> Payment</div>
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold"><i class="fas fa-list"></i> Payment</div>
                         </div>
                     </div>
                     <div class="card-body">
-                        <form action="http://secure.aamarpay.com/index.php"  enctype="multipart/form-data" method="post" >
-                            <input type="hidden"  class="form-control" name="store_id" value="oxfordmodeltest" />
-                            <input type="hidden" name="signature_key" value="367d2c37233a43601f2f430ad057dd3b">
-                            <input type="hidden"  class="form-control" name="amount" th:value="${orderinfo.total}" />
-                            <input type="hidden" name="currency" value="BDT">
+                        <div th:if="${errorMessage}" class="alert alert-danger">
+                            <span th:text="${errorMessage}"></span>
+                        </div>
+                        <div th:if="${successMessage}" class="alert alert-success">
+                            <span th:text="${successMessage}"></span>
+                        </div>
 
-                            <input type="hidden"  class="form-control" name="tran_id" th:value="${orderinfo.id}" />
+                        <div th:if="${orderinfo == null}" class="alert alert-warning">
+                            Order not found.
+                        </div>
 
-                            <input type="hidden"  class="form-control" name="cus_name" th:value="${orderinfo.customer.name}" />
-                            <input type="hidden"  class="form-control" name="cus_email" th:value="${orderinfo.customer.email}" />
+                        <div th:if="${orderinfo != null}">
+                            <div class="row mb-4">
+                                <div class="col-md-4 mb-3">
+                                    <div class="border rounded p-3 h-100">
+                                        <div class="small text-muted">Order Code</div>
+                                        <div class="fw-bold" th:text="${orderinfo.orderCode}">ORDER</div>
+                                        <div class="small text-muted mt-3">Order Status</div>
+                                        <div th:text="${orderinfo.status}">NEW_ORDER</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="border rounded p-3 h-100">
+                                        <div class="small text-muted">Grand Total</div>
+                                        <div class="fw-bold"
+                                             th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.orderTotal, 0, 'COMMA', 2, 'POINT')}">
+                                            BDT 0.00
+                                        </div>
+                                        <div class="small text-muted mt-3">Total Paid</div>
+                                        <div th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.totalPaid, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</div>
+                                        <div class="small text-muted mt-2" th:if="${paymentSummary.refundedAmount > 0}">Refunded</div>
+                                        <div th:if="${paymentSummary.refundedAmount > 0}"
+                                             th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.refundedAmount, 0, 'COMMA', 2, 'POINT')}">
+                                            BDT 0.00
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="border rounded p-3 h-100">
+                                        <div class="small text-muted">Remaining Balance</div>
+                                        <div class="fw-bold text-danger"
+                                             th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.remainingAmount, 0, 'COMMA', 2, 'POINT')}">
+                                            BDT 0.00
+                                        </div>
+                                        <div class="small text-muted mt-3">Payment Status</div>
+                                        <div th:text="${paymentSummary.paymentStatus}">Remaining</div>
+                                    </div>
+                                </div>
+                            </div>
 
-                            <input type="hidden" name="cus_add1" value="Dhaka"/>
-                            <input type="hidden" name="cus_add2" value="Dhaka"/>
-                            <input type="hidden" name="cus_city" value="Dhaka"/>
-                            <input type="hidden" name="cus_state" value="Dhaka"/>
-                            <input type="hidden" name="cus_postcode" value="1206">
-                            <input type="hidden" name="cus_country" value="Bangladesh"/>
-                            <input type="hidden" name="cus_phone" value="010000000"/>
-                            <input type="hidden" name="cus_fax" value="010000000"/>
+                            <div class="row mb-4">
+                                <div class="col-md-3 mb-3">
+                                    <div class="border rounded p-3 h-100">
+                                        <div class="small text-muted">Payment Plan</div>
+                                        <div class="fw-bold" th:text="${paymentSummary.paymentPlan}">FULL_COD</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="border rounded p-3 h-100">
+                                        <div class="small text-muted">Payment State</div>
+                                        <div class="fw-bold" th:text="${paymentSummary.orderPaymentState}">COD_PENDING</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="border rounded p-3 h-100">
+                                        <div class="small text-muted">Advance Paid / Target</div>
+                                        <div class="fw-bold">
+                                            <span th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.advancePaid, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</span>
+                                            <span class="text-muted"> / </span>
+                                            <span th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.advanceTarget, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="border rounded p-3 h-100">
+                                        <div class="small text-muted">Remaining COD Due</div>
+                                        <div class="fw-bold text-warning"
+                                             th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.remainingCodDue, 0, 'COMMA', 2, 'POINT')}">
+                                            BDT 0.00
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                            <input type="hidden" name="amount_vatratio" value="0"/>
-                            <input type="hidden" name="amount_vat" value="0"/>
-                            <input type="hidden" name="amount_taxratio" value="0"/>
-                            <input type="hidden" name="amount_tax" value="0"/>
-                            <input type="hidden" name="amount_processingfee_ratio" value="0"/>
-                            <input type="hidden" name="amount_processingfee" value="0"/>
+                            <div th:if="${paymentSummary.fullyPaid and paymentSummary.paymentStatus.name() != 'Refunded' and paymentSummary.paymentStatus.name() != 'Cancelled'}" class="alert alert-success">
+                                This order is already fully paid.
+                            </div>
 
-                            <input type="hidden"  class="form-control" name="desc" value="exam" />
+                            <div th:if="${paymentSummary.paymentStatus.name() == 'Refunded'}" class="alert alert-info">
+                                This order has already been refunded.
+                            </div>
 
+                            <div th:if="${paymentSummary.paymentStatus.name() == 'Cancelled'}" class="alert alert-info">
+                                This order is cancelled. No further payment is required.
+                            </div>
 
-                            <input type="hidden" name="success_url"  th:value="@{http://oxfordmodeltest.com/customer-order/payment_success/{orderid}(orderid=${orderinfo.id})}"/>
-                            <input type="hidden" name="fail_url"   th:value="@{http://oxfordmodeltest.com/customer-order/payment_failed/{orderid}(orderid=${orderinfo.id})}"/>
-                            <input type="hidden" name="cancel_url"  th:value="@{http://oxfordmodeltest.com/customer-order/payment_cancelled/{orderid}(orderid=${orderinfo.id})}"/>
+                            <div th:if="${!paymentSummary.fullyPaid and !paymentSummary.customerPaymentAllowed}" class="alert alert-info">
+                                <span th:if="${paymentSummary.paymentStatus.name() == 'Refunded'}">
+                                    This order has already been refunded. No further payment is required.
+                                </span>
+                                <span th:if="${paymentSummary.paymentStatus.name() == 'Cancelled'}">
+                                    This order is cancelled. No further payment is required.
+                                </span>
+                                <span th:if="${paymentSummary.paymentStatus.name() != 'Refunded' and paymentSummary.paymentStatus.name() != 'Cancelled' and paymentSummary.paymentPlan.name() == 'FULL_COD'}">
+                                    This order is marked as full COD. Payment will be collected during delivery.
+                                </span>
+                                <span th:if="${paymentSummary.paymentStatus.name() != 'Refunded' and paymentSummary.paymentStatus.name() != 'Cancelled' and paymentSummary.paymentPlan.name() == 'PARTIAL_ADVANCE_COD' and paymentSummary.codCollectionPending}">
+                                    The planned advance is already complete. Remaining COD due:
+                                    <strong th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.remainingCodDue, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</strong>
+                                </span>
+                                <span th:if="${paymentSummary.paymentStatus.name() != 'Refunded' and paymentSummary.paymentStatus.name() != 'Cancelled' and paymentSummary.paymentPlan.name() == 'EMI'}">
+                                    This order is managed by the EMI flow. Direct customer payment is currently unavailable here.
+                                </span>
+                            </div>
 
+                            <form th:if="${!paymentSummary.fullyPaid and paymentSummary.customerPaymentAllowed}"
+                                  th:action="@{/customerorder/payment/{orderid}(orderid=${orderinfo.id})}"
+                                  method="post">
+                                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-                            <h5> Name : <span th:text="${orderinfo.customer.name}"> </span>    </h5>
-                            <h5> Email : <span th:text="${orderinfo.customer.email}"> </span>    </h5>
-                            <h5> Total Amount : <span th:text="${orderinfo.total}"> </span>
+                                <div class="mb-3">
+                                    <label class="form-label">Choose Payment Method</label>
+                                    <div class="form-check mb-2" th:each="method : ${methods}">
+                                        <input class="form-check-input"
+                                               type="radio"
+                                               name="paymentMethod"
+                                               th:value="${method.name()}"
+                                               th:id="${'payment_' + method.name()}"
+                                               th:checked="${selectedPaymentMethod != null and selectedPaymentMethod.name() == method.name()}">
+                                        <label class="form-check-label"
+                                               th:for="${'payment_' + method.name()}"
+                                               th:text="${method.displayName}">
+                                            Payment Method
+                                        </label>
+                                    </div>
+                                </div>
 
-                            </h5>
-                            <button type="submit" class="btn btn-success">Check Out</button>
-                        </form>
-                    </div><!--  Card body end-->
-                </div><!--  Card  end-->
-            </div><!--  Main Content  end-->
+                                <div class="mb-3">
+                                    <label class="form-label" for="paidAmount">Payment Amount</label>
+                                    <input id="paidAmount"
+                                           class="form-control"
+                                           type="number"
+                                           name="paidAmount"
+                                           min="0.01"
+                                           step="0.01"
+                                           th:attr="max=${paymentSummary.maxCustomerPaymentAmount}"
+                                           th:value="${paymentSummary.maxCustomerPaymentAmount}"
+                                           required>
+                                    <div class="form-text">
+                                        <span th:if="${paymentSummary.paymentPlan.name() == 'PARTIAL_ADVANCE_COD'}">
+                                            Pay only the remaining advance. The leftover balance stays as COD.
+                                        </span>
+                                        <span th:unless="${paymentSummary.paymentPlan.name() == 'PARTIAL_ADVANCE_COD'}">
+                                            Enter the full amount to finish payment, or a lower amount for partial payment.
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label" for="transactionId">Transaction ID / Reference</label>
+                                    <input id="transactionId"
+                                           class="form-control"
+                                           type="text"
+                                           name="transactionId"
+                                           placeholder="Optional payment reference">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label" for="paymentDetails">Payment Details</label>
+                                    <textarea id="paymentDetails"
+                                              class="form-control"
+                                              name="paymentDetails"
+                                              rows="3"
+                                              placeholder="Optional note about this SSLCommerz or bKash payment"></textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-success">Confirm Payment</button>
+                                <a class="btn btn-outline-secondary ms-2"
+                                   th:href="@{/customerorder/details/{oid}(oid=${orderinfo.id})}">
+                                    Back to Order
+                                </a>
+                            </form>
+
+                            <div class="mt-4" th:if="${payments != null and !#lists.isEmpty(payments)}">
+                                <h5>Payment History</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Method</th>
+                                                <th>Paid</th>
+                                                <th>Remaining</th>
+                                                <th>Status</th>
+                                                <th>Reference</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="payment, status : ${payments}">
+                                                <td th:text="${status.count}">1</td>
+                                                <td th:text="${payment.paymentMethod != null ? payment.paymentMethod.displayName : '-'}">Method</td>
+                                                <td th:text="'BDT ' + ${#numbers.formatDecimal(payment.paidAmount, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</td>
+                                                <td th:text="'BDT ' + ${#numbers.formatDecimal(payment.remainingAmount, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</td>
+                                                <td th:text="${payment.paymentStatus}">Status</td>
+                                                <td th:text="${payment.transactionId}">REF</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>   <!--  Layout end-->
+</div>

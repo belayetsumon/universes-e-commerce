@@ -7,8 +7,8 @@ package com.ecommerce.app.module.user.ripository;
 
 import com.ecommerce.app.module.user.model.*;
 import java.util.*;
-import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
 
 /**
  *
@@ -31,6 +31,17 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
     Users findByIdAndStatus(Long id, Status status);
 
     List<Users> findByStatus(Status status);
+
+    @EntityGraph(attributePaths = {"roles", "roles.privileges"})
+    @Query("SELECT u FROM Users u WHERE u.id = :userId")
+    Users findUserWithRolesAndPrivileges(@Param("userId") Long userId);
+
+//    @EntityGraph(attributePaths = {"roles", "roles.privileges"})
+//    List<Users> findAllUsers();
+    // EntityGraph method - SINGLE QUERY for all roles and privileges
+    @EntityGraph(attributePaths = {"role", "role.privilege"})
+    @Query("SELECT u FROM Users u WHERE u.email = :email AND u.status = :status")
+    Users findByEmailAndStatusWithRolesAndPrivileges(@Param("email") String email, @Param("status") Status status);
 
     //List<Users> findByStatusAndProfileImageNotNullOrderByIdDesc(Status status, Pageable pageable);
 }

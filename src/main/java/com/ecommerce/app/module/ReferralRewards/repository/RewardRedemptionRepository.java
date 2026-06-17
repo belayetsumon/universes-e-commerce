@@ -4,17 +4,22 @@
  */
 package com.ecommerce.app.module.ReferralRewards.repository;
 
-import com.ecommerce.app.module.ReferralRewards.model.RewardRedemption;
-import com.ecommerce.app.module.user.model.Users;
-import java.util.List;
+import com.ecommerce.app.module.ReferralRewards.model.Redemptions;
+import com.ecommerce.app.module.ReferralRewards.model.RedemptionType;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
  *
  * @author libertyerp_local
  */
-public interface RewardRedemptionRepository extends JpaRepository<RewardRedemption, Long> {
+public interface RewardRedemptionRepository extends JpaRepository<Redemptions, Long> {
 
-    List<RewardRedemption> findAllByUsersOrderByRedeemedAtDesc(Users users);
-
+//    List<Redemptions> findAllByUsersOrderByRedeemedAtDesc(Users users);
+    Optional<Redemptions> findFirstByRedemptionTypeAndOrderIdAndSourceProgramAndSourceId(
+            RedemptionType redemptionType,
+            String orderId,
+            String sourceProgram,
+            String sourceId
+    );
 }

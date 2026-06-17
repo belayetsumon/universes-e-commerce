@@ -16,34 +16,44 @@ and open the template in the editor.
                     <div class="card-header">
                         <div class="row">
 
-                            <div class="col-sm-9 font-weight-bold ">
+                            <div class="col-sm-10 font-weight-bold ">
 
                                 <ul class="nav nav-tabs" id="myTab" role="tablist">
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link active"
+                                        <button class="nav-link"
+                                                th:classappend="${activeTab == 'home'} ? ' active'"
                                                 id="home-tab"
                                                 data-bs-toggle="tab"
                                                 data-bs-target="#home"
                                                 type="button"
-                                                role="tab">Product Basic Info</button>
+                                                role="tab">Basic Info</button>
                                     </li>
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link " id="imageupload-tab" data-bs-toggle="tab"
+                                        <button class="nav-link"
+                                                th:classappend="${activeTab == 'specifications'} ? ' active'"
+                                                id="specifications-tab"
+                                                data-bs-toggle="tab"
+                                                data-bs-target="#specifications"
+                                                type="button"
+                                                role="tab">Specifications</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" th:classappend="${activeTab == 'imageupload'} ? ' active'" id="imageupload-tab" data-bs-toggle="tab"
                                                 data-bs-target="#imageupload"
                                                 type="button" role="tab">Image Upload</button>
                                     </li>
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link " id="productvariants-tab" data-bs-toggle="tab"
-                                                data-bs-target="#productvariants"
+                                        <button class="nav-link" th:classappend="${activeTab == 'catalogvariants'} ? ' active'" id="catalogvariants-tab" data-bs-toggle="tab"
+                                                data-bs-target="#catalogvariants"
                                                 type="button" role="tab">Product Variants </button>
                                     </li>
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link " id="productdimension-tab" data-bs-toggle="tab"
+                                        <button class="nav-link" th:classappend="${activeTab == 'productdimension'} ? ' active'" id="productdimension-tab" data-bs-toggle="tab"
                                                 data-bs-target="#productdimension"
                                                 type="button" role="tab">Product Dimension </button>
                                     </li>
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="delivery-options-tab" data-bs-toggle="tab" data-bs-target="#deliveryOptions" type="button" role="tab">Delivery Options</button>
+                                        <button class="nav-link" th:classappend="${activeTab == 'deliveryOptions'} ? ' active'" id="delivery-options-tab" data-bs-toggle="tab" data-bs-target="#deliveryOptions" type="button" role="tab">Delivery Options</button>
                                     </li>
                                 </ul>
 
@@ -51,7 +61,7 @@ and open the template in the editor.
 
                             </div>
 
-                            <div class="col-sm-3 text-end ">
+                            <div class="col-sm-2 text-end ">
                                 <div class="btn-group ">
 
                                     <a class="btn btn-danger btn-sm "  th:href="@{/productvendor/index}"><i class="bi bi-x-circle"></i> Close</a>
@@ -65,7 +75,7 @@ and open the template in the editor.
 
 
                         <div class="tab-content " id="myTabContent">
-                            <div class="tab-pane fade  show active p-1 " id="home" role="tabpanel">
+                            <div class="tab-pane fade p-1" th:classappend="${activeTab == 'home'} ? ' show active'" id="home" role="tabpanel">
                                 <div class="row mb-3">
                                     <div class="col-sm-5"> </div>
 
@@ -189,7 +199,7 @@ and open the template in the editor.
 
                                     </tr>
 
-                                    <tr> <th> EMI Available </th>
+                                    <tr> <th> Meritten EMI Available </th>
                                         <td> :</td>
                                         <td th:text="${product_details.emiAvailable}"> </td>
 
@@ -262,9 +272,49 @@ and open the template in the editor.
                                     </tr>
 
                                 </table>
+
+                                <div class="card mt-4" th:if="${productSpecifications != null and !#lists.isEmpty(productSpecifications)}">
+                                    <div class="card-header">
+                                        <strong>Dynamic Specifications</strong>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <table class="table table-bordered table-striped mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Attribute</th>
+                                                    <th>Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr th:each="spec : ${productSpecifications}">
+                                                    <td th:text="${spec.attributeName}">Attribute</td>
+                                                    <td th:text="${spec.value}">Value</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="tab-pane fade" id="imageupload" role="tabpanel">
+                            <div class="tab-pane fade p-1" th:classappend="${activeTab == 'specifications'} ? ' show active'" id="specifications" role="tabpanel">
+                                <div class="alert alert-success" th:if="${message != null and !#strings.isEmpty(message)}" th:text="${message}"></div>
+                                <div class="alert alert-danger" th:if="${specificationErrorMessages != null and !#lists.isEmpty(specificationErrorMessages)}">
+                                    <ul class="mb-0">
+                                        <li th:each="errorMessage : ${specificationErrorMessages}" th:text="${errorMessage}">Specification validation error</li>
+                                    </ul>
+                                </div>
+
+                                <form th:action="@{/productvendor/details/{id}/specifications(id=${product_details.id})}" method="post">
+                                    <div th:replace="product/fragments/dynamic_attribute_fields :: dynamicAttributeFields"></div>
+                                    <div class="text-end mt-3">
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i class="bi bi-save"></i> Save Specifications
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="tab-pane fade" th:classappend="${activeTab == 'imageupload'} ? ' show active'" id="imageupload" role="tabpanel">
 
 
                                 <!-- Include Reusable Message Fragment -->
@@ -366,77 +416,94 @@ and open the template in the editor.
                             </div>
 
 
-                            <div class="tab-pane fade" id="productvariants" role="tabpanel">
-
-
-                                <!-- Include Reusable Message Fragment -->
+                            <div class="tab-pane fade" th:classappend="${activeTab == 'catalogvariants'} ? ' show active'" id="catalogvariants" role="tabpanel">
                                 <div id="message-container"></div>
-                                <div id="loading-indicator" style="display:none;">
-                                    <p>Save...</p>
-                                </div>
                                 <div th:replace="product/fragments/messages :: messages(${successMessage}, ${errorMessage})"></div>
-                                <!-- Form Container -->
-                                <div class="d-flex justify-content-center align-items-center" style="min-height: 20vh;">
 
-                                    <button class="btn  btn-success btn-sm"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#deliveryOptionsModal"
-                                            th:hx-get="@{/productvariants/add/{id}(id=${product_details.id})}"
-                                            hx-target=".modal-content"
-                                            hx-swap="innerHTML"
-                                            hx-trigger="click">
-                                        <i class="bi bi-plus-circle"></i> Add New Product Variants</button>
+                                <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <h6 class="mb-1">Generic Catalog Variants</h6>
+                                        <small class="text-muted">2026-05-15: Vendors can now manage reusable attribute-driven variants here.</small>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button class="btn btn-primary btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deliveryOptionsModal"
+                                                th:hx-get="@{/catalog-variants/generate/{uuid}(uuid=${product_details.uuid})}"
+                                                hx-target=".modal-content"
+                                                hx-swap="innerHTML">
+                                            <i class="bi bi-magic"></i> Auto Generate
+                                        </button>
+                                        <button class="btn btn-success btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deliveryOptionsModal"
+                                                th:hx-get="@{/catalog-variants/add/{uuid}(uuid=${product_details.uuid})}"
+                                                hx-target=".modal-content"
+                                                hx-swap="innerHTML">
+                                            <i class="bi bi-plus-circle"></i> Add Catalog Variant
+                                        </button>
+                                    </div>
                                 </div>
 
+                                <div class="alert alert-info" th:if="${catalogVariantSummaries == null or #lists.isEmpty(catalogVariantSummaries)}">
+                                    No catalog variants saved yet. Use <strong>Auto Generate</strong> or add variants manually.
+                                </div>
 
-                                <div class="table" th:fragment="table">
-
-                                    <table id="productImageTable"
-                                           class="table table-bordered table-hover table-striped">
-
-                                        <thead class="thead-light" >
+                                <div class="table-responsive" th:if="${catalogVariantSummaries != null and !#lists.isEmpty(catalogVariantSummaries)}">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <thead class="thead-light">
                                             <tr>
-                                                <th  class="text-center">#</th>
-                                                <th  class="text-center">Size </th>
-                                                <th  class="text-center">Color</th>
-                                                <th  class="text-center">Stock</th>
-                                                <th  class="text-center">Action</th>
+                                                <th class="text-center">#</th>
+                                                <th>Variant</th>
+                                                <th>SKU</th>
+                                                <th class="text-end">Sell Price</th>
+                                                <th class="text-end">Special Price</th>
+                                                <th class="text-end">Available</th>
+                                                <th class="text-end">Reserved</th>
+                                                <th class="text-end">Sold</th>
+                                                <th class="text-center">Status</th>
+                                                <th class="text-center">Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-
-                                            <tr th:each="p_v,status:${p_variants}">
-                                                <th  class="text-center" th:text="${status.count}">1</th>
-                                                <td  class="text-center">
-
-                                                    <span th:text="${p_v.size.name}" > Image Not Found </span>
-                                                </td>
-
-                                                <td  class="text-center">
-
-                                                    <span th:text="${p_v.color.name}" > Image Not Found </span>
-                                                </td>
-                                                <td  class="text-center">
-
-                                                    <span th:text="${p_v.stock_quantity}" > Image Not Found </span>
+                                            <tr th:each="variantRow, status : ${catalogVariantSummaries}">
+                                                <th class="text-center" th:text="${status.count}">1</th>
+                                                <td th:text="${variantRow.optionSummary}">Size: XL | Color: Red</td>
+                                                <td th:text="${variantRow.sku}">SKU</td>
+                                                <td class="text-end" th:text="${variantRow.sellingPrice}">0.00</td>
+                                                <td class="text-end" th:text="${variantRow.specialPrice != null ? variantRow.specialPrice : '-'}">-</td>
+                                                <td class="text-end" th:text="${variantRow.stockQuantity}">0</td>
+                                                <td class="text-end" th:text="${variantRow.reservedQuantity}">0</td>
+                                                <td class="text-end" th:text="${variantRow.soldQuantity}">0</td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-success" th:if="${variantRow.active}">Active</span>
+                                                    <span class="badge bg-secondary" th:unless="${variantRow.active}">Inactive</span>
                                                 </td>
                                                 <td class="text-center">
-                                                    <button class="btn btn-danger btn-sm "
-                                                            th:hx-delete="@{/productvariants/delete/{id}(id=${p_v.id})}"
+                                                    <button class="btn btn-warning btn-sm"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#deliveryOptionsModal"
+                                                            th:hx-get="@{/catalog-variants/edit/{uuid}(uuid=${variantRow.uuid})}"
+                                                            hx-target=".modal-content"
+                                                            hx-swap="innerHTML">
+                                                        Edit
+                                                    </button>
+                                                    <button class="btn btn-danger btn-sm"
+                                                            th:hx-delete="@{/catalog-variants/delete/{uuid}(uuid=${variantRow.uuid})}"
                                                             hx-target="#message-container"
-                                                            hx-trigger="click"
                                                             hx-swap="innerHTML"
-                                                            hx-on::after-request="setTimeout(() => window.location.reload(), 500);"
-                                                            >
-                                                        <i class="bi bi-x-circle"></i> Delete </button>
+                                                            hx-on::after-request="setTimeout(() => window.location.reload(), 500);">
+                                                        Delete
+                                                    </button>
                                                 </td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
+
                             </div>
 
-                            <div class="tab-pane fade" id="productdimension" role="tabpanel">
+                            <div class="tab-pane fade" th:classappend="${activeTab == 'productdimension'} ? ' show active'" id="productdimension" role="tabpanel">
 
 
                                 <!-- Include Reusable Message Fragment -->
@@ -519,7 +586,7 @@ and open the template in the editor.
 
 
                             </div>
-                            <div class="tab-pane fade" id="deliveryOptions" role="tabpanel">
+                            <div class="tab-pane fade" th:classappend="${activeTab == 'deliveryOptions'} ? ' show active'" id="deliveryOptions" role="tabpanel">
                                 <div class="card">
                                     <div class="card-header d-flex justify-content-between align-items-center">
 
@@ -540,7 +607,10 @@ and open the template in the editor.
                                             <thead class="thead-light" >
                                                 <tr>
                                                     <th  class="text-center">#</th>
-                                                    <th  class="text-center">Description </th>
+                                                    <th  class="text-center">Mode </th>
+                                                    <th  class="text-center">Selected Districts </th>
+                                                    <th  class="text-center">Excluded Districts </th>
+                                                    <th  class="text-center">Note </th>
                                                     <th  class="text-center">Created By </th>
                                                     <th  class="text-center">Created </th>
                                                     <th  class="text-center">modified By </th>
@@ -553,7 +623,27 @@ and open the template in the editor.
                                                 <tr th:if="${d_a_list != null and not #lists.isEmpty(d_a_list)}" th:each="lists, status : ${d_a_list}">
                                                     <th  class="text-center" th:text="${status.count}">1</th>
                                                     <td  class="text-center">
-                                                        [[${lists.description}]]
+                                                        [[${lists.mode != null ? lists.mode.label : '-'}]]
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        <span th:if="${lists.selectedDistricts != null and !#lists.isEmpty(lists.selectedDistricts)}"
+                                                              th:each="district : ${lists.selectedDistricts}"
+                                                              class="badge bg-info text-dark me-1 mb-1"
+                                                              th:text="${district.displayName}"></span>
+                                                        <span th:if="${(lists.selectedDistricts == null or #lists.isEmpty(lists.selectedDistricts)) and lists.district != null}"
+                                                              th:text="${lists.district.displayName}"></span>
+                                                        <span th:if="${(lists.selectedDistricts == null or #lists.isEmpty(lists.selectedDistricts)) and lists.district == null}">-</span>
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        <span th:if="${lists.excludedDistricts != null and !#lists.isEmpty(lists.excludedDistricts)}"
+                                                              th:each="district, districtStat : ${lists.excludedDistricts}"
+                                                              class="badge bg-secondary me-1 mb-1">
+                                                            <span th:text="${district.displayName}"></span><span th:if="${!districtStat.last}"></span>
+                                                        </span>
+                                                        <span th:if="${lists.excludedDistricts == null or #lists.isEmpty(lists.excludedDistricts)}">-</span>
+                                                    </td>
+                                                    <td  class="text-center">
+                                                        [[${#strings.isEmpty(lists.description) ? '-' : lists.description}]]
                                                     </td>
                                                     <td  class="text-center">
                                                         [[${lists.createdBy}]]
@@ -596,7 +686,7 @@ and open the template in the editor.
                                                     </td>
                                                 </tr>
                                                 <tr th:if="${d_a_list == null or #lists.isEmpty(d_a_list)}">
-                                                    <td colspan="7" class="text-center">Sorry, no data found</td>
+                                                    <td colspan="10" class="text-center">Sorry, no data found</td>
                                                 </tr>
                                             </tbody>
                                         </table>

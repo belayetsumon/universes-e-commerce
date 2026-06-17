@@ -9,7 +9,6 @@ import com.ecommerce.app.vendor.model.VendorPayoutStatusEnum;
 import com.ecommerce.app.vendor.repository.VendorPayoutRepository;
 import com.ecommerce.app.vendor.services.VendorFinanceService;
 import com.ecommerce.app.vendor.services.VendorPayoutService;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,8 +30,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AdminVendorPayoutController {
 
     @Autowired
-    private VendorPayoutRepository payoutRepo;
-    @Autowired
     private VendorFinanceService vendorFinanceService;
 
     @Autowired
@@ -48,14 +45,20 @@ public class AdminVendorPayoutController {
             @RequestParam(name = "requestedFrom", required = false) String requestedFrom,
             @RequestParam(name = "requestedTo", required = false) String requestedTo
     ) {
-        List<Map<String, Object>> payouts = vendorPayoutService.AllVendorPayouts(
-                vendorCode,
-                status,
-                requestedFrom,
-                requestedTo
-        );
         model.addAttribute("status", VendorPayoutStatusEnum.values());
-        model.addAttribute("list", payouts);
+        try {
+            List<Map<String, Object>> payouts = vendorPayoutService.AllVendorPayouts(
+                    vendorCode,
+                    status,
+                    requestedFrom,
+                    requestedTo
+            );
+            model.addAttribute("list", payouts);
+        } catch (Exception e) {
+            // 2026-04-22: Keep legacy payout reporting aligned with newer finance error messaging.
+            model.addAttribute("errorMessage", "Runtime error while loading vendor payout requests: " + e.getMessage());
+            model.addAttribute("list", List.of());
+        }
         return "admin/vendor/payout/payout-list";
     }
 
@@ -67,43 +70,37 @@ public class AdminVendorPayoutController {
             @RequestParam(name = "statusStr", required = false) String statusStr,
             RedirectAttributes redirectAttributes
     ) {
-        Optional<VendorPayout> optionalPayout = vendorPayoutRepository.findById(payoutId);
+        try {
+            Optional<VendorPayout> optionalPayout = vendorPayoutRepository.findById(payoutId);
 
-        if (optionalPayout.isEmpty()) {
-            redirectAttributes.addFlashAttribute("message", "Payout not found!");
-            return "redirect:/admin/payouts/list";
+            if (optionalPayout.isEmpty()) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Payout not found!");
+                return "redirect:/admin/payouts/list";
+            }
+
+            VendorPayout payout = optionalPayout.get();
+
+            if (payout.getStatus() != VendorPayoutStatusEnum.REQUESTED) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Only requested payouts can be processed.");
+                return "redirect:/admin/payouts/list";
+            }
+
+            // 2026-04-22: Standardize admin payout processing messages with the newer finance pages.
+            if ("PROCESSING".equalsIgnoreCase(statusStr)) {
+                vendorFinanceService.approvePayout(payoutId, ref, note);
+            } else if ("PAID".equalsIgnoreCase(statusStr)) {
+                vendorFinanceService.PaymentSent(payoutId, ref, note);
+            } else if ("CANCELLED".equalsIgnoreCase(statusStr)) {
+                vendorFinanceService.cancelPayout(payoutId, note);
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage", "Invalid payout status: " + statusStr);
+                return "redirect:/admin/payouts/list";
+            }
+
+            redirectAttributes.addFlashAttribute("successMessage", "Payout processed successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Runtime error while processing payout: " + e.getMessage());
         }
-
-        VendorPayout payout = optionalPayout.get();
-
-        if (payout.getStatus() != VendorPayoutStatusEnum.REQUESTED) {
-            redirectAttributes.addFlashAttribute("message", "Only requested payouts can be Process!");
-            return "redirect:/admin/payouts/list";
-        }
-
-        // ✅ Set payout details
-        if ("PROCESSING".equalsIgnoreCase(statusStr)) {
-
-            payout.setAdminNote(note);
-            payout.setProcessedAt(LocalDateTime.now());
-            payout.setStatus(VendorPayoutStatusEnum.PROCESSING);
-            vendorPayoutRepository.save(payout);
-        } else if ("PAID".equalsIgnoreCase(statusStr)) {
-            payout.setPayoutReference(ref);
-            payout.setAdminNote(note);
-            payout.setPaidAt(LocalDateTime.now());
-            payout.setStatus(VendorPayoutStatusEnum.PAID);
-            vendorPayoutRepository.save(payout);
-
-        } else if ("CANCELLED".equalsIgnoreCase(statusStr)) {
-            payout.setAdminNote(note);
-            payout.setProcessedAt(LocalDateTime.now());
-            payout.setStatus(VendorPayoutStatusEnum.CANCELLED);
-            vendorPayoutRepository.save(payout);
-        } else {
-            throw new IllegalArgumentException("Invalid action: " + statusStr);
-        }
-        redirectAttributes.addFlashAttribute("message", "Payout approved successfully!");
         return "redirect:/admin/payouts/list";
     }
 

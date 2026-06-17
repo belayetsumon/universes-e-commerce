@@ -1,274 +1,668 @@
+<!DOCTYPE html>
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
     <div layout:fragment="main_content">
-
-        <section>
-            <div class="row">
-                <div class="col-sm-1"><h4>Product</h4></div>
-                <div class="col-sm-6">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
-                            <li class="breadcrumb-item"><a href="#">Vendor</a></li>
-                            <li class="breadcrumb-item"><a href="#">Product List</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Add Product</li>
-                        </ol>
-                    </nav>
-                </div>
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+            <div>
+                <div class="text-uppercase small fw-semibold text-body-secondary mb-1">Vendor Catalog</div>
+                <h1 class="h3 mb-2" th:text="${product.id == null} ? 'Create Product' : 'Edit Product'">Create Product</h1>
+                <p class="text-body-secondary mb-0"
+                   th:text="${product.id == null} ? 'Capture product identity, pricing, publishing rules, and content in one pass.' : 'Refine commercial settings, content, and publishing controls for this product.'">
+                    Capture product identity, pricing, publishing rules, and content in one pass.
+                </p>
             </div>
-        </section>
-        <hr/>
+            <div class="d-flex gap-2">
+                <a class="btn btn-outline-secondary btn-sm" th:href="@{/productvendor/index}">
+                    <i class="bi bi-arrow-left"></i> Back to List
+                </a>
+                <a class="btn btn-danger btn-sm" th:href="@{/productvendor/index}">
+                    <i class="bi bi-x-circle"></i> Close
+                </a>
+            </div>
+        </div>
 
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="row">
-                            <div class="col-sm-5"><strong><i class="bi bi-list-task"></i> Product Add</strong></div>
-                            <div class="col-sm-7 text-end">
-                                <a class="btn btn-danger btn-sm" th:href="@{/productvendor/index}">
-                                    <i class="bi bi-x-circle"></i> Close
-                                </a>
+        <form id="productForm"
+              th:action="@{/productvendor/save}"
+              th:object="${product}"
+              enctype="multipart/form-data"
+              method="post">
+
+            <input type="hidden" th:field="*{id}">
+            <input type="hidden" th:field="*{uuid}">
+            <input type="hidden" th:field="*{userId}">
+            <input type="hidden" th:field="*{slug}">
+            <input type="hidden" th:field="*{vendorprofile}">
+            <input type="hidden" th:field="*{imageName}">
+
+            <div class="alert alert-danger" th:if="${#fields.hasErrors('*')}">
+                <div class="fw-semibold mb-2">
+                    <i class="bi bi-exclamation-triangle"></i> Please review the highlighted fields.
+                </div>
+                <ul class="mb-0 ps-3">
+                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-success" th:if="${!#strings.isEmpty(success)}" th:text="${success}"></div>
+
+            <div class="row g-4 align-items-start">
+                <div class="col-xl-8">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-white py-3">
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="bi bi-box-seam text-primary fs-5"></i>
+                                <div>
+                                    <h2 class="h6 mb-1">Identity & Ownership</h2>
+                                    <p class="text-body-secondary small mb-0">Set the merchandising category and core product identifiers first.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="sku" class="form-label">SKU</label>
+                                    <input id="sku"
+                                           type="number"
+                                           min="1"
+                                           class="form-control"
+                                           th:field="*{sku}"
+                                           th:errorclass="is-invalid"
+                                           placeholder="Enter SKU">
+                                    <div class="form-text">Unique stock keeping unit for operations and fulfillment.</div>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('sku')}" th:errors="*{sku}">SKU error</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="productcategory" class="form-label">Product Category <span class="text-danger">*</span></label>
+                                    <select id="productcategory"
+                                            class="form-select"
+                                            th:field="*{productcategory}"
+                                            th:errorclass="is-invalid"
+                                            required>
+                                        <option value="">Select category</option>
+                                        <option th:each="pc : ${productcategorylist}"
+                                                th:value="${pc.id}"
+                                                th:attr="data-category-uuid=${pc.uuid}"
+                                                th:text="${pc.name}">Category</option>
+                                    </select>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('productcategory')}" th:errors="*{productcategory}">Category error</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="manufacturer" class="form-label">Manufacturer</label>
+                                    <select id="manufacturer"
+                                            class="form-select"
+                                            th:field="*{manufacturer}"
+                                            th:errorclass="is-invalid">
+                                        <option value="">Select manufacturer</option>
+                                        <option th:each="mf : ${manufacturerlist}" th:value="${mf.id}" th:text="${mf.name}">Manufacturer</option>
+                                    </select>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('manufacturer')}" th:errors="*{manufacturer}">Manufacturer error</div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="title" class="form-label">Product Name <span class="text-danger">*</span></label>
+                                    <input id="title"
+                                           type="text"
+                                           minlength="2"
+                                           class="form-control"
+                                           th:field="*{title}"
+                                           th:errorclass="is-invalid"
+                                           placeholder="Enter product name"
+                                           required>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">Title error</div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label for="productType" class="form-label">Product Type <span class="text-danger">*</span></label>
+                                    <select id="productType"
+                                            class="form-select"
+                                            th:field="*{productType}"
+                                            th:errorclass="is-invalid"
+                                            required>
+                                        <option value="">Select product type</option>
+                                        <option th:each="pt : ${producttype}" th:value="${pt}" th:text="${pt}">Product Type</option>
+                                    </select>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('productType')}" th:errors="*{productType}">Product type error</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="orderno" class="form-label">Sort Order</label>
+                                    <input id="orderno"
+                                           type="number"
+                                           class="form-control"
+                                           th:field="*{orderno}"
+                                           th:errorclass="is-invalid"
+                                           placeholder="Display priority">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('orderno')}" th:errors="*{orderno}">Sort order error</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="uom" class="form-label">Unit of Measure <span class="text-danger">*</span></label>
+                                    <select id="uom"
+                                            class="form-select"
+                                            th:field="*{uom}"
+                                            th:errorclass="is-invalid"
+                                            required>
+                                        <option value="">Select unit</option>
+                                        <option th:each="u : ${uoms}" th:value="${u.id}" th:text="${u.name}">UoM</option>
+                                    </select>
+                                    <div class="form-text">Examples: Kg, Piece, Box.</div>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('uom')}" th:errors="*{uom}">UoM error</div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="card-body">
-                        <form id="uploadForm" th:action="@{/productvendor/save}" th:object="${product}" enctype="multipart/form-data" method="post">
-
-                            <!-- Errors -->
-                            <div class="alert alert-danger alert-dismissible fade show" th:if="${#fields.hasErrors('*')}">
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                <h5><i class="bi bi-exclamation-triangle"></i> Error</h5>
-                                <ul>
-                                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
-                                </ul>
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-white py-3">
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="bi bi-cash-stack text-primary fs-5"></i>
+                                <div>
+                                    <h2 class="h6 mb-1">Pricing & Commercials</h2>
+                                    <p class="text-body-secondary small mb-0">Keep sell price, buy price, taxes, discounts, and promotional ranges in one place.</p>
+                                </div>
                             </div>
-
-                            <!-- Success -->
-                            <div class="row" th:if="${!#strings.isEmpty(success)}">
-                                <span class="text-success" th:text="success"></span>
-                            </div>
-
-                            <!-- Hidden Fields -->
-                            <input type="hidden" th:field="*{id}"/>
-                            <input type="hidden" th:field="*{userId}"/>
-                            <input type="hidden" th:field="*{slug}"/>
-                            <input type="hidden" th:field="*{vendorprofile}"/>
-
-                            <div class="row">
-                                <!-- SKU -->
-                                <div class="col-sm-6 mb-3">
-                                    <label for="sku" class="form-label">SKU No:</label>
-                                    <input type="number" id="sku" th:field="*{sku}" min="1" class="form-control" placeholder="Enter SKU">
-                                    <div class="form-text">Stock Keeping Unit</div>
-                                    <div class="text-danger" th:if="${#fields.hasErrors('sku')}" th:errors="*{sku}"></div>
-                                </div>
-
-                                <!-- Product Name -->
-                                <div class="col-sm-12 mb-3">
-                                    <label for="title" class="form-label">Product Name <span class="text-danger">*</span></label>
-                                    <input type="text" id="title" th:field="*{title}" minlength="2" required class="form-control" placeholder="Enter name">
-                                    <div class="text-danger" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
-                                </div>
-
-                                <!-- Product Category -->
-                                <div class="col-sm-6 mb-3">
-                                    <label for="productcategory" class="form-label">Product Category <span class="text-danger">*</span></label>
-                                    <select id="productcategory" class="form-control" th:field="*{productcategory}" required>
-                                        <option value="">Select one</option>
-                                        <option th:each="pc : ${productcategorylist}" th:value="${pc.id}" th:text="${pc.name}"></option>
-                                    </select>
-                                    <div class="text-danger" th:if="${#fields.hasErrors('productcategory')}" th:errors="*{productcategory}"></div>
-                                </div>
-
-                                <!-- Manufacturer -->
-                                <div class="col-sm-6 mb-3">
-                                    <label for="manufacturer" class="form-label">Product Manufacturer</label>
-                                    <select id="manufacturer" class="form-control" th:field="*{manufacturer}">
-                                        <option value="">Select one</option>
-                                        <option th:each="mf : ${manufacturerlist}" th:value="${mf.id}" th:text="${mf.name}"></option>
-                                    </select>
-                                </div>
-
-                                <!-- Product Type -->
-                                <div class="col-sm-6 mb-3">
-                                    <label for="productType" class="form-label">Product Type <span class="text-danger">*</span></label>
-                                    <select id="productType" class="form-control" th:field="*{productType}" required>
-                                        <option value="">Select one</option>
-                                        <option th:each="pt : ${producttype}" th:value="${pt}" th:text="${pt}"></option>
-                                    </select>
-                                </div>
-
-                                <!-- Sort Order -->
-                                <div class="col-sm-6 mb-3">
-                                    <label for="orderno" class="form-label">Sort Order</label>
-                                    <input type="number" id="orderno" th:field="*{orderno}" class="form-control" placeholder="Enter number">
-                                    <div class="text-danger" th:if="${#fields.hasErrors('orderno')}" th:errors="*{orderno}"></div>
-                                </div>
-
-                                <!-- Purchase Price -->
-                                <div class="col-sm-6 mb-3">
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-4">
                                     <label for="purchasePrice" class="form-label">Purchase Price <span class="text-danger">*</span></label>
-                                    <input type="number" id="purchasePrice" th:field="*{purchasePrice}" min="1" step="0.01" required class="form-control" placeholder="Enter price">
-                                    <div class="text-danger" th:if="${#fields.hasErrors('purchasePrice')}" th:errors="*{purchasePrice}"></div>
+                                    <input id="purchasePrice"
+                                           type="number"
+                                           min="0"
+                                           step="0.01"
+                                           class="form-control"
+                                           th:field="*{purchasePrice}"
+                                           th:errorclass="is-invalid"
+                                           placeholder="0.00"
+                                           required>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('purchasePrice')}" th:errors="*{purchasePrice}">Purchase price error</div>
                                 </div>
-
-                                <!-- Sales Price -->
-                                <div class="col-sm-6 mb-3">
+                                <div class="col-md-4">
                                     <label for="salesPrice" class="form-label">Sales Price <span class="text-danger">*</span></label>
-                                    <input type="number" id="salesPrice" th:field="*{salesPrice}" min="1" step="0.01" required class="form-control" placeholder="Enter price">
-                                    <div class="text-danger" th:if="${#fields.hasErrors('salesPrice')}" th:errors="*{salesPrice}"></div>
+                                    <input id="salesPrice"
+                                           type="number"
+                                           min="0"
+                                           step="0.01"
+                                           class="form-control"
+                                           th:field="*{salesPrice}"
+                                           th:errorclass="is-invalid"
+                                           placeholder="0.00"
+                                           required>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('salesPrice')}" th:errors="*{salesPrice}">Sales price error</div>
                                 </div>
-
-                                <!-- Discounts -->
-                                <div class="col-sm-6 mb-3">
-                                    <label for="vendordiscount" class="form-label">Vendor Discount</label>
-                                    <input type="number" id="vendordiscount" th:field="*{vendordiscount}" min="0" step="0.01" class="form-control" placeholder="Enter discount">
-                                    <div class="text-danger" th:if="${#fields.hasErrors('vendordiscount')}" th:errors="*{vendordiscount}"></div>
-                                </div>
-
-                                <div class="col-sm-6 mb-3">
-                                    <label for="marketPlaceDiscount" class="form-label">Market Place Discount</label>
-                                    <input type="number" id="marketPlaceDiscount" th:field="*{marketPlaceDiscount}" min="0" step="0.01" class="form-control" placeholder="Enter discount">
-                                    <div class="text-danger" th:if="${#fields.hasErrors('marketPlaceDiscount')}" th:errors="*{marketPlaceDiscount}"></div>
-                                </div>
-
-                                <div class="col-sm-6 mb-3">
-                                    <label for="marketPlaceCommissionRate" class="form-label">Market Place Commission Rate<span class="text-danger">*</span></label>
-                                    <input type="number" id="marketPlaceCommissionRate" th:field="*{marketPlaceCommissionRate}" min="0" step="0.01" class="form-control" placeholder="Enter commission" required>
-                                    <div class="text-danger" th:if="${#fields.hasErrors('marketPlaceCommissionRate')}" th:errors="*{marketPlaceCommissionRate}"></div>
-                                </div>
-
-                                <!-- Dates -->
-                                <div class="col-sm-6 mb-3">
-                                    <label for="discountStartDate" class="form-label">Discount Start Date</label>
-                                    <input type="text" id="discountStartDate" th:field="*{discountStartDate}" class="form-control" placeholder="DD/MM/YYYY">
-                                    <div class="text-danger" th:if="${#fields.hasErrors('discountStartDate')}" th:errors="*{discountStartDate}"></div>
-                                </div>
-
-                                <div class="col-sm-6 mb-3">
-                                    <label for="discountEndDate" class="form-label">Discount End Date</label>
-                                    <input type="text" id="discountEndDate" th:field="*{discountEndDate}" class="form-control" placeholder="DD/MM/YYYY">
-                                    <div class="text-danger" th:if="${#fields.hasErrors('discountEndDate')}" th:errors="*{discountEndDate}"></div>
-                                </div>
-
-                                <!-- UoM -->
-                                <div class="col-sm-6 mb-3">
-                                    <label for="uom" class="form-label">UoM <span class="text-danger">*</span></label>
-                                    <select id="uom" class="form-control" th:field="*{uom}" required>
-                                        <option value="">Select one</option>
-                                        <option th:each="u : ${uoms}" th:value="${u.id}" th:text="${u.name}"></option>
-                                    </select>
-                                    <div class="form-text">E.g. Kg, Pcs</div>
-                                    <div class="text-danger" th:if="${#fields.hasErrors('uom')}" th:errors="*{uom}"></div>
-                                </div>
-
-                                <!-- Video -->
-                                <div class="col-sm-12 mb-3">
-                                    <label for="video" class="form-label">YouTube Video Link</label>
-                                    <input type="text" id="video" th:field="*{video}" class="form-control" placeholder="Enter YouTube link">
-                                    <div class="text-danger" th:if="${#fields.hasErrors('video')}" th:errors="*{video}"></div>
-                                </div>
-
-                                <!-- Textareas -->
-                                <div class="col-sm-12 mb-3">
-                                    <label for="shortDescription" class="form-label">Short Description</label>
-                                    <textarea id="id="content"" th:field="*{shortDescription}" class="form-control rich-text" rows="6" placeholder="Enter description"></textarea>
-                                    <div class="text-danger" th:if="${#fields.hasErrors('shortDescription')}" th:errors="*{shortDescription}"></div>
-                                </div>
-
-                                <div class="col-sm-12 mb-3">
-                                    <label for="description" class="form-label">Description</label>
-                                    <textarea id="content" th:field="*{description}" class="form-control rich-text" rows="6" placeholder="Enter description"></textarea>
-                                    <div class="text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
-                                </div>
-
-                                <div class="col-sm-12 mb-3">
-                                    <label for="metaTitle" class="form-label">Meta Title</label>
-                                    <textarea id="metaTitle" th:field="*{metaTitle}" class="form-control " rows="6" placeholder="Meta title"></textarea>
-                                    <div class="text-danger" th:if="${#fields.hasErrors('metaTitle')}" th:errors="*{metaTitle}"></div>
-                                </div>
-
-                                <div class="col-sm-12 mb-3">
-                                    <label for="metaDescription" class="form-label">Meta Description</label>
-                                    <textarea id="metaDescription" th:field="*{metaDescription}" class="form-control rich-text" rows="6" placeholder="Meta description"></textarea>
-                                    <div class="text-danger" th:if="${#fields.hasErrors('metaDescription')}" th:errors="*{metaDescription}"></div>
-                                </div>
-
-                                <div class="col-sm-12 mb-3">
-                                    <label for="metaKeywords" class="form-label">Meta Keywords</label>
-                                    <textarea id="metaKeywords" th:field="*{metaKeywords}" class="form-control rich-text" rows="6" placeholder="Meta keywords"></textarea>
-                                    <div class="text-danger" th:if="${#fields.hasErrors('metaKeywords')}" th:errors="*{metaKeywords}"></div>
-                                </div>
-
-                                <!-- Checkboxes -->
-                                <div class="col-sm-12 mb-2 form-check">
-                                    <input type="checkbox" id="newProduct" th:field="*{newProduct}" class="form-check-input"/>
-                                    <label for="newProduct" class="form-check-label">New Product</label>
-                                </div>
-
-                                <div class="col-sm-12 mb-2 form-check">
-                                    <input type="checkbox" id="manageStock" th:field="*{manageStock}" class="form-check-input"/>
-                                    <label for="manageStock" class="form-check-label">Manage Stock</label>
-                                </div>
-
-                                <div class="col-sm-12 mb-2 form-check">
-                                    <input type="checkbox" id="featuredProduct" th:field="*{featuredProduct}" class="form-check-input"/>
-                                    <label for="featuredProduct" class="form-check-label">Featured Product</label>
-                                </div>
-
-                                <div class="col-sm-12 mb-2 form-check">
-                                    <input type="checkbox" id="onlineShow" th:field="*{onlineShow}" class="form-check-input"/>
-                                    <label for="onlineShow" class="form-check-label">Online Show</label>
-                                </div>
-
-                                <div class="col-sm-12 mb-2 form-check">
-                                    <input type="checkbox" id="emiavailable" th:field="*{emiavailable}" class="form-check-input"/>
-                                    <label for="emiavailable" class="form-check-label">EMI Available</label>
-                                </div>
-
-                                <!-- VAT -->
-                                <div class="col-sm-12 mb-3">
+                                <div class="col-md-4">
                                     <label for="vatRate" class="form-label">VAT Rate</label>
-                                    <input type="text" id="vatRate" th:field="*{vatRate}" class="form-control w-25" placeholder="VAT Rate">
-                                    <div class="text-danger" th:if="${#fields.hasErrors('vatRate')}" th:errors="*{vatRate}"></div>
+                                    <div class="input-group">
+                                        <input id="vatRate"
+                                               type="number"
+                                               min="0"
+                                               step="0.01"
+                                               class="form-control"
+                                               th:field="*{vatRate}"
+                                               th:errorclass="is-invalid"
+                                               placeholder="0.00">
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('vatRate')}" th:errors="*{vatRate}">VAT error</div>
                                 </div>
 
-                                <!-- Status -->
-                                <div class="col-sm-6 mb-3">
-                                    <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-                                    <select id="status" class="form-control" th:field="*{status}" required>
-                                        <option value="">Select one</option>
-                                        <option th:each="s : ${statuslist}" th:value="${s}" th:text="${s}"></option>
-                                    </select>
+                                <div class="col-md-4">
+                                    <label for="vendordiscount" class="form-label">Vendor Discount</label>
+                                    <div class="input-group">
+                                        <input id="vendordiscount"
+                                               type="number"
+                                               min="0"
+                                               step="0.01"
+                                               class="form-control"
+                                               th:field="*{vendordiscount}"
+                                               th:errorclass="is-invalid"
+                                               placeholder="0.00">
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('vendordiscount')}" th:errors="*{vendordiscount}">Vendor discount error</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="marketPlaceDiscount" class="form-label">Marketplace Discount</label>
+                                    <div class="input-group">
+                                        <input id="marketPlaceDiscount"
+                                               type="number"
+                                               min="0"
+                                               step="0.01"
+                                               class="form-control"
+                                               th:field="*{marketPlaceDiscount}"
+                                               th:errorclass="is-invalid"
+                                               placeholder="0.00">
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('marketPlaceDiscount')}" th:errors="*{marketPlaceDiscount}">Marketplace discount error</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="marketPlaceCommissionRate" class="form-label">Marketplace Commission <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input id="marketPlaceCommissionRate"
+                                               type="number"
+                                               min="0"
+                                               step="0.01"
+                                               class="form-control"
+                                               th:field="*{marketPlaceCommissionRate}"
+                                               th:errorclass="is-invalid"
+                                               placeholder="0.00"
+                                               required>
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('marketPlaceCommissionRate')}" th:errors="*{marketPlaceCommissionRate}">Commission error</div>
                                 </div>
 
-                                <!-- Image Upload -->
-                                <div class="col-sm-12 mb-3">
-                                    <label for="imagefile" class="form-label">Image</label>
-                                    <input type="hidden" th:field="*{imageName}" th:value="${product.imageName}">
-                                    <input type="file" id="imagefile" name="pic"
+                                <div class="col-md-4">
+                                    <label for="discountStartDate" class="form-label">Discount Start Date</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+                                        <input id="discountStartDate"
+                                               type="text"
+                                               class="form-control"
+                                               th:field="*{discountStartDate}"
+                                               th:errorclass="is-invalid"
+                                               placeholder="DD-MM-YYYY">
+                                    </div>
+                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('discountStartDate')}" th:errors="*{discountStartDate}">Discount start error</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="discountEndDate" class="form-label">Discount End Date</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+                                        <input id="discountEndDate"
+                                               type="text"
+                                               class="form-control"
+                                               th:field="*{discountEndDate}"
+                                               th:errorclass="is-invalid"
+                                               placeholder="DD-MM-YYYY">
+                                    </div>
+                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('discountEndDate')}" th:errors="*{discountEndDate}">Discount end error</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-white py-3">
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="bi bi-card-text text-primary fs-5"></i>
+                                <div>
+                                    <h2 class="h6 mb-1">Descriptions & Media</h2>
+                                    <p class="text-body-secondary small mb-0">Give operations, SEO, and storefront teams clean product copy and a ready primary image.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="shortDescription" class="form-label">Short Description</label>
+                                    <textarea id="shortDescription"
+                                              rows="5"
+                                              class="form-control"
+                                              th:field="*{shortDescription}"
+                                              th:errorclass="is-invalid"
+                                              placeholder="Concise summary for catalog cards and quick views"></textarea>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('shortDescription')}" th:errors="*{shortDescription}">Short description error</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea id="description"
+                                              rows="5"
+                                              class="form-control"
+                                              th:field="*{description}"
+                                              th:errorclass="is-invalid"
+                                              placeholder="Detailed long-form product content"></textarea>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Description error</div>
+                                </div>
+                                <div class="col-12">
+                                    <label for="video" class="form-label">YouTube Video Link</label>
+                                    <input id="video"
+                                           type="text"
+                                           class="form-control"
+                                           th:field="*{video}"
+                                           th:errorclass="is-invalid"
+                                           placeholder="https://www.youtube.com/watch?v=...">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('video')}" th:errors="*{video}">Video error</div>
+                                </div>
+                                <div class="col-12">
+                                    <label for="imagefile" class="form-label">Primary Image</label>
+                                    <input type="file"
+                                           id="imagefile"
+                                           name="pic"
                                            accept="image/jpeg, image/png, image/webp, image/gif, image/avif"
-                                           class="form-control"/>
-                                    <img id="imagePreview" alt="Image Preview" style="max-width: 300px; margin-top: 10px; display: none;"/>
-                                    <div id="image_error_message" class="text-danger"></div>
-                                    <button type="button" id="deleteImageBtn" style="display:none; margin-top: 10px;" class="btn btn-sm btn-warning">Delete Preview</button>
-                                    <div id="imageInfo" class="mt-2"></div>
-                                    <div class="form-text">Image Size Maximum 1024x1024 px. Formats: PNG, JPG</div>
+                                           class="form-control">
+                                    <div class="form-text">Recommended: up to 1024 x 1024 pixels. Formats: PNG, JPG, WEBP, GIF, AVIF.</div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="ratio ratio-1x1 border rounded bg-body-tertiary overflow-hidden">
+                                        <img id="imagePreview"
+                                             class="w-100 h-100 object-fit-contain p-3"
+                                             th:classappend="${product.imageName != null and !#strings.isEmpty(product.imageName)} ? '' : ' d-none'"
+                                             th:attr="src=${product.imageName != null and !#strings.isEmpty(product.imageName) ? '/files/' + product.imageName : null}"
+                                             alt="Product image preview">
+                                        <div id="imageEmpty"
+                                             class="d-flex flex-column align-items-center justify-content-center text-body-secondary p-4"
+                                             th:classappend="${product.imageName != null and !#strings.isEmpty(product.imageName)} ? ' d-none' : ''">
+                                            <i class="bi bi-image fs-1 mb-2"></i>
+                                            <div class="fw-semibold mb-1">No image selected</div>
+                                            <div class="small">The selected file will appear here before save.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white py-3">
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="bi bi-shield-check text-primary fs-5"></i>
+                                <div>
+                                    <h2 class="h6 mb-1">SEO & Digital Fulfillment</h2>
+                                    <p class="text-body-secondary small mb-0">Use these fields for search metadata and digital-delivery workflows when the product needs them.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="h6 mb-3">Search Metadata</h3>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="metaTitle" class="form-label">Meta Title</label>
+                                    <textarea id="metaTitle"
+                                              rows="4"
+                                              class="form-control"
+                                              th:field="*{metaTitle}"
+                                              th:errorclass="is-invalid"
+                                              placeholder="Search result title"></textarea>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('metaTitle')}" th:errors="*{metaTitle}">Meta title error</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="metaDescription" class="form-label">Meta Description</label>
+                                    <textarea id="metaDescription"
+                                              rows="4"
+                                              class="form-control"
+                                              th:field="*{metaDescription}"
+                                              th:errorclass="is-invalid"
+                                              placeholder="Search result description"></textarea>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('metaDescription')}" th:errors="*{metaDescription}">Meta description error</div>
+                                </div>
+                                <div class="col-12">
+                                    <label for="metaKeywords" class="form-label">Meta Keywords</label>
+                                    <textarea id="metaKeywords"
+                                              rows="3"
+                                              class="form-control"
+                                              th:field="*{metaKeywords}"
+                                              th:errorclass="is-invalid"
+                                              placeholder="Comma separated keyword list"></textarea>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('metaKeywords')}" th:errors="*{metaKeywords}">Meta keywords error</div>
                                 </div>
                             </div>
 
-                            <!-- Submit -->
-                            <div class="text-center mt-3">
-                                <button type="submit" id="submitBtn" class="btn btn-success">
-                                    <i class="bi bi-check-circle"></i> Save
-                                </button>
+                            <hr class="my-4">
+
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                                <div>
+                                    <h3 class="h6 mb-1">Digital Delivery</h3>
+                                    <p class="text-body-secondary small mb-0">These fields are useful for virtual products, licenses, subscriptions, and downloads.</p>
+                                </div>
                             </div>
 
-                        </form>
+                            <div id="digitalDeliveryHint" class="alert alert-light border small mb-3">
+                                Digital delivery fields stay hidden until Product Type is Virtual.
+                            </div>
+
+                            <div id="digitalDeliveryFields" class="row g-3 d-none">
+                                <div class="col-12">
+                                    <label for="digitalAccessUrl" class="form-label">Digital Access URL</label>
+                                    <input id="digitalAccessUrl"
+                                           type="text"
+                                           class="form-control"
+                                           th:field="*{digitalAccessUrl}"
+                                           th:errorclass="is-invalid"
+                                           placeholder="https://example.com/download-or-access-link">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('digitalAccessUrl')}" th:errors="*{digitalAccessUrl}">Digital access URL error</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="digitalLicenseCode" class="form-label">Digital License Code</label>
+                                    <input id="digitalLicenseCode"
+                                           type="text"
+                                           class="form-control"
+                                           th:field="*{digitalLicenseCode}"
+                                           th:errorclass="is-invalid"
+                                           placeholder="Optional license code">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('digitalLicenseCode')}" th:errors="*{digitalLicenseCode}">Digital license error</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="digitalDeliveryNote" class="form-label">Digital Delivery Note</label>
+                                    <textarea id="digitalDeliveryNote"
+                                              rows="4"
+                                              class="form-control"
+                                              th:field="*{digitalDeliveryNote}"
+                                              th:errorclass="is-invalid"
+                                              placeholder="Optional note shown to the customer after payment"></textarea>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('digitalDeliveryNote')}" th:errors="*{digitalDeliveryNote}">Digital delivery note error</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-4">
+                    <div class="d-grid gap-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white py-3">
+                                <h2 class="h6 mb-0">Publishing Controls</h2>
+                            </div>
+                            <div class="card-body">
+                                <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                                <select id="status"
+                                        class="form-select"
+                                        th:field="*{status}"
+                                        th:errorclass="is-invalid"
+                                        required>
+                                    <option value="">Select status</option>
+                                    <option th:each="s : ${statuslist}" th:value="${s}" th:text="${s}">Status</option>
+                                </select>
+                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('status')}" th:errors="*{status}">Status error</div>
+                                <div class="form-text">Choose how this product should behave operationally and on the storefront.</div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-primary mb-0">
+                            <div class="fw-semibold mb-1">Specifications come next</div>
+                            <div class="small">Save the basic product record first. Product specifications are added from the product details page right after save.</div>
+                        </div>
+
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white py-3">
+                                <h2 class="h6 mb-0">Operational Flags</h2>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush">
+                                    <label class="list-group-item d-flex justify-content-between align-items-start gap-3">
+                                        <div>
+                                            <div class="fw-semibold">Online Show</div>
+                                            <div class="small text-body-secondary">Allow this product to appear on the storefront.</div>
+                                        </div>
+                                        <div class="form-check form-switch m-0">
+                                            <input class="form-check-input" type="checkbox" id="onlineShow" th:field="*{onlineShow}">
+                                        </div>
+                                    </label>
+
+                                    <label class="list-group-item d-flex justify-content-between align-items-start gap-3">
+                                        <div>
+                                            <div class="fw-semibold">Featured Product</div>
+                                            <div class="small text-body-secondary">Promote this item in curated placements.</div>
+                                        </div>
+                                        <div class="form-check form-switch m-0">
+                                            <input class="form-check-input" type="checkbox" id="featuredProduct" th:field="*{featuredProduct}">
+                                        </div>
+                                    </label>
+
+                                    <label class="list-group-item d-flex justify-content-between align-items-start gap-3">
+                                        <div>
+                                            <div class="fw-semibold">New Product</div>
+                                            <div class="small text-body-secondary">Highlight it as a recently launched item.</div>
+                                        </div>
+                                        <div class="form-check form-switch m-0">
+                                            <input class="form-check-input" type="checkbox" id="newProduct" th:field="*{newProduct}">
+                                        </div>
+                                    </label>
+
+                                    <label class="list-group-item d-flex justify-content-between align-items-start gap-3">
+                                        <div>
+                                            <div class="fw-semibold">Manage Stock</div>
+                                            <div class="small text-body-secondary">Track inventory and availability for this SKU.</div>
+                                        </div>
+                                        <div class="form-check form-switch m-0">
+                                            <input class="form-check-input" type="checkbox" id="manageStock" th:field="*{manageStock}">
+                                        </div>
+                                    </label>
+
+                                    <label class="list-group-item d-flex justify-content-between align-items-start gap-3">
+                                        <div>
+                                            <div class="fw-semibold">Allow Preorder</div>
+                                            <div class="small text-body-secondary">Accept orders before stock is available.</div>
+                                        </div>
+                                        <div class="form-check form-switch m-0">
+                                            <input class="form-check-input" type="checkbox" id="allowPreorder" th:field="*{allowPreorder}">
+                                        </div>
+                                    </label>
+
+                                    <label class="list-group-item d-flex justify-content-between align-items-start gap-3">
+                                        <div>
+                                            <div class="fw-semibold">Manage Variants</div>
+                                            <div class="small text-body-secondary">Use structured catalog variants like size or color.</div>
+                                        </div>
+                                        <div class="form-check form-switch m-0">
+                                            <input class="form-check-input" type="checkbox" id="manageProductVariants" th:field="*{manageProductVariants}">
+                                        </div>
+                                    </label>
+
+                                    <label class="list-group-item d-flex justify-content-between align-items-start gap-3">
+                                        <div>
+                                            <div class="fw-semibold">EMI Available</div>
+                                            <div class="small text-body-secondary">Mark the product as eligible for installment purchase.</div>
+                                        </div>
+                                        <div class="form-check form-switch m-0">
+                                            <input class="form-check-input" type="checkbox" id="emiavailable" th:field="*{emiavailable}">
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white py-3">
+                                <h2 class="h6 mb-0">Preorder Timing</h2>
+                            </div>
+                            <div class="card-body">
+                                <label for="preorderAvailableFrom" class="form-label">Preorder Available From</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+                                    <input id="preorderAvailableFrom"
+                                           type="text"
+                                           class="form-control"
+                                           th:field="*{preorderAvailableFrom}"
+                                           th:errorclass="is-invalid"
+                                           placeholder="DD-MM-YYYY">
+                                </div>
+                                <div class="form-text">Optional expected availability date for preorder items.</div>
+                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('preorderAvailableFrom')}" th:errors="*{preorderAvailableFrom}">Preorder date error</div>
+                            </div>
+                        </div>
+
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white py-3">
+                                <h2 class="h6 mb-0">Save</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <button type="submit" id="submitBtn" class="btn btn-success">
+                                        <i class="bi bi-check-circle"></i> Save Product
+                                    </button>
+                                    <a class="btn btn-outline-secondary" th:href="@{/productvendor/index}">
+                                        <i class="bi bi-x-circle"></i> Cancel
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </form>
     </div>
+
+    <th:block layout:fragment="page_js">
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const initializeDatePicker = function (selector) {
+                    if (typeof window.jQuery === 'undefined') {
+                        return;
+                    }
+                    const $field = window.jQuery(selector);
+                    if ($field.length === 0) {
+                        return;
+                    }
+                    $field.datepicker({
+                        format: 'dd-mm-yyyy',
+                        autoclose: true,
+                        todayHighlight: true
+                    });
+                };
+
+                initializeDatePicker('#discountStartDate');
+                initializeDatePicker('#discountEndDate');
+                initializeDatePicker('#preorderAvailableFrom');
+
+                const imageInput = document.getElementById('imagefile');
+                const imagePreview = document.getElementById('imagePreview');
+                const imageEmpty = document.getElementById('imageEmpty');
+                const typeField = document.getElementById('productType');
+                const digitalDeliveryHint = document.getElementById('digitalDeliveryHint');
+                const digitalDeliveryFields = document.getElementById('digitalDeliveryFields');
+
+                const toggleDigitalDelivery = function () {
+                    if (!typeField || !digitalDeliveryHint || !digitalDeliveryFields) {
+                        return;
+                    }
+
+                    const isVirtual = typeField.value === 'Virtual';
+                    digitalDeliveryFields.classList.toggle('d-none', !isVirtual);
+                    digitalDeliveryHint.classList.toggle('alert-light', !isVirtual);
+                    digitalDeliveryHint.classList.toggle('alert-primary', isVirtual);
+                    digitalDeliveryHint.textContent = isVirtual
+                            ? 'Virtual product selected. Add access URLs, license keys, or delivery notes when fulfillment happens digitally.'
+                            : 'Digital delivery fields stay hidden until Product Type is Virtual.';
+                };
+
+                if (typeField) {
+                    typeField.addEventListener('change', toggleDigitalDelivery);
+                    toggleDigitalDelivery();
+                }
+
+                if (imageInput && imagePreview && imageEmpty) {
+                    imageInput.addEventListener('change', function (event) {
+                        const file = event.target.files && event.target.files[0];
+                        if (!file) {
+                            imagePreview.removeAttribute('src');
+                            imagePreview.classList.add('d-none');
+                            imageEmpty.classList.remove('d-none');
+                            return;
+                        }
+
+                        const objectUrl = URL.createObjectURL(file);
+                        imagePreview.src = objectUrl;
+                        imagePreview.classList.remove('d-none');
+                        imageEmpty.classList.add('d-none');
+                    });
+                }
+
+                if (imagePreview && imagePreview.getAttribute('src')) {
+                    imagePreview.classList.remove('d-none');
+                    if (imageEmpty) {
+                        imageEmpty.classList.add('d-none');
+                    }
+                }
+            });
+        </script>
+    </th:block>
 </div>

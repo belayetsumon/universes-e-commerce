@@ -1,0 +1,91 @@
+/*
+ * Section: Vendor panel
+ * Used by: templates/front-layout-inner-vendor-page.html
+ * Purpose: vendor dashboard shell and vendor navigation styling
+ */
+
+body {
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #f0f2f5;
+    color: #212529;
+}
+
+.vendor-header-nav.navbar {
+    position: static;
+}
+
+.vendor-header-nav .nav-link {
+    font-size: 0.95rem;
+}
+
+.vendor-shell__sidebar {
+    position: sticky;
+    top: 1rem;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    padding-right: 0.25rem;
+    scrollbar-gutter: stable;
+}
+
+.vendor-shell__sidebar::-webkit-scrollbar {
+    width: 0.45rem;
+}
+
+.vendor-shell__sidebar::-webkit-scrollbar-thumb {
+    background: rgba(108, 117, 125, 0.45);
+    border-radius: 999px;
+}
+
+.vendor-shell__sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.vendor-shell__content {
+    min-width: 0;
+}
+
+.vendor-sidebar-menu {
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: #fff;
+}
+
+.vendor-sidebar-menu .card-header {
+    padding: 1rem 1.1rem;
+    color: #495057;
+}
+
+.vendor-sidebar-menu .list-group-item {
+    padding: 0;
+    border-color: #eef1f4;
+}
+
+.vendor-sidebar-menu .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.9rem 1.1rem;
+    color: #343a40;
+    font-weight: 500;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.vendor-sidebar-menu .nav-link i {
+    font-size: 1rem;
+    color: #cd0c2b;
+}
+
+.vendor-sidebar-menu .nav-link:hover,
+.vendor-sidebar-menu .nav-link:focus {
+    background: #fff1f3;
+    color: #b42336;
+}
+
+@media (max-width: 991.98px) {
+    .vendor-shell__sidebar {
+        position: static;
+        max-height: none;
+        overflow: visible;
+        padding-right: 0;
+    }
+}

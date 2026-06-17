@@ -26,5 +26,7 @@ public interface PackagingRateRepository extends JpaRepository<PackagingRate, Lo
 
     List<PackagingRate> findByVendorId(Long vendorId);
 
+    List<PackagingRate> findByVendor_Uuid(String vendorUuid);
+
     Optional<PackagingRate> findFirstByVendorIdAndActiveTrue(Long vendorId);
 }

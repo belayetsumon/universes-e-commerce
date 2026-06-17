@@ -23,6 +23,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Scope("session")
+@Table(name = "customer_billing_address")
 public class BillingAddress {
 
     @Id

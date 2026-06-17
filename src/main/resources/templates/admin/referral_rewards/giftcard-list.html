@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section>
+            <div class="row">
+                <div class="col-sm-3"><h4> Gift Card System </h4></div>
+                <div class="col-sm-5">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Promotions</li>
+                            <li class="breadcrumb-item active" aria-current="page">Gift Cards</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </section>
+        <hr/>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-sm-6 font-weight-bold">
+                        <strong><i class="bi bi-gift"></i> Gift Card List</strong>
+                    </div>
+                    <div class="col-sm-6 text-end">
+                        <a class="btn btn-success btn-sm" th:href="@{/giftcard/create}">
+                            <i class="bi bi-plus-circle"></i> Create Gift Card
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body table-responsive">
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <table id="example" class="table table-bordered table-hover table-striped">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Code</th>
+                            <th>Initial</th>
+                            <th>Balance</th>
+                            <th>Status</th>
+                            <th>Issued To</th>
+                            <th>Redeemed</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="gc,status:${giftCards}">
+                            <th th:text="${status.count}">1</th>
+                            <td><span class="badge bg-primary" th:text="${gc.code}">CODE</span></td>
+                            <td th:text="${gc.initialValue}">0</td>
+                            <td th:text="${gc.balance}">0</td>
+                            <td th:text="${gc.status}">ACTIVE</td>
+                            <td th:text="${gc.issuedTo != null ? gc.issuedTo.email : '-'}">-</td>
+                            <td th:text="${gc.redeemed}">false</td>
+                            <td>
+                                <a class="btn btn-sm btn-primary" th:href="@{/giftcard/edit/{id}(id=${gc.id})}">Edit</a>
+                                <form th:action="@{/giftcard/delete/{id}(id=${gc.id})}" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Delete this gift card?')">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+

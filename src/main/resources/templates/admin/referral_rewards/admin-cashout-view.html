@@ -1,22 +1,110 @@
-<tr th:each="r : ${cashouts}">
-    <td th:text="${r.user.name}"></td>
-    <td th:text="${r.amount}"></td>
-    <td th:text="${r.paymentMethod}"></td>
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
 
-    <td>
-        <span th:if="${r.user.payoutInfo != null}">
-            <span th:if="${r.user.payoutInfo.preferredMethod == T(com.example.enums.PaymentMethod).MOBILE}">
-                Mobile: <span th:text="${r.user.payoutInfo.mobileWalletNumber}"></span>
-            </span>
-            <span th:if="${r.user.payoutInfo.preferredMethod == T(com.example.enums.PaymentMethod).BANK}">
-                Bank: <br/>
-                Acc No: <span th:text="${r.user.payoutInfo.bankAccountNumber}"></span><br/>
-                Name: <span th:text="${r.user.payoutInfo.bankAccountName}"></span><br/>
-                Bank: <span th:text="${r.user.payoutInfo.bankName}"></span>
-            </span>
-        </span>
-    </td>
+    <div layout:fragment = "main_content">
+        <section>
+            <div class="row">
+                <div class="col-sm-3"><h4> Referral Rewards </h4></div>
+                <div class="col-sm-5">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Referral Rewards</li>
+                            <li class="breadcrumb-item active" aria-current="page">Cashout Requests</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </section>
+        <hr/>
+        <div class="row">
+            <div class="col-sm-9">
 
-    <td>...</td>
-</tr>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold ">
+                                <strong><i class="bi bi-list-task"></i> Cashout Requests</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body table-responsive">
+                        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+                        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+                        <table id="example" class="table table-bordered table-hover table-striped">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>User</th>
+                                    <th>Payout Amount</th>
+                                    <th>Payment Method</th>
+                                    <th>Status</th>
+                                    <th>Requested At</th>
+                                    <th>Processed At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${#lists.isEmpty(cashouts)}">
+                                    <td colspan="8" class="text-center">No cashout requests found.</td>
+                                </tr>
+                                <tr th:each="cashout, status : ${cashouts}">
+                                    <td th:text="${status.count}">1</td>
+                                    <td th:text="${cashout.user != null ? cashout.user.email : '-'}">user@example.com</td>
+                                    <td th:text="${cashout.amount}">0</td>
+                                    <td th:text="${cashout.paymentMethod}">MOBILE</td>
+                                    <td th:text="${cashout.status}">PENDING</td>
+                                    <td th:text="${cashout.requestedAt}">2026-01-01T10:00</td>
+                                    <td th:text="${cashout.processedAt != null ? cashout.processedAt : '-'}">-</td>
+                                    <td>
+                                        <div class="d-flex gap-1 flex-wrap">
+                                            <form th:if="${cashout.status.name() == 'PENDING'}"
+                                                  th:action="@{|/admin/cashouts/${cashout.id}/approve|}"
+                                                  method="post">
+                                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                            </form>
+                                            <form th:if="${cashout.status.name() == 'PENDING' or cashout.status.name() == 'APPROVED'}"
+                                                  th:action="@{|/admin/cashouts/${cashout.id}/reject|}"
+                                                  method="post">
+                                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                            </form>
+                                            <form th:if="${cashout.status.name() == 'APPROVED'}"
+                                                  th:action="@{|/admin/cashouts/${cashout.id}/mark-paid|}"
+                                                  method="post">
+                                                <button type="submit" class="btn btn-primary btn-sm">Mark Paid</button>
+                                            </form>
+                                            <span th:if="${cashout.status.name() == 'PAID'}" class="badge bg-success">Paid</span>
+                                            <span th:if="${cashout.status.name() == 'REJECTED'}" class="badge bg-danger">Rejected</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-sm-3">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold ">
+                                <strong><i class="fas fa-list"></i> Notes</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-2">Approve to confirm the payout request.</p>
+                        <p class="mb-2">Reject to restore the customer's redeemed balance.</p>
+                        <p class="mb-0">Mark paid only after the payout has actually been sent.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
 

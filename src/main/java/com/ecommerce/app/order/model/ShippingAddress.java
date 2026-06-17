@@ -9,7 +9,6 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.springframework.context.annotation.Scope;
-
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -23,6 +22,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Scope("session")
+@Table(name = "customer_shipping_address")
 public class ShippingAddress {
 
     @Id
@@ -109,10 +109,6 @@ public class ShippingAddress {
         this.postCode = source.postCode;
         this.country = source.country;
         this.district = source.district;
-        this.createdBy = source.createdBy;
-        this.created = source.created;
-        this.modifiedBy = source.modifiedBy;
-        this.modified = source.modified;
     }
 
     public Long getId() {

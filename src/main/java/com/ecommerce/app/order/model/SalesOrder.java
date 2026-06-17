@@ -26,6 +26,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
  */
 @Entity
 @EntityListeners(AuditingEntityListener.class)
+@Table(name = "sales_order")
 public class SalesOrder {
 
     @Id
@@ -80,10 +81,21 @@ public class SalesOrder {
     @Enumerated(EnumType.STRING)
     PaymentReaceiveBy paymentReaceive;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private OrderPaymentPlan paymentPlan = OrderPaymentPlan.FULL_COD;
+
+    private BigDecimal advancePaid = BigDecimal.ZERO;
+
+    private BigDecimal codDue = BigDecimal.ZERO;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private OrderPaymentState paymentState = OrderPaymentState.UNPAID;
+
     // Reference to payment
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "payment_id")
-    private List<Payment> payment;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Payment> payment = new ArrayList<>();
 
     /// Audit ///
     @CreatedBy
@@ -267,12 +279,52 @@ public class SalesOrder {
         this.paymentReaceive = paymentReaceive;
     }
 
+    public OrderPaymentPlan getPaymentPlan() {
+        return paymentPlan;
+    }
+
+    public void setPaymentPlan(OrderPaymentPlan paymentPlan) {
+        this.paymentPlan = paymentPlan;
+    }
+
+    public BigDecimal getAdvancePaid() {
+        return advancePaid;
+    }
+
+    public void setAdvancePaid(BigDecimal advancePaid) {
+        this.advancePaid = advancePaid;
+    }
+
+    public BigDecimal getCodDue() {
+        return codDue;
+    }
+
+    public void setCodDue(BigDecimal codDue) {
+        this.codDue = codDue;
+    }
+
+    public OrderPaymentState getPaymentState() {
+        return paymentState;
+    }
+
+    public void setPaymentState(OrderPaymentState paymentState) {
+        this.paymentState = paymentState;
+    }
+
     public List<Payment> getPayment() {
         return payment;
     }
 
     public void setPayment(List<Payment> payment) {
         this.payment = payment;
+    }
+
+    public void addPayment(Payment payment) {
+        if (payment == null) {
+            return;
+        }
+        payment.setOrder(this);
+        this.payment.add(payment);
     }
 
     public String getCreatedBy() {

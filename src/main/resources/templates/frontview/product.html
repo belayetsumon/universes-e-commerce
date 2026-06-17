@@ -30,7 +30,7 @@
                         <div class="categorySidebar">
                             <ul class="category-list list-unstyled">
                                 <li th:each="menu : ${productcategorylist}">
-                                    <a th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${menu.id})}"
+                                    <a th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${menu.uuid})}"
                                        th:text="${menu.name}"></a>
                                 </li>
                             </ul>
@@ -43,22 +43,77 @@
                     <div class="card border-0">
 
                         <div class="card-header">
-                            <span th:text="${productlist.size()}"> </span> Products found
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                                <div>
+                                    <strong th:text="${totalProducts}">0</strong> Products found
+                                    <div class="small text-muted" th:if="${not #strings.isEmpty(selectedVendorName)}">
+                                        Vendor: <span th:text="${selectedVendorName}"></span>
+                                    </div>
+                                </div>
+
+                                <form class="d-flex flex-column flex-sm-row gap-2 align-items-sm-center"
+                                      method="get"
+                                      th:action="@{/public/product}">
+                                    <label class="small text-muted mb-0" for="queryInput">Search</label>
+                                    <input class="form-control form-control-sm"
+                                           id="queryInput"
+                                           type="search"
+                                           name="q"
+                                           placeholder="Search products, specs, SKU..."
+                                           th:value="${currentQuery}">
+
+                                    <label class="small text-muted mb-0" for="sortSelect">Sort</label>
+                                    <select class="form-select form-select-sm" id="sortSelect" name="sort">
+                                        <option value="latest" th:selected="${currentSort == 'latest'}">Latest</option>
+                                        <option value="price_low" th:selected="${currentSort == 'price_low'}">Price: Low to High</option>
+                                        <option value="price_high" th:selected="${currentSort == 'price_high'}">Price: High to Low</option>
+                                        <option value="discount" th:selected="${currentSort == 'discount'}">Best Discount</option>
+                                        <option value="name" th:selected="${currentSort == 'name'}">Name</option>
+                                    </select>
+
+                                    <label class="small text-muted mb-0" for="sizeSelect">Show</label>
+                                    <select class="form-select form-select-sm" id="sizeSelect" name="size">
+                                        <option value="12" th:selected="${pageSize == 12}">12</option>
+                                        <option value="20" th:selected="${pageSize == 20}">20</option>
+                                        <option value="40" th:selected="${pageSize == 40}">40</option>
+                                    </select>
+
+                                    <input type="hidden" name="vendor" th:if="${not #strings.isEmpty(currentVendorUuid)}" th:value="${currentVendorUuid}" />
+                                    <input type="hidden" name="page" value="1" />
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Apply</button>
+                                </form>
+                            </div>
                         </div>
 
                         <div class="card-body">
+                            <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+                            <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
 
                             <div class="row row-cols-1 row-cols-md-5 g-4">
                                 <div class="col" th:each="productlists,status:${productlist}">
 
                                     <div class="card product-card  position-relative mb-4 hvr-bounce-in h-100">
 
-                                        <span th:if="${ not #strings.isEmpty(productlists.imageName)}" class="">
-                                            <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />
+                                        <span th:if="${not #strings.isEmpty(#strings.trim(productlists.imageName))}" class="">
+                                            <img class="card-img-top"
+                                                 th:src="@{/files/}+${productlists.imageName}"
+                                                 th:attr="onerror=|this.onerror=null;this.src='@{/img/image-not-available.png}';|" />
                                         </span>
-                                        <span th:if="${#strings.isEmpty(productlists.imageName)}" >
+                                        <span th:if="${#strings.isEmpty(#strings.trim(productlists.imageName))}">
                                             <img  class="card-img-top" th:src="@{/img/image-not-available.png}" />
                                         </span>
+
+                                        <div class="product-status-badge-stack"
+                                             th:if="${productlists['showPreorderBadge'] == true or productlists['showOutOfStockBadge'] == true}">
+                                            <span class="product-status-badge preorder"
+                                                  th:if="${productlists['showPreorderBadge'] == true}">
+                                                Preorder
+                                            </span>
+                                            <span class="product-status-badge out-of-stock badge bg-danger"
+                                                  th:if="${productlists['showOutOfStockBadge'] == true}">
+                                                Out of stock
+                                            </span>
+                                        </div>
 
                                         <div class="badge-container">
                                             <span th:if="${productlists.totalDiscountPercent != null and productlists.totalDiscountPercent > 0}" class="badge rounded-pill bg-danger badge-custom" >
@@ -70,13 +125,13 @@
 
                                         <div class="card-body">
                                             <div class="card-title">
-                                                <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.id})}" >
+                                                <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.uuid})}" >
                                                     <span th:text="${productlists.title.length() > 40 ? #strings.substring(productlists.title, 0, 40) + '...' : productlists.title}"></span>
 
 
                                                 </a>
 
-                                                <span class="fs-6 text-muted"> vendor/supplier: [[${productlists.vendorProfile}]]</span>
+                                                <!--                                                <span class="fs-6 text-muted"> vendor/supplier: [[${productlists.vendorProfile}]]</span>-->
                                             </div>
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div class="row"  th:if="${productlists.totalDiscountPercent > 0}">
@@ -88,28 +143,27 @@
                                                 <div class="row"  th:unless="${productlists.totalDiscountPercent > 0}">
                                                     <div class="  text-center"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
                                                 </div>
-                                                <div>
-                                                    <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
-                                                    <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
-                                                </div>
-
-
                                             </div>
 
-                                            <form  class="" th:action="@{/cart/add}"  enctype="multipart/form-data" method="post" >
-
-                                                <input type="hidden" class="form-control" th:name ="product_id" th:value="${productlists.id}" />
-
-                                                <!--                                            <label  class="col-auto" for="exampleInputEmail1">Quantity:</label>-->
-
-                                                <!--                                        <div class="fs-6 text-danger"> <strong> Price: </strong><span  th:text="${productlists.salesPrice}">    </span></div>-->
-                                                <input  type="hidden" min="1"   class="col-auto form-control mb-3"  size="10" th:name="quantity" value="1" />
-
-                                                <div class=" form-group text-center ">
-                                                    <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Buy Now</button>
-                                                    <button class="btn btn-sm btn-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i>  </button>
-                                                </div>
-                                            </form>
+                                            <div class="form-group text-center"
+                                                 th:with="inWishlist=${wishlistProductKeys != null and productlists.uuid != null and wishlistProductKeys.contains(productlists.uuid)}">
+                                                <a class="btn btn-sm btn-danger" th:href="@{/public/single-product/{prodid}(prodid=${productlists.uuid})}">
+                                                    <i class="bi bi-eye text-warning"></i> View Details
+                                                </a>
+                                                <form class="mt-2"
+                                                      th:action="${inWishlist} ? @{/wishlist/remove} : @{/wishlist/add}"
+                                                      method="post">
+                                                    <input type="hidden" name="product_uuid" th:value="${productlists.uuid}" />
+                                                    <input type="hidden" name="redirectUrl" th:value="@{/public/product}" />
+                                                    <button type="submit"
+                                                            class="btn btn-sm"
+                                                            th:classappend="${inWishlist} ? ' btn-outline-danger' : ' btn-warning'">
+                                                        <i class="bi"
+                                                           th:classappend="${inWishlist} ? ' bi-heart-fill' : ' bi-suit-heart'"></i>
+                                                        <span th:text="${inWishlist} ? ' Remove from Wishlist' : ' Add to Wishlist'">Add to Wishlist</span>
+                                                    </button>
+                                                </form>
+                                            </div>
 
 
                                             <!--                                <div class="mt-2">
@@ -125,6 +179,40 @@
 
 
                                 </div>
+                            </div>
+
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-4"
+                                 th:if="${totalPages > 1}">
+                                <div class="small text-muted">
+                                    Page <span th:text="${currentPage}">1</span> of <span th:text="${totalPages}">1</span>
+                                </div>
+
+                                <nav aria-label="Product pagination">
+                                    <ul class="pagination pagination-sm mb-0">
+                                        <li class="page-item" th:classappend="${!hasPrevious} ? ' disabled'">
+                                            <a class="page-link"
+                                            th:if="${hasPrevious}"
+                                               th:href="@{/public/product(page=${currentPage - 1}, size=${pageSize}, sort=${currentSort}, vendor=${currentVendorUuid}, q=${currentQuery})}">Previous</a>
+                                            <span class="page-link" th:unless="${hasPrevious}">Previous</span>
+                                        </li>
+
+                                        <li class="page-item"
+                                            th:each="pageNumber : ${#numbers.sequence(1, totalPages)}"
+                                            th:if="${pageNumber == 1 or pageNumber == totalPages or (pageNumber >= currentPage - 2 and pageNumber <= currentPage + 2)}"
+                                            th:classappend="${pageNumber == currentPage} ? ' active'">
+                                            <a class="page-link"
+                                               th:href="@{/public/product(page=${pageNumber}, size=${pageSize}, sort=${currentSort}, vendor=${currentVendorUuid}, q=${currentQuery})}"
+                                               th:text="${pageNumber}">1</a>
+                                        </li>
+
+                                        <li class="page-item" th:classappend="${!hasNext} ? ' disabled'">
+                                            <a class="page-link"
+                                               th:if="${hasNext}"
+                                               th:href="@{/public/product(page=${currentPage + 1}, size=${pageSize}, sort=${currentSort}, vendor=${currentVendorUuid}, q=${currentQuery})}">Next</a>
+                                            <span class="page-link" th:unless="${hasNext}">Next</span>
+                                        </li>
+                                    </ul>
+                                </nav>
                             </div>
                         </div>
                     </div>

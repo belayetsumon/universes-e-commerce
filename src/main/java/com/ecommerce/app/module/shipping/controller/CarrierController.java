@@ -5,12 +5,15 @@
 package com.ecommerce.app.module.shipping.controller;
 
 import com.ecommerce.app.module.shipping.model.Carrier;
+import com.ecommerce.app.module.shipping.model.CarrierMode;
+import com.ecommerce.app.module.shipping.model.CodCollectionMode;
+import com.ecommerce.app.module.shipping.model.SettlementMode;
+import com.ecommerce.app.module.shipping.model.ShippingChargeOwner;
 import com.ecommerce.app.module.shipping.services.CarrierService;
 import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -37,23 +40,31 @@ public class CarrierController {
 
     @GetMapping("/list")
     public String list(Model model) {
-        List<Carrier> carriers = service.getAll();
-        model.addAttribute("carriers", service.getAll());
+        try {
+            List<Carrier> carriers = service.getAll();
+            Map<String, Long> dependencyCountMap = new HashMap<>();
 
-        Map<String, Long> dependencyCountMap = new HashMap<>();
+            for (Carrier carrier : carriers) {
+                dependencyCountMap.put(carrier.getUuid(), service.countDependencies(carrier.getUuid()));
+            }
 
-        for (Carrier carrier : carriers) {
-            dependencyCountMap.put(carrier.getUuid(), service.countDependencies(carrier.getUuid()));
+            model.addAttribute("carriers", carriers);
+            model.addAttribute("dependencyCountMap", dependencyCountMap);
+        } catch (Exception ex) {
+            model.addAttribute("carriers", List.of());
+            model.addAttribute("dependencyCountMap", Map.of());
+            model.addAttribute("errorMessage", "Runtime error while loading carriers: " + ex.getMessage());
         }
-
-        model.addAttribute("carriers", carriers);
-        model.addAttribute("dependencyCountMap", dependencyCountMap);
         return "admin/shipping/carriers/list";
     }
 
     @GetMapping("/new")
     public String createForm(Model model) {
         model.addAttribute("carrier", new Carrier());
+        model.addAttribute("carrierModes", CarrierMode.values());
+        model.addAttribute("settlementModes", SettlementMode.values());
+        model.addAttribute("shippingChargeOwners", ShippingChargeOwner.values());
+        model.addAttribute("codCollectionModes", CodCollectionMode.values());
         return "admin/shipping/carriers/form";
     }
 
@@ -65,42 +76,70 @@ public class CarrierController {
             Model model) {
 
         if (result.hasErrors()) {
-            model.addAttribute("carrier", carrier); // send back form data
-            return "admin/carriers/form"; // return same form view
+            model.addAttribute("carrier", carrier);
+            model.addAttribute("carrierModes", CarrierMode.values());
+            model.addAttribute("settlementModes", SettlementMode.values());
+            model.addAttribute("shippingChargeOwners", ShippingChargeOwner.values());
+            model.addAttribute("codCollectionModes", CodCollectionMode.values());
+            return "admin/shipping/carriers/form";
         }
 
-        service.save(carrier);
-        redirectAttributes.addFlashAttribute("success", "Carrier saved successfully!");
+        try {
+            service.save(carrier);
+            redirectAttributes.addFlashAttribute("successMessage", "Carrier saved successfully!");
+        } catch (Exception ex) {
+            model.addAttribute("carrier", carrier);
+            model.addAttribute("carrierModes", CarrierMode.values());
+            model.addAttribute("settlementModes", SettlementMode.values());
+            model.addAttribute("shippingChargeOwners", ShippingChargeOwner.values());
+            model.addAttribute("codCollectionModes", CodCollectionMode.values());
+            model.addAttribute("errorMessage", "Runtime error while saving carrier: " + ex.getMessage());
+            return "admin/shipping/carriers/form";
+        }
 
         return "redirect:/admin/carriers/list";
     }
 
     @GetMapping("/edit/{id}")
     public String editForm(@PathVariable Long id, Model model) {
-        model.addAttribute("carrier", service.getById(id));
-        return "admin/carriers/form";
+        Carrier carrier = service.getById(id);
+        if (carrier == null) {
+            model.addAttribute("carrier", new Carrier());
+            model.addAttribute("errorMessage", "Carrier not found.");
+        } else {
+            model.addAttribute("carrier", carrier);
+        }
+        model.addAttribute("carrierModes", CarrierMode.values());
+        model.addAttribute("settlementModes", SettlementMode.values());
+        model.addAttribute("shippingChargeOwners", ShippingChargeOwner.values());
+        model.addAttribute("codCollectionModes", CodCollectionMode.values());
+        return "admin/shipping/carriers/form";
     }
 
     @GetMapping("/delete/{uuid}")
     public String delete(@PathVariable String uuid, RedirectAttributes redirectAttributes) {
 
-        Map<String, Long> counts = service.getDependencies(uuid);
+        try {
+            Map<String, Long> counts = service.getDependencies(uuid);
 
-        long totalDependencies = counts.values().stream().mapToLong(Long::longValue).sum();
+            long totalDependencies = counts.values().stream().mapToLong(Long::longValue).sum();
 
-        if (totalDependencies > 0) {
-            String message = String.format(
-                    "Cannot delete carrier. It is linked with: %d Order(s), %d ShippingProfile(s).",
-                    counts.getOrDefault("orders", 0L),
-                    counts.getOrDefault("shippingProfiles", 0L)
-            );
-            redirectAttributes.addFlashAttribute("error", message);
-            return "redirect:/admin/carriers/list";
+            if (totalDependencies > 0) {
+                String message = String.format(
+                        "Cannot delete carrier. It is linked with: %d CarrierRate(s), %d Shipment(s), %d ShippingProfile(s).",
+                        counts.getOrDefault("carrierRate", 0L),
+                        counts.getOrDefault("shipment", 0L),
+                        counts.getOrDefault("profiles", 0L)
+                );
+                redirectAttributes.addFlashAttribute("errorMessage", message);
+                return "redirect:/admin/carriers/list";
+            }
+
+            service.deleteByUuid(uuid);
+            redirectAttributes.addFlashAttribute("successMessage", "Carrier deleted successfully!");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Runtime error while deleting carrier: " + ex.getMessage());
         }
-
-        // Safe to delete
-        service.deleteByUuid(uuid);
-        redirectAttributes.addFlashAttribute("success", "Carrier deleted successfully!");
         return "redirect:/admin/carriers/list";
     }
 

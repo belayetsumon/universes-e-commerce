@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section>
+            <div class="row">
+                <div class="col-sm-3"><h4> Promotion Engine </h4></div>
+                <div class="col-sm-5">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Promotions</li>
+                            <li class="breadcrumb-item active" aria-current="page">Coupon Redemptions</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </section>
+        <hr/>
+
+        <div class="card">
+            <div class="card-header">
+                <strong><i class="bi bi-receipt"></i> Coupon Redemption List</strong>
+            </div>
+
+            <div class="card-body table-responsive">
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <table id="example" class="table table-bordered table-hover table-striped">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Coupon</th>
+                            <th>Code</th>
+                            <th>User</th>
+                            <th>Order</th>
+                            <th>Discount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="r,status:${redemptions}">
+                            <th th:text="${status.count}">1</th>
+                            <td th:text="${r.coupon != null ? r.coupon.title : '-'}">Title</td>
+                            <td th:text="${r.coupon != null ? r.coupon.code : '-'}">CODE</td>
+                            <td th:text="${r.users != null ? r.users.email : '-'}">user</td>
+                            <td th:text="${r.orderId}">0</td>
+                            <td th:text="${r.discountAmount}">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+

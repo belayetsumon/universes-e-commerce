@@ -1,88 +1,555 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
-    <div layout:fragment = "main_content">
-        <section class=" d-none d-sm-block">
-            <div class="card">
-                <div class="card-header bg-info">
-                    <h5 class="font-weight-bold text-white"><i class="fas fa-list"></i> Vendor Profile</h5>
-                </div>
-                <div class="card-body">
+    <th:block layout:fragment="page_css">
+        <style>
+            .vendor-profile-editor {
+                --ve-surface: #ffffff;
+                --ve-border: rgba(15, 23, 42, 0.08);
+                --ve-text-soft: #667085;
+                --ve-text-strong: #101828;
+                --ve-accent: #0f4c81;
+                --ve-accent-deep: #163a5f;
+                --ve-accent-soft: #eaf3fb;
+                --ve-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+            }
+
+            .vendor-profile-editor .editor-shell {
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .vendor-profile-editor .editor-hero {
+                position: relative;
+                overflow: hidden;
+                border: 0;
+                border-radius: 1.5rem;
+                background:
+                    radial-gradient(circle at top right, rgba(255, 255, 255, 0.16), transparent 30%),
+                    linear-gradient(135deg, #0f4c81 0%, #163a5f 52%, #1f2937 100%);
+                color: #fff;
+                box-shadow: var(--ve-shadow);
+            }
+
+            .vendor-profile-editor .editor-hero::after {
+                content: "";
+                position: absolute;
+                inset: auto -4.5rem -4.5rem auto;
+                width: 16rem;
+                height: 16rem;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.08);
+            }
+
+            .vendor-profile-editor .editor-hero .card-body {
+                position: relative;
+                z-index: 1;
+                padding: 2rem;
+            }
+
+            .vendor-profile-editor .hero-chip {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+                padding: 0.45rem 0.85rem;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.14);
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                font-size: 0.8rem;
+                font-weight: 700;
+            }
+
+            .vendor-profile-editor .hero-title {
+                font-size: clamp(1.75rem, 2.1vw, 2.4rem);
+                font-weight: 700;
+                letter-spacing: -0.03em;
+                margin-bottom: 0.65rem;
+            }
+
+            .vendor-profile-editor .hero-copy {
+                max-width: 42rem;
+                color: rgba(255, 255, 255, 0.82);
+                margin-bottom: 0;
+            }
+
+            .vendor-profile-editor .hero-breadcrumb,
+            .vendor-profile-editor .hero-breadcrumb a {
+                color: #dce8f2;
+                text-decoration: none;
+                font-size: 0.92rem;
+            }
+
+            .vendor-profile-editor .hero-actions .btn {
+                min-width: 11rem;
+                border-radius: 0.95rem;
+                font-weight: 600;
+            }
+
+            .vendor-profile-editor .hero-actions .btn-light {
+                color: var(--ve-accent-deep);
+            }
+
+            .vendor-profile-editor .surface-card {
+                border: 1px solid var(--ve-border);
+                border-radius: 1.25rem;
+                background: var(--ve-surface);
+                box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+            }
+
+            .vendor-profile-editor .surface-card .card-body {
+                padding: 1.5rem;
+            }
+
+            .vendor-profile-editor .meta-strip {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 1rem;
+            }
+
+            .vendor-profile-editor .meta-tile {
+                padding: 1rem 1.1rem;
+                border-radius: 1rem;
+                background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+                border: 1px solid rgba(15, 23, 42, 0.06);
+            }
+
+            .vendor-profile-editor .meta-label {
+                display: block;
+                margin-bottom: 0.45rem;
+                font-size: 0.78rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                font-weight: 700;
+                color: var(--ve-text-soft);
+            }
+
+            .vendor-profile-editor .meta-value {
+                color: var(--ve-text-strong);
+                font-size: 1rem;
+                font-weight: 700;
+                margin-bottom: 0;
+                word-break: break-word;
+            }
+
+            .vendor-profile-editor .section-title {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .vendor-profile-editor .section-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 2.6rem;
+                height: 2.6rem;
+                border-radius: 0.9rem;
+                background: var(--ve-accent-soft);
+                color: var(--ve-accent);
+                font-size: 1.1rem;
+            }
+
+            .vendor-profile-editor .section-heading {
+                margin-bottom: 0.15rem;
+                color: var(--ve-text-strong);
+                font-size: 1.05rem;
+                font-weight: 700;
+            }
+
+            .vendor-profile-editor .section-copy {
+                margin-bottom: 0;
+                color: var(--ve-text-soft);
+                font-size: 0.92rem;
+            }
+
+            .vendor-profile-editor .form-label {
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: var(--ve-text-strong);
+                margin-bottom: 0.45rem;
+            }
+
+            .vendor-profile-editor .form-control {
+                border-radius: 0.95rem;
+                border-color: rgba(15, 23, 42, 0.12);
+                padding: 0.8rem 0.95rem;
+                min-height: 3rem;
+                box-shadow: none;
+            }
+
+            .vendor-profile-editor textarea.form-control {
+                min-height: auto;
+            }
+
+            .vendor-profile-editor .form-control:focus {
+                border-color: rgba(15, 76, 129, 0.45);
+                box-shadow: 0 0 0 0.25rem rgba(15, 76, 129, 0.12);
+            }
+
+            .vendor-profile-editor .field-note {
+                display: block;
+                margin-top: 0.4rem;
+                font-size: 0.82rem;
+                color: var(--ve-text-soft);
+            }
+
+            .vendor-profile-editor .validation-error {
+                display: block;
+                margin-top: 0.4rem;
+                font-size: 0.84rem;
+                color: #b42318;
+                font-weight: 500;
+            }
+
+            .vendor-profile-editor .form-divider {
+                height: 1px;
+                background: rgba(15, 23, 42, 0.06);
+                margin: 1.5rem 0;
+            }
+
+            .vendor-profile-editor .logo-stage {
+                min-height: 18rem;
+                border: 1px dashed rgba(15, 23, 42, 0.14);
+                border-radius: 1rem;
+                background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 1.25rem;
+            }
+
+            .vendor-profile-editor .logo-stage img {
+                max-width: 100%;
+                max-height: 14rem;
+                object-fit: contain;
+            }
+
+            .vendor-profile-editor .logo-empty {
+                text-align: center;
+                color: var(--ve-text-soft);
+            }
+
+            .vendor-profile-editor .logo-empty i {
+                font-size: 2rem;
+                color: #98a2b3;
+            }
+
+            .vendor-profile-editor .tips-list {
+                display: grid;
+                gap: 0.85rem;
+            }
+
+            .vendor-profile-editor .tip-item {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.75rem;
+                padding: 0.95rem 1rem;
+                border-radius: 1rem;
+                background: #f8fafc;
+                border: 1px solid rgba(15, 23, 42, 0.06);
+            }
+
+            .vendor-profile-editor .tip-item i {
+                color: var(--ve-accent);
+                font-size: 1rem;
+                margin-top: 0.15rem;
+            }
+
+            .vendor-profile-editor .tip-item strong {
+                display: block;
+                margin-bottom: 0.2rem;
+                color: var(--ve-text-strong);
+                font-size: 0.92rem;
+            }
+
+            .vendor-profile-editor .tip-item span {
+                color: var(--ve-text-soft);
+                font-size: 0.88rem;
+                line-height: 1.5;
+            }
+
+            .vendor-profile-editor .editor-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+                padding-top: 1rem;
+            }
+
+            .vendor-profile-editor .editor-actions .btn {
+                min-width: 11rem;
+                border-radius: 0.95rem;
+                font-weight: 600;
+                padding: 0.8rem 1.2rem;
+            }
+
+            @media (max-width: 1199.98px) {
+                .vendor-profile-editor .meta-strip {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+            }
+
+            @media (max-width: 991.98px) {
+                .vendor-profile-editor .editor-hero .card-body {
+                    padding: 1.5rem;
+                }
+            }
+
+            @media (max-width: 767.98px) {
+                .vendor-profile-editor .meta-strip {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </th:block>
+
+    <div layout:fragment="main_content">
+        <section class="vendor-profile-editor">
+            <div class="editor-shell">
+                <div class="card editor-hero">
                     <div class="card-body">
-                        <form th:action="@{/vendorprofile/save}" th:object="${vendorprofile}" enctype="multipart/form-data" method="post" >
-
-                            <div class="alert alert-danger alert-dismissible fade show"
-                                 th:if="${#fields.hasErrors('*')}" role="alert">
-                                <h4 class="alert-heading"><i class="bi bi-exclamation-triangle-fill"></i> Error</h4>
-                                <ul th:if="${#fields.hasErrors('*')}">
-                                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
-                                </ul>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <div class="d-flex flex-column flex-xl-row justify-content-between gap-4">
+                            <div>
+                                <div class="hero-chip mb-3">
+                                    <i class="bi bi-pencil-square"></i>
+                                    Vendor Profile Editor
+                                </div>
+                                <div class="hero-breadcrumb mb-3">
+                                    <a th:href="@{/vendor/home}">Dashboard</a>
+                                    <span class="mx-2">/</span>
+                                    <a th:href="@{/vendorprofile/details}">Vendor Profile</a>
+                                    <span class="mx-2">/</span>
+                                    <span>Edit</span>
+                                </div>
+                                <h1 class="hero-title" th:text="${vendorprofile.companyName != null and !#strings.isEmpty(vendorprofile.companyName) ? 'Update ' + vendorprofile.companyName : 'Create Vendor Profile'}">Create Vendor Profile</h1>
+                                <p class="hero-copy">
+                                    Maintain accurate business identity, contact information, and brand details from one polished vendor administration form.
+                                </p>
                             </div>
 
-                            <div class="form-group">
-                                <input type="hidden" class="form-control"  th:field="*{id}" />
-                                <input type="hidden" class="form-control"  th:field="*{userId}" />
-                                <input type="hidden" class="form-control"  th:field="*{vendorCode}" />
-
+                            <div class="hero-actions d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2">
+                                <a class="btn btn-light" th:href="@{/vendorprofile/details}">
+                                    <i class="bi bi-arrow-left me-2"></i>Back To Profile
+                                </a>
+                                <a class="btn btn-outline-light" th:href="@{/vendorlogo/index}" th:if="${vendorprofile.id != null}">
+                                    <i class="bi bi-image me-2"></i>Manage Logo
+                                </a>
                             </div>
-                            <div class="form-group">
-                                <label for="exampleInputEmail1">First Name</label>
-                                <input type="text" class="form-control" th:field="*{firstName}" aria-describedby="emailHelp" placeholder="">
-                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}">Book Name</span>
-                            </div>
-                            <div class="form-group">
-                                <label for="exampleInputEmail1">Last Name</label>
-                                <input type="text" class="form-control" th:field="*{lastName}" aria-describedby="emailHelp" placeholder="">
-                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}">Book Name</span>
-                            </div>
-                            <div class="form-group">
-                                <label for="exampleInputEmail1">Designation</label>
-                                <input type="text" class="form-control" th:field="*{designation}" aria-describedby="emailHelp" placeholder="">
-                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('designation')}" th:errors="*{designation}">Book Name</span>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="exampleInputEmail1">Company Name</label>
-                                <input type="text" class="form-control" th:field="*{companyName}" aria-describedby="companyName" placeholder="">
-                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('companyName')}" th:errors="*{firstName}">Book Name</span>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="exampleInputEmail1">Phone/Mobile</label>
-                                <input type="text" class="form-control" th:field="*{phone}" aria-describedby="emailHelp" placeholder="">
-                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}">Book Name</span>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="exampleInputEmail1">E-mail</label>
-                                <input type="text" class="form-control" th:field="*{email}" aria-describedby="emailHelp" placeholder="">
-                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Book Name</span>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="exampleInputEmail1">Address</label>
-                                <textarea type="text"  rows="10" class="form-control col-sm-8" th:field="*{address}" aria-describedby="emailHelp" placeholder="Enter Description"></textarea>
-                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('address')}" th:errors="*{address}">Book Name</span>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="exampleInputEmail1">Description</label>
-                                <textarea type="text"  rows="10" class="form-control col-sm-8" th:field="*{description}" aria-describedby="emailHelp" placeholder="Enter Description"></textarea>
-                                <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Book Name</span>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Submit</button>
-                        </form>
-
+                        </div>
                     </div>
                 </div>
+
+                <div class="surface-card">
+                    <div class="card-body">
+                        <div class="meta-strip">
+                            <div class="meta-tile">
+                                <span class="meta-label">Vendor Code</span>
+                                <p class="meta-value" th:text="${vendorprofile.vendorCode != null and !#strings.isEmpty(vendorprofile.vendorCode) ? vendorprofile.vendorCode : 'Will be generated after save'}">Will be generated after save</p>
+                            </div>
+                            <div class="meta-tile">
+                                <span class="meta-label">Profile Status</span>
+                                <p class="meta-value" th:text="${vendorprofile.vendorStatusEnum != null ? vendorprofile.vendorStatusEnum : 'Pending setup'}">Pending setup</p>
+                            </div>
+                            <div class="meta-tile">
+                                <span class="meta-label">Primary Email</span>
+                                <p class="meta-value" th:text="${vendorprofile.email != null and !#strings.isEmpty(vendorprofile.email) ? vendorprofile.email : 'Not provided yet'}">Not provided yet</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form th:action="@{/vendorprofile/save}" th:object="${vendorprofile}" enctype="multipart/form-data" method="post">
+                    <input type="hidden" th:field="*{id}" />
+                    <input type="hidden" th:field="*{userId}" />
+                    <input type="hidden" th:field="*{vendorCode}" />
+
+                    <div class="row g-4">
+                        <div class="col-12 col-xl-8">
+                            <div class="surface-card h-100">
+                                <div class="card-body">
+                                    <div class="alert alert-danger alert-dismissible fade show"
+                                         th:if="${#fields.hasErrors('*')}" role="alert">
+                                        <h5 class="alert-heading mb-2"><i class="bi bi-exclamation-triangle-fill me-2"></i>Please review the form</h5>
+                                        <ul class="mb-0 ps-3">
+                                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
+                                        </ul>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+
+                                    <div class="section-title">
+                                        <div class="section-icon">
+                                            <i class="bi bi-building"></i>
+                                        </div>
+                                        <div>
+                                            <h2 class="section-heading">Business Identity</h2>
+                                            <p class="section-copy">Capture the vendor's organization name, representative, and leadership role.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3">
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label" for="companyName">Company Name</label>
+                                            <input type="text" class="form-control" id="companyName" th:field="*{companyName}" placeholder="Enter company or store name">
+                                            <span class="validation-error" th:if="${#fields.hasErrors('companyName')}" th:errors="*{companyName}">Company name error</span>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label" for="designation">Designation</label>
+                                            <input type="text" class="form-control" id="designation" th:field="*{designation}" placeholder="Managing Director, Owner, Operations Lead">
+                                            <span class="validation-error" th:if="${#fields.hasErrors('designation')}" th:errors="*{designation}">Designation error</span>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label" for="firstName">First Name</label>
+                                            <input type="text" class="form-control" id="firstName" th:field="*{firstName}" placeholder="Enter first name">
+                                            <span class="validation-error" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}">First name error</span>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label" for="lastName">Last Name</label>
+                                            <input type="text" class="form-control" id="lastName" th:field="*{lastName}" placeholder="Enter last name">
+                                            <span class="validation-error" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}">Last name error</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-divider"></div>
+
+                                    <div class="section-title">
+                                        <div class="section-icon">
+                                            <i class="bi bi-telephone"></i>
+                                        </div>
+                                        <div>
+                                            <h2 class="section-heading">Contact Details</h2>
+                                            <p class="section-copy">Keep the vendor's reachable contact channels and address current.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3">
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label" for="phone">Phone / Mobile</label>
+                                            <input type="text" class="form-control" id="phone" th:field="*{phone}" placeholder="01XXXXXXXXX">
+                                            <span class="validation-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}">Phone error</span>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label" for="email">Email Address</label>
+                                            <input type="text" class="form-control" id="email" th:field="*{email}" placeholder="vendor@company.com">
+                                            <span class="validation-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Email error</span>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label" for="address">Business Address</label>
+                                            <textarea rows="4" class="form-control" id="address" th:field="*{address}" placeholder="Write the vendor business address"></textarea>
+                                            <span class="validation-error" th:if="${#fields.hasErrors('address')}" th:errors="*{address}">Address error</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-divider"></div>
+
+                                    <div class="section-title">
+                                        <div class="section-icon">
+                                            <i class="bi bi-card-text"></i>
+                                        </div>
+                                        <div>
+                                            <h2 class="section-heading">Company Overview</h2>
+                                            <p class="section-copy">Describe the vendor's business, category focus, and operational scope.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="form-label" for="description">Description</label>
+                                            <textarea rows="8" class="form-control" id="description" th:field="*{description}" placeholder="Write a concise company overview"></textarea>
+                                            <span class="field-note">This description helps internal teams understand the vendor's business identity quickly.</span>
+                                            <span class="validation-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Description error</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="editor-actions">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-check2-circle me-2"></i>Save Profile
+                                        </button>
+                                        <a class="btn btn-outline-secondary" th:href="@{/vendorprofile/details}">
+                                            <i class="bi bi-x-circle me-2"></i>Cancel
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-xl-4">
+                            <div class="surface-card mb-4">
+                                <div class="card-body">
+                                    <div class="section-title">
+                                        <div class="section-icon">
+                                            <i class="bi bi-image"></i>
+                                        </div>
+                                        <div>
+                                            <h2 class="section-heading">Brand Asset</h2>
+                                            <p class="section-copy">Preview the current vendor logo and manage visual branding.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="logo-stage mb-3">
+                                        <img th:if="${vendorprofile.vendorLogo != null and !#strings.isEmpty(vendorprofile.vendorLogo)}"
+                                             th:src="@{/files/}+${vendorprofile.vendorLogo}"
+                                             alt="Vendor logo" />
+
+                                        <div th:if="${vendorprofile.vendorLogo == null or #strings.isEmpty(vendorprofile.vendorLogo)}" class="logo-empty">
+                                            <i class="bi bi-card-image d-block mb-2"></i>
+                                            <div class="fw-semibold mb-1">No logo uploaded yet</div>
+                                            <div class="small">Use a clean square brand mark for the strongest storefront presentation.</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-grid gap-2">
+                                        <a class="btn btn-outline-primary" th:href="@{/vendorlogo/index}" th:if="${vendorprofile.id != null}">
+                                            <i class="bi bi-cloud-upload me-2"></i>Upload or Change Logo
+                                        </a>
+                                        <div class="alert alert-light border mb-0" th:if="${vendorprofile.id == null}">
+                                            Save the vendor profile first, then upload the logo from the dedicated logo manager.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="surface-card">
+                                <div class="card-body">
+                                    <div class="section-title">
+                                        <div class="section-icon">
+                                            <i class="bi bi-shield-check"></i>
+                                        </div>
+                                        <div>
+                                            <h2 class="section-heading">Editing Notes</h2>
+                                            <p class="section-copy">Small guidance to keep the vendor profile polished and consistent.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="tips-list">
+                                        <div class="tip-item">
+                                            <i class="bi bi-check-circle"></i>
+                                            <div>
+                                                <strong>Use a real business name</strong>
+                                                <span>Keep the company name consistent with payout methods, invoices, and marketplace branding.</span>
+                                            </div>
+                                        </div>
+                                        <div class="tip-item">
+                                            <i class="bi bi-person-badge"></i>
+                                            <div>
+                                                <strong>Assign a clear contact</strong>
+                                                <span>Add the primary representative so operations and finance teams know who owns vendor communication.</span>
+                                            </div>
+                                        </div>
+                                        <div class="tip-item">
+                                            <i class="bi bi-journal-text"></i>
+                                            <div>
+                                                <strong>Write a concise overview</strong>
+                                                <span>Describe what the vendor sells and how they operate so internal teams can understand the business quickly.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
-
         </section>
-
     </div>
 </div>

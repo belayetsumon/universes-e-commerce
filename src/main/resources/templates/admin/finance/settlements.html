@@ -1,0 +1,70 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4><i class="bi bi-journal-richtext me-2 text-primary"></i>Settlement Ledger</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Settlement Ledger</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+
+        <div th:if="${not #strings.isEmpty(errorMessage)}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Shipment Settlement History</strong>
+                <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/finance/dashboard}">Back Dashboard</a>
+            </div>
+            <div class="card-body table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Date</th>
+                            <th>Vendor</th>
+                            <th>Order</th>
+                            <th>Carrier</th>
+                            <th>Settlement</th>
+                            <th>Shipping Owner</th>
+                            <th>COD Mode</th>
+                            <th>Product Net</th>
+                            <th>Commission</th>
+                            <th>Shipping</th>
+                            <th>COD Fee</th>
+                            <th>Vendor Payable</th>
+                            <th>Marketplace Payable</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(shipments)}">
+                            <td colspan="14" class="text-center">No settlement ledger found.</td>
+                        </tr>
+                        <tr th:each="shipment, status : ${shipments}">
+                            <td th:text="${status.count}"></td>
+                            <td th:text="${shipment.created}"></td>
+                            <td th:text="${vendorLookup[shipment.vendorId] != null ? vendorLookup[shipment.vendorId].companyName : shipment.vendorId}"></td>
+                            <td th:text="${shipment.salesOrderId}"></td>
+                            <td th:text="${shipment.carrier != null ? shipment.carrier.name : '-'}"></td>
+                            <td th:text="${shipment.settlementMode}"></td>
+                            <td th:text="${shipment.shippingChargeOwner}"></td>
+                            <td th:text="${shipment.codCollectionMode}"></td>
+                            <td th:text="${shipment.productNetAmount}"></td>
+                            <td th:text="${shipment.marketplaceCommissionAmount}"></td>
+                            <td th:text="${shipment.shippingCost}"></td>
+                            <td th:text="${shipment.codFeeAmount}"></td>
+                            <td th:text="${shipment.vendorPayableAmount}"></td>
+                            <td th:text="${shipment.marketplacePayableAmount}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

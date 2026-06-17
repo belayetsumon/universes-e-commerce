@@ -18,10 +18,21 @@ import org.springframework.data.repository.query.Param;
  */
 public interface ReferralRepository extends JpaRepository<Referral, Long> {
 
+    @Query("""
+            SELECT r
+            FROM Referral r
+            JOIN FETCH r.users
+            LEFT JOIN FETCH r.referredUser
+            ORDER BY r.id DESC
+            """)
+    List<Referral> findAllForAdminList();
+
     // Find referral owned by a specific user (who owns the referral code)
     Optional<Referral> findByUsers(Users users);
 
     long countByUsers(Users users);
+
+    long countByReferredUser(Users user);
 
     Optional<Referral> findByUsers_Id(Long id);
 
@@ -42,7 +53,7 @@ public interface ReferralRepository extends JpaRepository<Referral, Long> {
     long countByUsers_IdAndReferredUserIsNotNull(Long id);
 
     // ✅ Optional: Get list of referred users
-    @Query("SELECT r.referredUser FROM Referral r WHERE r.users.id = :userId AND r.referredUser IS NOT NULL")
+    @Query("SELECT r FROM Referral r WHERE r.referredUser.id = :userId")
     List<Referral> findReferredUsersByUserId(@Param("userId") Long userId);
 
 }

@@ -5,8 +5,9 @@
 package com.ecommerce.app.globalcontroller;
 
 import com.ecommerce.app.globalServices.District;
-import jakarta.servlet.http.HttpServletRequest;
+import com.ecommerce.app.module.cart.model.CartItem;
 import jakarta.servlet.http.HttpSession;
+import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,10 +37,37 @@ public class DistrictController {
         try {
             District district = District.valueOf(districtName);
             session.setAttribute("shippingdistrict", district);
+            clearShippingSelections(session);
             return "success";
         } catch (IllegalArgumentException e) {
             return "error";
         }
+    }
+
+    private void clearShippingSelections(HttpSession session) {
+        session.removeAttribute("shippingCosts");
+
+        List<CartItem> cart = (List<CartItem>) session.getAttribute("sessioncart");
+        if (cart == null || cart.isEmpty()) {
+            return;
+        }
+
+        cart.stream()
+                .map(CartItem::getVendorId)
+                .distinct()
+                .forEach(vendorId -> {
+                    session.removeAttribute("shippingCost_" + vendorId);
+                    session.removeAttribute("shippingOption_" + vendorId);
+                });
+
+        cart.stream()
+                .map(CartItem::getVendorUuid)
+                .filter(vendorUuid -> vendorUuid != null && !vendorUuid.isBlank())
+                .distinct()
+                .forEach(vendorUuid -> {
+                    session.removeAttribute("shippingCost_" + vendorUuid);
+                    session.removeAttribute("shippingOption_" + vendorUuid);
+                });
     }
 
 }

@@ -19,6 +19,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotEmpty;
@@ -42,6 +43,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
  */
 @Entity
 @EntityListeners(AuditingEntityListener.class)
+@Table(name = "shipping_carrier_rate")
 public class CarrierRate {
 
     @Id
@@ -88,6 +90,16 @@ public class CarrierRate {
     private BigDecimal basePrice = BigDecimal.ZERO;
 
     @Column(nullable = false)
+    @DecimalMin(value = "0.01", inclusive = true, message = "Base weight must be greater than 0")
+    @Digits(integer = 10, fraction = 2, message = "Base weight format is invalid")
+    private BigDecimal baseWeight = BigDecimal.ONE;
+
+    @Column(nullable = false)
+    @DecimalMin(value = "0.01", inclusive = true, message = "Additional weight unit must be greater than 0")
+    @Digits(integer = 10, fraction = 2, message = "Additional weight unit format is invalid")
+    private BigDecimal additionalWeightUnit = BigDecimal.ONE;
+
+    @Column(nullable = false)
     @DecimalMin(value = "0.0", inclusive = true, message = "Per Kg must be 0 or more")
     @Digits(integer = 10, fraction = 2, message = "Per Kg format is invalid")
     private BigDecimal perKg = BigDecimal.ZERO;
@@ -101,6 +113,9 @@ public class CarrierRate {
     @Digits(integer = 10, fraction = 2, message = "COD Fee format is invalid")
     private BigDecimal codFee = BigDecimal.ZERO;
 
+    @Column(nullable = false)
+    private boolean codAvailable = true;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @NotNull(message = "Delivery speed is required")
@@ -110,6 +125,14 @@ public class CarrierRate {
     @Column(nullable = false)
     @NotNull(message = "Delivery type is required")
     private DeliveryType deliveryType = DeliveryType.HOME_DELIVERY; // HOME_DELIVERY / OFFICE_PICKUP
+
+    @Column(nullable = false)
+    @NotNull(message = "Estimated minimum day is required")
+    private Integer estimatedMinDays = 3;
+
+    @Column(nullable = false)
+    @NotNull(message = "Estimated maximum day is required")
+    private Integer estimatedMaxDays = 5;
 
     /// Audit ///
     @CreatedBy
@@ -188,12 +211,36 @@ public class CarrierRate {
         this.perKg = perKg;
     }
 
+    public BigDecimal getBaseWeight() {
+        return baseWeight;
+    }
+
+    public void setBaseWeight(BigDecimal baseWeight) {
+        this.baseWeight = baseWeight;
+    }
+
+    public BigDecimal getAdditionalWeightUnit() {
+        return additionalWeightUnit;
+    }
+
+    public void setAdditionalWeightUnit(BigDecimal additionalWeightUnit) {
+        this.additionalWeightUnit = additionalWeightUnit;
+    }
+
     public BigDecimal getCodFee() {
         return codFee;
     }
 
     public void setCodFee(BigDecimal codFee) {
         this.codFee = codFee;
+    }
+
+    public boolean isCodAvailable() {
+        return codAvailable;
+    }
+
+    public void setCodAvailable(boolean codAvailable) {
+        this.codAvailable = codAvailable;
     }
 
     public DeliverySpeed getSpeed() {
@@ -210,6 +257,22 @@ public class CarrierRate {
 
     public void setDeliveryType(DeliveryType deliveryType) {
         this.deliveryType = deliveryType;
+    }
+
+    public Integer getEstimatedMinDays() {
+        return estimatedMinDays;
+    }
+
+    public void setEstimatedMinDays(Integer estimatedMinDays) {
+        this.estimatedMinDays = estimatedMinDays;
+    }
+
+    public Integer getEstimatedMaxDays() {
+        return estimatedMaxDays;
+    }
+
+    public void setEstimatedMaxDays(Integer estimatedMaxDays) {
+        this.estimatedMaxDays = estimatedMaxDays;
     }
 
     public String getCreatedBy() {

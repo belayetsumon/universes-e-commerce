@@ -9,5 +9,5 @@ package com.ecommerce.app.order.model;
  * @author libertyerp_local
  */
 public enum PaymentStatus {
-    Paid, Partial, Remaining
+    Paid, Partial, Remaining, Failed, Cancelled, Refunded
 }

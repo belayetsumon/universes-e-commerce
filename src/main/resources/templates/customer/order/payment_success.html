@@ -1,27 +1,118 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-customar-page">
-    <div layout:fragment = "main_content">
-        <div> <h4> Order <small>Home>Order Payment</small></h4>
-        </div>
+    <div layout:fragment="main_content">
+        <div><h4>Order <small>Home&gt;Order Payment</small></h4></div>
         <hr/>
         <div class="row">
             <div class="col-sm-12">
-
                 <div class="card">
                     <div class="card-header bgMaroon text-white">
-                        <div class="row">  <div class="col-sm-5 font-weight-bold "><i class="fas fa-list"></i> Payment</div>
+                        <div class="row">
+                            <div class="col-sm-5 font-weight-bold"><i class="fas fa-list"></i> Payment</div>
                         </div>
                     </div>
                     <div class="card-body">
-              <h1>Your Payment is successfully complete. Start Exam</h1>
-                    </div><!--  Card body end-->
-                </div><!--  Card  end-->
-            </div><!--  Main Content  end-->
+                        <div th:if="${successMessage}" class="alert alert-success">
+                            <span th:text="${successMessage}"></span>
+                        </div>
+
+                        <h1 class="h4">Payment recorded successfully.</h1>
+
+                        <p th:if="${orderinfo != null}">
+                            Order <strong th:text="${orderinfo.orderCode}">Order Code</strong>
+                            is currently
+                            <strong th:text="${orderinfo.status}">Status</strong>.
+                        </p>
+
+                        <div class="alert alert-success" th:if="${paymentSummary != null and paymentSummary.fullyPaid}">
+                            Remaining balance is cleared. This order is fully paid.
+                        </div>
+
+                        <div class="alert alert-info" th:if="${paymentSummary != null and !paymentSummary.fullyPaid}">
+                            <span th:if="${paymentSummary.advancePaymentPending}">
+                                Advance payment received. Remaining advance due:
+                                <strong th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.remainingAdvanceDue, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</strong>
+                            </span>
+                            <span th:if="${!paymentSummary.advancePaymentPending and paymentSummary.codCollectionPending}">
+                                Advance payment completed. Remaining COD due:
+                                <strong th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.remainingCodDue, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</strong>
+                            </span>
+                            <span th:if="${!paymentSummary.advancePaymentPending and !paymentSummary.codCollectionPending}">
+                                Partial payment received. Remaining due:
+                                <strong th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.remainingAmount, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</strong>
+                            </span>
+                        </div>
+
+                        <div class="row mb-4" th:if="${paymentSummary != null}">
+                            <div class="col-md-4 mb-3">
+                                <div class="border rounded p-3 h-100">
+                                    <div class="small text-muted">Grand Total</div>
+                                    <div class="fw-bold"
+                                         th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.orderTotal, 0, 'COMMA', 2, 'POINT')}">
+                                        BDT 0.00
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="border rounded p-3 h-100">
+                                    <div class="small text-muted">Total Paid</div>
+                                    <div class="fw-bold text-success"
+                                         th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.totalPaid, 0, 'COMMA', 2, 'POINT')}">
+                                        BDT 0.00
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="border rounded p-3 h-100">
+                                    <div class="small text-muted">Remaining Due</div>
+                                    <div class="fw-bold text-danger"
+                                         th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.remainingAmount, 0, 'COMMA', 2, 'POINT')}">
+                                        BDT 0.00
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info" th:if="${orderinfo != null and orderinfo.status.name() == 'COMPLETED'}">
+                            Virtual items were completed automatically after full payment.
+                        </div>
+
+                        <div class="alert alert-info" th:if="${orderinfo != null and orderinfo.status.name() != 'COMPLETED' and paymentSummary != null and paymentSummary.fullyPaid}">
+                            Any virtual items in this order were delivered immediately. Physical items will continue through the normal fulfillment flow.
+                        </div>
+
+                        <div class="card mt-4" th:if="${orderitem != null and !#lists.isEmpty(orderitem)}">
+                            <div class="card-header">
+                                Digital Delivery
+                            </div>
+                            <div class="card-body">
+                                <div th:each="item : ${orderitem}"
+                                     th:if="${item.digitalAccessUrl != null or item.digitalLicenseCode != null or item.digitalDeliveryNote != null}"
+                                     class="mb-4">
+                                    <h5 th:text="${item.title}">Product</h5>
+                                    <p class="mb-1">
+                                        Delivery Status:
+                                        <strong th:text="${item.digitalDelivered} ? 'Delivered' : 'Pending'"></strong>
+                                        <span th:if="${item.digitalDeliveredAt != null}"
+                                              th:text="' on ' + ${item.digitalDeliveredAt}"></span>
+                                    </p>
+                                    <p th:if="${item.digitalAccessUrl != null}">
+                                        Access URL:
+                                        <a th:href="${item.digitalAccessUrl}" th:text="${item.digitalAccessUrl}" target="_blank" rel="noopener noreferrer"></a>
+                                    </p>
+                                    <p th:if="${item.digitalLicenseCode != null}">
+                                        License Code:
+                                        <strong th:text="${item.digitalLicenseCode}"></strong>
+                                    </p>
+                                    <p th:if="${item.digitalDeliveryNote != null}" th:text="${item.digitalDeliveryNote}"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <a class="btn btn-primary mt-3" th:href="@{/customerorder/details/{oid}(oid=${orderinfo.id})}">View Order Details</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>   <!--  Layout end-->
+</div>

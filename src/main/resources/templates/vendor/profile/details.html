@@ -1,100 +1,508 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
-    <div layout:fragment = "main_content">
-        <section class=" d-none d-sm-block">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="font-weight-bold"><i class="bi bi-list-task"></i> Vendor Profile </h5>
-                </div>
-                <div class="card-body">
+    <th:block layout:fragment="page_css">
+        <style>
+            .vendor-profile-page {
+                --vp-surface: #ffffff;
+                --vp-border: rgba(15, 23, 42, 0.08);
+                --vp-text-soft: #667085;
+                --vp-text-strong: #101828;
+                --vp-accent: #0f4c81;
+                --vp-accent-soft: #eaf3fb;
+                --vp-success-soft: #e8f7ef;
+                --vp-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+            }
+
+            .vendor-profile-page .profile-shell {
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .vendor-profile-page .profile-hero {
+                position: relative;
+                overflow: hidden;
+                border: 0;
+                border-radius: 1.5rem;
+                background:
+                    radial-gradient(circle at top right, rgba(255, 255, 255, 0.18), transparent 28%),
+                    linear-gradient(135deg, #0f4c81 0%, #163a5f 52%, #1f2937 100%);
+                color: #fff;
+                box-shadow: var(--vp-shadow);
+            }
+
+            .vendor-profile-page .profile-hero::after {
+                content: "";
+                position: absolute;
+                inset: auto -4rem -4rem auto;
+                width: 15rem;
+                height: 15rem;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.08);
+            }
+
+            .vendor-profile-page .profile-hero .card-body {
+                position: relative;
+                z-index: 1;
+                padding: 2rem;
+            }
+
+            .vendor-profile-page .profile-label {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+                padding: 0.45rem 0.8rem;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.14);
+                font-size: 0.82rem;
+                font-weight: 600;
+                letter-spacing: 0.03em;
+                text-transform: uppercase;
+            }
+
+            .vendor-profile-page .profile-title {
+                font-size: clamp(1.8rem, 2vw, 2.55rem);
+                font-weight: 700;
+                letter-spacing: -0.03em;
+                margin-bottom: 0.6rem;
+            }
+
+            .vendor-profile-page .profile-subtitle {
+                max-width: 44rem;
+                color: rgba(255, 255, 255, 0.8);
+                font-size: 1rem;
+                margin-bottom: 0;
+            }
+
+            .vendor-profile-page .profile-actions .btn {
+                min-width: 11rem;
+                border-radius: 0.9rem;
+                font-weight: 600;
+            }
+
+            .vendor-profile-page .profile-actions .btn-light {
+                color: #163a5f;
+            }
+
+            .vendor-profile-page .stats-card,
+            .vendor-profile-page .section-card,
+            .vendor-profile-page .logo-card {
+                border: 1px solid var(--vp-border);
+                border-radius: 1.25rem;
+                background: var(--vp-surface);
+                box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+            }
+
+            .vendor-profile-page .stats-card .card-body,
+            .vendor-profile-page .section-card .card-body,
+            .vendor-profile-page .logo-card .card-body {
+                padding: 1.5rem;
+            }
+
+            .vendor-profile-page .metric-tile {
+                height: 100%;
+                padding: 1.1rem 1.15rem;
+                border: 1px solid rgba(15, 23, 42, 0.06);
+                border-radius: 1rem;
+                background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            }
+
+            .vendor-profile-page .metric-label {
+                font-size: 0.78rem;
+                color: var(--vp-text-soft);
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                margin-bottom: 0.45rem;
+                font-weight: 700;
+            }
+
+            .vendor-profile-page .metric-value {
+                color: var(--vp-text-strong);
+                font-size: 1.05rem;
+                font-weight: 700;
+                margin-bottom: 0;
+                word-break: break-word;
+            }
+
+            .vendor-profile-page .section-title {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .vendor-profile-page .section-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 2.6rem;
+                height: 2.6rem;
+                border-radius: 0.9rem;
+                background: var(--vp-accent-soft);
+                color: var(--vp-accent);
+                font-size: 1.1rem;
+            }
+
+            .vendor-profile-page .section-heading {
+                font-size: 1.05rem;
+                font-weight: 700;
+                color: var(--vp-text-strong);
+                margin-bottom: 0.1rem;
+            }
+
+            .vendor-profile-page .section-copy {
+                color: var(--vp-text-soft);
+                font-size: 0.92rem;
+                margin-bottom: 0;
+            }
+
+            .vendor-profile-page .info-grid {
+                display: grid;
+                gap: 1rem;
+            }
+
+            .vendor-profile-page .info-row {
+                display: grid;
+                grid-template-columns: minmax(0, 12rem) minmax(0, 1fr);
+                gap: 1rem;
+                padding-bottom: 0.9rem;
+                border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+            }
+
+            .vendor-profile-page .info-row:last-child {
+                border-bottom: 0;
+                padding-bottom: 0;
+            }
+
+            .vendor-profile-page .info-key {
+                color: var(--vp-text-soft);
+                font-size: 0.87rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+            }
+
+            .vendor-profile-page .info-value {
+                color: var(--vp-text-strong);
+                font-weight: 600;
+                word-break: break-word;
+            }
+
+            .vendor-profile-page .info-value--muted {
+                color: var(--vp-text-soft);
+                font-weight: 500;
+            }
+
+            .vendor-profile-page .description-box {
+                padding: 1.1rem 1.15rem;
+                border-radius: 1rem;
+                background: #f8fafc;
+                border: 1px solid rgba(15, 23, 42, 0.06);
+                color: #344054;
+                line-height: 1.7;
+                white-space: pre-line;
+            }
+
+            .vendor-profile-page .status-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                padding: 0.55rem 0.8rem;
+                border-radius: 999px;
+                background: var(--vp-success-soft);
+                color: #067647;
+                font-weight: 700;
+                font-size: 0.9rem;
+            }
+
+            .vendor-profile-page .logo-panel {
+                min-height: 20rem;
+                border: 1px dashed rgba(15, 23, 42, 0.12);
+                border-radius: 1rem;
+                background:
+                    linear-gradient(180deg, rgba(248, 250, 252, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 1.25rem;
+            }
+
+            .vendor-profile-page .logo-panel img {
+                max-width: 100%;
+                max-height: 16rem;
+                object-fit: contain;
+            }
+
+            .vendor-profile-page .empty-logo {
+                text-align: center;
+                color: var(--vp-text-soft);
+            }
+
+            .vendor-profile-page .empty-logo i {
+                font-size: 2rem;
+                color: #98a2b3;
+            }
+
+            .vendor-profile-page .audit-list {
+                display: grid;
+                gap: 1rem;
+            }
+
+            .vendor-profile-page .audit-item {
+                padding: 1rem 1.05rem;
+                border-radius: 1rem;
+                background: #f8fafc;
+                border: 1px solid rgba(15, 23, 42, 0.06);
+            }
+
+            .vendor-profile-page .audit-item-label {
+                font-size: 0.78rem;
+                color: var(--vp-text-soft);
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                font-weight: 700;
+                margin-bottom: 0.4rem;
+            }
+
+            .vendor-profile-page .audit-item-value {
+                color: var(--vp-text-strong);
+                font-weight: 600;
+                margin-bottom: 0;
+            }
+
+            .vendor-profile-page .breadcrumb-wrap {
+                color: #d6e4f0;
+                font-size: 0.9rem;
+            }
+
+            .vendor-profile-page .breadcrumb-wrap a {
+                color: #ffffff;
+                text-decoration: none;
+            }
+
+            @media (max-width: 991.98px) {
+                .vendor-profile-page .profile-hero .card-body {
+                    padding: 1.5rem;
+                }
+
+                .vendor-profile-page .info-row {
+                    grid-template-columns: 1fr;
+                    gap: 0.35rem;
+                }
+            }
+        </style>
+    </th:block>
+
+    <div layout:fragment="main_content">
+        <section class="vendor-profile-page">
+            <div class="profile-shell">
+                <div class="card profile-hero">
                     <div class="card-body">
+                        <div class="d-flex flex-column flex-xl-row justify-content-between gap-4">
+                            <div>
+                                <div class="profile-label mb-3">
+                                    <i class="bi bi-building-check"></i>
+                                    Vendor Profile
+                                </div>
+                                <div class="breadcrumb-wrap mb-3">
+                                    <a th:href="@{/vendor/home}">Dashboard</a>
+                                    <span class="mx-2">/</span>
+                                    <span>Vendor Profile</span>
+                                </div>
+                                <h1 class="profile-title" th:text="${vendorprofile.companyName != null and !#strings.isEmpty(vendorprofile.companyName) ? vendorprofile.companyName : 'Vendor Account'}">Vendor Account</h1>
+                                <p class="profile-subtitle">
+                                    Centralize your company identity, vendor contact information, audit trail, and brand assets in one executive-ready vendor profile view.
+                                </p>
+                            </div>
 
+                            <div class="profile-actions d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2">
+                                <a class="btn btn-light" th:href="@{/vendorprofile/edit}">
+                                    <i class="bi bi-pencil-square me-2"></i>Edit Profile
+                                </a>
+                                <a class="btn btn-outline-light" th:href="@{/vendorlogo/index}">
+                                    <i class="bi bi-image me-2"></i>Manage Logo
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                        <table class="table">
-                            <tr>
-                                <td>Edit</td>
-                                <td><a th:href="@{/vendorprofile/edit}"> Edit</a></td>
-                            </tr>
-                            <tr>
-                                <td>Vendor Code</td>
-                                <td>[[${vendorprofile.vendorCode}]]</td>
-                            </tr>
-                            <tr>
-                                <td>First Name</td>
-                                <td>[[${vendorprofile.firstName}]]</td>
-                            </tr>
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <div class="metric-tile">
+                                    <div class="metric-label">Vendor Code</div>
+                                    <p class="metric-value" th:text="${vendorprofile.vendorCode != null and !#strings.isEmpty(vendorprofile.vendorCode) ? vendorprofile.vendorCode : 'Not assigned'}">VEN-XX-YYYY-NNNN</p>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <div class="metric-tile">
+                                    <div class="metric-label">Primary Contact</div>
+                                    <p class="metric-value" th:text="${vendorprofile.firstName != null and !#strings.isEmpty(vendorprofile.firstName) ? vendorprofile.firstName + (vendorprofile.lastName != null and !#strings.isEmpty(vendorprofile.lastName) ? ' ' + vendorprofile.lastName : '') : 'Not set'}">Primary Contact</p>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <div class="metric-tile">
+                                    <div class="metric-label">Designation</div>
+                                    <p class="metric-value" th:text="${vendorprofile.designation != null and !#strings.isEmpty(vendorprofile.designation) ? vendorprofile.designation : 'Not set'}">Designation</p>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <div class="metric-tile">
+                                    <div class="metric-label">Status</div>
+                                    <div class="status-badge">
+                                        <i class="bi bi-patch-check-fill"></i>
+                                        <span th:text="${vendorprofile.vendorStatusEnum != null ? vendorprofile.vendorStatusEnum : 'Pending'}">Active</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <tr>
-                                <td>Last Name</td>
-                                <td>[[${vendorprofile.lastName}]]</td>
-                            </tr>
+                <div class="row g-4">
+                    <div class="col-12 col-xl-8">
+                        <div class="card section-card h-100">
+                            <div class="card-body">
+                                <div class="section-title">
+                                    <div class="section-icon">
+                                        <i class="bi bi-person-vcard"></i>
+                                    </div>
+                                    <div>
+                                        <h2 class="section-heading">Business Identity</h2>
+                                        <p class="section-copy">Core vendor identity, contact records, and storefront details.</p>
+                                    </div>
+                                </div>
 
-                            <tr>
-                                <td>Designation</td>
-                                <td>[[${vendorprofile.designation}]]</td>
-                            </tr>
+                                <div class="info-grid">
+                                    <div class="info-row">
+                                        <div class="info-key">Company Name</div>
+                                        <div class="info-value" th:text="${vendorprofile.companyName != null and !#strings.isEmpty(vendorprofile.companyName) ? vendorprofile.companyName : 'Not provided'}">Company Name</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-key">First Name</div>
+                                        <div class="info-value" th:text="${vendorprofile.firstName != null and !#strings.isEmpty(vendorprofile.firstName) ? vendorprofile.firstName : 'Not provided'}">First Name</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-key">Last Name</div>
+                                        <div class="info-value" th:text="${vendorprofile.lastName != null and !#strings.isEmpty(vendorprofile.lastName) ? vendorprofile.lastName : 'Not provided'}">Last Name</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-key">Designation</div>
+                                        <div class="info-value" th:text="${vendorprofile.designation != null and !#strings.isEmpty(vendorprofile.designation) ? vendorprofile.designation : 'Not provided'}">Designation</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-key">Phone / Mobile</div>
+                                        <div class="info-value" th:text="${vendorprofile.phone != null and !#strings.isEmpty(vendorprofile.phone) ? vendorprofile.phone : 'Not provided'}">Phone</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-key">Email Address</div>
+                                        <div class="info-value" th:text="${vendorprofile.email != null and !#strings.isEmpty(vendorprofile.email) ? vendorprofile.email : 'Not provided'}">Email</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-key">Business Address</div>
+                                        <div class="info-value" th:text="${vendorprofile.address != null and !#strings.isEmpty(vendorprofile.address) ? vendorprofile.address : 'Not provided'}">Address</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                            <tr>
-                                <td>Company Name</td>
-                                <td>[[${vendorprofile.companyName}]]</td>
-                            </tr>
+                    <div class="col-12 col-xl-4">
+                        <div class="card logo-card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <div class="section-title">
+                                    <div class="section-icon">
+                                        <i class="bi bi-image"></i>
+                                    </div>
+                                    <div>
+                                        <h2 class="section-heading">Brand Asset</h2>
+                                        <p class="section-copy">Vendor logo preview for storefront and operational pages.</p>
+                                    </div>
+                                </div>
 
-                            <tr>
-                                <td>Phone/Mobile</td>
-                                <td>[[${vendorprofile.phone}]]</td>
-                            </tr>
+                                <div class="logo-panel flex-grow-1 mb-3">
+                                    <img th:if="${vendorprofile.vendorLogo != null and !#strings.isEmpty(vendorprofile.vendorLogo)}"
+                                         th:src="@{/files/}+${vendorprofile.vendorLogo}"
+                                         alt="Vendor logo" />
 
-                            <tr>
-                                <td>Email</td>
-                                <td>[[${vendorprofile.email}]]</td>
-                            </tr>
+                                    <div th:if="${vendorprofile.vendorLogo == null or #strings.isEmpty(vendorprofile.vendorLogo)}" class="empty-logo">
+                                        <i class="bi bi-card-image d-block mb-2"></i>
+                                        <div class="fw-semibold mb-1">No logo uploaded yet</div>
+                                        <div class="small">Add a brand mark to strengthen trust across customer-facing screens.</div>
+                                    </div>
+                                </div>
 
-                            <tr>
-                                <td>Address</td>
-                                <td>[[${vendorprofile.address}]]</td>
-                            </tr>
+                                <div class="d-grid gap-2">
+                                    <a class="btn btn-primary" th:href="@{/vendorlogo/index}">
+                                        <i class="bi bi-cloud-upload me-2"></i>Upload or Change Logo
+                                    </a>
+                                    <a class="btn btn-outline-secondary" th:href="@{/vendorprofile/edit}">
+                                        <i class="bi bi-sliders me-2"></i>Update Profile Data
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                            <tr>
-                                <td>Description</td>
-                                <td>[[${vendorprofile.description}]]</td>
-                            </tr>
+                    <div class="col-12 col-xl-8">
+                        <div class="card section-card h-100">
+                            <div class="card-body">
+                                <div class="section-title">
+                                    <div class="section-icon">
+                                        <i class="bi bi-card-text"></i>
+                                    </div>
+                                    <div>
+                                        <h2 class="section-heading">Company Overview</h2>
+                                        <p class="section-copy">Internal profile narrative used to understand the vendor's brand and operational focus.</p>
+                                    </div>
+                                </div>
 
-                            <tr>
-                                <td>Status</td>
-                                <td>[[${vendorprofile.vendorStatusEnum}]]</td>
-                            </tr>
+                                <div class="description-box"
+                                     th:text="${vendorprofile.description != null and !#strings.isEmpty(vendorprofile.description) ? vendorprofile.description : 'No company description has been added yet.'}">
+                                    No company description has been added yet.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                            <tr>
-                                <td>createdBy</td>
-                                <td>[[${vendorprofile.createdBy}]]</td>
-                            </tr>
+                    <div class="col-12 col-xl-4">
+                        <div class="card section-card h-100">
+                            <div class="card-body">
+                                <div class="section-title">
+                                    <div class="section-icon">
+                                        <i class="bi bi-clock-history"></i>
+                                    </div>
+                                    <div>
+                                        <h2 class="section-heading">Audit Trail</h2>
+                                        <p class="section-copy">Creation and modification metadata for compliance visibility.</p>
+                                    </div>
+                                </div>
 
-                            <tr>
-                                <td>created</td>
-                                <td>[[${vendorprofile.created}]]</td>
-                            </tr>
-
-                            <tr>
-                                <td>modifiedBy</td>
-                                <td>[[${vendorprofile.modifiedBy}]]</td>
-                            </tr>
-
-                            <tr>
-                                <td>modified</td>
-                                <td>[[${vendorprofile.modified}]]</td>
-                            </tr>
-
-                        </table>
+                                <div class="audit-list">
+                                    <div class="audit-item">
+                                        <div class="audit-item-label">Created By</div>
+                                        <p class="audit-item-value" th:text="${vendorprofile.createdBy != null and !#strings.isEmpty(vendorprofile.createdBy) ? vendorprofile.createdBy : 'System'}">System</p>
+                                    </div>
+                                    <div class="audit-item">
+                                        <div class="audit-item-label">Created At</div>
+                                        <p class="audit-item-value" th:text="${vendorprofile.created != null ? vendorprofile.created : 'Not available'}">Created At</p>
+                                    </div>
+                                    <div class="audit-item">
+                                        <div class="audit-item-label">Last Modified By</div>
+                                        <p class="audit-item-value" th:text="${vendorprofile.modifiedBy != null and !#strings.isEmpty(vendorprofile.modifiedBy) ? vendorprofile.modifiedBy : 'Not updated yet'}">Last Modified By</p>
+                                    </div>
+                                    <div class="audit-item">
+                                        <div class="audit-item-label">Last Modified At</div>
+                                        <p class="audit-item-value" th:text="${vendorprofile.modified != null ? vendorprofile.modified : 'Not updated yet'}">Last Modified At</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-
         </section>
-
     </div>
 </div>

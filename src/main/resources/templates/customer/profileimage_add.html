@@ -1,156 +1,96 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-customar-page">
-    <div layout:fragment = "main_content">
-
-        <section class=" d-none d-sm-block">
-            <div class="row">
-                <div class="col-sm-12">
-                    <div class="card">
-                        <div class="card-header bgMaroon text-white">
-                            <div class="row">  <div class="col-sm-5">  <h4> Profile Image</h4></div>
-                                <div class="col-sm-7 "> <a class="btn btn-danger btn-sm float-right" href="#">Close</a></div>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <span th:if="${#strings.isEmpty(customerprofileimage)}" >
-                                <form th:action="@{/customerprofileimage/save}" th:object="${profileImage}" enctype="multipart/form-data" method="post" >
-
-                                    <div class="alert alert-danger alert-dismissible" th:if="${#fields.hasErrors('*')}">
-                                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                                        <h4><i class="icon fa fa-ban"></i> Error </h4>
-                                        <ul th:if="${#fields.hasErrors('*')}">
-                                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
-                                        </ul>
-                                    </div>
-
-                                    <div class="row" th:if="${!#strings.isEmpty(success)}"> 
-                                        <span  class="text-success"th:text="success"> </span>
-                                    </div> 
-
-                                    <div class="form-group">
-                                        <input type="hidden" class="form-control"  th:field="*{id}" />
-                                        <input type="hidden" class="form-control"  th:field="*{userId}" />
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="exampleInputEmail1">Image<span class="text-danger"> </span></label>
-                                        <input type="hidden"  th:value="${profileImage.imageName}">
-                                        <input type="file"  minlength=" 5 "class="form-control col-sm-5" name="pic" aria-describedby="emailHelp" placeholder="Enter your name">
-                                        <span  class="help-block "> Image Size 300px x 300px </span>
-                                    </div>
-                                    <button type="submit" class="btn btn-success">Submit</button>
-                                </form>
-                            </span>
-
-                            <div class="row mt-5">
-                                <span th:if="${#strings.isEmpty(customerprofileimage)}" > Profile Image Is Empty. </span>  
-
-                                <span th:if="${ not #strings.isEmpty(customerprofileimage)}" class="badge bg-green pull-right"> 
-                                    <img  class="img-responsive img-thumbnail" th:src="@{/files/}+${customerprofileimage.imageName}" width="200px"  height="250px"/>
-
-                                    <a  type="button" class="btn btn-danger btn-block" th:href="@{/customerprofileimage/delete/{id}(id=${customerprofileimage.id})}" >Delete</a>
-                                </span>
-
-                            </div>
-
-
+    <div layout:fragment="main_content">
+        <section class="customer-profile-page">
+            <div class="customer-profile-hero card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+                        <div>
+                            <p class="customer-profile-kicker mb-2">Customer account</p>
+                            <h2 class="customer-profile-title mb-2">Profile image</h2>
+                            <p class="text-muted mb-0">
+                                Upload or replace the image used for your customer account.
+                            </p>
                         </div>
 
-                        <div class="card-footer">
-
+                        <div class="customer-profile-actions d-flex flex-wrap gap-2">
+                            <a class="btn btn-outline-secondary" th:href="@{/customer-profile/index}">
+                                <i class="bi bi-person-circle me-1"></i> My Profile
+                            </a>
+                            <a class="btn btn-outline-dark" th:href="@{/customer/}">
+                                <i class="bi bi-grid-1x2 me-1"></i> Dashboard
+                            </a>
                         </div>
                     </div>
+                </div>
+            </div>
 
+            <div class="alert alert-success" th:if="${successMessage != null}" th:text="${successMessage}"></div>
+            <div class="alert alert-danger" th:if="${uploadError != null}" th:text="${uploadError}"></div>
 
-                </div><!--  Main Content  end-->
-            </div>   <!--  Layout end-->
-
-        </section>
-
-
-        <section class=" mobile d-block d-sm-none">
-
-
-            <div th:replace="mobile-top-nav"></div>
-            <div class="row mt-5"> </div>
-            <div class="row mt-3"> </div> 
-            <div th:replace="customer_mobile_top_navigation"></div>
-
-            <div class="row">
-                <div class="col-sm-12">
-
-                    <div class="card">
-                        <div class="card-header bgMaroon text-white">
-                            <div class="row">  <div class="col-5">  <h4> Profile Image</h4></div>
-
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <span th:if="${#strings.isEmpty(customerprofileimage)}" >
-                                <form th:action="@{/customerprofileimage/save}" th:object="${profileImage}" enctype="multipart/form-data" method="post" >
-
-                                    <div class="alert alert-danger alert-dismissible" th:if="${#fields.hasErrors('*')}">
-                                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                                        <h4><i class="icon fa fa-ban"></i> Error </h4>
-                                        <ul th:if="${#fields.hasErrors('*')}">
-                                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
-                                        </ul>
-                                    </div>
-
-                                    <div class="row" th:if="${!#strings.isEmpty(success)}"> 
-                                        <span  class="text-success"th:text="success"> </span>
-                                    </div> 
-
-                                    <div class="form-group">
-                                        <input type="hidden" class="form-control"  th:field="*{id}" />
-                                        <input type="hidden" class="form-control"  th:field="*{userId}" />
-                                    </div>
-
-                                    <div class="form-group">
-
-                                        <input type="hidden"  th:value="${profileImage.imageName}">
-                                        <input type="file"  minlength=" 5 "class="form-control col-sm-5" name="pic" aria-describedby="emailHelp" placeholder="Enter your name">
-                                        <span  class="help-block "> Image Size 300px x 300px </span>
-                                    </div>
-                                    <button type="submit" class="btn btn-success">Submit</button>
-                                </form>
-                            </span>
-
-                            <div class="row mt-5">
-                                <span th:if="${#strings.isEmpty(customerprofileimage)}" > Profile Image Is Empty. </span>  
-
-                                <span th:if="${ not #strings.isEmpty(customerprofileimage)}" class="badge bg-green pull-right"> 
-                                    <img  class="img-responsive img-thumbnail" th:src="@{/files/}+${customerprofileimage.imageName}" width="200px"  height="250px"/>
-
-                                    <a  type="button" class="btn btn-danger btn-block" th:href="@{/customerprofileimage/delete/{id}(id=${customerprofileimage.id})}" >Delete</a>
-                                </span>
-
-                            </div>
-
-
+            <div class="row g-4">
+                <div class="col-12 col-xl-7">
+                    <div class="card customer-panel-card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-0 pt-4 px-4">
+                            <h4 class="mb-1" th:text="${customerprofileimage != null ? 'Replace profile image' : 'Upload profile image'}">Upload profile image</h4>
+                            <p class="text-muted mb-0">Recommended size: square image, at least 300 x 300 pixels.</p>
                         </div>
 
-                        <div class="card-footer">
+                        <div class="card-body px-4 pb-4">
+                            <form th:action="@{/customerprofileimage/save}" th:object="${profileImage}" enctype="multipart/form-data" method="post" class="row g-3">
+                                <input type="hidden" th:field="*{id}">
 
+                                <div class="col-12">
+                                    <label class="form-label" for="profileImageFile">Choose image</label>
+                                    <input id="profileImageFile" type="file" class="form-control" name="pic" accept="image/*">
+                                    <div class="form-text">JPEG, PNG, or another standard image format will work.</div>
+                                </div>
+
+                                <div class="col-12 d-flex flex-wrap gap-2 pt-2">
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="bi bi-cloud-arrow-up me-1"></i>
+                                        <span th:text="${customerprofileimage != null ? 'Update Image' : 'Upload Image'}">Upload Image</span>
+                                    </button>
+                                </div>
+                            </form>
+
+                            <form th:if="${customerprofileimage != null}"
+                                  th:action="@{/customerprofileimage/delete/{id}(id=${customerprofileimage.id})}"
+                                  method="post"
+                                  class="pt-2">
+                                <button type="submit" class="btn btn-outline-danger">
+                                    <i class="bi bi-trash3 me-1"></i> Remove Current Image
+                                </button>
+                            </form>
                         </div>
                     </div>
+                </div>
 
+                <div class="col-12 col-xl-5">
+                    <div class="card customer-panel-card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-0 pt-4 px-4">
+                            <h4 class="mb-1">Current preview</h4>
+                            <p class="text-muted mb-0">This is the image currently saved for your account.</p>
+                        </div>
 
-                </div><!--  Main Content  end-->
-            </div>   <!--  Layout end-->
+                        <div class="card-body px-4 pb-4">
+                            <div th:if="${customerprofileimage != null}" class="customer-profile-image-preview">
+                                <img class="customer-profile-image-preview__img"
+                                     th:src="@{/files/}+${customerprofileimage.imageName}"
+                                     alt="Customer profile image">
+                                <div class="customer-profile-image-meta">
+                                    <span class="customer-profile-summary-label">Saved file</span>
+                                    <strong th:text="${customerprofileimage.imageName}">profile-image.jpg</strong>
+                                </div>
+                            </div>
 
-
-            <section class="mb-5"></section>
-
-            <div th:replace="bottom-nav"> </div>
-
-            <!-- Header  -->
-
-
-
+                            <div th:if="${customerprofileimage == null}" class="customer-password-note">
+                                No profile image has been uploaded yet. Add one to make your account feel complete.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
+    </div>
+</div>

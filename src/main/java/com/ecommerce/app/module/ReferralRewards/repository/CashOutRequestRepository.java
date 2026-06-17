@@ -4,6 +4,7 @@
  */
 package com.ecommerce.app.module.ReferralRewards.repository;
 
+import com.ecommerce.app.module.ReferralRewards.model.CashOutStatus;
 import com.ecommerce.app.module.ReferralRewards.model.CashOutRequest;
 import com.ecommerce.app.module.user.model.Users;
 import java.util.List;
@@ -15,7 +16,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface CashOutRequestRepository extends JpaRepository<CashOutRequest, Long> {
 
-    List<CashOutRequest> findByUser(Users user);
+    List<CashOutRequest> findByUserOrderByRequestedAtDesc(Users user);
 
-    List<CashOutRequest> findByStatus(String status);
+    List<CashOutRequest> findByStatusOrderByRequestedAtDesc(CashOutStatus status);
 }

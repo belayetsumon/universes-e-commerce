@@ -53,6 +53,9 @@ and open the template in the editor.
                                         <th>Delivery Person</th>
                                         <th>Tracking Number</th>
                                         <th>Shipping Cost</th>
+                                        <th>Settlement</th>
+                                        <th>Shipping Owner</th>
+                                        <th>COD Mode</th>
                                         <th>Speed</th>
                                         <th>Delivery Type</th>
                                         <th>Status</th>
@@ -60,6 +63,10 @@ and open the template in the editor.
                                         <th>Total Amount</th>
                                         <th>COD Collected</th>
                                         <th>COD Pending</th>
+                                        <th>Product Net</th>
+                                        <th>Commission</th>
+                                        <th>Vendor Payable</th>
+                                        <th>Marketplace Payable</th>
                                         <!--                                        <th>Created By</th>
                                                                                 <th>Created At</th>
                                                                                 <th>Modified By</th>
@@ -75,6 +82,9 @@ and open the template in the editor.
                                         <td th:text="${s.deliveryPerson != null ? s.deliveryPerson.name : '-'}"></td>
                                         <td th:text="${s.trackingNumber}"></td>
                                         <td th:text="${s.shippingCost}"></td>
+                                        <td th:text="${#strings.replace(s.settlementMode.name(), '_', ' ')}"></td>
+                                        <td th:text="${#strings.replace(s.shippingChargeOwner.name(), '_', ' ')}"></td>
+                                        <td th:text="${#strings.replace(s.codCollectionMode.name(), '_', ' ')}"></td>
                                         <td th:text="${s.speed}"></td>
                                         <td th:text="${s.deliveryType}"></td>
                                         <td th:text="${s.status}"></td>
@@ -82,6 +92,10 @@ and open the template in the editor.
                                         <td th:text="${s.totalOrderAmount}"></td>
                                         <td th:text="${s.codCollected}"></td>
                                         <td th:text="${s.codPending}"></td>
+                                        <td th:text="${s.productNetAmount}"></td>
+                                        <td th:text="${s.marketplaceCommissionAmount}"></td>
+                                        <td th:text="${s.vendorPayableAmount}"></td>
+                                        <td th:text="${s.marketplacePayableAmount}"></td>
                                         <!--                                        <td th:text="${s.packagingRate != null ? s.packagingRate.packagingType + ' - ' + s.packagingRate.basePrice : '-'}"></td>-->
                                         <!--                                        <td th:text="${s.createdBy}"></td>
                                                                                 <td th:text="${#dates.format(s.created, 'yyyy-MM-dd HH:mm')}"></td>

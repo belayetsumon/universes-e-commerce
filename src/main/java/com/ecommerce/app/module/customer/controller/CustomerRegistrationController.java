@@ -8,6 +8,7 @@ import com.ecommerce.app.module.ReferralRewards.model.Referral;
 import com.ecommerce.app.module.ReferralRewards.model.Wallet;
 import com.ecommerce.app.module.ReferralRewards.repository.ReferralRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.WalletRepository;
+import com.ecommerce.app.module.ReferralRewards.services.ReferralService;
 import com.ecommerce.app.module.user.model.Status;
 import com.ecommerce.app.module.user.componant.UserValidator;
 import com.ecommerce.app.module.user.model.Role;
@@ -67,6 +68,9 @@ public class CustomerRegistrationController {
     @Autowired
     WalletRepository walletRepository;
 
+    @Autowired
+    ReferralService referralService;
+
     @RequestMapping("/registration")
     public String index(Model model, Users users) {
 
@@ -114,7 +118,9 @@ public class CustomerRegistrationController {
 //        users.setReferralcode(output);
         usersRepository.save(users);
 
-        Optional<Users> referringUsers = usersRepository.findByEmail(principal.getName());
+        Users referringUser = principal != null
+                ? usersRepository.findByEmail(principal.getName()).orElse(null)
+                : null;
 
 //        if (logduser != null) {
 //            Optional<Referral> referringReferral = referralRepository.findByUsers_Id(logduser);
@@ -123,21 +129,7 @@ public class CustomerRegistrationController {
 //                referringUsers = referringReferral.get().getUsers();
 //            }
 //        }
-        // Create referral code for this user
-        Referral referral = new Referral();
-
-        referral.setReferralCode(usersService.generateRefaraleCode());
-        referral.setUsers(users);
-        referral.setReferredUser(referringUsers.get());
-        referral.setRewardGranted(true);
-
-        referralRepository.save(referral);
-
-        Wallet wallet = new Wallet();
-
-        wallet.setBalance(BigDecimal.ZERO);
-        wallet.setUsers(users);
-        walletRepository.save(wallet);
+        referralService.createReferralProfileAndGrantSignupReward(users, referringUser);
 
         redirectAttributes.addFlashAttribute(
                 "success", "Congratulations! You have successfully registered.");

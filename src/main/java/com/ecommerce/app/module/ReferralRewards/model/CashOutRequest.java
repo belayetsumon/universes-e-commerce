@@ -14,6 +14,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedBy;
@@ -28,6 +30,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
  */
 @Entity
 @EntityListeners(AuditingEntityListener.class)
+@Table(name = "promotions_cash_out_request")
 public class CashOutRequest {
 
     @Id
@@ -38,6 +41,7 @@ public class CashOutRequest {
     private Users user;
 
     private BigDecimal amount;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     CustomerCashOutPaymentMethod paymentMethod;
@@ -66,6 +70,16 @@ public class CashOutRequest {
     private LocalDateTime modified;
 
     public CashOutRequest() {
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (requestedAt == null) {
+            requestedAt = LocalDateTime.now();
+        }
+        if (status == null) {
+            status = CashOutStatus.PENDING;
+        }
     }
 
     public CashOutRequest(Long id, Users user, BigDecimal amount, CustomerCashOutPaymentMethod paymentMethod, CashOutStatus status, LocalDateTime requestedAt, LocalDateTime processedAt, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {

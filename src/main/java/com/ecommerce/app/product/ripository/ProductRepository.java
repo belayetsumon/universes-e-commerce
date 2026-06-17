@@ -8,10 +8,12 @@ package com.ecommerce.app.product.ripository;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.ProductStatusEnum;
-
 import java.util.List;
+import java.util.Optional;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -30,11 +32,17 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByStatusOrderByIdDesc(ProductStatusEnum status);
 
+    List<Product> findByVendorprofile_IdOrderByIdDesc(Long vendorId);
+
+    Optional<Product> findByUuid(String uuid);
+
     @Query("SELECT p FROM Product p WHERE p.status = 'ACTIVE' AND p.productcategory.id IN "
             + "(SELECT c.id FROM Productcategory c WHERE c.parent.id = :categoryId OR c.id = :categoryId)"
             + "ORDER BY p.id DESC")
     List<Product> findActiveProductsByCategoryOrChildren(@Param("categoryId") Long categoryId);
-    
-   
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Product p WHERE p.id = :id")
+    Optional<Product> findByIdForUpdate(@Param("id") Long id);
 
 }

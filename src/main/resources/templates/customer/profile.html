@@ -1,170 +1,250 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-customar-page">
-    <div layout:fragment = "main_content">
-
-
-        <section class=" d-none d-sm-block">
-            <div class="row">
-                <div class="col-sm-12">
-
-
-                    <div class="card">
-                        <div class="card-header bgMaroon ">
-                            <div class="row">  <div class="col-sm-12">  
-
-                                    <h5 class="font-weight-bold text-white"><i class="fas fa-list"></i> Your Profile . <small> Mr.<span th:text="${username}"> </span></small></h5></div>
-
-                            </div>
+    <div layout:fragment="main_content">
+        <section class="customer-profile-page">
+            <div class="customer-profile-hero card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+                        <div>
+                            <p class="customer-profile-kicker mb-2">Customer account</p>
+                            <h2 class="customer-profile-title mb-2">Manage your profile</h2>
+                            <p class="text-muted mb-0">
+                                Update your basic account information here and keep your sign-in password secure.
+                            </p>
                         </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-sm-12">
 
-                                    <div class="card mb-4">
-                                        <div class="card-header">
-                                            <i class="fas fa-cart-plus"></i> : 
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="table-responsive">
-
-                                                <!--                                                <table class="table table-bordered" th:if="${ not #lists.isEmpty(orderlist_panding)}">
-                                                
-                                                                                                    
-                                                
-                                                                                                    <tr>
-                                                                                                        <td>#</td>
-                                                                                                        <td>Order Date</td>
-                                                                                                        <td>Status</td>
-                                                                                                        <td>Payment</td>
-                                                                                                    </tr>
-                                                                                                    <tr th:each="orderlists,status:${orderlist_panding}">
-                                                                                                        <td th:text="${orderlists.id}"></td>
-                                                                                                        <td th:text="${orderlists.created}"></td>
-                                                                                                        <td th:text="${orderlists.status}"></td>
-                                                                                                        <td> <a  type=" button"  class=" btn btn-sm btn-success" th:href="@{/customer-order/payment/{orderid}(orderid=${orderlists.id})}"> Pay Now </a> </td>
-                                                                                                    </tr>
-                                                                                                </table>-->
-                                                <table class="table table-bordered" th:if="${ #lists.isEmpty(orderlist_panding)}">
-                                                    <tr>
-                                                        <td> Sorry no profile information is found ! </td>
-                                                    </tr>
-
-
-                                                </table>
-                                            </div>
-                                        </div>
-                                        <div class="card-footer ">
-
-                                        </div>
-                                    </div>
-
-
-
-                                </div>      </div>
+                        <div class="customer-profile-actions d-flex flex-wrap gap-2">
+                            <a class="btn btn-outline-primary" th:href="@{/customerprofileimage/index}">
+                                <i class="bi bi-image me-1"></i> Profile Image
+                            </a>
+                            <a class="btn btn-outline-secondary" th:href="@{/customer/}">
+                                <i class="bi bi-grid-1x2 me-1"></i> Dashboard
+                            </a>
                         </div>
-                    </div></div></div>
-
-        </section>
-
-
-
-
-        <section class=" mobile d-block d-sm-none">
-            <div class="row">
-
-                <div class="col-12">
-
-                    <div   th:replace="mobile-top-nav">
-                        Left side column. contains the sidebar 
-
-                        Left Side 
-                        =============================================== 
                     </div>
-
-
-                    <div class="row mt-4"> </div> 
-                    <div   th:replace="customer_mobile_top_navigation">
-                        Left side column. contains the sidebar 
-
-                        Left Side 
-                        =============================================== 
-                    </div>
-
-
-
                 </div>
-                <div class="col-12">
+            </div>
 
+            <div class="alert alert-success" th:if="${accountSuccess != null}" th:text="${accountSuccess}"></div>
+            <div class="alert alert-success" th:if="${billingSuccess != null}" th:text="${billingSuccess}"></div>
+            <div class="alert alert-success" th:if="${passwordSuccess != null}" th:text="${passwordSuccess}"></div>
 
-                    <div class="card">
-                        <div class="card-header bgMaroon ">
-                            <div class="row">  <div class="col-sm-12">  
-
-                                    <h5 class="font-weight-bold text-white"><i class="fas fa-list"></i>. <small>Welcome Mr.<span th:text="${username}"> </span></small> Your Profile</h5></div>
-
+            <div class="row g-4">
+                <div class="col-12 col-xl-8">
+                    <div class="d-grid gap-4">
+                        <div class="card customer-panel-card border-0 shadow-sm">
+                            <div class="card-header bg-white border-0 pt-4 px-4">
+                                <h4 class="mb-1">Profile details</h4>
+                                <p class="text-muted mb-0">Edit the core details used for your customer account.</p>
                             </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-sm-12">
 
-                                    <div class="card mb-4">
-                                        <div class="card-header">
-                                            <i class="fas fa-cart-plus"></i> Pending Order List: 
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="table-responsive">
-
-                                                <table class="table table-bordered" th:if="${ not #lists.isEmpty(orderlist_panding)}">
-
-
-
-                                                    <tr>
-                                                        <td>#</td>
-                                                        <td>Order Date</td>
-                                                        <td>Status</td>
-                                                        <td>Payment</td>
-                                                    </tr>
-                                                    <tr th:each="orderlists,status:${orderlist_panding}">
-                                                        <td th:text="${orderlists.id}"></td>
-                                                        <td th:text="${orderlists.created}"></td>
-                                                        <td th:text="${orderlists.status}"></td>
-                                                        <td> <a  type=" button"  class=" btn btn-sm btn-success" th:href="@{/customer-order/payment/{orderid}(orderid=${orderlists.id})}"> Pay Now </a> </td>
-                                                    </tr>
-                                                </table>
-                                                <table class="table table-bordered" th:if="${ #lists.isEmpty(orderlist_panding)}">
-                                                    <tr>
-                                                        <td> Sorry no order pending for payment ! </td>
-                                                    </tr>
-
-
-                                                </table>
-                                            </div>
-                                        </div>
-                                        <div class="card-footer ">
-
-                                        </div>
+                            <div class="card-body px-4 pb-4">
+                                <form th:action="@{/customer-profile/update}" th:object="${accountForm}" method="post" class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="firstName">First name</label>
+                                        <input id="firstName" type="text" class="form-control"
+                                               th:field="*{firstName}" placeholder="First name">
+                                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></div>
                                     </div>
 
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="lastName">Last name</label>
+                                        <input id="lastName" type="text" class="form-control"
+                                               th:field="*{lastName}" placeholder="Last name">
+                                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></div>
+                                    </div>
 
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="emailAddress">Email address</label>
+                                        <input id="emailAddress" type="email" class="form-control"
+                                               th:value="${customerUser.email}" readonly>
+                                        <div class="form-text">Email is your current sign-in identifier and stays read-only here.</div>
+                                    </div>
 
-                                </div>      </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="mobile">Mobile number</label>
+                                        <input id="mobile" type="text" class="form-control"
+                                               th:field="*{mobile}" placeholder="Mobile number">
+                                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('mobile')}" th:errors="*{mobile}"></div>
+                                    </div>
+
+                                    <div class="col-12 d-flex flex-wrap gap-2 pt-2">
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="bi bi-check2-circle me-1"></i> Save Changes
+                                        </button>
+                                        <a class="btn btn-outline-dark" th:href="@{/customerprofileimage/index}">
+                                            <i class="bi bi-camera me-1"></i> Manage Profile Image
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
 
-                    </div></div></div>
+                        <div class="card customer-panel-card border-0 shadow-sm" id="billing-address">
+                            <div class="card-header bg-white border-0 pt-4 px-4">
+                                <h4 class="mb-1">Billing address</h4>
+                                <p class="text-muted mb-0">Keep your checkout details up to date for faster repeat purchases.</p>
+                            </div>
 
+                            <div class="card-body px-4 pb-4">
+                                <form th:action="@{/customer-profile/update-billing}" th:object="${billingAddressForm}" method="post" class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="billingFirstName">First name</label>
+                                        <input id="billingFirstName" type="text" class="form-control" th:field="*{firstName}" placeholder="First name">
+                                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></div>
+                                    </div>
 
-            <section class="mb-5"></section>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="billingLastName">Last name</label>
+                                        <input id="billingLastName" type="text" class="form-control" th:field="*{lastName}" placeholder="Last name">
+                                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></div>
+                                    </div>
 
-            <div th:replace="bottom-nav"> </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="billingEmail">Email address</label>
+                                        <input id="billingEmail" type="email" class="form-control" th:field="*{email}" placeholder="Email address">
+                                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="billingMobile">Mobile number</label>
+                                        <input id="billingMobile" type="text" class="form-control" th:field="*{mobile}" placeholder="Mobile number">
+                                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('mobile')}" th:errors="*{mobile}"></div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="billingCompany">Company</label>
+                                        <input id="billingCompany" type="text" class="form-control" th:field="*{company}" placeholder="Company name">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="billingDistrict">District</label>
+                                        <input id="billingDistrict" type="text" class="form-control" th:field="*{district}" placeholder="District">
+                                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('district')}" th:errors="*{district}"></div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label" for="billingAddressLineOne">Address line one</label>
+                                        <input id="billingAddressLineOne" type="text" class="form-control" th:field="*{addressLineOne}" placeholder="House, road, area">
+                                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('addressLineOne')}" th:errors="*{addressLineOne}"></div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label" for="billingAddressLineTwo">Address line two</label>
+                                        <input id="billingAddressLineTwo" type="text" class="form-control" th:field="*{addressLinetwo}" placeholder="Apartment, landmark, optional">
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="billingCity">City</label>
+                                        <input id="billingCity" type="text" class="form-control" th:field="*{city}" placeholder="City">
+                                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('city')}" th:errors="*{city}"></div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="billingPostCode">Post code</label>
+                                        <input id="billingPostCode" type="text" class="form-control" th:field="*{postCode}" placeholder="Post code">
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="billingCountry">Country</label>
+                                        <input id="billingCountry" type="text" class="form-control" th:field="*{country}" placeholder="Country">
+                                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('country')}" th:errors="*{country}"></div>
+                                    </div>
+
+                                    <div class="col-12 d-flex flex-wrap gap-2 pt-2">
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="bi bi-geo-alt me-1"></i> Save Billing Address
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-xl-4">
+                    <div class="card customer-panel-card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white border-0 pt-4 px-4">
+                            <h4 class="mb-1">Account summary</h4>
+                            <p class="text-muted mb-0">A quick view of your customer account status.</p>
+                        </div>
+
+                        <div class="card-body px-4 pb-4">
+                            <div class="customer-profile-summary-list">
+                                <div class="customer-profile-summary-item">
+                                    <span class="customer-profile-summary-label">Email</span>
+                                    <strong th:text="${customerUser.email}">customer@example.com</strong>
+                                </div>
+                                <div class="customer-profile-summary-item">
+                                    <span class="customer-profile-summary-label">Mobile</span>
+                                    <strong th:text="${customerUser.mobile}">01700000000</strong>
+                                </div>
+                                <div class="customer-profile-summary-item">
+                                    <span class="customer-profile-summary-label">Member since</span>
+                                    <strong th:text="${customerUser.createdOn != null ? #dates.format(customerUser.createdOn, 'dd MMM yyyy') : 'Not captured yet'}">01 Jan 2026</strong>
+                                </div>
+                                <div class="customer-profile-summary-item">
+                                    <span class="customer-profile-summary-label">Last login</span>
+                                    <strong th:text="${customerUser.lastLogin != null ? #dates.format(customerUser.lastLogin, 'dd MMM yyyy hh:mm a') : 'Not captured yet'}">01 Jan 2026 10:30 AM</strong>
+                                </div>
+                                <div class="customer-profile-summary-item">
+                                    <span class="customer-profile-summary-label">Billing address</span>
+                                    <strong th:if="${customerBillingAddress != null}" th:text="${customerBillingAddress.addressLineOne}">Address line one</strong>
+                                    <strong th:if="${customerBillingAddress == null}">Not saved yet</strong>
+                                    <span class="text-muted small" th:if="${customerBillingAddress != null}">
+                                        <span th:text="${customerBillingAddress.city}">City</span>,
+                                        <span th:text="${customerBillingAddress.district}">District</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card customer-panel-card border-0 shadow-sm" id="security">
+                        <div class="card-header bg-white border-0 pt-4 px-4">
+                            <h4 class="mb-1">Change password</h4>
+                            <p class="text-muted mb-0">Confirm your current password before saving a new one.</p>
+                        </div>
+
+                        <div class="card-body px-4 pb-4">
+                            <form th:action="@{/customer-profile/change-password}" th:object="${passwordForm}" method="post" class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label" for="currentPassword">Current password</label>
+                                    <input id="currentPassword" type="password" class="form-control"
+                                           th:field="*{currentPassword}" placeholder="Current password">
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('currentPassword')}" th:errors="*{currentPassword}"></div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label" for="newPassword">New password</label>
+                                    <input id="newPassword" type="password" class="form-control"
+                                           th:field="*{newPassword}" placeholder="New password">
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('newPassword')}" th:errors="*{newPassword}"></div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label" for="confirmPassword">Confirm new password</label>
+                                    <input id="confirmPassword" type="password" class="form-control"
+                                           th:field="*{confirmPassword}" placeholder="Confirm new password">
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="customer-password-note">
+                                        Use at least 6 characters and avoid reusing your current password.
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-dark w-100">
+                                        <i class="bi bi-shield-lock me-1"></i> Update Password
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
-
-
-
     </div>
 </div>

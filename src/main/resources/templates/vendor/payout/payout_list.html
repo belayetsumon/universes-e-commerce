@@ -58,9 +58,15 @@ and open the template in the editor.
                     </div>
                     <div class="card-body">
 
-                        <div th:if="${not #strings.isEmpty(message)}"
+                        <div th:if="${not #strings.isEmpty(successMessage)}"
                              class="alert alert-success alert-dismissible fade show" role="alert">
-                            <span th:text="${message}"></span>
+                            <span th:text="${successMessage}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+
+                        <div th:if="${not #strings.isEmpty(errorMessage)}"
+                             class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <span th:text="${errorMessage}"></span>
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
 
@@ -81,8 +87,7 @@ and open the template in the editor.
                                         <th>Requested At </th>
                                         <th>Processed At</th>
                                         <th>Paid At</th>
-                                        <th>Edit</th>
-                                        <!--                                        <th>Delete</th>-->
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -108,7 +113,7 @@ and open the template in the editor.
                                         <td th:text="${m.processedAt}"></td>
                                         <td th:text="${m.paidAt}"></td>
                                         <td>
-                                            <a th:href="@{/vendor-payout/edit/{id}(id=${m.id})}" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square me-2 text-black"></i>Edit</a>
+                                            <span class="badge bg-secondary">No edit action</span>
                                         </td>
                                         <!--                                        <td>
                                                                                     <a th:href="@{/vendor-payout/delete/{id}(id=${m.id})}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i>Delete</a>

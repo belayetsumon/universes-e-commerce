@@ -11,7 +11,7 @@ and open the template in the editor.
 
                 <div class="card">
                     <div class="card-header">
-                        <div class="row">  <div class="col-sm-5 font-weight-bold"><i class="fas fa-list"></i> Order List </div>
+                        <div class="row">  <div class="col-sm-5 font-weight-bold"><i class="fas fa-list"></i> Order List ,Total : [[${orderlist.size()}]]</div>
 
                         </div>
 
@@ -27,6 +27,14 @@ and open the template in the editor.
                             </div>
                         </span>
 
+                        <div th:if="${successMessage}" class="alert alert-success">
+                            <span th:text="${successMessage}"></span>
+                        </div>
+
+                        <div th:if="${errorMessage}" class="alert alert-danger">
+                            <span th:text="${errorMessage}"></span>
+                        </div>
+
                         <div class="table-responsive">
                             <table class="table table-bordered" th:if="${ not #lists.isEmpty(orderlist)}">
                                 <thead class="thead-light">
@@ -39,13 +47,14 @@ and open the template in the editor.
                                         <th scope="col"> Status </th>
                                         <th scope="col"> Discount Amount </th>
                                         <th scope="col"> Vat Amount </th>
-                                        <th scope="col"> Market Place Commission Amount</th>
+                                        <th scope="col"> M.P.C.Amount</th>
                                         <th scope="col"> Vendor Amount </th>
                                         <th scope="col"> Shipping Charge </th>
                                         <th scope="col"> Packaging Costs</th>
                                         <th scope="col"> Grand Total </th>
                                         <th scope="col"> Date Added </th>
                                         <th scope="col"> Date Modified </th>
+                                        <th scope="col"> Action </th>
 
                                     </tr>
                                 </thead>
@@ -61,11 +70,31 @@ and open the template in the editor.
                                         <td th:text="${orderlists.totalVatAmount}">Otto</td>
                                         <td th:text="${orderlists.totalMarketPlaceCommissionAmount}">Otto</td>
                                         <td th:text="${orderlists.totalVendorAmount}">Otto</td>
-                                        <td scope="col">[[${orderlists.shippingChargeAmount}]]</td>
-                                        <td scope="col">[[${orderlists.packagingCost}]]</td>
+                                        <td scope="col">[[${orderlists.deliveryCharge}]]</td>
+                                        <td scope="col">[[${orderlists.packingCharge}]]</td>
                                         <td scope="col">[[${orderlists.grandTotal}]] </td>
                                         <td th:text="${orderlists.created}">Otto</td>
                                         <td th:text="${orderlists.modified}">@mdo</td>
+                                        <td>
+                                            <a class="btn btn-sm btn-outline-primary"
+                                               th:href="@{/customerorder/details/{oid}(oid=${orderlists.orderId})}">
+                                                Details
+                                            </a>
+                                            <a class="btn btn-sm btn-info ms-1"
+                                               th:if="${emiPlanByOrderId != null and #maps.containsKey(emiPlanByOrderId, orderlists.orderId)}"
+                                               th:href="@{/customer-meritten-emi/details/{planId}(planId=${emiPlanByOrderId[orderlists.orderId]})}">
+                                                View Meritten EMI
+                                            </a>
+                                            <a class="btn btn-sm btn-success ms-1"
+                                               th:if="${emiPlanByOrderId == null
+                                                       or !#maps.containsKey(emiPlanByOrderId, orderlists.orderId)
+                                                       or (emiPlanBlocksPaymentByOrderId != null
+                                                           and #maps.containsKey(emiPlanBlocksPaymentByOrderId, orderlists.orderId)
+                                                           and !emiPlanBlocksPaymentByOrderId[orderlists.orderId])}"
+                                               th:href="@{/customerorder/payment/{orderid}(orderid=${orderlists.orderId})}">
+                                                Pay Now
+                                            </a>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>

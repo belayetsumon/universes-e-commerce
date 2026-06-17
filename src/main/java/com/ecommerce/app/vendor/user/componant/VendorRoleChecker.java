@@ -4,7 +4,6 @@
  */
 package com.ecommerce.app.vendor.user.componant;
 
-import com.ecommerce.app.module.user.componant.UserContext;
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import com.ecommerce.app.vendor.user.repository.UserVendorRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +23,16 @@ public class VendorRoleChecker {
     private VendorUserContext vendorUserContext;
 
     public boolean hasVendorRole(Authentication auth, String roleName) {
+        if (auth == null || roleName == null || roleName.isBlank()) {
+            return false;
+        }
+
         String username = auth.getName();
         Vendorprofile activeVendor = vendorUserContext.getActiveVendor();
-        return repo.existsByUsers_EmailAndVendor_IdAndVendorRole_Name(
-                username, activeVendor.getId(), roleName.toUpperCase());
+        if (activeVendor == null) {
+            return false;
+        }
+
+        return repo.hasVendorRole(username, activeVendor.getId(), roleName);
     }
 }

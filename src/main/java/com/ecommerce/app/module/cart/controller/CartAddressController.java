@@ -52,6 +52,9 @@ public class CartAddressController {
             shippingAddress.setCity(billingAddress.getCity());
             shippingAddress.setPostCode(billingAddress.getPostCode());
             session.setAttribute("session_Shipping_address", shippingAddress);
+        } else {
+            // Avoid reusing an old shipping form when billing is edited independently.
+            session.removeAttribute("session_Shipping_address");
         }
 
         return "redirect:/order/create";

@@ -7,9 +7,12 @@ package com.ecommerce.app.module.shipping.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
@@ -28,6 +31,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
  */
 @Entity
 @EntityListeners(AuditingEntityListener.class)
+@Table(name = "shipping_carrier")
 public class Carrier {
 
     @Id
@@ -51,6 +55,34 @@ public class Carrier {
     @Size(max = 2000, message = "Config JSON cannot exceed 2000 characters")
     @Column(columnDefinition = "TEXT")
     private String configJson;
+
+    // 2026-04-22: Carrier mode allows vendor-managed delivery to use the same carrier flow cleanly.
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private CarrierMode mode = CarrierMode.THIRD_PARTY;
+
+    // 2026-04-22: Third-party carriers usually need an API call, but vendor/self delivery does not.
+    @Column(nullable = false)
+    private boolean requiresApi = true;
+
+    @Column(nullable = false)
+    private boolean trackable = true;
+
+    @Column(nullable = false)
+    private boolean supportsCod = true;
+
+    // 2026-04-22: Financial ownership is separate from delivery mode because the same delivery flow can use different payout rules.
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private SettlementMode settlementMode = SettlementMode.MARKETPLACE_MANAGED;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private ShippingChargeOwner shippingChargeOwner = ShippingChargeOwner.MARKETPLACE;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 40)
+    private CodCollectionMode codCollectionMode = CodCollectionMode.CARRIER_COLLECTS_FOR_MARKETPLACE;
 
     private boolean active = true;
 
@@ -135,6 +167,62 @@ public class Carrier {
 
     public void setConfigJson(String configJson) {
         this.configJson = configJson;
+    }
+
+    public CarrierMode getMode() {
+        return mode != null ? mode : CarrierMode.THIRD_PARTY;
+    }
+
+    public void setMode(CarrierMode mode) {
+        this.mode = mode;
+    }
+
+    public boolean isRequiresApi() {
+        return requiresApi;
+    }
+
+    public void setRequiresApi(boolean requiresApi) {
+        this.requiresApi = requiresApi;
+    }
+
+    public boolean isTrackable() {
+        return trackable;
+    }
+
+    public void setTrackable(boolean trackable) {
+        this.trackable = trackable;
+    }
+
+    public boolean isSupportsCod() {
+        return supportsCod;
+    }
+
+    public void setSupportsCod(boolean supportsCod) {
+        this.supportsCod = supportsCod;
+    }
+
+    public SettlementMode getSettlementMode() {
+        return settlementMode != null ? settlementMode : SettlementMode.MARKETPLACE_MANAGED;
+    }
+
+    public void setSettlementMode(SettlementMode settlementMode) {
+        this.settlementMode = settlementMode;
+    }
+
+    public ShippingChargeOwner getShippingChargeOwner() {
+        return shippingChargeOwner != null ? shippingChargeOwner : ShippingChargeOwner.MARKETPLACE;
+    }
+
+    public void setShippingChargeOwner(ShippingChargeOwner shippingChargeOwner) {
+        this.shippingChargeOwner = shippingChargeOwner;
+    }
+
+    public CodCollectionMode getCodCollectionMode() {
+        return codCollectionMode != null ? codCollectionMode : CodCollectionMode.CARRIER_COLLECTS_FOR_MARKETPLACE;
+    }
+
+    public void setCodCollectionMode(CodCollectionMode codCollectionMode) {
+        this.codCollectionMode = codCollectionMode;
     }
 
     public boolean isActive() {

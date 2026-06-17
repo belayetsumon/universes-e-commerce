@@ -15,12 +15,30 @@ and open the template in the editor.
 
                             <div class="col-sm-7 text-end">
                                 <div class="btn-group ">
-                                    <a class="btn btn-success btn-sm float-right"  th:href="@{/customer_payment/payment_method}" > Pay Now</a>
-                                    <!--                                    <a class="btn btn-danger btn-sm float-right"  th:href="@{/customerorder/payment/{oid}(oid=${orderdetails.id})}" > Pay Now</a>-->
+                                    <a class="btn btn-info btn-sm float-right"
+                                       th:if="${emiPlan != null}"
+                                       th:href="@{/customer-meritten-emi/details/{planId}(planId=${emiPlan.id})}">
+                                        View Meritten EMI
+                                    </a>
+                                     <a class="btn btn-success btn-sm float-right"
+                                       th:if="${paymentSummary != null and paymentSummary.customerPaymentAllowed and (emiPlan == null or !emiPlanBlocksDirectPayment)}"
+                                       th:href="@{/customerorder/payment/{oid}(oid=${orderdetails.id})}">
+                                         Pay Now
+                                     </a>
+                                    <span class="btn btn-outline-success btn-sm disabled"
+                                          th:if="${paymentSummary != null and paymentSummary.fullyPaid}">
+                                        Paid
+                                    </span>
                                     <a th:href="@{/customerorder/index}" type="button" class="btn  btn-danger btn-sm"><i class="bi bi-x-circle"></i> Close</a></div>
                             </div>
                         </div>   </div>
                     <div class="card-body">
+                        <div th:if="${errorMessage}" class="alert alert-danger">
+                            <span th:text="${errorMessage}"></span>
+                        </div>
+                        <div th:if="${successMessage}" class="alert alert-success">
+                            <span th:text="${successMessage}"></span>
+                        </div>
                         <div class="row">
                             <div class="col-sm-3">
                                 <div class="card">
@@ -67,15 +85,15 @@ and open the template in the editor.
 
                                                     <label class="my-2" > Update Status </label>
 
-                                                    <form  th:action="@{/customerorder/statuschange}">
+                                                    <form th:if="${customerCanCancelOrder}"
+                                                          th:action="@{/customerorder/statuschange}"
+                                                          method="post">
+                                                        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
                                                         <input type="hidden" name="id" th:value="${orderdetails.id}"  />
                                                         <select id="" class="form-control col-sm-3"  name="status" required>
                                                             <option value=""> Select one</option>
-                                                            <option value="CANCELLED"> Cancelled</option>
-                                                            <!--                                                            <option th:each =" statusTypes : ${statusType}"
-                                                                                                                                th:value="${statusTypes} "
-                                                                                                                                th:text="${statusTypes}"> Select one</option>-->
+                                                            <option th:if="${customerCanCancelOrder}" value="CANCELLED"> Cancelled</option>
                                                         </select>
                                                         <div class="form-group">
                                                             <label class="my-2" >Remark </label>
@@ -87,6 +105,15 @@ and open the template in the editor.
                                                         </div>
 
                                                     </form>
+                                                    <div th:if="${!customerCanCancelOrder}" class="text-muted small">
+                                                        <span th:text="${customerCancellationMessage}">Cancellation is no longer available for this order.</span>
+                                                    </div>
+                                                    <div th:if="${customerCanCancelOrder}" class="text-muted small">
+                                                        <span th:text="${customerCancellationMessage}">You can cancel this order while it is still waiting for final fulfillment confirmation.</span>
+                                                    </div>
+                                                    <div class="alert alert-light border mt-3 mb-0 small">
+                                                        Item returns are handled from the item list below so you can return one product without refunding the whole order.
+                                                    </div>
 
                                                 </td>
 
@@ -102,6 +129,142 @@ and open the template in the editor.
                                     </table>
                                 </div>
 
+                            </div>
+                            <div class="col-sm-12">
+                                <div class="card mt-3 mb-3">
+                                    <div class="card-header textMaroon">
+                                        <i class="fas fa-money-bill-wave"></i> Payment Summary
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-3 mb-3">
+                                                <div class="border rounded p-3 h-100">
+                                                    <div class="small text-muted">Grand Total</div>
+                                                    <div class="fw-bold"
+                                                         th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.orderTotal, 0, 'COMMA', 2, 'POINT')}">
+                                                        BDT 0.00
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <div class="border rounded p-3 h-100">
+                                                    <div class="small text-muted">Total Paid</div>
+                                                    <div class="fw-bold text-success"
+                                                         th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.totalPaid, 0, 'COMMA', 2, 'POINT')}">
+                                                        BDT 0.00
+                                                    </div>
+                                                    <div class="small text-muted mt-2" th:if="${paymentSummary.refundedAmount > 0}">Refunded</div>
+                                                    <div th:if="${paymentSummary.refundedAmount > 0}"
+                                                         th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.refundedAmount, 0, 'COMMA', 2, 'POINT')}">
+                                                        BDT 0.00
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <div class="border rounded p-3 h-100">
+                                                    <div class="small text-muted">Remaining Due</div>
+                                                    <div class="fw-bold text-danger"
+                                                         th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.remainingAmount, 0, 'COMMA', 2, 'POINT')}">
+                                                        BDT 0.00
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <div class="border rounded p-3 h-100">
+                                                    <div class="small text-muted">Payment Status</div>
+                                                    <div class="fw-bold" th:text="${paymentSummary.paymentStatus}">Remaining</div>
+                                                    <div class="small text-muted mt-2">Last Method</div>
+                                                    <div th:text="${paymentSummary.latestPaymentMethod != null ? paymentSummary.latestPaymentMethod.displayName : 'Not paid yet'}">Not paid yet</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-3 mb-3">
+                                                <div class="border rounded p-3 h-100">
+                                                    <div class="small text-muted">Payment Plan</div>
+                                                    <div class="fw-bold" th:text="${paymentSummary.paymentPlan}">FULL_COD</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <div class="border rounded p-3 h-100">
+                                                    <div class="small text-muted">Order Payment State</div>
+                                                    <div class="fw-bold" th:text="${paymentSummary.orderPaymentState}">COD_PENDING</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <div class="border rounded p-3 h-100">
+                                                    <div class="small text-muted">Advance Paid / Target</div>
+                                                    <div class="fw-bold">
+                                                        <span th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.advancePaid, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</span>
+                                                        <span class="text-muted"> / </span>
+                                                        <span th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.advanceTarget, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <div class="border rounded p-3 h-100">
+                                                    <div class="small text-muted">Remaining COD Due</div>
+                                                    <div class="fw-bold text-warning"
+                                                         th:text="'BDT ' + ${#numbers.formatDecimal(paymentSummary.remainingCodDue, 0, 'COMMA', 2, 'POINT')}">
+                                                        BDT 0.00
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="table-responsive" th:if="${payments != null and !#lists.isEmpty(payments)}">
+                                            <table class="table table-bordered mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Method</th>
+                                                        <th>Paid</th>
+                                                        <th>Remaining</th>
+                                                        <th>Status</th>
+                                                        <th>Reference</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr th:each="payment, paymentStatus : ${payments}">
+                                                        <td th:text="${paymentStatus.count}">1</td>
+                                                        <td th:text="${payment.paymentMethod != null ? payment.paymentMethod.displayName : '-'}">Method</td>
+                                                        <td th:text="'BDT ' + ${#numbers.formatDecimal(payment.paidAmount, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</td>
+                                                        <td th:text="'BDT ' + ${#numbers.formatDecimal(payment.remainingAmount, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</td>
+                                                        <td th:text="${payment.paymentStatus}">Status</td>
+                                                        <td th:text="${payment.transactionId}">REF</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div th:if="${payments == null or #lists.isEmpty(payments)}" class="text-muted">
+                                            No payment has been recorded for this order yet.
+                                        </div>
+
+                                        <div class="alert alert-warning mt-3 mb-0" th:if="${emiPlan != null and emiPlan.providerPending}">
+                                            Meritten EMI request pending provider approval for
+                                            <strong th:text="${emiPlan.tenureMonths} + ' months'">3 months</strong>.
+                                            The merchant will receive payment only after the bank or gateway approves the request.
+                                        </div>
+
+                                        <div class="alert alert-info mt-3 mb-0" th:if="${emiPlan != null and emiPlan.providerApproved}">
+                                            Meritten EMI approved by provider:
+                                            <strong th:text="${emiPlan.tenureMonths} + ' months'">3 months</strong>,
+                                            provider-managed balance
+                                            <strong th:text="'BDT ' + ${#numbers.formatDecimal(emiPlan.remainingBalance, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</strong>.
+                                            Future installments will be collected directly by the provider.
+                                        </div>
+
+                                        <div class="alert alert-danger mt-3 mb-0" th:if="${emiPlan != null and emiPlan.providerRejected}">
+                                            Meritten EMI was rejected by the provider. You can continue with another payment method for this order.
+                                        </div>
+
+                                        <div class="alert alert-secondary mt-3 mb-0" th:if="${emiPlan != null and emiPlan.cancelledPlan}">
+                                            The Meritten EMI request was cancelled before provider approval.
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-sm-12">
                                 <div class="card mt-3 mb-3">
@@ -125,6 +288,7 @@ and open the template in the editor.
                                                         <th scope="col">Vat Rate %</th>
                                                         <th scope="col">Vat Amount</th>
                                                         <th scope="col">Item Total</th>
+                                                        <th scope="col">Return Status</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -147,7 +311,54 @@ and open the template in the editor.
                                                         <td th:text="${orderItems.discountAmount}">Otto</td>
                                                         <td th:text="${orderItems.vatRate}">Otto</td>
                                                         <td th:text="${orderItems.vatAmount}">Otto</td>
-                                                        <td th:text="${orderItems.itemTotal}">Otto</td>
+                                                        <td>
+                                                            <span th:text="${orderItems.itemTotal}">Otto</span>
+                                                            <div th:if="${orderItems.digitalAccessUrl != null or orderItems.digitalLicenseCode != null or orderItems.digitalDeliveryNote != null}" class="small text-success mt-1">
+                                                                <div>
+                                                                    Status:
+                                                                    <span th:text="${orderItems.digitalDelivered} ? 'Delivered' : 'Pending delivery'"></span>
+                                                                    <span th:if="${orderItems.digitalDeliveredAt != null}" th:text="' on ' + ${orderItems.digitalDeliveredAt}"></span>
+                                                                </div>
+                                                                <div th:if="${orderItems.digitalAccessUrl != null}">
+                                                                    <a th:href="${orderItems.digitalAccessUrl}" target="_blank" rel="noopener noreferrer">Open digital access</a>
+                                                                </div>
+                                                                <div th:if="${orderItems.digitalLicenseCode != null}">
+                                                                    License: <span th:text="${orderItems.digitalLicenseCode}"></span>
+                                                                </div>
+                                                                <div th:if="${orderItems.digitalDeliveryNote != null}" th:text="${orderItems.digitalDeliveryNote}"></div>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge bg-warning text-dark"
+                                                                  th:if="${orderItems.itemReturnRequested}"
+                                                                  th:text="${orderItems.returnStatusLabel}">Return Requested</span>
+                                                            <span class="badge bg-success"
+                                                                  th:if="${orderItems.itemReturned}"
+                                                                  th:text="${orderItems.returnStatusLabel}">Returned</span>
+                                                            <span class="badge bg-info text-dark"
+                                                                  th:if="${orderItems.itemReturnSelectable}"
+                                                                  th:text="${orderItems.returnStatusLabel}">Not Requested</span>
+                                                            <span class="badge bg-secondary"
+                                                                  th:if="${!orderItems.itemReturnSelectable and !orderItems.itemReturnRequested and !orderItems.itemReturned}"
+                                                                  th:text="${orderItems.virtualItem ? 'Virtual item' : orderItems.returnStatusLabel}">Virtual item</span>
+                                                            <div class="small text-muted mt-2" th:if="${orderItems.returnRequestedAt != null}">
+                                                                Requested: <span th:text="${orderItems.returnRequestedAt}">2026-04-28T00:00</span>
+                                                            </div>
+                                                            <div class="small text-muted mt-1" th:if="${orderItems.returnedAt != null}">
+                                                                Returned: <span th:text="${orderItems.returnedAt}">2026-04-28T00:00</span>
+                                                            </div>
+                                                            <div class="small text-muted mt-1" th:if="${orderItems.returnRequestRemark != null}">
+                                                                Request note: <span th:text="${orderItems.returnRequestRemark}">Changed mind</span>
+                                                            </div>
+                                                            <div class="small text-muted mt-1" th:if="${orderItems.returnProcessedRemark != null}">
+                                                                Process note: <span th:text="${orderItems.returnProcessedRemark}">Approved</span>
+                                                            </div>
+                                                            <div class="small text-success mt-1"
+                                                                 th:if="${orderItems.returnRefundAmount != null and orderItems.returnRefundAmount > 0}">
+                                                                Refunded:
+                                                                <span th:text="'BDT ' + ${#numbers.formatDecimal(orderItems.returnRefundAmount, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</span>
+                                                            </div>
+                                                        </td>
                                                     </tr>
 
                                                     <!-- Totals row -->
@@ -162,23 +373,24 @@ and open the template in the editor.
                                                         <th></th>
                                                         <th th:text="${total_vat}"></th>
                                                         <th th:text="${item_total}"></th>
+                                                        <th></th>
                                                     </tr>
 
                                                     <!-- Packaging / Shipping / Grand Total rows -->
                                                     <tr>
-                                                        <th colspan="8"></th>
+                                                        <th colspan="9"></th>
                                                         <th>Packaging Cost</th>
-                                                        <th></th>
+                                                        <th th:text="${orderdetails.packingCharge}"></th>
                                                     </tr>
                                                     <tr>
-                                                        <th colspan="8"></th>
+                                                        <th colspan="9"></th>
                                                         <th>Shipping Charge</th>
-                                                        <th></th>
+                                                        <th th:text="${orderdetails.deliveryCharge}"></th>
                                                     </tr>
                                                     <tr>
-                                                        <th colspan="8"></th>
+                                                        <th colspan="9"></th>
                                                         <th>Grand Total</th>
-                                                        <th th:text="${item_total}"></th>
+                                                        <th th:text="${orderdetails.grandTotal}"></th>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -197,6 +409,200 @@ and open the template in the editor.
 
                                 </div>
 
+                            </div>
+
+                            <div class="col-sm-12" th:if="${not #lists.isEmpty(orderitem)}">
+                                <div class="card mt-3 mb-3">
+                                    <div class="card-header textMaroon">
+                                        <i class="bi bi-arrow-return-left"></i> Item Returns
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="text-muted mb-4">
+                                            Select only the product line(s) you want to return. This updates the order balance without refunding the whole order.
+                                        </p>
+
+                                        <form th:if="${customerCanRequestReturn}"
+                                              th:action="@{/customerorder/request-item-return}"
+                                              method="post">
+                                            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                            <input type="hidden" name="orderId" th:value="${orderdetails.id}"/>
+
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered align-middle mb-3">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th>Select</th>
+                                                            <th>Product</th>
+                                                            <th>Quantity</th>
+                                                            <th>Line Total</th>
+                                                            <th>Current Return State</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr th:each="orderItems : ${orderitem}">
+                                                            <td>
+                                                                <input class="form-check-input"
+                                                                       type="checkbox"
+                                                                       name="itemIds"
+                                                                       th:if="${orderItems.itemReturnSelectable}"
+                                                                       th:value="${orderItems.id}"/>
+                                                                <span class="small text-muted" th:unless="${orderItems.itemReturnSelectable}">
+                                                                    Not selectable
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <div class="fw-semibold" th:text="${orderItems.title}">Product title</div>
+                                                                <div class="small text-muted" th:if="${orderItems.itemReturnBlockedReason != null}" th:text="${orderItems.itemReturnBlockedReason}">
+                                                                    Blocked reason
+                                                                </div>
+                                                            </td>
+                                                            <td th:text="${orderItems.quantity}">1.00</td>
+                                                            <td th:text="'BDT ' + ${#numbers.formatDecimal(orderItems.itemTotal, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</td>
+                                                            <td>
+                                                                <span class="badge bg-warning text-dark"
+                                                                      th:if="${orderItems.itemReturnRequested}"
+                                                                      th:text="${orderItems.returnStatusLabel}">Return Requested</span>
+                                                                <span class="badge bg-success"
+                                                                      th:if="${orderItems.itemReturned}"
+                                                                      th:text="${orderItems.returnStatusLabel}">Returned</span>
+                                                                <span class="badge bg-info text-dark"
+                                                                      th:if="${orderItems.itemReturnSelectable}"
+                                                                      th:text="${orderItems.returnStatusLabel}">Not Requested</span>
+                                                                <span class="badge bg-secondary"
+                                                                      th:if="${!orderItems.itemReturnSelectable and !orderItems.itemReturnRequested and !orderItems.itemReturned}"
+                                                                      th:text="${orderItems.virtualItem ? 'Virtual item' : orderItems.returnStatusLabel}">Virtual item</span>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Return note</label>
+                                                <textarea class="form-control"
+                                                          name="remark"
+                                                          rows="3"
+                                                          placeholder="Share why you want to return the selected item(s)."></textarea>
+                                            </div>
+
+                                            <div class="d-flex justify-content-end">
+                                                <button type="submit" class="btn btn-warning text-dark">
+                                                    Request selected item return
+                                                </button>
+                                            </div>
+                                        </form>
+
+                                        <div th:unless="${customerCanRequestReturn}" class="alert alert-light border mb-0">
+                                            No new item return request can be submitted right now. Existing return statuses are still shown above for reference.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-12" th:if="${not #lists.isEmpty(orderitem)}">
+                                <div class="card mt-3 mb-3">
+                                    <div class="card-header textMaroon">
+                                        <i class="bi bi-stars"></i> Review Your Purchases
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="text-muted mb-4">
+                                            Your review appears on the public product page as a verified purchase and can be updated later if your experience changes.
+                                        </p>
+
+                                        <div class="row g-4">
+                                            <div class="col-lg-6" th:each="orderItems : ${orderitem}">
+                                                <div class="customer-review-editor h-100">
+                                                    <div class="d-flex align-items-start gap-3 mb-3">
+                                                        <img class="customer-review-thumb"
+                                                             th:if="${not #strings.isEmpty(orderItems.imageName)}"
+                                                             th:src="@{/files/}+${orderItems.imageName}"
+                                                             alt="Product photo"/>
+                                                        <img class="customer-review-thumb"
+                                                             th:if="${#strings.isEmpty(orderItems.imageName)}"
+                                                             th:src="@{/img/image-not-available.png}"
+                                                             alt="Product photo"/>
+
+                                                        <div class="flex-grow-1">
+                                                            <a class="nav-link p-0 fw-semibold"
+                                                               th:href="@{/public/single-product/{prodid}(prodid=${orderItems.productid})}">
+                                                                <span th:text="${orderItems.title}">Product title</span>
+                                                            </a>
+                                                            <div class="small text-muted mt-1">
+                                                                <span th:text="${orderItems.reviewExists} ? 'Your review is already live.' : 'No review submitted yet.'">
+                                                                    No review submitted yet.
+                                                                </span>
+                                                            </div>
+                                                            <div class="mt-2" th:if="${orderItems.reviewExists}">
+                                                                <span class="review-verified-badge">
+                                                                    <i class="bi bi-patch-check-fill"></i>
+                                                                    <span th:text="${orderItems.reviewRating} + '/5 stars'">5/5 stars</span>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <form th:if="${orderItems.reviewEligible}"
+                                                          class="review-form-stack"
+                                                          th:action="@{/customer-product-review/save}"
+                                                          method="post">
+                                                        <input type="hidden" name="source" value="order"/>
+                                                        <input type="hidden" name="orderId" th:value="${orderdetails.id}"/>
+                                                        <input type="hidden" name="productId" th:value="${orderItems.productid}"/>
+
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-semibold d-block">Your rating</label>
+                                                            <div class="star-rating-input">
+                                                                <input type="radio" th:id="'order-' + ${orderItems.productid} + '-rating-5'" name="rating" value="5" th:checked="${orderItems.reviewRating == 5}"/>
+                                                                <label th:for="'order-' + ${orderItems.productid} + '-rating-5'" title="5 stars"><i class="bi bi-star-fill"></i></label>
+                                                                <input type="radio" th:id="'order-' + ${orderItems.productid} + '-rating-4'" name="rating" value="4" th:checked="${orderItems.reviewRating == 4}"/>
+                                                                <label th:for="'order-' + ${orderItems.productid} + '-rating-4'" title="4 stars"><i class="bi bi-star-fill"></i></label>
+                                                                <input type="radio" th:id="'order-' + ${orderItems.productid} + '-rating-3'" name="rating" value="3" th:checked="${orderItems.reviewRating == 3}"/>
+                                                                <label th:for="'order-' + ${orderItems.productid} + '-rating-3'" title="3 stars"><i class="bi bi-star-fill"></i></label>
+                                                                <input type="radio" th:id="'order-' + ${orderItems.productid} + '-rating-2'" name="rating" value="2" th:checked="${orderItems.reviewRating == 2}"/>
+                                                                <label th:for="'order-' + ${orderItems.productid} + '-rating-2'" title="2 stars"><i class="bi bi-star-fill"></i></label>
+                                                                <input type="radio" th:id="'order-' + ${orderItems.productid} + '-rating-1'" name="rating" value="1" th:checked="${orderItems.reviewRating == 1}"/>
+                                                                <label th:for="'order-' + ${orderItems.productid} + '-rating-1'" title="1 star"><i class="bi bi-star-fill"></i></label>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-semibold">Headline</label>
+                                                            <input type="text"
+                                                                   class="form-control"
+                                                                   name="title"
+                                                                   maxlength="140"
+                                                                   placeholder="What should other shoppers know first?"
+                                                                   th:value="${orderItems.reviewTitle}"/>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-semibold">Review</label>
+                                                            <textarea class="form-control"
+                                                                      name="reviewText"
+                                                                      maxlength="2000"
+                                                                      placeholder="Mention quality, value, delivery, packaging, or anything that helped your experience."
+                                                                      th:text="${orderItems.reviewText}"></textarea>
+                                                        </div>
+
+                                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                                            <small class="text-muted" th:if="${orderItems.reviewExists}">
+                                                                Last updated <span th:text="${orderItems.reviewActivityAt}">2026-04-28T00:00</span>
+                                                            </small>
+                                                            <button type="submit" class="btn btn-dark" th:text="${orderItems.reviewSubmitLabel}">Publish review</button>
+                                                        </div>
+                                                    </form>
+
+                                                    <div class="review-editor-lock" th:unless="${orderItems.reviewEligible}">
+                                                        <i class="bi bi-truck me-2"></i>
+                                                        <span th:text="${orderItems.reviewLockedReason}">
+                                                            Reviewing becomes available after this order is delivered or completed.
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="col-sm-6">

@@ -9,7 +9,6 @@ import com.ecommerce.app.module.user.model.Users;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -22,6 +21,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
  */
 @Entity
 @EntityListeners(AuditingEntityListener.class)
+@Table(name = "product_rate")
 public class Rate {
 
     @Id
@@ -29,7 +29,7 @@ public class Rate {
     private Long id;
 
     @NotNull(message = " User cannot be blank.")
-     @ManyToOne(optional = true, fetch = FetchType.LAZY)
+    @ManyToOne(optional = true, fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
     private Users userId;
 
@@ -39,7 +39,7 @@ public class Rate {
 
     private int ratenumber;
 
-    /// Audit /// 
+    /// Audit ///
     @CreatedBy
     @Column(nullable = false, updatable = false)
     private String createdBy;
@@ -134,6 +134,4 @@ public class Rate {
         this.modified = modified;
     }
 
-   
-    
 }

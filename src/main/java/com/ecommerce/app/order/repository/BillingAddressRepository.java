@@ -14,5 +14,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface BillingAddressRepository extends JpaRepository<BillingAddress, Long> {
 
-    Optional<BillingAddress> findByUserId_Id(Long Id);
+    /**
+     * Date: 2026-04-20
+     * Fix NonUniqueResultException:
+     * Some users may have multiple BillingAddress rows, so queries that expect a single result
+     * can fail. This method safely returns the latest record by ID.
+     */
+    Optional<BillingAddress> findFirstByUserId_IdOrderByIdDesc(Long id);
 }

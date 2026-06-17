@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section>
+            <div class="row">
+                <div class="col-sm-3"><h4> Cashback Engine </h4></div>
+                <div class="col-sm-5">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Promotions</li>
+                            <li class="breadcrumb-item active" aria-current="page">Cashback Transactions</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </section>
+        <hr/>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-sm-6 font-weight-bold">
+                        <strong><i class="bi bi-receipt"></i> Cashback Transaction List</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body table-responsive">
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <table id="example" class="table table-bordered table-hover table-striped">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>#</th>
+                            <th>User</th>
+                            <th>Order</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Credited To</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="cb,status:${cashbacks}">
+                            <th th:text="${status.count}">1</th>
+                            <td th:text="${cb.user != null ? cb.user.email : '-'}">user</td>
+                            <td th:text="${cb.orderId}">0</td>
+                            <td th:text="${cb.amount}">0</td>
+                            <td th:text="${cb.status}">PENDING</td>
+                            <td th:text="${cb.creditedTo}">WALLET</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+

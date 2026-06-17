@@ -4,6 +4,7 @@
  */
 package com.ecommerce.app.vendor.user.services;
 
+import com.ecommerce.app.vendor.model.Vendorprofile;
 import com.ecommerce.app.vendor.user.model.VendorRole;
 import com.ecommerce.app.vendor.user.repository.VendorRoleRepository;
 import java.util.List;
@@ -26,6 +27,27 @@ public class VendorRoleService {
 
     public VendorRole findById(Long id) {
         return repository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid ID: " + id));
+    }
+
+    public List<VendorRole> findAllByVendor(Vendorprofile vendor) {
+        return repository.findByVendorOrderByNameAsc(vendor);
+    }
+
+    public VendorRole findByIdAndVendor(Long id, Vendorprofile vendor) {
+        return repository.findByIdAndVendor(id, vendor)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid vendor role ID: " + id));
+    }
+
+    public boolean slugExistsForVendor(Vendorprofile vendor, String slug, Long currentRoleId) {
+        if (slug == null || slug.isBlank()) {
+            return false;
+        }
+
+        if (currentRoleId == null) {
+            return repository.existsByVendorAndSlugIgnoreCase(vendor, slug);
+        }
+
+        return repository.existsByVendorAndSlugIgnoreCaseAndIdNot(vendor, slug, currentRoleId);
     }
 
     public VendorRole save(VendorRole role) {

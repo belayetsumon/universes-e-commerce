@@ -4,7 +4,8 @@
 <p>Available Balance: [[${balance.available}]]</p>
 <p>Total Paid: [[${balance.paid}]]</p>
 
-<form th:action="@{/vendor/balance/request-payout}" method="post">
+<form th:action="@{/vendor-payout/request-payout}" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
     <label>Payment Method:</label>
     <select name="method">
         <option value="BANK">Bank</option>
@@ -13,5 +14,5 @@
     <button type="submit">Request Payout</button>
 </form>
 
-<p th:if="${message}" class="text-success">[[${message}]]</p>
-<p th:if="${error}" class="text-danger">[[${error}]]</p>
+<p th:if="${successMessage}" class="text-success">[[${successMessage}]]</p>
+<p th:if="${errorMessage}" class="text-danger">[[${errorMessage}]]</p>

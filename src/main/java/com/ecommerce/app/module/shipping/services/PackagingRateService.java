@@ -52,6 +52,13 @@ public class PackagingRateService {
         return repository.findByVendorId(vendorId);
     }
 
+    public List<PackagingRate> getByVendorUuid(String vendorUuid) {
+        if (vendorUuid == null || vendorUuid.isBlank()) {
+            return List.of();
+        }
+        return repository.findByVendor_Uuid(vendorUuid);
+    }
+
     public BigDecimal calculatePackaging(Long packagingId, List<CartItem> vendorCart, HttpSession session) {
         if (packagingId == null) {
             return BigDecimal.ZERO;
@@ -83,6 +90,23 @@ public class PackagingRateService {
         }
 
         // Otherwise calculate extra cost
+        BigDecimal extraWeight = weight.subtract(baseLimit);
+        return basePrice.add(additionalPrice.multiply(extraWeight));
+    }
+
+    public BigDecimal calculateRateOneByUuid(String rateUuid, double baseWeightLimit, double totalWeight) {
+        PackagingRate rate = repository.findByUuid(rateUuid)
+                .orElseThrow(() -> new RuntimeException("Packaging Rate not found"));
+
+        BigDecimal basePrice = rate.getBasePrice();
+        BigDecimal additionalPrice = rate.getAdditionalPrice();
+        BigDecimal baseLimit = BigDecimal.valueOf(baseWeightLimit);
+        BigDecimal weight = BigDecimal.valueOf(totalWeight);
+
+        if (weight.compareTo(baseLimit) <= 0) {
+            return basePrice;
+        }
+
         BigDecimal extraWeight = weight.subtract(baseLimit);
         return basePrice.add(additionalPrice.multiply(extraWeight));
     }

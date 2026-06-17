@@ -1,0 +1,282 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="front-layout-inner-page">
+    <div layout:fragment="main_content">
+
+        <section class="breadcrumb_section">
+            <div class="container">
+                <nav aria-label="breadcrumb" class="pt-3 pb-1">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/" class="nav-link"><i class="bi bi-house"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Cart</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+
+        <div class="container mt-5">
+            <h2 class="mb-4">Order Summary</h2>
+
+            <div th:if="${errorMessage}" class="alert alert-danger">
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <div th:if="${successMessage}" class="alert alert-success">
+                <span th:text="${successMessage}"></span>
+            </div>
+
+            <div th:each="entry : ${grouped}" class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0" th:text="${entry.value[0].product.vendorprofile.companyName}">Vendor Name</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Qty</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="item : ${entry.value}">
+                                <td>
+                                    <span th:text="${item.product.title}">Product</span>
+                                    <div th:if="${item.preorder}" class="small text-warning fw-bold">
+                                        Preorder
+                                        <span th:if="${item.preorderAvailableFrom != null}"
+                                              th:text="'(Available from ' + ${item.preorderAvailableFrom} + ')'"></span>
+                                    </div>
+                                </td>
+                                <td th:text="'BDT ' + ${#numbers.formatDecimal(item.product.salesPrice, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</td>
+                                <td th:text="${item.quantity}">Qty</td>
+                                <td class="text-end" th:text="'BDT ' + ${#numbers.formatDecimal(item.itemTotal, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="row justify-content-end">
+                        <div class="col-md-4">
+                            <div class="d-flex justify-content-between border-bottom py-1">
+                                <span>Subtotal:</span>
+                                <span th:text="'BDT ' + ${#numbers.formatDecimal(vendorSubtotals.get(entry.key), 0, 'COMMA', 2, 'POINT')}">BDT 0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between border-bottom py-1">
+                                <span>Shipping:</span>
+                                <span th:text="'BDT ' + ${#numbers.formatDecimal(vendorShippingCost.get(entry.key), 0, 'COMMA', 2, 'POINT')}">BDT 0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between border-bottom py-1">
+                                <span>Packaging:</span>
+                                <span th:text="'BDT ' + ${#numbers.formatDecimal(vendorPackagingCost.get(entry.key), 0, 'COMMA', 2, 'POINT')}">BDT 0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between fw-bold py-2">
+                                <span>Vendor Total:</span>
+                                <span th:text="'BDT ' + ${#numbers.formatDecimal(vendorSubtotals.get(entry.key) + vendorShippingCost.get(entry.key) + vendorPackagingCost.get(entry.key), 0, 'COMMA', 2, 'POINT')}">BDT 0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-light p-4 mb-5">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Grand Total</h3>
+                    <h2 class="text-success mb-0" th:text="'BDT ' + ${#numbers.formatDecimal(grandTotal, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</h2>
+                </div>
+                <hr>
+                <form th:action="@{/order/savebyvendorupdate}" method="post" class="d-grid gap-3">
+                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Payment Plan</h5>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input"
+                                       type="radio"
+                                       name="paymentPlan"
+                                       id="checkoutPlanFullCod"
+                                       value="FULL_COD"
+                                       th:checked="${selectedPaymentPlan == 'FULL_COD'}">
+                                <label class="form-check-label" for="checkoutPlanFullCod">
+                                    Full COD
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input"
+                                       type="radio"
+                                       name="paymentPlan"
+                                       id="checkoutPlanAdvanceCod"
+                                       value="PARTIAL_ADVANCE_COD"
+                                       th:checked="${selectedPaymentPlan == 'PARTIAL_ADVANCE_COD'}">
+                                <label class="form-check-label" for="checkoutPlanAdvanceCod">
+                                    Pay Advance Now, Rest COD
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input"
+                                       type="radio"
+                                       name="paymentPlan"
+                                       id="checkoutPlanFullPrepaid"
+                                       value="FULL_PREPAID"
+                                       th:checked="${selectedPaymentPlan == 'FULL_PREPAID'}">
+                                <label class="form-check-label" for="checkoutPlanFullPrepaid">
+                                    Full Online / Wallet
+                                </label>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input"
+                                       type="radio"
+                                       name="paymentPlan"
+                                       id="checkoutPlanEmi"
+                                       value="EMI"
+                                       th:checked="${selectedPaymentPlan == 'EMI'}"
+                                       th:disabled="${!emiEligible}">
+                                <label class="form-check-label" for="checkoutPlanEmi">
+                                    Meritten EMI
+                                </label>
+                            </div>
+
+                            <div class="mt-4">
+                                <label class="form-label">Method For Amount Paid Now</label>
+                                <div class="form-check">
+                                    <input class="form-check-input"
+                                           type="radio"
+                                           name="paymentMethod"
+                                           id="checkoutPaymentWallet"
+                                           value="WALLET"
+                                           th:checked="${selectedPaymentMethod == 'WALLET'}">
+                                    <label class="form-check-label" for="checkoutPaymentWallet">
+                                        Wallet
+                                    </label>
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input"
+                                           type="radio"
+                                           name="paymentMethod"
+                                           id="checkoutPaymentSslCommerz"
+                                           value="SSLCOMMERZ"
+                                           th:checked="${selectedPaymentMethod == 'SSLCOMMERZ'}">
+                                    <label class="form-check-label" for="checkoutPaymentSslCommerz">
+                                        SSLCommerz
+                                    </label>
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input"
+                                           type="radio"
+                                           name="paymentMethod"
+                                           id="checkoutPaymentBkash"
+                                           value="BKASH"
+                                           th:checked="${selectedPaymentMethod == 'BKASH'}">
+                                    <label class="form-check-label" for="checkoutPaymentBkash">
+                                        bKash
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="small text-muted mt-3">
+                                Available wallet balance:
+                                <strong th:text="'BDT ' + ${#numbers.formatDecimal(walletBalance, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</strong>
+                            </div>
+
+                            <div class="small text-muted mt-2">
+                                Available reward points:
+                                <strong th:text="${#numbers.formatDecimal(rewardBalance, 0, 'COMMA', 2, 'POINT')}">0.00</strong>
+                                <span class="d-block">Current checkout conversion: 1 point = BDT 0.01</span>
+                            </div>
+
+                            <div class="mt-3">
+                                <label class="form-label" for="checkoutCouponCode">Coupon Code</label>
+                                <input class="form-control"
+                                       id="checkoutCouponCode"
+                                       type="text"
+                                       name="couponCode"
+                                       th:value="${selectedCouponCode}"
+                                       placeholder="Enter coupon code">
+                            </div>
+
+                            <div class="mt-3">
+                                <label class="form-label" for="checkoutRewardPointsToUse">Reward Points To Use</label>
+                                <input class="form-control"
+                                       id="checkoutRewardPointsToUse"
+                                       type="number"
+                                       name="rewardPointsToUse"
+                                       min="0"
+                                       step="0.01"
+                                       th:attr="max=${rewardBalance}"
+                                       th:value="${selectedRewardPointsToUse}">
+                            </div>
+
+                            <div class="mt-3">
+                                <label class="form-label" for="checkoutGiftCardCode">Gift Card Code</label>
+                                <input class="form-control"
+                                       id="checkoutGiftCardCode"
+                                       type="text"
+                                       name="giftCardCode"
+                                       th:value="${selectedGiftCardCode}"
+                                       placeholder="Enter gift card code">
+                            </div>
+
+                            <div class="mt-3">
+                                <label class="form-label" for="checkoutGiftCardAmount">Gift Card Amount To Use</label>
+                                <input class="form-control"
+                                       id="checkoutGiftCardAmount"
+                                       type="number"
+                                       name="giftCardAmount"
+                                       min="0"
+                                       step="0.01"
+                                       th:attr="max=${grandTotal}"
+                                       th:value="${selectedGiftCardAmount}">
+                                <div class="form-text">
+                                    Leave zero to use as much of the valid gift card balance as possible.
+                                </div>
+                            </div>
+
+                            <div class="mt-3">
+                                <label class="form-label" for="checkoutAdvanceAmount">Advance Amount</label>
+                                <input class="form-control"
+                                       id="checkoutAdvanceAmount"
+                                       type="number"
+                                       name="advanceAmount"
+                                       min="0.01"
+                                       step="0.01"
+                                       th:attr="max=${grandTotal}"
+                                       th:value="${selectedAdvanceAmount}">
+                                <div class="form-text">
+                                    Used only with "Pay Advance Now, Rest COD". The remaining balance is saved as COD.
+                                </div>
+                            </div>
+
+                            <div class="mt-3">
+                                <label class="form-label" for="checkoutEmiTenure">Meritten EMI Tenure</label>
+                                <select class="form-select"
+                                        id="checkoutEmiTenure"
+                                        name="emiTenureMonths"
+                                        th:disabled="${!emiEligible}">
+                                    <option value="3" th:selected="${selectedEmiTenureMonths == 3}">3 Months</option>
+                                    <option value="6" th:selected="${selectedEmiTenureMonths == 6}">6 Months</option>
+                                    <option value="9" th:selected="${selectedEmiTenureMonths == 9}">9 Months</option>
+                                    <option value="12" th:selected="${selectedEmiTenureMonths == 12}">12 Months</option>
+                                </select>
+                                <div class="form-text" th:if="${emiEligible}">
+                                    Meritten EMI submits the full order amount and selected tenure to the bank or gateway. If approved, the provider settles the full order and collects installments directly from the customer.
+                                </div>
+                                <div class="form-text text-danger" th:unless="${emiEligible}">
+                                    Meritten EMI is available only when every item in this checkout is marked Meritten EMI eligible and is not a virtual product.
+                                </div>
+                            </div>
+                            <div class="small text-muted mt-3">
+                                Full COD keeps the whole order for delivery collection. Full online collects the whole amount now.
+                                Advance + COD keeps only the entered advance payable now and stores the rest as COD.
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-lg w-100">
+                        Place Order (BDT [[${#numbers.formatDecimal(grandTotal, 0, 'COMMA', 2, 'POINT')}]])
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

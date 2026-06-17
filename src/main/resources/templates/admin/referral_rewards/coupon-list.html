@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section>
+            <div class="row">
+                <div class="col-sm-3"><h4> Promotion Engine </h4></div>
+                <div class="col-sm-5">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Promotions</li>
+                            <li class="breadcrumb-item active" aria-current="page">Coupons</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </section>
+        <hr/>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-sm-6 font-weight-bold">
+                        <strong><i class="bi bi-ticket-perforated"></i> Coupon List</strong>
+                    </div>
+                    <div class="col-sm-6 text-end">
+                        <a class="btn btn-success btn-sm" th:href="@{/coupon/create}">
+                            <i class="bi bi-plus-circle"></i> Create Coupon
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body table-responsive">
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <table id="example" class="table table-bordered table-hover table-striped">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Title</th>
+                            <th>Code</th>
+                            <th>Type</th>
+                            <th>Value</th>
+                            <th>Min Order</th>
+                            <th>Max Discount</th>
+                            <th>Expiry</th>
+                            <th>Usage</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="c,status:${coupons}">
+                            <th th:text="${status.count}">1</th>
+                            <td th:text="${c.title}">Title</td>
+                            <td><span class="badge bg-primary" th:text="${c.code}">CODE</span></td>
+                            <td th:text="${c.type}">FIXED</td>
+                            <td th:text="${c.value}">0</td>
+                            <td th:text="${c.minimumOrder != null ? c.minimumOrder : 0}">0</td>
+                            <td th:text="${c.maxDiscount != null ? c.maxDiscount : 0}">0</td>
+                            <td th:text="${c.expiryDate}">-</td>
+                            <td>
+                                <span th:text="${c.timesUsed}">0</span>/<span th:text="${c.usageLimit}">0</span>
+                                <small class="d-block text-muted">Per user: <span th:text="${c.perUserUsageLimit}">0</span></small>
+                            </td>
+                            <td>
+                                <span class="badge bg-success" th:if="${c.status.name() == 'ACTIVE'}">ACTIVE</span>
+                                <span class="badge bg-secondary" th:if="${c.status.name() != 'ACTIVE'}" th:text="${c.status}">STATUS</span>
+                            </td>
+                            <td>
+                                <a class="btn btn-sm btn-primary" th:href="@{/coupon/edit/{id}(id=${c.id})}">Edit</a>
+                                <form th:action="@{/coupon/delete/{id}(id=${c.id})}" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Delete this coupon?')">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

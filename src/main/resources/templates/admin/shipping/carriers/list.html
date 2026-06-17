@@ -31,16 +31,16 @@
                     </div>
                     <div class="card-body">
 
-                        <div th:if="${not #strings.isEmpty(success)}"
+                        <div th:if="${not #strings.isEmpty(successMessage)}"
                              class="alert alert-success alert-dismissible fade show" role="alert">
-                            <span th:text="${success}"></span>
+                            <span th:text="${successMessage}"></span>
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
 
 
-                        <div th:if="${not #strings.isEmpty(error)}"
-                             class="alert alert-success alert-dismissible fade show" role="alert">
-                            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                        <div th:if="${not #strings.isEmpty(errorMessage)}"
+                             class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <span th:text="${errorMessage}"></span>
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                         <div class="table-responsive">
@@ -49,12 +49,19 @@
 
                             <div class="container mt-4">
                                 <table class="table table-bordered">
-                                    <thead><tr><th>ID</th><th>Code</th><th>Name</th><th>Active</th><th>Actions</th></tr></thead>
+                                    <thead><tr><th>ID</th><th>Code</th><th>Name</th><th>Mode</th><th>Settlement</th><th>Shipping Owner</th><th>COD Mode</th><th>API</th><th>Trackable</th><th>COD</th><th>Active</th><th>Actions</th></tr></thead>
                                     <tbody>
                                         <tr th:each="c : ${carriers}">
                                             <td th:text="${c.id}"></td>
                                             <td th:text="${c.code}"></td>
                                             <td th:text="${c.name}"></td>
+                                            <td th:text="${#strings.replace(c.mode.name(), '_', ' ')}"></td>
+                                            <td th:text="${#strings.replace(c.settlementMode.name(), '_', ' ')}"></td>
+                                            <td th:text="${#strings.replace(c.shippingChargeOwner.name(), '_', ' ')}"></td>
+                                            <td th:text="${#strings.replace(c.codCollectionMode.name(), '_', ' ')}"></td>
+                                            <td th:text="${c.requiresApi ? 'Yes' : 'No'}"></td>
+                                            <td th:text="${c.trackable ? 'Yes' : 'No'}"></td>
+                                            <td th:text="${c.supportsCod ? 'Yes' : 'No'}"></td>
                                             <td th:text="${c.active}"></td>
                                             <td>
                                                 <a th:href="@{'/admin/carriers/edit/' + ${c.id}}" class="btn btn-sm btn-primary">Edit</a>
@@ -79,4 +86,3 @@
 
 
 </div><!--  Main Content  end-->
-

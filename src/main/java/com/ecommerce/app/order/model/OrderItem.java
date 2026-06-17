@@ -10,6 +10,7 @@ import com.ecommerce.app.product.model.Unitofmeasurement;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -40,6 +41,43 @@ public class OrderItem {
     public Long vendorId;
 
     public Long productid;
+
+    public String catalogVariantUuid;
+
+    public String variantSummary;
+
+    public Boolean preorder = Boolean.FALSE;
+
+    public LocalDate preorderAvailableFrom;
+
+    private String digitalAccessUrl;
+
+    private String digitalLicenseCode;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String digitalDeliveryNote;
+
+    private Boolean digitalDelivered = Boolean.FALSE;
+
+    private LocalDateTime digitalDeliveredAt;
+
+    @Enumerated(EnumType.STRING)
+    private OrderItemReturnStatus returnStatus = OrderItemReturnStatus.NONE;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String returnRequestRemark;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String returnProcessedRemark;
+
+    private LocalDateTime returnRequestedAt;
+
+    private LocalDateTime returnedAt;
+
+    private BigDecimal returnRefundAmount = BigDecimal.ZERO.setScale(2);
 
     public BigDecimal quantity = BigDecimal.ZERO.setScale(2);
 
@@ -146,6 +184,126 @@ public class OrderItem {
 
     public void setProductid(Long productid) {
         this.productid = productid;
+    }
+
+    public String getCatalogVariantUuid() {
+        return catalogVariantUuid;
+    }
+
+    public void setCatalogVariantUuid(String catalogVariantUuid) {
+        this.catalogVariantUuid = catalogVariantUuid;
+    }
+
+    public String getVariantSummary() {
+        return variantSummary;
+    }
+
+    public void setVariantSummary(String variantSummary) {
+        this.variantSummary = variantSummary;
+    }
+
+    public Boolean getPreorder() {
+        return preorder;
+    }
+
+    public void setPreorder(Boolean preorder) {
+        this.preorder = preorder;
+    }
+
+    public LocalDate getPreorderAvailableFrom() {
+        return preorderAvailableFrom;
+    }
+
+    public void setPreorderAvailableFrom(LocalDate preorderAvailableFrom) {
+        this.preorderAvailableFrom = preorderAvailableFrom;
+    }
+
+    public String getDigitalAccessUrl() {
+        return digitalAccessUrl;
+    }
+
+    public void setDigitalAccessUrl(String digitalAccessUrl) {
+        this.digitalAccessUrl = digitalAccessUrl;
+    }
+
+    public String getDigitalLicenseCode() {
+        return digitalLicenseCode;
+    }
+
+    public void setDigitalLicenseCode(String digitalLicenseCode) {
+        this.digitalLicenseCode = digitalLicenseCode;
+    }
+
+    public String getDigitalDeliveryNote() {
+        return digitalDeliveryNote;
+    }
+
+    public void setDigitalDeliveryNote(String digitalDeliveryNote) {
+        this.digitalDeliveryNote = digitalDeliveryNote;
+    }
+
+    public Boolean getDigitalDelivered() {
+        return digitalDelivered;
+    }
+
+    public void setDigitalDelivered(Boolean digitalDelivered) {
+        this.digitalDelivered = digitalDelivered;
+    }
+
+    public LocalDateTime getDigitalDeliveredAt() {
+        return digitalDeliveredAt;
+    }
+
+    public void setDigitalDeliveredAt(LocalDateTime digitalDeliveredAt) {
+        this.digitalDeliveredAt = digitalDeliveredAt;
+    }
+
+    public OrderItemReturnStatus getReturnStatus() {
+        return returnStatus;
+    }
+
+    public void setReturnStatus(OrderItemReturnStatus returnStatus) {
+        this.returnStatus = returnStatus;
+    }
+
+    public String getReturnRequestRemark() {
+        return returnRequestRemark;
+    }
+
+    public void setReturnRequestRemark(String returnRequestRemark) {
+        this.returnRequestRemark = returnRequestRemark;
+    }
+
+    public String getReturnProcessedRemark() {
+        return returnProcessedRemark;
+    }
+
+    public void setReturnProcessedRemark(String returnProcessedRemark) {
+        this.returnProcessedRemark = returnProcessedRemark;
+    }
+
+    public LocalDateTime getReturnRequestedAt() {
+        return returnRequestedAt;
+    }
+
+    public void setReturnRequestedAt(LocalDateTime returnRequestedAt) {
+        this.returnRequestedAt = returnRequestedAt;
+    }
+
+    public LocalDateTime getReturnedAt() {
+        return returnedAt;
+    }
+
+    public void setReturnedAt(LocalDateTime returnedAt) {
+        this.returnedAt = returnedAt;
+    }
+
+    public BigDecimal getReturnRefundAmount() {
+        return returnRefundAmount;
+    }
+
+    public void setReturnRefundAmount(BigDecimal returnRefundAmount) {
+        this.returnRefundAmount = returnRefundAmount;
     }
 
     public BigDecimal getQuantity() {

@@ -6,8 +6,10 @@ package com.ecommerce.app.vendor.repository;
 
 import com.ecommerce.app.vendor.model.VendorTransaction;
 import com.ecommerce.app.vendor.model.VendorTransactionStatusEnum;
+import com.ecommerce.app.vendor.model.VendorTransactionTypeEnum;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -40,6 +42,27 @@ import org.springframework.data.repository.query.Param;
 public interface VendorTransactionRepository extends JpaRepository<VendorTransaction, Long> {
 
     List<VendorTransaction> findByVendor_IdAndStatus(Long vendorId, VendorTransactionStatusEnum status);
+
+    List<VendorTransaction> findByVendor_IdOrderByCreatedDesc(Long vendorId);
+
+    boolean existsBySalesOrder_IdAndTransactionType(Long salesOrderId, VendorTransactionTypeEnum transactionType);
+
+    Optional<VendorTransaction> findFirstBySalesOrder_IdAndTransactionTypeOrderByCreatedDesc(
+            Long salesOrderId,
+            VendorTransactionTypeEnum transactionType
+    );
+
+    boolean existsByVendor_IdAndTransactionTypeAndDescription(
+            Long vendorId,
+            VendorTransactionTypeEnum transactionType,
+            String description
+    );
+
+    boolean existsByVendor_IdAndTransactionTypeAndDescriptionStartingWith(
+            Long vendorId,
+            VendorTransactionTypeEnum transactionType,
+            String descriptionPrefix
+    );
 
     @Query("""
         SELECT COALESCE(SUM(v.amount), 0)
@@ -82,6 +105,30 @@ public interface VendorTransactionRepository extends JpaRepository<VendorTransac
                 vendorId,
                 VendorTransactionStatusEnum.AVAILABLE,
                 VendorTransactionStatusEnum.PAID
+        );
+    }
+
+    default void markAvailableAsRequested(Long vendorId) {
+        markStatusAs(
+                vendorId,
+                VendorTransactionStatusEnum.AVAILABLE,
+                VendorTransactionStatusEnum.REQUESTED
+        );
+    }
+
+    default void markRequestedAsPaid(Long vendorId) {
+        markStatusAs(
+                vendorId,
+                VendorTransactionStatusEnum.REQUESTED,
+                VendorTransactionStatusEnum.PAID
+        );
+    }
+
+    default void markRequestedAsAvailable(Long vendorId) {
+        markStatusAs(
+                vendorId,
+                VendorTransactionStatusEnum.REQUESTED,
+                VendorTransactionStatusEnum.AVAILABLE
         );
     }
 

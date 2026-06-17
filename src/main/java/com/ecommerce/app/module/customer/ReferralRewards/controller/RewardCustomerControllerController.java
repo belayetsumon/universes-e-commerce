@@ -4,16 +4,13 @@
  */
 package com.ecommerce.app.module.customer.ReferralRewards.controller;
 
-import com.ecommerce.app.module.ReferralRewards.model.RewardRedemption;
-import com.ecommerce.app.module.ReferralRewards.repository.ReferralRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.RewardRedemptionRepository;
-import com.ecommerce.app.module.ReferralRewards.repository.WalletTransactionRepository;
+import com.ecommerce.app.module.ReferralRewards.repository.RewardTransactionRepository;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class RewardCustomerControllerController {
 
     @Autowired
-    private WalletTransactionRepository walletTransactionRepository;
+    private RewardTransactionRepository rewardTransactionRepository;
     @Autowired
     private RewardRedemptionRepository rewardRedemptionRepository;
     @Autowired
@@ -41,25 +38,24 @@ public class RewardCustomerControllerController {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         // Calculate wallet balance excluding expired/redeemed points
-        BigDecimal walletBalance = walletTransactionRepository
+        BigDecimal walletBalance = rewardTransactionRepository
                 .sumAmountByUserAndExpiryDateAfterAndRedeemedFalse(user, LocalDateTime.now())
                 .orElse(BigDecimal.ZERO);
 
-        BigDecimal totalEarned = walletTransactionRepository
+        BigDecimal totalEarned = rewardTransactionRepository
                 .sumAmountByUserAndAmountGreaterThanEqual(user, BigDecimal.ZERO)
                 .orElse(BigDecimal.ZERO);
 
-        BigDecimal totalRedeemed = walletTransactionRepository
+        BigDecimal totalRedeemed = rewardTransactionRepository
                 .sumAmountByUserAndAmountLessThan(user, BigDecimal.ZERO)
                 .map(BigDecimal::abs)
                 .orElse(BigDecimal.ZERO);
 
-        List<RewardRedemption> redemptions = rewardRedemptionRepository.findAllByUsersOrderByRedeemedAtDesc(user);
-
+//        List<Redemptions> redemptions = rewardRedemptionRepository.findAllByUsersOrderByRedeemedAtDesc(user);
         model.addAttribute("walletBalance", walletBalance);
         model.addAttribute("totalEarned", totalEarned);
         model.addAttribute("totalRedeemed", totalRedeemed);
-        model.addAttribute("redemptions", redemptions);
+//        model.addAttribute("redemptions", redemptions);
 
         return "customer/referral_rewards/reward-dashboard";
     }

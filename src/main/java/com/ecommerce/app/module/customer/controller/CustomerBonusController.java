@@ -5,7 +5,6 @@
  */
 package com.ecommerce.app.module.customer.controller;
 
-import com.ecommerce.app.model.Profile;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.user.services.LoggedUserService;
@@ -29,8 +28,6 @@ public class CustomerBonusController {
     @Autowired
     ProfileRepository profileRepository;
 
-
-
     @Autowired
     LoggedUserService loggedUserService;
 
@@ -41,16 +38,11 @@ public class CustomerBonusController {
     SalesOrderRepository salesOrderRepository;
 
     @RequestMapping(value = {"", "/", "/index", "dashboards"})
-    public String index(Model model, Profile profile) {
+    public String index(Model model) {
 
         model.addAttribute("username", loggedUserService.activeUserName());
         Users userId = new Users();
         userId.setId(loggedUserService.activeUserid());
-      
-
-   
-
-      
 
         return "customer/bonus";
     }

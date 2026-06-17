@@ -4,10 +4,15 @@
  */
 package com.ecommerce.app.module.ReferralRewards.repository;
 
+import com.ecommerce.app.module.user.model.Users;
+import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 /**
  *
  * @author libertyerp_local
  */
-public class CustomerNotifications {
+public interface CustomerNotifications extends JpaRepository<com.ecommerce.app.module.ReferralRewards.model.CustomerNotifications, Long> {
 
+    List<com.ecommerce.app.module.ReferralRewards.model.CustomerNotifications> findByUserOrderByCreatedAtDesc(Users user);
 }

@@ -7,10 +7,10 @@ and open the template in the editor.
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
     <div layout:fragment = "main_content">
 
-        <section> 
+        <section>
             <div class="row">
                 <div class="col-sm-3"><h4> Product Category</h4></div>
-                <div class="col-sm-9">   
+                <div class="col-sm-9">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
@@ -26,7 +26,7 @@ and open the template in the editor.
             <div class="col-sm-12">
                 <div class="card">
                     <div class="card-header">
-                        <div class="row"> 
+                        <div class="row">
                             <div class="col-sm-5 font-weight-bold "><strong><i class="bi bi-list-task"></i> Product Category Add</strong></div>
                             <div class="col-sm-7 text-end ">
                                 <div class="btn-group ">
@@ -48,27 +48,30 @@ and open the template in the editor.
                                 </ul>
                             </div>
 
-                            <div class="row" th:if="${!#strings.isEmpty(success)}"> 
+                            <div class="row" th:if="${!#strings.isEmpty(success)}">
                                 <span  class="text-success"th:text="success"> </span>
-                            </div> 
+                            </div>
 
                             <div class="form-group">
                                 <input type="hidden" class="form-control"  th:field="*{id}" />
                                 <input type="hidden"  minlength=" 2 " th:field="*{slug}" >
+                                <!--                                <input type="hidden"
+                                                                       th:name="${_csrf.parameterName}"
+                                                                       th:value="${_csrf.token}" />-->
                             </div>
 
                             <div class="form-group col-sm-6">
                                 <label for="exampleInputEmail1" class="col-md-5"> Name :<span class="text-danger"> *</span></label>
                                 <input type="text"  minlength=" 2 "class="form-control " th:field="*{name}" aria-describedby="emailHelp" placeholder="Enter name">
                                 <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Book Name</span>
-                            </div>     
+                            </div>
 
                             <div class="form-group col-sm-6 ">
                                 <label for="exampleInputEmail1"> Parent Category <span class="text-danger"> </span></label>
                                 <select id="inputState" class="form-control col-sm-6"  th:field="*{parent}">
-                                    <option value=" "> Select one</option>              
+                                    <option value=" "> Select one</option>
                                     <option th:each =" productcategorylists : ${productcategorylist}"
-                                            th:value="${productcategorylists.id} " 
+                                            th:value="${productcategorylists.id} "
                                             th:text="${productcategorylists.name}"> Select one</option>
                                 </select>
                             </div>
@@ -76,7 +79,7 @@ and open the template in the editor.
                             <div class="form-group col-sm-6">
 
                                 <label for="accept">
-                                    <input type="checkbox" id="accept" th:field="*{featuredCat}" /> 
+                                    <input type="checkbox" id="accept" th:field="*{featuredCat}" />
 
                                     Featured Category
 
@@ -102,7 +105,7 @@ and open the template in the editor.
 
                             <div class="form-group col-sm-6">
                                 <label for="exampleInputEmail1 col-sm-5">Discount End Date:<span class="text-danger"> </span></label>
-                                 <input type="text"   id="categoryDiscountEndDate" data-date-format="dd-mm-yyyy" min="0" class="form-control col-sm-5"  th:field="*{discountEndDate}" aria-describedby="emailHelp" placeholder="DD/MM/YYYY">
+                                <input type="text"   id="categoryDiscountEndDate" data-date-format="dd-mm-yyyy" min="0" class="form-control col-sm-5"  th:field="*{discountEndDate}" aria-describedby="emailHelp" placeholder="DD/MM/YYYY">
 
                                 <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('discountEndDate')}" th:errors="*{discountEndDate}">Book Name</span>
                             </div>
@@ -118,9 +121,9 @@ and open the template in the editor.
                             <div class="form-group col-sm-6">
                                 <label for="exampleInputEmail1">Status<span class="text-danger"> *</span></label>
                                 <select id="inputState" class="form-control col-sm-3"  th:field="*{status}">
-                                    <option value=" "> Select one</option>              
+                                    <option value=" "> Select one</option>
                                     <option th:each =" status : ${statuslist}"
-                                            th:value="${status} " 
+                                            th:value="${status} "
                                             th:text="${status}"> Select one</option>
                                 </select>
                             </div>
@@ -131,7 +134,7 @@ and open the template in the editor.
                                 <input type="hidden"  th:value="${productcategory.imageName}">
 
                                 <input type="file" id="catimagefile" minlength=" 5 "class="form-control col-sm-5" name="pic" aria-describedby="emailHelp">
-                                <img id="catimagePreview" alt="Image Preview" style="max-width: 300px; margin-top: 10px; display: none;" />                
+                                <img id="catimagePreview" alt="Image Preview" style="max-width: 300px; margin-top: 10px; display: none;" />
 
                                 <div>   <button type="button" id="catDeleteImageBtn"  class="btn btn-danger btn-sm"style="display:none; margin-top: 10px;">Delete Preview</button></div>
                                 <div id="catimageInfo" style="margin-top: 10px;"></div>

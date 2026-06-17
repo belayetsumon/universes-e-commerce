@@ -1,5 +1,5 @@
 <div   th:fragment="footer" >
-    <section   class="mt-5  d-sm-block "style="background-color: #F8F8F8; padding: 50px 0px 10px 0px; border-top: 4px solid #e1e1e1; ">
+    <section class="mt-5 d-sm-block storefront-footer-top">
         <div class="container">
             <div class="row" >
 
@@ -8,13 +8,14 @@
 
                     <div class="row">
                         <div class="col-xs-4 col-sm-3">
-                            <i class="bi bi-headset"  style="font-size: 3rem;"></i>
+                            <i class="bi bi-headset storefront-footer-headset-icon"></i>
                         </div>
                         <div class="col-xs-8 col-sm-9">
                             <p class="h6">  Got Questions ? Call us 24/7!</p>
                             <p class="h5">Whats App</p>
-                            <p class="h5"> 01840188888</p>
-                            <p class="">   Uttara, Dhaka, Bangladesh</p>
+                            <p class="h5" th:text="${session.globalSettings.whatsappNumber != null ? session.globalSettings.whatsappNumber : session.globalSettings.supportPhone}">01840188888</p>
+                            <p class="" th:text="${session.globalSettings.address != null ? session.globalSettings.address : 'Address not set'}">Uttara, Dhaka, Bangladesh</p>
+                            <p class="" th:if="${session.globalSettings.supportEmail != null}" th:text="${session.globalSettings.supportEmail}">support@example.com</p>
                             <p class=""> <i class="bi bi-geo-alt"></i> Find us on map </p>
                         </div>
 
@@ -26,12 +27,12 @@
                 <div class="col-sm-3 col-md-3 ">
                     <h6 class=" font-weight-bold text-uppercase">Company</h6>
                     <ul class="list-unstyled ">
-                        <li>About Us</li>
-                        <li>Team Member</li>
-                        <li>Career</li>
-                        <li>Contact Us</li>
-                        <li>Affilate</li>
-                        <li>Order History</li>
+                        <li><a class="nav-link px-0" th:href="@{/public/about-us}">About Us</a></li>
+                        <li><a class="nav-link px-0" th:href="@{/public/contact-us}">Contact Us</a></li>
+                        <li><a class="nav-link px-0" th:href="@{/public/help}">Help</a></li>
+                        <li><a class="nav-link px-0" th:href="@{/public/privacy-policy}">Privacy Policy</a></li>
+                        <li><a class="nav-link px-0" th:href="@{/public/terms-of-use}">Terms of Use</a></li>
+                        <li><a class="nav-link px-0" th:href="@{/public/terms-and-conditions}">Term and Conditions</a></li>
                     </ul>
                 </div>
 
@@ -40,25 +41,25 @@
                     <ul class="list-unstyled">
                         <li>
                             <a class="nav-link"
-                               th:href="@{/front-view/privacy_policy}">Track My Order</a></li>
+                               th:href="@{/public/help}">Track My Order</a></li>
                         <li>
                             <a class="nav-link"
-                               th:href="@{/front-view/contactUs}">View Cart</a></li>
+                               th:href="@{/cart/index}">View Cart</a></li>
                         <li>
                             <a class="nav-link"
-                               th:href="@{/front-view/privacy_policy}">Sign In</a></li>
+                               th:href="@{/public/member-login}">Sign In</a></li>
                         <li>
                             <a class="nav-link"
-                               th:href="@{/front-view/contactUs}"> Help </a></li>
+                               th:href="@{/public/front-registration}">Create Account</a></li>
                         <li>
                             <a class="nav-link"
-                               th:href="@{/front-view/contactUs}">My Wishlist </a></li>
+                               th:href="@{/public/help}">Help</a></li>
                         <li>
                             <a class="nav-link"
-                               th:href="@{/front-view/privacy_policy}">Privacy Policy</a></li>
+                               th:href="@{/public/privacy-policy}">Privacy Policy</a></li>
                         <li>
                             <a class="nav-link"
-                               th:href="@{/front-view/contactUs}">Contact Us</a></li>
+                               th:href="@{/public/contact-us}">Contact Us</a></li>
                     </ul>
                 </div>
 
@@ -67,12 +68,12 @@
 
 
                     <ul class="list-unstyled">
-                        <li>Payment Methods</li>
-                        <li>Returns & Replacements</li>
-                        <li>Refund and Returns Policy</li>
-                        <li>Support Center</li>
-                        <li>Shipping Rates & Policies</li>
-                        <li>Term and Conditions</li>
+                        <li><a class="nav-link px-0" th:href="@{/public/payment-methods}">Payment Methods</a></li>
+                        <li><a class="nav-link px-0" th:href="@{/public/returns-replacements}">Returns & Replacements</a></li>
+                        <li><a class="nav-link px-0" th:href="@{/public/refund-returns-policy}">Refund and Returns Policy</a></li>
+                        <li><a class="nav-link px-0" th:href="@{/public/help}">Support Center</a></li>
+                        <li><a class="nav-link px-0" th:href="@{/public/shipping-rates-policies}">Shipping Rates & Policies</a></li>
+                        <li><a class="nav-link px-0" th:href="@{/public/terms-and-conditions}">Term and Conditions</a></li>
                     </ul>
                 </div>
 
@@ -88,10 +89,14 @@
             </div>
         </div>
     </section> <!--  End Footer Top-->
-    <section  class ="d-none d-sm-block " style=" min-height:50px; padding-top: 15px">
+    <section class="d-none d-sm-block storefront-footer-bottom">
         <div class="container">
             <div  class="row justify-content-center ">
-                <span class="align-middle">   Powered By : <a  class="textOrange"href="#" target="_blank" > Musapir </a> .&nbsp;  Privacy Policy | Terms of Use | License | Support
+                <span class="align-middle">Powered By :
+                    <a class="link-underline-light" th:href="${session.globalSettings.siteUrl != null ? session.globalSettings.siteUrl : '#'}" target="_blank" th:text="${session.globalSettings.siteName}">Musapir</a>.
+                    <a class="link-underline-light ms-2" th:href="@{/public/privacy-policy}">Privacy Policy</a> |
+                    <a class="link-underline-light" th:href="@{/public/terms-of-use}">Terms of Use</a> |
+                    <a class="link-underline-light" th:href="@{/public/help}">Support</a>
                 </span>
                 <!--                  <span class="align-middle">   Powered By : <a  class="textOrange"href="#" target="_blank" > Universes E-Commerce </a> .&nbsp;  Privacy Policy | Terms of Use | License | Support
                                 </span>-->

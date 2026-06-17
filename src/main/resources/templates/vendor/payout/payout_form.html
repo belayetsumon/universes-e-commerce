@@ -31,6 +31,11 @@
 
                     <div class="mb-3 d-flex justify-content-center">
 
+                        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <span th:text="${errorMessage}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+
                         <!-- Show all errors in one place -->
                         <div th:if="${#fields.hasErrors()}" class="alert alert-danger">
                             <ul>

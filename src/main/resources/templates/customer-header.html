@@ -1,0 +1,119 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+     th:fragment="customerHeader">
+    <nav class="navbar customer-header-nav">
+        <div class="container-fluid px-3 px-xl-4">
+            <div class="d-flex align-items-center gap-2 gap-lg-3">
+                <button class="btn customer-header-toggle d-lg-none"
+                        type="button"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#customerSidebarOffcanvas"
+                        aria-controls="customerSidebarOffcanvas"
+                        aria-label="Open customer navigation">
+                    <i class="bi bi-list"></i>
+                </button>
+
+                <a class="navbar-brand customer-header-brand mb-0" th:href="@{/customer/}">
+                    <picture th:if="${session.globalSettings.resolvedSiteLogoDesktop != null}">
+                        <img th:src="@{${session.globalSettings.resolvedSiteLogoDesktop}}"
+                             th:alt="${session.globalSettings.siteName}"
+                             class="storefront-logo-image">
+                    </picture>
+
+                    <span class="customer-header-brand-copy">
+                        <span class="customer-header-brand-name"
+                              th:text="${session.globalSettings.siteName != null ? session.globalSettings.siteName : 'Store'}">
+                            Store
+                        </span>
+                        <span class="customer-header-brand-label">Customer Portal</span>
+                    </span>
+                </a>
+            </div>
+
+            <div class="customer-header-actions ms-auto">
+                <div class="customer-header-user d-none d-xl-flex" sec:authorize="isAuthenticated()">
+                    <span class="customer-header-user-avatar">
+                        <i class="bi bi-person-fill"></i>
+                    </span>
+                    <span class="customer-header-user-copy">
+                        <small>Signed in as</small>
+                        <strong sec:authentication="name">customer@example.com</strong>
+                    </span>
+                </div>
+
+                <a class="btn customer-header-icon-btn d-lg-none"
+                   th:href="@{/}"
+                   aria-label="Open storefront">
+                    <i class="bi bi-house-door"></i>
+                </a>
+                <a class="btn customer-header-action customer-header-action--light d-none d-lg-inline-flex"
+                   th:href="@{/}">
+                    <i class="bi bi-arrow-up-right-circle"></i>
+                    <span>Storefront</span>
+                </a>
+                <a class="btn customer-header-icon-btn d-lg-none"
+                   th:href="@{/users/logout}"
+                   sec:authorize="isAuthenticated()"
+                   aria-label="Logout">
+                    <i class="bi bi-box-arrow-right"></i>
+                </a>
+                <a class="btn customer-header-action customer-header-logout d-none d-lg-inline-flex"
+                   th:href="@{/users/logout}"
+                   sec:authorize="isAuthenticated()">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </a>
+                <a class="btn customer-header-icon-btn d-lg-none"
+                   th:href="@{/public/member-login}"
+                   sec:authorize="!isAuthenticated()"
+                   aria-label="Login">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                </a>
+                <a class="btn customer-header-action customer-header-action--light d-none d-lg-inline-flex"
+                   th:href="@{/public/member-login}"
+                   sec:authorize="!isAuthenticated()">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    <span>Login</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="offcanvas offcanvas-start customer-sidebar-offcanvas d-lg-none"
+         tabindex="-1"
+         id="customerSidebarOffcanvas"
+         aria-labelledby="customerSidebarOffcanvasLabel">
+        <div class="offcanvas-header">
+            <div>
+                <p class="customer-sidebar-offcanvas-kicker mb-1">Customer navigation</p>
+                <h5 class="offcanvas-title mb-0" id="customerSidebarOffcanvasLabel">Manage your account</h5>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+
+        <div class="offcanvas-body">
+            <div class="customer-sidebar-offcanvas-actions">
+                <a class="btn btn-light" th:href="@{/customer-profile/index}">
+                    <i class="bi bi-person-circle"></i>
+                    <span>Profile</span>
+                </a>
+                <a class="btn btn-light" th:href="@{/customer/storelist}">
+                    <i class="bi bi-shop"></i>
+                    <span>Vendor Panel</span>
+                </a>
+                <a class="btn btn-light" th:href="@{/}">
+                    <i class="bi bi-house-door"></i>
+                    <span>Storefront</span>
+                </a>
+                <a class="btn btn-danger" th:href="@{/users/logout}" sec:authorize="isAuthenticated()">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+
+            <div th:replace="~{customer-left-menu :: customerSidebar}">
+                Customer sidebar
+            </div>
+        </div>
+    </div>
+</div>

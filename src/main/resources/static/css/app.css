@@ -43,3 +43,226 @@ body{
     min-height: 300px;
 
 }
+
+.review-inline-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin: 0.85rem 0 1rem;
+}
+
+.review-star-row,
+.review-card-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    color: #f59f00;
+}
+
+.review-star-row .bi,
+.review-card-rating .bi {
+    font-size: 1rem;
+}
+
+.product-rating-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+    background: #fff7e6;
+    border: 1px solid #f2d5a3;
+    border-radius: 999px;
+    font-size: 0.92rem;
+    color: #7a4c00;
+}
+
+.product-card-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.65rem;
+    font-size: 0.88rem;
+    color: #6c757d;
+}
+
+.review-summary-panel,
+.review-form-card,
+.review-list-shell,
+.customer-review-editor {
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 24px;
+    padding: 1.5rem;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.06);
+}
+
+.review-summary-panel {
+    background: linear-gradient(135deg, #fff7e6 0%, #ffffff 100%);
+    border-color: #f1d8a9;
+}
+
+.review-average-display {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.review-average-score {
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #a35a00;
+}
+
+.review-breakdown-row {
+    display: grid;
+    grid-template-columns: 72px 1fr 42px;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 0.85rem;
+}
+
+.review-breakdown-label,
+.review-breakdown-count,
+.review-meta {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.review-breakdown-progress {
+    height: 0.55rem;
+    border-radius: 999px;
+    background: #f1f3f5;
+}
+
+.review-breakdown-progress .progress-bar {
+    border-radius: 999px;
+}
+
+.review-recommendation {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f1e5ca;
+    color: #5c3d00;
+}
+
+.review-form-heading {
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+}
+
+.review-form-stack .form-control,
+.review-form-stack .form-select {
+    border-radius: 14px;
+}
+
+.review-form-stack textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.star-rating-input {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    gap: 0.35rem;
+}
+
+.star-rating-input input {
+    display: none;
+}
+
+.star-rating-input label {
+    font-size: 1.8rem;
+    color: #ced4da;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.star-rating-input label:hover,
+.star-rating-input label:hover ~ label,
+.star-rating-input input:checked ~ label {
+    color: #f59f00;
+    transform: translateY(-1px);
+}
+
+.review-verified-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: #effaf5;
+    color: #157347;
+    border: 1px solid rgba(21, 115, 71, 0.18);
+    border-radius: 999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.review-empty-state,
+.review-gate-state,
+.review-editor-lock,
+.review-empty-note {
+    border: 1px dashed #d0d7de;
+    border-radius: 18px;
+    padding: 1rem 1.1rem;
+    background: #f8f9fa;
+    color: #495057;
+}
+
+.review-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0d6efd, #6ea8fe);
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.public-review-card {
+    background: linear-gradient(180deg, #ffffff 0%, #fffdf8 100%);
+    border: 1px solid #ece4d3;
+    border-radius: 22px;
+    padding: 1.25rem;
+}
+
+.review-title {
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 0.45rem;
+}
+
+.customer-review-thumb {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 18px;
+    border: 1px solid #e9ecef;
+}
+
+@media (max-width: 768px) {
+    .review-summary-panel,
+    .review-form-card,
+    .review-list-shell,
+    .customer-review-editor {
+        padding: 1.1rem;
+        border-radius: 20px;
+    }
+
+    .review-average-score {
+        font-size: 2.45rem;
+    }
+
+    .review-breakdown-row {
+        grid-template-columns: 62px 1fr 36px;
+        gap: 0.5rem;
+    }
+
+    .star-rating-input label {
+        font-size: 1.55rem;
+    }
+}

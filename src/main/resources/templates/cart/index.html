@@ -26,6 +26,14 @@
                             </div>
 
                             <div class="card-body">
+                                <div th:if="${not #strings.isEmpty(successMessage)}" class="alert alert-success alert-dismissible fade show" role="alert">
+                                    <span th:text="${successMessage}"></span>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                                <div th:if="${not #strings.isEmpty(errorMessage)}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <span th:text="${errorMessage}"></span>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
 
                                 <div class="modal fade" id="districtModal" tabindex="-1" aria-hidden="true"
                                      th:data-show="${showDistrictModal}">
@@ -70,14 +78,26 @@
                                 <i class="fas fa-money-check text-warning"></i>  Order   Summary
                             </div>
                             <ul class="list-group list-group-flush">
-                                <li class="list-group-item">Sub Total:<span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">10.00</span> /-</li>
+                                <!--
+                                  Date: 2026-05-25
+                                  These summary fields are updated by `assets/front/js/front-site.js`
+                                  after the UUID-based cart API recalculates vendor totals.
+                                -->
+                                <li class="list-group-item">
+                                    Sub Total:
+                                    <span id="orderSubTotal" th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">10.00</span> /-
+                                </li>
 
-                                <li class="list-group-item">Order Total: <span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">10.00</span>/-</li>
+                                <li class="list-group-item">
+                                    Order Total:
+                                    <span id="orderTotal" th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">10.00</span>/-
+                                </li>
                                 <!--                                <li class="list-group-item">
                                                                     <a type="button" class="btn btn-block btn-sm btn-warning">Update Shopping  Cart</a>
                                                                 </li>-->
                                 <li class="list-group-item">
                                     <a type="button" class="btn btn-block btn-sm btn-warning" th:href="@{/order/create}">Proceed To Checkout</a>
+                                    <a type="button" class="btn btn-block btn-sm btn-warning" th:href="@{/cart/checkout}">Checkout</a>
                                 </li>
                             </ul>
                         </div>

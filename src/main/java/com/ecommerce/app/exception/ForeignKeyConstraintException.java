@@ -11,6 +11,10 @@ package com.ecommerce.app.exception;
 public class ForeignKeyConstraintException extends RuntimeException {
 
     public ForeignKeyConstraintException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public ForeignKeyConstraintException(String message) {
         super(message);
     }
 }

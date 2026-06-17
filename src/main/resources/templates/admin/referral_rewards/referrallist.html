@@ -1,79 +1,81 @@
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
-    <div layout:fragment = "main_content">
+    <div layout:fragment="main_content">
         <section>
             <div class="row">
-                <div class="col-sm-3"><h4> Referral Rewards </h4></div>
-                <div class="col-sm-5">   <nav aria-label="breadcrumb">
+                <div class="col-sm-3"><h4>Referral Rewards</h4></div>
+                <div class="col-sm-5">
+                    <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
                             <li class="breadcrumb-item active" aria-current="page">Referral Rewards</li>
                             <li class="breadcrumb-item active" aria-current="page">Referral</li>
                         </ol>
                     </nav>
-                </div></div>
+                </div>
+            </div>
         </section>
         <hr/>
         <div class="row">
-            <div class="col-sm-9">
-
+            <div class="col-sm-12">
                 <div class="card">
                     <div class="card-header">
                         <div class="row">
-                            <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i> Referral List</strong> </div>
-
-                            <div class="col-sm-7 text-end">
-                                <!--                                <div class="btn-group ">
-                                                                    <a class="btn btn-success btn-sm " th:href="@{/product/create}"> <i class="bi bi-plus-circle"></i> Add Product </a>
-                                                                    <a th:href="@{/admin/index}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>
-                                                                </div>-->
+                            <div class="col-sm-5 font-weight-bold">
+                                <strong><i class="bi bi-list-task"></i> Referral List</strong>
                             </div>
-
+                            <div class="col-sm-7 text-end">
+                            </div>
                         </div>
                     </div>
 
-
-
-
-
                     <div class="card-body table-responsive">
+                        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <span th:text="${successMessage}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <span th:text="${errorMessage}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+
                         <table class="table table-bordered table-hover table-striped">
                             <thead>
                                 <tr>
+                                    <th>#</th>
                                     <th>Referral Code</th>
                                     <th>Owner (Referrer)</th>
                                     <th>Referred User</th>
                                     <th>Reward Granted</th>
                                     <th>Created At</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="r : ${referrals}">
+                                <tr th:each="r, status : ${referrals}">
+                                    <td th:text="${status.count}"></td>
                                     <td th:text="${r.referralCode}"></td>
-                                    <td th:text="${r.users.firstName} + ' (' + r.users.email + ')'"></td>
-                                    <td th:text="${r.referredUser != null ? r.referredUser.firstName + ' (' + r.referredUser.email + ')' : '—'}"></td>
+                                    <td th:text="${r.users.firstName + (r.users.lastName != null and !#strings.isEmpty(r.users.lastName) ? ' ' + r.users.lastName : '') + ' (' + (!#strings.isEmpty(r.users.email) ? r.users.email : (!#strings.isEmpty(r.users.mobile) ? r.users.mobile : '-')) + ')'}"></td>
+                                    <td th:text="${r.referredUser != null ? r.referredUser.firstName + (r.referredUser.lastName != null and !#strings.isEmpty(r.referredUser.lastName) ? ' ' + r.referredUser.lastName : '') + ' (' + (!#strings.isEmpty(r.referredUser.email) ? r.referredUser.email : (!#strings.isEmpty(r.referredUser.mobile) ? r.referredUser.mobile : '-')) + ')' : '-'}"></td>
                                     <td th:text="${r.rewardGranted}"></td>
-                                    <td th:text="${#temporals.format(r.createdAt, 'dd-MM-yyyy HH:mm')}"></td>
-
-
+                                    <td>
+                                        <span th:if="${r.created != null}"
+                                              th:text="${#temporals.format(r.created, 'dd-MM-yyyy HH:mm')}"></span>
+                                    </td>
+                                    <td>
+                                        <form th:action="@{/referral/delete/{id}(id=${r.id})}" method="post" class="d-inline">
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-danger"
+                                                    onclick="return confirm('Delete this referral record?')">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                </div><!--  Card  end-->
-
-
-            </div><!--  Main Content  end-->
-            <div class="col-sm-3">
-
-                <div class="card">
-                    <div class="card-header">
-                        <div class="row">
-                            <div class="col-sm-5 font-weight-bold ">  <strong><i class="fas fa-list"></i> Filter</strong> </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                    </div><!--  Card body end-->
-                </div><!--  Card  end-->
+                </div>
             </div>
-        </div>   <!--  Layout end-->      </div><!--  Main Content  end-->
+        </div>
+    </div>
 </div>

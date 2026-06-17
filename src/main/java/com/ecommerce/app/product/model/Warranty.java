@@ -28,7 +28,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
  */
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "warranty")
+@Table(name = "product_warranty")
 public class Warranty {
 
     @Id
@@ -41,9 +41,8 @@ public class Warranty {
 
     @Lob
     private String description;
-    
-        
-    /// Audit /// 
+
+    /// Audit ///
     @CreatedBy
     @Column(nullable = false, updatable = false)
     private String createdBy;

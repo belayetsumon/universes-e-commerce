@@ -1,0 +1,118 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h4>Catalog Attributes</h4>
+                <p class="text-muted mb-0">Reusable attributes for category-driven product specifications and variants.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a class="btn btn-outline-primary btn-sm" th:href="@{/catalog-attributes/category-mappings}">Category Mappings</a>
+                <a class="btn btn-success btn-sm" th:href="@{/catalog-attributes/create}">Add Attribute</a>
+            </div>
+        </div>
+
+        <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+        <div class="card">
+            <div class="card-body border-bottom">
+                <form th:action="@{/catalog-attributes/list}" method="get" class="row g-3 align-items-end">
+                    <div class="col-lg-4">
+                        <label class="form-label">Search by Name</label>
+                        <input type="text" class="form-control" name="keyword" th:value="${keyword}" placeholder="Battery, Display, Storage">
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="active">
+                            <option value="" th:selected="${active == null}">All</option>
+                            <option value="true" th:selected="${active != null and active}">Active</option>
+                            <option value="false" th:selected="${active != null and !active}">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-6">
+                        <label class="form-label d-block">Flags</label>
+                        <div class="d-flex flex-wrap gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="filterable" name="filterable" value="true" th:checked="${filterable}">
+                                <label class="form-check-label" for="filterable">Filterable</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="variantCapable" name="variantCapable" value="true" th:checked="${variantCapable}">
+                                <label class="form-check-label" for="variantCapable">Variant</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="searchable" name="searchable" value="true" th:checked="${searchable}">
+                                <label class="form-check-label" for="searchable">Searchable</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="comparable" name="comparable" value="true" th:checked="${comparable}">
+                                <label class="form-check-label" for="comparable">Comparable</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="allowMultipleValues" name="allowMultipleValues" value="true" th:checked="${allowMultipleValues}">
+                                <label class="form-check-label" for="allowMultipleValues">Multi-value</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <small class="text-muted" th:text="${#lists.size(attributes)} + ' attribute(s) found'">0 attribute(s) found</small>
+                        <div class="d-flex gap-2">
+                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/catalog-attributes/list}">Reset</a>
+                            <button type="submit" class="btn btn-primary btn-sm">Apply Filters</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="card-body table-responsive">
+                <table class="table table-bordered table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Input Type</th>
+                            <th>Value Type</th>
+                            <th>Usage</th>
+                            <th>Flags</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="attribute : ${attributes}">
+                            <td>
+                                <div class="fw-semibold" th:text="${attribute.name}">Attribute</div>
+                                <small class="text-muted" th:text="${attribute.description}">Description</small>
+                            </td>
+                            <td th:text="${attribute.inputType}">TEXT</td>
+                            <td th:text="${attribute.valueType}">TEXT</td>
+                            <td>
+                                <div class="fw-semibold" th:text="${attribute.categoryMappingCount} + ' category map(s)'">0 category map(s)</div>
+                                <div class="d-flex flex-wrap gap-1 mt-2" th:if="${attribute.categoryNames != null and !#lists.isEmpty(attribute.categoryNames)}">
+                                    <span class="badge bg-light text-dark border"
+                                          th:each="categoryName : ${attribute.categoryNames}"
+                                          th:text="${categoryName}">Mobile</span>
+                                </div>
+                                <small class="text-warning" th:if="${attribute.categoryMappingCount == 0}">Unused in category mappings</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-info text-dark me-1" th:if="${attribute.filterable}">Filterable</span>
+                                <span class="badge bg-warning text-dark me-1" th:if="${attribute.variantCapable}">Variant</span>
+                                <span class="badge bg-secondary me-1" th:if="${attribute.searchable}">Searchable</span>
+                                <span class="badge bg-dark me-1" th:if="${attribute.comparable}">Comparable</span>
+                                <span class="badge bg-primary me-1" th:if="${attribute.allowMultipleValues}">Multi</span>
+                                <span class="badge bg-success" th:if="${attribute.active}">Active</span>
+                                <span class="badge bg-light text-dark border" th:if="${!attribute.active}">Inactive</span>
+                            </td>
+                            <td class="text-nowrap">
+                                <a class="btn btn-sm btn-outline-primary" th:href="@{/catalog-attributes/edit/{uuid}(uuid=${attribute.uuid})}">Edit</a>
+                                <a class="btn btn-sm btn-outline-secondary" th:href="@{/catalog-attributes/options/{uuid}(uuid=${attribute.uuid})}">Options</a>
+                                <a class="btn btn-sm btn-outline-danger" th:href="@{/catalog-attributes/delete/{uuid}(uuid=${attribute.uuid})}">Delete</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(attributes)}">
+                            <td colspan="6" class="text-center text-muted">No attributes matched the current filters.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

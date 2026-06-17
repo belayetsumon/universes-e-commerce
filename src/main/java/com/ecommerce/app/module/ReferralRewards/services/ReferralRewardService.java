@@ -5,12 +5,12 @@
 package com.ecommerce.app.module.ReferralRewards.services;
 
 import com.ecommerce.app.module.ReferralRewards.model.Referral;
+import com.ecommerce.app.module.ReferralRewards.model.RewardAccount;
+import com.ecommerce.app.module.ReferralRewards.model.RewardTransaction;
 import com.ecommerce.app.module.ReferralRewards.model.TransactionType;
-import com.ecommerce.app.module.ReferralRewards.model.Wallet;
-import com.ecommerce.app.module.ReferralRewards.model.WalletTransaction;
 import com.ecommerce.app.module.ReferralRewards.repository.ReferralRepository;
-import com.ecommerce.app.module.ReferralRewards.repository.WalletRepository;
-import com.ecommerce.app.module.ReferralRewards.repository.WalletTransactionRepository;
+import com.ecommerce.app.module.ReferralRewards.repository.RewardAccountRepository;
+import com.ecommerce.app.module.ReferralRewards.repository.RewardTransactionRepository;
 import com.ecommerce.app.module.user.model.Users;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -36,12 +36,15 @@ public class ReferralRewardService {
     @Autowired
     private ReferralRepository referralRepository;
     @Autowired
-    private WalletTransactionRepository walletTransactionRepository;
+    private RewardTransactionRepository rewardTransactionRepository;
     @Autowired
-    private WalletRepository walletRepository;
+    private RewardAccountRepository rewardAccountRepository;
 
     @Autowired
-    WalletService walletService;
+    private RewardAccountService rewardAccountService;
+
+    @Autowired
+    private RewardTransactionService rewardTransactionService;
 
     @Transactional
     public void processSignupReferral(Users newUser) {
@@ -75,74 +78,75 @@ public class ReferralRewardService {
 //            });
 //        }
 //    }
-
-    public boolean isUnderMonthlyRewardLimit(Wallet wallet, BigDecimal rewardAmount) {
+    public boolean isUnderMonthlyRewardLimit(RewardAccount rewardAccount, BigDecimal rewardAmount) {
         LocalDateTime startOfMonth = LocalDateTime.now()
                 .withDayOfMonth(1)
                 .toLocalDate()
                 .atStartOfDay();
 
         BigDecimal totalThisMonth = Optional.ofNullable(
-                walletTransactionRepository.sumAmountByWalletAndTypeAndCreatedAtAfter(
-                        wallet, TransactionType.REWARD, startOfMonth)
+                rewardTransactionRepository.sumAmountByRewardAccountAndTypeAndCreatedAtAfter(
+                        rewardAccount, TransactionType.REWARD, startOfMonth)
         ).orElse(BigDecimal.ZERO);
 
         return totalThisMonth.add(rewardAmount).compareTo(MONTHLY_REWARD_LIMIT) <= 0;
     }
 
     @Transactional
-    public boolean creditReward(Wallet wallet, BigDecimal amount, String description) {
-        if (!isUnderMonthlyRewardLimit(wallet, amount)) {
+    public boolean creditReward(RewardAccount rewardAccount, BigDecimal amount, String description) {
+        if (!isUnderMonthlyRewardLimit(rewardAccount, amount)) {
             return false;
         }
 
-        WalletTransaction txn = new WalletTransaction();
-        txn.setWallet(wallet);
-        txn.setAmount(amount);
-        txn.setDescription(description);
-        txn.setCreatedAt(LocalDateTime.now());
-        txn.setExpiryDate(LocalDateTime.now().plusMonths(REWARD_EXPIRY_MONTHS));
-        txn.setType(TransactionType.REWARD);
-        txn.setRedeemed(false);
-
-        walletTransactionRepository.save(txn);
-        updateWalletBalance(wallet);
+        rewardTransactionService.creditRewardAccount(
+                rewardAccount,
+                amount,
+                description,
+                TransactionType.REWARD,
+                LocalDateTime.now().plusMonths(REWARD_EXPIRY_MONTHS),
+                "REFERRAL_REWARD",
+                null,
+                null
+        );
         return true;
     }
 
-    public void updateWalletBalance(Wallet wallet) {
-        BigDecimal balance = walletTransactionRepository
-                .sumAmountByWalletAndExpiryDateAfterAndRedeemedFalse(wallet, LocalDateTime.now())
-                .orElse(BigDecimal.ZERO);
-
-        wallet.setBalance(balance); // Only if Wallet.balance is still Double
-        walletRepository.save(wallet);
+    public void updateRewardBalance(RewardAccount rewardAccount) {
+        if (rewardAccount != null) {
+            rewardAccountRepository.save(rewardAccount);
+        }
     }
 
     @Scheduled(cron = "0 0 0 * * *") // Daily at midnight
     @Transactional
     public void expireRewards() {
         LocalDateTime now = LocalDateTime.now();
-        List<WalletTransaction> expiredRewards = walletTransactionRepository
+        List<RewardTransaction> expiredRewards = rewardTransactionRepository
                 .findByExpiryDateBeforeAndRedeemedFalseAndType(now, TransactionType.REWARD);
 
-        for (WalletTransaction txn : expiredRewards) {
-            txn.setRedeemed(true);
-            walletTransactionRepository.save(txn);
-            updateWalletBalance(txn.getWallet());
+        for (RewardTransaction txn : expiredRewards) {
+            rewardTransactionService.expireRewardTransaction(txn);
         }
     }
 
     public void grantReferralReward(Long userId) {
-        Optional<Referral> referralOpt = referralRepository.findByReferredUser_Id(userId);
+        Optional<Referral> referralOpt = referralRepository.findByUsers_Id(userId);
         if (referralOpt.isPresent()) {
             Referral referral = referralOpt.get();
-            if (!referral.isRewardGranted()) {
-                // Example: credit 100 points to the referrer’s wallet
-                Users referrer = referral.getUsers();
+            Users referrer = referral.getReferredUser();
 
+            if (referrer != null && !referral.isRewardGranted()) {
                 BigDecimal rewardPoints = BigDecimal.valueOf(100);
-                walletService.creditWallet(referrer, rewardPoints, "Referral reward for user ID " + userId);
+                rewardAccountService.creditBalance(
+                        referrer,
+                        rewardPoints,
+                        "Referral reward for user ID " + userId,
+                        TransactionType.REWARD,
+                        LocalDateTime.now().plusMonths(REWARD_EXPIRY_MONTHS),
+                        "SIGNUP_REFERRAL",
+                        "USER:" + userId,
+                        null
+                );
 
                 referral.setRewardGranted(true);
                 referralRepository.save(referral);

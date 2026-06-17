@@ -4,11 +4,11 @@
 </div>
 <div class="modal-body">
 
-    <form 
+    <form id="deliveryAreaForm"
         th:hx-post="@{/availabledeliveryarea/save}" 
         hx-trigger="submit"
-        hx-target="body"
-        hx-swap="outerHTML"
+        hx-target=".modal-content"
+        hx-swap="innerHTML"
         method="post"
         enctype="multipart/form-data" 
         th:object="${availableDeliveryArea}">
@@ -16,16 +16,40 @@
         <div class="form-group">
             <input type="hidden" class="form-control" th:field="*{id}" >
             <input type="hidden" class="form-control" th:field="*{product}" >
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         </div>
 
-       <div class="mb-3">
-            <label class="form-label">Description</label>
-            <textarea  min="0" class="form-control" th:field="*{description}" required></textarea>
+        <div th:if="${errorMessage != null}" class="alert alert-danger" role="alert">
+            <strong>Error:</strong> <span th:text="${errorMessage}"></span>
         </div>
 
         <div class="mb-3">
-            <p class="text-muted"> Example: All over the Bangladesh. or Dhaka,Barisal,Comilla </p>
+            <label class="form-label">Coverage Mode</label>
+            <select class="form-select" th:field="*{mode}" id="deliveryAreaMode" required>
+                <option th:each="mode : ${deliveryAreaModes}" th:value="${mode}" th:text="${mode.label}"></option>
+            </select>
+        </div>
 
+        <div class="mb-3" id="specificDistrictGroup">
+            <label class="form-label">Selected Areas</label>
+            <select class="form-select" th:field="*{selectedDistricts}" id="deliveryDistricts" multiple size="8">
+                <option th:each="district : ${districts}" th:value="${district}" th:text="${district.displayName}"></option>
+            </select>
+            <div class="form-text">Use multi-select for Specific Area mode.</div>
+        </div>
+
+        <div class="mb-3 d-none" id="excludedDistrictGroup">
+            <label class="form-label">Excluded Districts</label>
+            <select class="form-select" th:field="*{excludedDistricts}" id="excludedDistricts" multiple size="8">
+                <option th:each="district : ${districts}" th:value="${district}" th:text="${district.displayName}"></option>
+            </select>
+            <div class="form-text">Use this for "All Area Except", for example exclude Cumilla only.</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Note</label>
+            <textarea min="0" class="form-control" th:field="*{description}" rows="3"></textarea>
+            <div class="form-text">2026-04-22: Optional note only. Delivery matching now uses enum selection above.</div>
         </div>
 
         <div class="modal-footer">
@@ -33,9 +57,53 @@
             <button type="submit" class="btn btn-success">Submit</button>
         </div>
 
-    </form> 
+    </form>
+
+    <script>
+        // 2026-04-22: Show only the relevant district inputs for the selected delivery coverage mode.
+        (() => {
+            const modeSelect = document.getElementById('deliveryAreaMode');
+            const specificGroup = document.getElementById('specificDistrictGroup');
+            const excludedGroup = document.getElementById('excludedDistrictGroup');
+            const districtSelect = document.getElementById('deliveryDistricts');
+            const excludedSelect = document.getElementById('excludedDistricts');
+
+            if (!modeSelect) {
+                return;
+            }
+
+            function updateDeliveryAreaModeUi() {
+                const mode = modeSelect.value;
+                const isSpecific = mode === 'SPECIFIC_AREA';
+                const isAllExcept = mode === 'ALL_AREA_EXCEPT';
+
+                specificGroup.classList.toggle('d-none', !isSpecific);
+                excludedGroup.classList.toggle('d-none', !isAllExcept);
+
+                if (districtSelect) {
+                    if (!isSpecific) {
+                        Array.from(districtSelect.options).forEach((option) => option.selected = false);
+                    }
+                }
+
+                if (excludedSelect && !isAllExcept) {
+                    Array.from(excludedSelect.options).forEach((option) => option.selected = false);
+                }
+            }
+
+            modeSelect.addEventListener('change', updateDeliveryAreaModeUi);
+            updateDeliveryAreaModeUi();
+
+            const form = document.getElementById('deliveryAreaForm');
+            if (form) {
+                form.addEventListener('htmx:responseError', function () {
+                    const errorBox = form.querySelector('.alert-danger');
+                    if (!errorBox) {
+                        return;
+                    }
+                    errorBox.scrollIntoView({behavior: 'smooth', block: 'center'});
+                });
+            }
+        })();
+    </script>
 </div>
-
-
-
-

@@ -29,22 +29,22 @@
                                     <li class="list-group-item  list-group-item-action"th:each="categorylists,status:${categorylist}" >
                                         <div class="media">
                                             <div class="media-left media-">
-                                                <span th:if="${ not #strings.isEmpty(categorylists.imageName)}" class="badge bg-green pull-right"> 
+                                                <span th:if="${ not #strings.isEmpty(categorylists.imageName)}" class="badge bg-green pull-right">
                                                     <img  class=" align-self-center img-thumbnail" th:src="@{/files/}+${categorylists.imageName}" width="40px"  height="40px"/>
                                                 </span>
 
-                                                <span th:if="${#strings.isEmpty(categorylists.imageName)}" > 
+                                                <span th:if="${#strings.isEmpty(categorylists.imageName)}" >
 
                                                     <img  class="align-self-center img-thumbnail" th:src="@{/img/no_image.png}" width="40px"  height="40px"/>
                                                 </span>
                                             </div>
                                             <div class="media-body ml-3">
-                                                <a    class=" textMaroon" th:href="@{/front-view/sub-category-by-category/{catid}(catid=${categorylists.id})}" > <span  th:text="${categorylists.name}">    </span>  <span  class="float-right badge badge-danger " th:text="${categorylists.productsubcategory.size()}" ></span></a> 
+                                                <a    class=" textMaroon" th:href="@{/front-view/sub-category-by-category/{catid}(catid=${categorylists.id})}" > <span  th:text="${categorylists.name}">    </span>  <span  class="float-right badge badge-danger " th:text="${categorylists.productsubcategory.size()}" ></span></a>
 
                                             </div>
                                         </div></li>
                                 </ul>
-                            </div> 
+                            </div>
                         </div>
                         <div class="col-sm-9">
                             <div class="card mb-4 borderColor">
@@ -67,17 +67,17 @@
 
                                                 <div class="media">
                                                     <div class="media-left media-">
-                                                        <span th:if="${ not #strings.isEmpty(subcategorylists.imageName)}" class="badge bg-green pull-right"> 
+                                                        <span th:if="${ not #strings.isEmpty(subcategorylists.imageName)}" class="badge bg-green pull-right">
                                                             <img  class=" align-self-center img-thumbnail" th:src="@{/files/}+${subcategorylists.imageName}" width="100px"  height="75px"/>
                                                         </span>
 
-                                                        <span th:if="${#strings.isEmpty(subcategorylists.imageName)}" > 
+                                                        <span th:if="${#strings.isEmpty(subcategorylists.imageName)}" >
 
                                                             <img  class="align-self-center img-thumbnail" th:src="@{/img/no_image.png}" width="40px"  height="40px"/>
                                                         </span>
                                                     </div>
                                                     <div class="media-body ml-3">
-                                                        <a    class="textMaroon" th:href="@{/front-view/exam-by-sub-category/{subcatid}(subcatid=${subcategorylists.id})}" > 
+                                                        <a    class="textMaroon" th:href="@{/front-view/exam-by-sub-category/{subcatid}(subcatid=${subcategorylists.id})}" >
                                                             <span  th:text="${subcategorylists.name}">    </span> <span  class="float-right badge badge-danger m-1">  <span  th:text="${subcategorylists.exams.size()}">    </span> </span></a>
 
                                                     </div>
@@ -111,7 +111,7 @@
             <div th:replace="mobile-top-nav"></div>
 
             <div class="row mt-5"> </div>
-            <div class="row mt-3"> </div> 
+            <div class="row mt-3"> </div>
 
 
             <section>
@@ -127,22 +127,22 @@
                                     <li class="list-group-item  list-group-item-action"th:each="categorylists,status:${categorylist}" >
                                         <div class="media">
                                             <div class="media-left media-">
-                                                <span th:if="${ not #strings.isEmpty(categorylists.imageName)}" class="badge bg-green pull-right"> 
+                                                <span th:if="${ not #strings.isEmpty(categorylists.imageName)}" class="badge bg-green pull-right">
                                                     <img  class=" align-self-center img-thumbnail" th:src="@{/files/}+${categorylists.imageName}" width="40px"  height="40px"/>
                                                 </span>
 
-                                                <span th:if="${#strings.isEmpty(categorylists.imageName)}" > 
+                                                <span th:if="${#strings.isEmpty(categorylists.imageName)}" >
 
                                                     <img  class="align-self-center img-thumbnail" th:src="@{/img/no_image.png}" width="40px"  height="40px"/>
                                                 </span>
                                             </div>
                                             <div class="media-body ml-3">
-                                                <a    class=" textMaroon" th:href="@{/front-view/sub-category-by-category/{catid}(catid=${categorylists.id})}" > <span  th:text="${categorylists.name}">    </span>  <span  class="float-right badge badge-danger " th:text="${categorylists.productsubcategory.size()}" ></span></a> 
+                                                <a    class=" textMaroon" th:href="@{/front-view/sub-category-by-category/{catid}(catid=${categorylists.id})}" > <span  th:text="${categorylists.name}">    </span>  <span  class="float-right badge badge-danger " th:text="${categorylists.productsubcategory.size()}" ></span></a>
 
                                             </div>
                                         </div></li>
                                 </ul>
-                            </div> 
+                            </div>
                         </div>
                         <div class="col-sm-9">
                             <div class="card mb-4 borderColor">
@@ -165,17 +165,17 @@
 
                                                 <div class="media">
                                                     <div class="media-left media-">
-                                                        <span th:if="${ not #strings.isEmpty(subcategorylists.imageName)}" class="badge bg-green pull-right"> 
+                                                        <span th:if="${ not #strings.isEmpty(subcategorylists.imageName)}" class="badge bg-green pull-right">
                                                             <img  class=" align-self-center img-thumbnail" th:src="@{/files/}+${subcategorylists.imageName}" width="100px"  height="75px"/>
                                                         </span>
 
-                                                        <span th:if="${#strings.isEmpty(subcategorylists.imageName)}" > 
+                                                        <span th:if="${#strings.isEmpty(subcategorylists.imageName)}" >
 
                                                             <img  class="align-self-center img-thumbnail" th:src="@{/img/no_image.png}" width="40px"  height="40px"/>
                                                         </span>
                                                     </div>
                                                     <div class="media-body ml-3">
-                                                        <a    class="textMaroon" th:href="@{/front-view/exam-by-sub-category/{subcatid}(subcatid=${subcategorylists.id})}" > 
+                                                        <a    class="textMaroon" th:href="@{/front-view/exam-by-sub-category/{subcatid}(subcatid=${subcategorylists.id})}" >
                                                             <span  th:text="${subcategorylists.name}">    </span> <span  class="float-right badge badge-danger m-1">  <span  th:text="${subcategorylists.exams.size()}">    </span> </span></a>
 
                                                     </div>

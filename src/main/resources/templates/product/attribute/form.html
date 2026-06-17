@@ -1,0 +1,77 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h4 th:text="${attribute.uuid == null ? 'Create Attribute' : 'Edit Attribute'}">Create Attribute</h4>
+                <p class="text-muted mb-0">Define reusable fields once and assign them to categories later.</p>
+            </div>
+            <a class="btn btn-outline-secondary btn-sm" th:href="@{/catalog-attributes/list}">Back</a>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+                <form th:action="@{/catalog-attributes/save}" th:object="${attribute}" method="post">
+                    <input type="hidden" th:field="*{id}">
+                    <input type="hidden" th:field="*{uuid}">
+                    <input type="hidden" th:field="*{version}">
+
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" th:field="*{name}" required>
+                            <div class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" rows="3" th:field="*{description}"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Input Type</label>
+                            <select class="form-select" th:field="*{inputType}" required>
+                                <option value="">Select one</option>
+                                <option th:each="type : ${inputTypes}" th:value="${type}" th:text="${type}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Value Type</label>
+                            <select class="form-select" th:field="*{valueType}" required>
+                                <option value="">Select one</option>
+                                <option th:each="type : ${valueTypes}" th:value="${type}" th:text="${type}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 form-check">
+                            <input class="form-check-input" type="checkbox" th:field="*{allowMultipleValues}" id="allowMultipleValues">
+                            <label class="form-check-label" for="allowMultipleValues">Allow multiple values</label>
+                        </div>
+                        <div class="col-md-3 form-check">
+                            <input class="form-check-input" type="checkbox" th:field="*{variantCapable}" id="variantCapable">
+                            <label class="form-check-label" for="variantCapable">Variant capable</label>
+                        </div>
+                        <div class="col-md-2 form-check">
+                            <input class="form-check-input" type="checkbox" th:field="*{filterable}" id="filterable">
+                            <label class="form-check-label" for="filterable">Filterable</label>
+                        </div>
+                        <div class="col-md-2 form-check">
+                            <input class="form-check-input" type="checkbox" th:field="*{searchable}" id="searchable">
+                            <label class="form-check-label" for="searchable">Searchable</label>
+                        </div>
+                        <div class="col-md-2 form-check">
+                            <input class="form-check-input" type="checkbox" th:field="*{comparable}" id="comparable">
+                            <label class="form-check-label" for="comparable">Comparable</label>
+                        </div>
+                        <div class="col-md-2 form-check">
+                            <input class="form-check-input" type="checkbox" th:field="*{active}" id="active">
+                            <label class="form-check-label" for="active">Active</label>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-success">Save Attribute</button>
+                        <a class="btn btn-outline-secondary" th:href="@{/catalog-attributes/list}">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

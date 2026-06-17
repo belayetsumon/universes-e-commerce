@@ -83,6 +83,23 @@ public class Shipment {
     @Column(length = 20)
     private DeliveryType deliveryType = DeliveryType.HOME_DELIVERY; // HOME_DELIVERY / OFFICE_PICKUP
 
+    // 2026-04-22: Snapshot delivery and settlement rules on Shipment so old orders stay financially stable.
+    @Enumerated(EnumType.STRING)
+    @Column(length = 30)
+    private CarrierMode carrierModeSnapshot = CarrierMode.THIRD_PARTY;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 30)
+    private SettlementMode settlementMode = SettlementMode.MARKETPLACE_MANAGED;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private ShippingChargeOwner shippingChargeOwner = ShippingChargeOwner.MARKETPLACE;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 40)
+    private CodCollectionMode codCollectionMode = CodCollectionMode.CARRIER_COLLECTS_FOR_MARKETPLACE;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @NotNull(message = "Shipment status is required")
@@ -108,6 +125,23 @@ public class Shipment {
 
     @DecimalMin(value = "0.00", message = "COD pending cannot be negative")
     private BigDecimal codPending = BigDecimal.ZERO;
+
+    @DecimalMin(value = "0.00", message = "Product net amount cannot be negative")
+    private BigDecimal productNetAmount = BigDecimal.ZERO;
+
+    @DecimalMin(value = "0.00", message = "Marketplace commission amount cannot be negative")
+    private BigDecimal marketplaceCommissionAmount = BigDecimal.ZERO;
+
+    @DecimalMin(value = "0.00", message = "COD fee amount cannot be negative")
+    private BigDecimal codFeeAmount = BigDecimal.ZERO;
+
+    private boolean shippingPaidToMarketplace;
+
+    @DecimalMin(value = "0.00", message = "Vendor payable amount cannot be negative")
+    private BigDecimal vendorPayableAmount = BigDecimal.ZERO;
+
+    @DecimalMin(value = "0.00", message = "Marketplace payable amount cannot be negative")
+    private BigDecimal marketplacePayableAmount = BigDecimal.ZERO;
 
     // Audit fields
     @CreatedDate
@@ -233,6 +267,38 @@ public class Shipment {
         this.deliveryType = deliveryType;
     }
 
+    public CarrierMode getCarrierModeSnapshot() {
+        return carrierModeSnapshot != null ? carrierModeSnapshot : CarrierMode.THIRD_PARTY;
+    }
+
+    public void setCarrierModeSnapshot(CarrierMode carrierModeSnapshot) {
+        this.carrierModeSnapshot = carrierModeSnapshot;
+    }
+
+    public SettlementMode getSettlementMode() {
+        return settlementMode != null ? settlementMode : SettlementMode.MARKETPLACE_MANAGED;
+    }
+
+    public void setSettlementMode(SettlementMode settlementMode) {
+        this.settlementMode = settlementMode;
+    }
+
+    public ShippingChargeOwner getShippingChargeOwner() {
+        return shippingChargeOwner != null ? shippingChargeOwner : ShippingChargeOwner.MARKETPLACE;
+    }
+
+    public void setShippingChargeOwner(ShippingChargeOwner shippingChargeOwner) {
+        this.shippingChargeOwner = shippingChargeOwner;
+    }
+
+    public CodCollectionMode getCodCollectionMode() {
+        return codCollectionMode != null ? codCollectionMode : CodCollectionMode.CARRIER_COLLECTS_FOR_MARKETPLACE;
+    }
+
+    public void setCodCollectionMode(CodCollectionMode codCollectionMode) {
+        this.codCollectionMode = codCollectionMode;
+    }
+
     public ShipmentStatus getStatus() {
         return status;
     }
@@ -297,6 +363,54 @@ public class Shipment {
         this.codPending = codPending;
     }
 
+    public BigDecimal getProductNetAmount() {
+        return productNetAmount;
+    }
+
+    public void setProductNetAmount(BigDecimal productNetAmount) {
+        this.productNetAmount = productNetAmount;
+    }
+
+    public BigDecimal getMarketplaceCommissionAmount() {
+        return marketplaceCommissionAmount;
+    }
+
+    public void setMarketplaceCommissionAmount(BigDecimal marketplaceCommissionAmount) {
+        this.marketplaceCommissionAmount = marketplaceCommissionAmount;
+    }
+
+    public BigDecimal getCodFeeAmount() {
+        return codFeeAmount;
+    }
+
+    public void setCodFeeAmount(BigDecimal codFeeAmount) {
+        this.codFeeAmount = codFeeAmount;
+    }
+
+    public boolean isShippingPaidToMarketplace() {
+        return shippingPaidToMarketplace;
+    }
+
+    public void setShippingPaidToMarketplace(boolean shippingPaidToMarketplace) {
+        this.shippingPaidToMarketplace = shippingPaidToMarketplace;
+    }
+
+    public BigDecimal getVendorPayableAmount() {
+        return vendorPayableAmount;
+    }
+
+    public void setVendorPayableAmount(BigDecimal vendorPayableAmount) {
+        this.vendorPayableAmount = vendorPayableAmount;
+    }
+
+    public BigDecimal getMarketplacePayableAmount() {
+        return marketplacePayableAmount;
+    }
+
+    public void setMarketplacePayableAmount(BigDecimal marketplacePayableAmount) {
+        this.marketplacePayableAmount = marketplacePayableAmount;
+    }
+
     public LocalDateTime getCreated() {
         return created;
     }
@@ -327,6 +441,39 @@ public class Shipment {
 
     public void setModifiedBy(String modifiedBy) {
         this.modifiedBy = modifiedBy;
+    }
+
+    // 2026-04-22: Marketplace keeps commission plus charges it owns; vendor payout adds vendor-owned prepaid shipping.
+    public void recalculateSettlementAmounts() {
+        BigDecimal productNet = defaultAmount(productNetAmount);
+        BigDecimal commission = defaultAmount(marketplaceCommissionAmount);
+        BigDecimal shipping = defaultAmount(shippingCost);
+        BigDecimal codFee = defaultAmount(codFeeAmount);
+
+        BigDecimal vendorPayable = productNet.subtract(commission);
+        if (vendorPayable.compareTo(BigDecimal.ZERO) < 0) {
+            vendorPayable = BigDecimal.ZERO;
+        }
+
+        if (getShippingChargeOwner() == ShippingChargeOwner.VENDOR && shippingPaidToMarketplace) {
+            vendorPayable = vendorPayable.add(shipping);
+        }
+
+        BigDecimal marketplacePayable = commission;
+        if (getShippingChargeOwner() == ShippingChargeOwner.MARKETPLACE) {
+            marketplacePayable = marketplacePayable.add(shipping);
+        }
+        if (getCodCollectionMode() == CodCollectionMode.MARKETPLACE_COLLECTS
+                || getCodCollectionMode() == CodCollectionMode.CARRIER_COLLECTS_FOR_MARKETPLACE) {
+            marketplacePayable = marketplacePayable.add(codFee);
+        }
+
+        this.vendorPayableAmount = vendorPayable;
+        this.marketplacePayableAmount = marketplacePayable;
+    }
+
+    private BigDecimal defaultAmount(BigDecimal amount) {
+        return amount != null ? amount : BigDecimal.ZERO;
     }
 
 }

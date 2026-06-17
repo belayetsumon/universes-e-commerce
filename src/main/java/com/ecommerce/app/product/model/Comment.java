@@ -9,7 +9,6 @@ import com.ecommerce.app.module.user.model.Users;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -22,6 +21,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
  */
 @Entity
 @EntityListeners(AuditingEntityListener.class)
+@Table(name = "product_comment")
 public class Comment {
 
     @Id
@@ -44,7 +44,7 @@ public class Comment {
     @Enumerated(EnumType.STRING)
     private CommentsStatus status;
 
-    /// Audit /// 
+    /// Audit ///
     @CreatedBy
     @Column(nullable = false, updatable = false)
     private String createdBy;
@@ -148,5 +148,4 @@ public class Comment {
         this.modified = modified;
     }
 
-   
 }

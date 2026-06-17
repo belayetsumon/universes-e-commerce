@@ -14,7 +14,7 @@
             </div>
         </section>
 
-        <section>
+        <section class="single-product-page">
             <div class="container-fluid">
                 <div class="row mt-4">
                     <div class="col-sm-12">
@@ -26,37 +26,28 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-sm-6">
-                                        <!--                                        <span th:if="${ not #strings.isEmpty(product_details.imageName)}" class="">
-                                                                                    <img  class="img-fluid" th:src="@{/files/}+${product_details.imageName}" />
-                                                                                </span>
-                                                                                <span th:if="${#strings.isEmpty(product_details.imageName)}" >
-                                                                                    <img  class="img-fluid" th:src="@{/img/image-not-available.png}" />
-                                                                                </span>-->
 
 
 
-                                        <!--                                        <div class="slider-for">
-                                                                                    <div><img src="/images/product1.jpg" alt="Product 1"/></div>
-                                                                                    <div><img src="/images/product2.jpg" alt="Product 2"/></div>
-                                                                                    <div><img src="/images/product3.jpg" alt="Product 3"/></div>
-                                                                                    <div><img src="/images/product4.jpg" alt="Product 4"/></div>
-                                                                                </div>
-
-                                                                                <div class="slider-nav">
-                                                                                    <div><img src="/images/product1.jpg" alt="Thumb 1"/></div>
-                                                                                    <div><img src="/images/product2.jpg" alt="Thumb 2"/></div>
-                                                                                    <div><img src="/images/product3.jpg" alt="Thumb 3"/></div>
-                                                                                    <div><img src="/images/product4.jpg" alt="Thumb 4"/></div>
-                                                                                </div>-->
-
-
-                                        <div id="main-preview">
-                                            <span th:if="${ not #strings.isEmpty(product_details.imageName)}" class="">
+                                        <div id="main-preview" class="position-relative">
+                                            <div class="product-status-badge-stack"
+                                                 th:if="${product_details['showPreorderBadge'] == true or product_details['showOutOfStockBadge'] == true}">
+                                                <span class="product-status-badge preorder"
+                                                      th:if="${product_details['showPreorderBadge'] == true}">
+                                                    Preorder
+                                                </span>
+                                                <span class="product-status-badge out-of-stock badge bg-danger"
+                                                      th:if="${product_details['showOutOfStockBadge'] == true}">
+                                                    Out of stock
+                                                </span>
+                                            </div>
+                                            <span th:if="${not #strings.isEmpty(#strings.trim(product_details.imageName))}" class="">
                                                 <img  id="mainImage" class="img-fluid " th:src="@{/files/}+${product_details.imageName}"
+                                                      th:attr="onerror=|this.onerror=null;this.src='@{/img/image-not-available.png}';|"
                                                       width="800"
                                                       height="600"/>
                                             </span>
-                                            <span th:if="${#strings.isEmpty(product_details.imageName)}" >
+                                            <span th:if="${#strings.isEmpty(#strings.trim(product_details.imageName))}" >
                                                 <img  class="img-fluid" th:src="@{/img/image-not-available.png}" />
                                             </span>
 
@@ -77,11 +68,42 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-sm-6">
+                                    <div class="col-sm-6 product-summary">
                                         <div class="row">
                                             <div class="col-6">
 
                                                 <div class="fs-5">  <span  th:text="${product_details.title}">    </span></div>
+
+                                                <div class="review-inline-rating" th:if="${productReviewSummary.hasReviews}">
+                                                    <div class="review-star-row">
+                                                        <i class="bi"
+                                                           th:each="star : ${#numbers.sequence(1, 5)}"
+                                                           th:classappend="${star <= productReviewSummary.averageRatingRounded} ? ' bi-star-fill' : ' bi-star'"></i>
+                                                    </div>
+                                                    <div class="product-rating-chip">
+                                                        <strong th:text="${productReviewSummary.averageRating}">0.0</strong>
+                                                        <span>/ 5</span>
+                                                        <span>|</span>
+                                                        <span th:text="${productReviewSummary.reviewCount} + ' verified reviews'">0 verified reviews</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="review-inline-rating" th:unless="${productReviewSummary.hasReviews}">
+                                                    <span class="product-rating-chip">
+                                                        <i class="bi bi-chat-square-text"></i>
+                                                        No verified reviews yet
+                                                    </span>
+                                                </div>
+
+                                                <div th:if="${productViewCount > 0}"
+                                                     class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill border text-muted bg-light small">
+
+                                                    <i class="bi bi-eye"></i>
+
+                                                    <span class="fw-medium" th:text="${productViewCount}">0</span>
+                                                    <span>views</span>
+
+                                                </div>
 
                                                 <div>  <strong>Category: </strong><span  th:text="${product_details.category}">    </span></div>
 
@@ -119,51 +141,225 @@
 
                                                 <!--                                                <h6>  Discount: <span  th:text="${product_details.discount}">    </span></h6>-->
 
-                                                <form  class="" th:action="@{/cart/add}"  enctype="multipart/form-data" method="post" >
-                                                    <div th:if="${variants != null and !#lists.isEmpty(variants)}">
-                                                        <label class="form-label">Size</label>
-                                                        <select name="v_id" id="sizeSelect" class="form-select">
-                                                            <option value="">Select Size</option>
-                                                            <option th:each="v : ${variants}"
-                                                                    th:value="${v.id}"
-                                                                    th:text="${v.size.name}">
-                                                            </option>
-                                                        </select>
+                                                <div th:if="${errorMessage}" class="alert alert-danger py-2" role="alert" th:text="${errorMessage}"></div>
+                                                <div th:if="${successMessage}" class="alert alert-success py-2" role="alert" th:text="${successMessage}"></div>
 
-                                                        <label class="form-label">Color</label>
-                                                        <select id="colorSelect" class="form-select">
-                                                            <option value="">Select Color</option>
-                                                            <option th:each="v : ${variants}"
-                                                                    th:value="${v.id}"
-                                                                    th:text="${v.color.name}">
-                                                            </option>
-                                                        </select>
+                                                <form id="addToCartForm" class="" th:action="@{/cart/add}"  enctype="multipart/form-data" method="post" >
+                                                    <div th:if="${hasCatalogVariants}">
+                                                        <input type="hidden" name="catalogVariantUuid" id="catalogVariantUuid" value="" />
+
+                                                        <div class="variant-selection-area mb-4">
+                                                            <div class="row">
+                                                                <div class="col-md-6 mb-3" th:each="selection : ${catalogVariantSelectors}">
+                                                                    <label class="form-label fw-bold" th:for="${'catalog-selector-' + selection.attributeUuid}">
+                                                                        <span th:text="${selection.attributeName}">Attribute</span>
+                                                                        <span class="text-danger">*</span>
+                                                                    </label>
+                                                                    <select class="form-select catalog-variant-selector"
+                                                                            th:id="${'catalog-selector-' + selection.attributeUuid}"
+                                                                            th:attr="data-attribute-uuid=${selection.attributeUuid},data-attribute-name=${selection.attributeName},data-required=${selection.required}">
+                                                                        <option value="">-- Choose [[${selection.attributeName}]] --</option>
+                                                                        <option th:each="optionRow : ${selection.options}"
+                                                                                th:value="${optionRow.uuid}"
+                                                                                th:text="${optionRow.label}">Option</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+
+                                                            <div id="variantError" class="text-danger fw-bold mb-2 d-none">
+                                                                <i class="bi bi-exclamation-circle"></i> Please select a valid variant combination before adding to cart.
+                                                            </div>
+
+                                                            <div id="catalogVariantState" class="small text-muted"></div>
+                                                        </div>
                                                     </div>
-                                                    <label class="form-label">Quantity</label>
-                                                    <input type="hidden" class="form-control" th:name ="product_id" th:value="${product_details.id}" />
 
-                                                    <input  type="number" min="1"   class="col-auto form-control w-50 mb-3"  size="10" th:name="quantity" value="1" />
+                                                    <label class="form-label">Quantity</label>
+                                                    <input type="hidden" class="form-control" name ="product_uuid" th:value="${product_details.uuid}" />
+
+                                                    <input  type="number" min="1"   class="col-auto form-control w-50 mb-3"  size="10" name="quantity" value="1" />
 
                                                     <div class="col-auto form-group">
-                                                        <button class="btn btn-block btn-success" >Add to Cart</button>
-                                                        <button class="btn btn-block btn-outline-info" >Add to WishList </button>
+                                                        <button class="btn btn-block btn-success" > <i class="bi bi-cart-plus"></i> Add to Cart</button>
                                                     </div>
                                                 </form>
-                                                <!--                                        <a class="btn btn-block btn-warning" th:href="@{/cart/add/{prodid}(prodid=${product_details.id})}">Add to Cart</a>-->
-                                                <div>  <strong>Brand: </strong><span>    </span></div>
-                                                <div>  <strong>Manufacture: </strong><span  th:text="${product_details.manufacturerName}"> </span></div>
-                                                <div>  <strong>Availability: </strong>In stock </div>
-                                                <div>  <strong>EMI Available:  </strong>  <span  th:text="${product_details.emiAvailable}"> </span> </div>
+
+                                                <form class="mt-2"
+                                                      th:action="${currentProductInWishlist} ? @{/wishlist/remove} : @{/wishlist/add}"
+                                                      method="post">
+                                                    <input type="hidden" name="product_uuid" th:value="${product_details.uuid}" />
+                                                    <input type="hidden"
+                                                           name="redirectUrl"
+                                                           th:value="@{/public/single-product/{prodid}(prodid=${product_details.uuid})}" />
+                                                    <button type="submit"
+                                                            class="btn"
+                                                            th:classappend="${currentProductInWishlist} ? ' btn-outline-danger' : ' btn-outline-info'">
+                                                        <i class="bi"
+                                                           th:classappend="${currentProductInWishlist} ? ' bi-heart-fill' : ' bi-suit-heart'"></i>
+                                                        <span th:text="${currentProductInWishlist} ? ' Remove from Wishlist' : ' Add to Wishlist'">Add to Wishlist</span>
+                                                    </button>
+                                                </form>
+
+                                                <script th:if="${hasCatalogVariants}" th:inline="javascript">
+                                                    // 2026-05-15: Generic variant selector that resolves real combinations to a catalog variant UUID.
+                                                    (() => {
+                                                        const form = document.getElementById('addToCartForm');
+                                                        const selectors = Array.from(document.querySelectorAll('.catalog-variant-selector'));
+                                                        const variantUuidInput = document.getElementById('catalogVariantUuid');
+                                                        const stateBox = document.getElementById('catalogVariantState');
+                                                        const errorBox = document.getElementById('variantError');
+                                                        const variants = /*[[${catalogVariants}]]*/ [];
+
+                                                        if (!form || !variantUuidInput || selectors.length === 0) {
+                                                            return;
+                                                        }
+
+                                                        const normalize = (value) => value === null || value === undefined || value === '' ? '' : String(value);
+                                                        const getOptionValue = (variant, attributeUuid) => {
+                                                            const options = Array.isArray(variant?.options) ? variant.options : [];
+                                                            const match = options.find((optionRow) => normalize(optionRow.attributeUuid) === normalize(attributeUuid));
+                                                            return normalize(match?.optionUuid);
+                                                        };
+                                                        const getRequired = (selector) => selector.dataset.required === 'true';
+
+                                                        const snapshotOptions = selectors.map((selector) => ({
+                                                                element: selector,
+                                                                options: Array.from(selector.options).map((option) => ({
+                                                                        value: option.value,
+                                                                        text: option.text,
+                                                                        isPlaceholder: option.value === ''
+                                                                    }))
+                                                            }));
+
+                                                        function renderSelectorOptions(selectorMeta, allowedValues) {
+                                                            const select = selectorMeta.element;
+                                                            const currentValue = select.value;
+                                                            select.innerHTML = '';
+
+                                                            selectorMeta.options.forEach((option) => {
+                                                                if (option.isPlaceholder || allowedValues.has(option.value)) {
+                                                                    const optionEl = document.createElement('option');
+                                                                    optionEl.value = option.value;
+                                                                    optionEl.textContent = option.text;
+                                                                    select.appendChild(optionEl);
+                                                                }
+                                                            });
+
+                                                            const currentStillValid = Array.from(select.options)
+                                                                    .some((option) => option.value === currentValue);
+                                                            select.value = currentStillValid ? currentValue : '';
+                                                        }
+
+                                                        function setError(message) {
+                                                            errorBox.innerHTML = '<i class="bi bi-exclamation-circle"></i> ' + message;
+                                                            errorBox.classList.remove('d-none');
+                                                        }
+
+                                                        function clearError() {
+                                                            errorBox.classList.add('d-none');
+                                                        }
+
+                                                        function refreshSelectors() {
+                                                            selectors.forEach((selector) => {
+                                                                const selectorMeta = snapshotOptions.find((item) => item.element === selector);
+                                                                const attributeUuid = selector.dataset.attributeUuid;
+                                                                const matchingVariants = variants.filter((variant) =>
+                                                                    selectors.every((otherSelector) => {
+                                                                        const otherAttributeUuid = otherSelector.dataset.attributeUuid;
+                                                                        const selectedValue = normalize(otherSelector.value);
+                                                                        if (otherAttributeUuid === attributeUuid || selectedValue === '') {
+                                                                            return true;
+                                                                        }
+                                                                        return getOptionValue(variant, otherAttributeUuid) === selectedValue;
+                                                                    })
+                                                                );
+
+                                                                const allowedValues = new Set(
+                                                                        matchingVariants.map((variant) => getOptionValue(variant, attributeUuid)).filter((value) => value !== '')
+                                                                        );
+                                                                renderSelectorOptions(selectorMeta, allowedValues);
+                                                            });
+
+                                                            const hasMissingRequired = selectors.some((selector) => getRequired(selector) && normalize(selector.value) === '');
+                                                            selectors.forEach((selector) => {
+                                                                selector.classList.toggle('is-invalid', getRequired(selector) && normalize(selector.value) === '');
+                                                            });
+
+                                                            const exactMatch = variants.find((variant) =>
+                                                                selectors.every((selector) => getOptionValue(variant, selector.dataset.attributeUuid) === normalize(selector.value))
+                                                            );
+
+                                                            if (!hasMissingRequired && exactMatch) {
+                                                                variantUuidInput.value = normalize(exactMatch.uuid);
+                                                                clearError();
+                                                                const effectivePrice = exactMatch.specialPrice || exactMatch.sellingPrice;
+                                                                stateBox.textContent = `${exactMatch.optionSummary} | Price: Tk ${effectivePrice || '0.00'} | Stock: ${exactMatch.stockQuantity || 0}`;
+                                                                return;
+                                                            }
+
+                                                            variantUuidInput.value = '';
+                                                            if (!hasMissingRequired && selectors.some((selector) => normalize(selector.value) !== '')) {
+                                                                setError('This combination is not available right now.');
+                                                            } else {
+                                                                clearError();
+                                                            }
+                                                            stateBox.textContent = '';
+                                                        }
+
+                                                        selectors.forEach((selector) => selector.addEventListener('change', refreshSelectors));
+                                                        form.addEventListener('submit', (event) => {
+                                                            refreshSelectors();
+                                                            if (variantUuidInput.value === '') {
+                                                                event.preventDefault();
+                                                                setError('Please select a valid variant combination before adding to cart.');
+                                                            }
+                                                        });
+
+                                                        refreshSelectors();
+                                                    })();
+                                                </script>
+
+
+                                                <!--                                        <a class="btn btn-block btn-warning" th:href="@{/cart/add/{prodid}(prodid=${product_details.uuid})}">Add to Cart</a>-->
+                                                <div>  <strong>SKU: </strong><span th:text="${product_details.sku}"> </span></div>
+                                                <div>  <strong>Manufacturer: </strong><span  th:text="${product_details.manufacturerName}"> </span></div>
+                                                <div>
+                                                    <strong>Availability: </strong>
+                                                    <span th:text="${product_details['availabilityLabel']}">In stock</span>
+                                                </div>
+                                                <div>  <strong>Meritten EMI Available:  </strong>  <span  th:text="${product_details.emiAvailable}"> </span> </div>
                                                 <div>
                                                     <strong>Sold By : </strong>  <span  th:text="${product_details.vendorProfileName}"> </span>
                                                 </div>
+                                                <div class="card mt-4" th:if="${productSpecifications != null and !#lists.isEmpty(productSpecifications)}">
+                                                    <div class="card-header bg-light">
+                                                        <strong>Key Specifications</strong>
+                                                    </div>
+                                                    <div class="card-body p-0">
+                                                        <div class="table-responsive">
+                                                            <table class="table table-sm align-middle mb-0">
+                                                                <tbody>
+                                                                <th:block th:each="spec, specStat : ${productSpecifications}">
+                                                                    <tr th:if="${specStat.index < 8}">
+                                                                        <th class="w-50 text-muted" th:text="${spec.attributeName}">Attribute</th>
+                                                                        <td th:text="${spec.value}">Value</td>
+                                                                    </tr>
+                                                                </th:block>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-footer small text-muted" th:if="${#lists.size(productSpecifications) > 8}">
+                                                        More specifications are available in the Specifications tab below.
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="col-6 ">
+                                            <div class="col-6 product-info-sidebar">
                                                 <div class="fs-6"> Delivery Options </div>
                                                 <p>Available Delivery Area: </p>
                                                 <ul class="list-unstyled">
                                                     <li th:if="${d_a_list != null and !#lists.isEmpty(d_a_list)}" th:each="d_a_lists : ${d_a_list}">
-                                                        <span th:text="${d_a_lists.description}"> </span>
+                                                        <span th:text="${d_a_lists.coverageLabel}"> </span>
                                                     </li>
                                                     <!-- Fallback message if the product list is empty or null -->
                                                 </ul>
@@ -254,15 +450,29 @@
 
                                             <div class="card product-card  position-relative mb-4 hvr-bounce-in h-100">
 
-                                                <span th:if="${ not #strings.isEmpty(productlists.imageName)}" class="">
+                                                <span th:if="${not #strings.isEmpty(#strings.trim(productlists.imageName))}" class="">
                                                     <!--                                <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />-->
-                                                    <img class="card-img-top" th:src="@{${productlists.imageUrl}}" />
+                                                    <img class="card-img-top"
+                                                         th:src="@{${productlists.imageUrl}}"
+                                                         th:attr="onerror=|this.onerror=null;this.src='@{/img/image-not-available.png}';|" />
 
 
                                                 </span>
-                                                <span th:if="${#strings.isEmpty(productlists.imageName)}" >
+                                                <span th:if="${#strings.isEmpty(#strings.trim(productlists.imageName))}" >
                                                     <img  class="card-img-top" th:src="@{/img/image-not-available.png}" />
                                                 </span>
+
+                                                <div class="product-status-badge-stack"
+                                                     th:if="${productlists['showPreorderBadge'] == true or productlists['showOutOfStockBadge'] == true}">
+                                                    <span class="product-status-badge preorder"
+                                                          th:if="${productlists['showPreorderBadge'] == true}">
+                                                        Preorder
+                                                    </span>
+                                                    <span class="product-status-badge out-of-stock badge bg-danger"
+                                                          th:if="${productlists['showOutOfStockBadge'] == true}">
+                                                        Out of stock
+                                                    </span>
+                                                </div>
 
                                                 <div class="badge-container">
                                                     <span th:if="${productlists.totalDiscountPercent != null and productlists.totalDiscountPercent > 0}" class="badge rounded-pill bg-danger badge-custom" >
@@ -274,9 +484,16 @@
 
                                                 <div class="card-body">
                                                     <div class="card-title">
-                                                        <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.id})}" >
+                                                        <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.uuid})}" >
                                                             <!--                                        <span  th:text="${productlists.title}"></span> -->
                                                             <p th:text="${productlists.title.length() > 40 ? #strings.substring(productlists.title, 0, 40) + '...' : productlists.title}"></p></a>
+                                                    </div>
+                                                    <div class="product-card-rating" th:if="${productlists.hasReviews}">
+                                                        <span class="review-card-rating">
+                                                            <i class="bi bi-star-fill"></i>
+                                                        </span>
+                                                        <strong th:text="${productlists.averageRating}">0.0</strong>
+                                                        <span th:text="'(' + ${productlists.reviewCount} + ')'">(0)</span>
                                                     </div>
                                                     <div class="d-flex justify-content-between align-items-center">
                                                         <div class="row"  th:if="${productlists.totalDiscountPercent > 0}">
@@ -288,15 +505,18 @@
                                                         <div class="row"  th:unless="${productlists.totalDiscountPercent > 0}">
                                                             <div class="  text-center"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
                                                         </div>
-                                                        <div>
-                                                            <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
-                                                            <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
-                                                        </div>
                                                     </div>
 
-                                                    <form  class="" th:action="@{/cart/add}"  enctype="multipart/form-data" method="post" >
+                                                    <form  class=""
+                                                           th:action="@{/cart/add}"
+                                                           enctype="multipart/form-data"
+                                                           method="post"
+                                                           th:with="inWishlist=${wishlistProductKeys != null and productlists.uuid != null and wishlistProductKeys.contains(productlists.uuid)}" >
 
-                                                        <input type="hidden" class="form-control" th:name ="product_id" th:value="${productlists.id}" />
+                                                        <input type="hidden" class="form-control" th:name ="product_uuid" th:value="${productlists.uuid}" />
+                                                        <input type="hidden"
+                                                               name="redirectUrl"
+                                                               th:value="@{/public/single-product/{prodid}(prodid=${product_details.uuid})}" />
 
                                                         <!--                                            <label  class="col-auto" for="exampleInputEmail1">Quantity:</label>-->
 
@@ -305,7 +525,14 @@
 
                                                         <div class=" form-group text-center ">
                                                             <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Add to Cart</button>
-                                                            <button class="btn btn-sm btn-outline-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i> Add to WishList </button>
+                                                            <button type="submit"
+                                                                    class="btn btn-sm mt-1"
+                                                                    th:formaction="${inWishlist} ? @{/wishlist/remove} : @{/wishlist/add}"
+                                                                    th:classappend="${inWishlist} ? ' btn-outline-danger' : ' btn-outline-warning'">
+                                                                <i class="bi"
+                                                                   th:classappend="${inWishlist} ? ' bi-heart-fill' : ' bi-suit-heart'"></i>
+                                                                <span th:text="${inWishlist} ? ' Remove from Wishlist' : ' Add to Wishlist'">Add to Wishlist</span>
+                                                            </button>
                                                         </div>
                                                     </form>
 
@@ -329,18 +556,194 @@
                                                 <a class="nav-link active" id="description-tab" data-bs-toggle="tab" href="#description">Description</a>
                                             </li>
                                             <li class="nav-item">
-                                                <a class="nav-link" id="reviews-tab" data-bs-toggle="tab" href="#video">Video</a>
+                                                <a class="nav-link" id="reviews-tab" data-bs-toggle="tab" href="#reviews">
+                                                    Reviews
+                                                    <span class="badge rounded-pill bg-light text-dark ms-1" th:text="${productReviewSummary.reviewCount}">0</span>
+                                                </a>
                                             </li>
-                                            <!-- <li class="nav-item">
-                                                 <a class="nav-link" id="specs-tab" data-bs-toggle="tab" href="#specs">Specifications</a>
-                                             </li>-->
+                                            <li class="nav-item">
+                                                <a class="nav-link" id="video-tab" data-bs-toggle="tab" href="#video">Video</a>
+                                            </li>
+                                            <li class="nav-item" th:if="${productSpecifications != null and !#lists.isEmpty(productSpecifications)}">
+                                                <a class="nav-link" id="specs-tab" data-bs-toggle="tab" href="#specs">Specifications</a>
+                                            </li>
                                         </ul>
 
 
                                         <!-- Tab Content -->
-                                        <div class="tab-content mt-3">
+                                        <div class="tab-content mt-3 product-detail-tabs">
                                             <div class="tab-pane fade show active" id="description">
                                                 <p ><span  th:utext="${product_details.description}"> </span></p>
+                                            </div>
+                                            <div class="tab-pane fade" id="reviews">
+                                                <div class="row g-4">
+                                                    <div class="col-lg-5">
+                                                        <div class="review-summary-panel h-100">
+                                                            <div class="review-average-display">
+                                                                <div class="review-average-score" th:text="${productReviewSummary.averageRating}">0.0</div>
+                                                                <div>
+                                                                    <div class="review-star-row mb-2">
+                                                                        <i class="bi"
+                                                                           th:each="star : ${#numbers.sequence(1, 5)}"
+                                                                           th:classappend="${star <= productReviewSummary.averageRatingRounded} ? ' bi-star-fill' : ' bi-star'"></i>
+                                                                    </div>
+                                                                    <div class="small text-muted" th:text="${productReviewSummary.reviewCount} + ' verified customer reviews'">
+                                                                        0 verified customer reviews
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="mt-4">
+                                                                <div class="review-breakdown-row" th:each="row : ${productReviewSummary.ratingBreakdown}">
+                                                                    <span class="review-breakdown-label" th:text="${row.rating} + ' star'">5 star</span>
+                                                                    <div class="progress review-breakdown-progress">
+                                                                        <div class="progress-bar bg-warning" role="progressbar"
+                                                                             th:style="'width:' + ${row.percent} + '%'"></div>
+                                                                    </div>
+                                                                    <span class="review-breakdown-count" th:text="${row.count}">0</span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="review-recommendation" th:if="${productReviewSummary.hasReviews}">
+                                                                <strong th:text="${productReviewSummary.recommendationPercent} + '%'">0%</strong>
+                                                                of reviewers gave this product 4 or 5 stars.
+                                                            </div>
+
+                                                            <div class="review-empty-note mt-4" th:unless="${productReviewSummary.hasReviews}">
+                                                                This product has not been reviewed yet. The first verified review can set the tone for everyone else.
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-lg-7">
+                                                        <div class="review-form-card h-100">
+                                                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                                                                <div>
+                                                                    <div class="review-form-heading">Share your experience</div>
+                                                                    <p class="text-muted mb-0" th:text="${customerReviewContext.helperText}">
+                                                                        Sign in with a customer account to leave a verified review.
+                                                                    </p>
+                                                                </div>
+                                                                <span class="review-verified-badge" th:if="${customerReviewContext.eligible}">
+                                                                    <i class="bi bi-patch-check-fill"></i>
+                                                                    Verified purchase
+                                                                </span>
+                                                            </div>
+
+                                                            <form th:if="${customerReviewContext.authenticated and customerReviewContext.customerAccount and customerReviewContext.eligible}"
+                                                                  class="review-form-stack"
+                                                                  th:action="@{/customer-product-review/save}"
+                                                                  method="post">
+                                                                <input type="hidden" name="source" value="product"/>
+                                                                <input type="hidden" name="orderId" th:value="${customerReviewContext.orderId}"/>
+                                                                <input type="hidden" name="productUuid" th:value="${product_details.uuid}"/>
+
+                                                                <div class="mb-3">
+                                                                    <label class="form-label fw-semibold d-block">Your rating</label>
+                                                                    <div class="star-rating-input">
+                                                                        <input type="radio" th:id="'product-rating-5'" name="rating" value="5" th:checked="${customerReviewContext.rating == 5}"/>
+                                                                        <label th:for="'product-rating-5'" title="5 stars"><i class="bi bi-star-fill"></i></label>
+                                                                        <input type="radio" th:id="'product-rating-4'" name="rating" value="4" th:checked="${customerReviewContext.rating == 4}"/>
+                                                                        <label th:for="'product-rating-4'" title="4 stars"><i class="bi bi-star-fill"></i></label>
+                                                                        <input type="radio" th:id="'product-rating-3'" name="rating" value="3" th:checked="${customerReviewContext.rating == 3}"/>
+                                                                        <label th:for="'product-rating-3'" title="3 stars"><i class="bi bi-star-fill"></i></label>
+                                                                        <input type="radio" th:id="'product-rating-2'" name="rating" value="2" th:checked="${customerReviewContext.rating == 2}"/>
+                                                                        <label th:for="'product-rating-2'" title="2 stars"><i class="bi bi-star-fill"></i></label>
+                                                                        <input type="radio" th:id="'product-rating-1'" name="rating" value="1" th:checked="${customerReviewContext.rating == 1}"/>
+                                                                        <label th:for="'product-rating-1'" title="1 star"><i class="bi bi-star-fill"></i></label>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="mb-3">
+                                                                    <label class="form-label fw-semibold">Headline</label>
+                                                                    <input type="text"
+                                                                           class="form-control"
+                                                                           name="title"
+                                                                           maxlength="140"
+                                                                           placeholder="What stood out most?"
+                                                                           th:value="${customerReviewContext.title}"/>
+                                                                </div>
+
+                                                                <div class="mb-3">
+                                                                    <label class="form-label fw-semibold">Review</label>
+                                                                    <textarea class="form-control"
+                                                                              name="reviewText"
+                                                                              maxlength="2000"
+                                                                              placeholder="Talk about quality, fit, packaging, delivery, or anything that helped you decide."
+                                                                              th:text="${customerReviewContext.reviewText}"></textarea>
+                                                                </div>
+
+                                                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                                                    <small class="text-muted" th:if="${customerReviewContext.reviewExists}">
+                                                                        Your latest update will replace the previous public review.
+                                                                    </small>
+                                                                    <button type="submit" class="btn btn-dark" th:text="${customerReviewContext.submitLabel}">Publish review</button>
+                                                                </div>
+                                                            </form>
+
+                                                            <div class="review-gate-state" th:if="${!customerReviewContext.authenticated}">
+                                                                <p class="mb-2">Sign in with your customer account to leave a verified review.</p>
+                                                                <a class="btn btn-outline-dark btn-sm" th:href="@{/public/member-login}">Sign in to review</a>
+                                                            </div>
+
+                                                            <div class="review-gate-state" th:if="${customerReviewContext.authenticated and !customerReviewContext.customerAccount}">
+                                                                Verified product reviews are reserved for customer accounts.
+                                                            </div>
+
+                                                            <div class="review-gate-state" th:if="${customerReviewContext.authenticated and customerReviewContext.customerAccount and !customerReviewContext.eligible}">
+                                                                Reviews unlock after this product is delivered on a completed order linked to your account.
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-12">
+                                                        <div class="review-list-shell">
+                                                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                                                                <div class="review-form-heading mb-0">Customer reviews</div>
+                                                                <span class="text-muted small" th:text="${productReviewSummary.reviewCount} + ' total reviews'">0 total reviews</span>
+                                                            </div>
+
+                                                            <div class="row g-3" th:if="${productReviewSummary.hasReviews}">
+                                                                <div class="col-md-6" th:each="review : ${productReviews}">
+                                                                    <article class="public-review-card h-100">
+                                                                        <div class="d-flex align-items-start gap-3 mb-3">
+                                                                            <div class="review-avatar" th:text="${review.reviewerInitials}">VC</div>
+                                                                            <div class="flex-grow-1">
+                                                                                <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+                                                                                    <div>
+                                                                                        <div class="fw-semibold" th:text="${review.reviewerName}">Verified customer</div>
+                                                                                        <div class="review-card-rating">
+                                                                                            <i class="bi"
+                                                                                               th:each="star : ${#numbers.sequence(1, 5)}"
+                                                                                               th:classappend="${star <= review.rating} ? ' bi-star-fill' : ' bi-star'"></i>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="text-end">
+                                                                                        <span class="review-verified-badge" th:if="${review.verifiedPurchase}">
+                                                                                            <i class="bi bi-patch-check-fill"></i>
+                                                                                            Verified purchase
+                                                                                        </span>
+                                                                                        <div class="review-meta mt-2" th:text="${review.activityAt}">2026-04-28T00:00</div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="review-title" th:if="${review.title != null and !#strings.isEmpty(review.title)}" th:text="${review.title}">
+                                                                            Great quality and smooth delivery
+                                                                        </div>
+                                                                        <p class="mb-0" th:text="${review.reviewText}">
+                                                                            Review text
+                                                                        </p>
+                                                                    </article>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="review-empty-state" th:unless="${productReviewSummary.hasReviews}">
+                                                                Be the first verified customer to leave a review for this product.
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div class="tab-pane fade" id="video">
                                                 <div class="" th:if="${product_details.video != null}">
@@ -353,10 +756,17 @@
                                                     </iframe>
                                                 </div>
                                             </div>
-                                            <div class="tab-pane fade" id="specs">
-                                                <ul>
-                                                    <li ></li>
-                                                </ul>
+                                            <div class="tab-pane fade" id="specs" th:if="${productSpecifications != null and !#lists.isEmpty(productSpecifications)}">
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered align-middle">
+                                                        <tbody>
+                                                            <tr th:each="spec : ${productSpecifications}">
+                                                                <th class="w-25" th:text="${spec.attributeName}">Attribute</th>
+                                                                <td th:text="${spec.value}">Value</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -369,15 +779,29 @@
 
                                             <div class="card product-card  position-relative mb-4 hvr-bounce-in h-100">
 
-                                                <span th:if="${ not #strings.isEmpty(productlists.imageName)}" class="">
+                                                <span th:if="${not #strings.isEmpty(#strings.trim(productlists.imageName))}" class="">
                                                     <!--                                <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />-->
-                                                    <img class="card-img-top" th:src="@{${productlists.imageUrl}}" />
+                                                    <img class="card-img-top"
+                                                         th:src="@{${productlists.imageUrl}}"
+                                                         th:attr="onerror=|this.onerror=null;this.src='@{/img/image-not-available.png}';|" />
 
 
                                                 </span>
-                                                <span th:if="${#strings.isEmpty(productlists.imageName)}" >
+                                                <span th:if="${#strings.isEmpty(#strings.trim(productlists.imageName))}" >
                                                     <img  class="card-img-top" th:src="@{/img/image-not-available.png}" />
                                                 </span>
+
+                                                <div class="product-status-badge-stack"
+                                                     th:if="${productlists['showPreorderBadge'] == true or productlists['showOutOfStockBadge'] == true}">
+                                                    <span class="product-status-badge preorder"
+                                                          th:if="${productlists['showPreorderBadge'] == true}">
+                                                        Preorder
+                                                    </span>
+                                                    <span class="product-status-badge out-of-stock badge bg-danger"
+                                                          th:if="${productlists['showOutOfStockBadge'] == true}">
+                                                        Out of stock
+                                                    </span>
+                                                </div>
 
                                                 <div class="badge-container">
                                                     <span th:if="${productlists.totalDiscountPercent != null and productlists.totalDiscountPercent > 0}" class="badge rounded-pill bg-danger badge-custom" >
@@ -389,10 +813,22 @@
 
                                                 <div class="card-body">
                                                     <div class="card-title">
-                                                        <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.id})}" >
+                                                        <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.uuid})}" >
                                                             <!--                                        <span  th:text="${productlists.title}"></span> -->
                                                             <p th:text="${productlists.title.length() > 40 ? #strings.substring(productlists.title, 0, 40) + '...' : productlists.title}"></p></a>
                                                     </div>
+                                                    <div class="product-card-rating" th:if="${productlists.hasReviews}">
+                                                        <span class="review-card-rating">
+                                                            <i class="bi bi-star-fill"></i>
+                                                        </span>
+                                                        <strong th:text="${productlists.averageRating}">0.0</strong>
+                                                        <span th:text="'(' + ${productlists.reviewCount} + ')'">(0)</span>
+                                                    </div>
+
+
+
+
+
                                                     <div class="d-flex justify-content-between align-items-center">
                                                         <div class="row"  th:if="${productlists.totalDiscountPercent > 0}">
                                                             <div class=" col-auto text-muted text-decoration-line-through"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
@@ -403,15 +839,18 @@
                                                         <div class="row"  th:unless="${productlists.totalDiscountPercent > 0}">
                                                             <div class="  text-center"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
                                                         </div>
-                                                        <div>
-                                                            <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
-                                                            <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
-                                                        </div>
                                                     </div>
 
-                                                    <form  class="" th:action="@{/cart/add}"  enctype="multipart/form-data" method="post" >
+                                                    <form  class=""
+                                                           th:action="@{/cart/add}"
+                                                           enctype="multipart/form-data"
+                                                           method="post"
+                                                           th:with="inWishlist=${wishlistProductKeys != null and productlists.uuid != null and wishlistProductKeys.contains(productlists.uuid)}" >
 
-                                                        <input type="hidden" class="form-control" th:name ="product_id" th:value="${productlists.id}" />
+                                                        <input type="hidden" class="form-control" th:name ="product_uuid" th:value="${productlists.uuid}" />
+                                                        <input type="hidden"
+                                                               name="redirectUrl"
+                                                               th:value="@{/public/single-product/{prodid}(prodid=${product_details.uuid})}" />
 
                                                         <!--                                            <label  class="col-auto" for="exampleInputEmail1">Quantity:</label>-->
 
@@ -420,7 +859,14 @@
 
                                                         <div class=" form-group text-center ">
                                                             <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Add to Cart</button>
-                                                            <button class="btn btn-sm btn-outline-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i> Add to WishList </button>
+                                                            <button type="submit"
+                                                                    class="btn btn-sm mt-1"
+                                                                    th:formaction="${inWishlist} ? @{/wishlist/remove} : @{/wishlist/add}"
+                                                                    th:classappend="${inWishlist} ? ' btn-outline-danger' : ' btn-outline-warning'">
+                                                                <i class="bi"
+                                                                   th:classappend="${inWishlist} ? ' bi-heart-fill' : ' bi-suit-heart'"></i>
+                                                                <span th:text="${inWishlist} ? ' Remove from Wishlist' : ' Add to Wishlist'">Add to Wishlist</span>
+                                                            </button>
                                                         </div>
                                                     </form>
 

@@ -52,40 +52,87 @@ public class VendorPayoutController {
     @Autowired
     VendorPayoutMethodService vendorPayoutMethodService;
 
+//    @PreAuthorize("""
+//            @vendorAccessAuthorityChecker.hasAuthority(authentication, 'vendor.payout.read')
+//            or @vendorAccessAuthorityChecker.hasAuthority(authentication, 'vendor.payout.manage')
+//            or @vendorRoleChecker.hasVendorRole(authentication, 'ADMIN')
+//            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
+//            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
+//            """)
     @GetMapping("/list")
     public String list(Model model) {
 
-        Long vId = vendorUserContext.getActiveVendor().getId();
-        EnumMap<VendorTransactionStatusEnum, BigDecimal> balance = vendorFinanceService
-                .getVendorBalance(vId);
+        try {
+            Long vId = vendorUserContext.getActiveVendor().getId();
+            EnumMap<VendorTransactionStatusEnum, BigDecimal> balance = vendorFinanceService
+                    .getVendorBalance(vId);
 
-        model.addAttribute("pending", balance.get(VendorTransactionStatusEnum.PENDING));
-        model.addAttribute("available", balance.get(VendorTransactionStatusEnum.AVAILABLE));
-        model.addAttribute("paid", balance.get(VendorTransactionStatusEnum.PAID));
-        model.addAttribute("vendorprofile", vendorUserContext.getActiveVendor());
-        model.addAttribute("list", vendorPayoutRepository.findByVendor_IdOrderByIdDesc(vId));
+            model.addAttribute("pending", balance.get(VendorTransactionStatusEnum.PENDING));
+            model.addAttribute("available", balance.get(VendorTransactionStatusEnum.AVAILABLE));
+            model.addAttribute("paid", balance.get(VendorTransactionStatusEnum.PAID));
+            model.addAttribute("vendorprofile", vendorUserContext.getActiveVendor());
+            model.addAttribute("list", vendorPayoutRepository.findByVendor_IdOrderByIdDesc(vId));
+        } catch (Exception e) {
+            // 2026-04-22: Keep the older payout page stable with the same shared message keys.
+            model.addAttribute("errorMessage", "Runtime error while loading payout list: " + e.getMessage());
+            model.addAttribute("pending", BigDecimal.ZERO);
+            model.addAttribute("available", BigDecimal.ZERO);
+            model.addAttribute("paid", BigDecimal.ZERO);
+            model.addAttribute("list", java.util.List.of());
+        }
         return "vendor/payout/payout_list";
     }
 
+//    @PreAuthorize("""
+//            @vendorAccessAuthorityChecker.hasAuthority(authentication, 'vendor.payout.read')
+//            or @vendorAccessAuthorityChecker.hasAuthority(authentication, 'vendor.payout.manage')
+//            or @vendorRoleChecker.hasVendorRole(authentication, 'ADMIN')
+//            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
+//            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
+//            """)
     @GetMapping
     public String viewBalance(Model model) {
-        Long vendorId = vendorUserContext.getActiveVendor().getId();
-        EnumMap<VendorTransactionStatusEnum, BigDecimal> balanceMap = vendorFinanceService.getVendorBalance(vendorId);
-        model.addAttribute("balance", balanceMap);
-        return "vendor/balance";
+        try {
+            Long vendorId = vendorUserContext.getActiveVendor().getId();
+            EnumMap<VendorTransactionStatusEnum, BigDecimal> balanceMap = vendorFinanceService.getVendorBalance(vendorId);
+            model.addAttribute("balance", balanceMap);
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Runtime error while loading vendor balance: " + e.getMessage());
+        }
+        // 2026-04-22: Keep controller view path aligned with the existing payout balance template.
+        return "vendor/payout/balance";
     }
 
+//    @PreAuthorize("""
+//            @vendorAccessAuthorityChecker.hasAuthority(authentication, 'vendor.payout.manage')
+//            or @vendorRoleChecker.hasVendorRole(authentication, 'ADMIN')
+//            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
+//            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
+//            """)
     @RequestMapping("/request")
     public String showPayoutRequestPage(Model model, VendorPayout vendorPayout) {
-        Vendorprofile vendor = vendorUserContext.getActiveVendor();
-        Long vendorId = vendor.getId();
-        vendorPayout.setVendor(vendor);
-        BigDecimal available = transactionRepo.sumAvailableAmount(vendorId);
-        model.addAttribute("availableBalance", available);
-        Map<Long, String> method = vendorPayoutMethodService.getPayoutMethodList(vendorId);
-        model.addAttribute("method", method);
+        try {
+            Vendorprofile vendor = vendorUserContext.getActiveVendor();
+            Long vendorId = vendor.getId();
+            vendorPayout.setVendor(vendor);
+            BigDecimal available = vendorFinanceService.getVendorBalance(vendorId).get(VendorTransactionStatusEnum.AVAILABLE);
+            model.addAttribute("availableBalance", available);
+            Map<Long, String> method = vendorPayoutMethodService.getPayoutMethodList(vendorId);
+            model.addAttribute("method", method);
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Runtime error while loading payout request form: " + e.getMessage());
+            model.addAttribute("availableBalance", BigDecimal.ZERO);
+            model.addAttribute("method", Map.of());
+        }
         return "vendor/payout/payout_form";
     }
+//
+//    @PreAuthorize("""
+//            @vendorAccessAuthorityChecker.hasAuthority(authentication, 'vendor.payout.manage')
+//            or @vendorRoleChecker.hasVendorRole(authentication, 'ADMIN')
+//            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
+//            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
+//            """)
 
     @RequestMapping("/save")
     public String save(
@@ -95,8 +142,7 @@ public class VendorPayoutController {
             RedirectAttributes redirectAttributes
     ) {
         Long vendorId = vendorUserContext.getActiveVendor().getId();
-        BigDecimal available = transactionRepo.sumAvailableAmount(vendorId);
-        // Always check BindingResult immediately
+        BigDecimal available = vendorFinanceService.getVendorBalance(vendorId).get(VendorTransactionStatusEnum.AVAILABLE);
         if (result.hasErrors()) {
             model.addAttribute("availableBalance", available);
             Map<Long, String> method = vendorPayoutMethodService.getPayoutMethodList(vendorId);
@@ -109,41 +155,42 @@ public class VendorPayoutController {
             Map<Long, String> method = vendorPayoutMethodService.getPayoutMethodList(vendorId);
             model.addAttribute("method", method);
             result.rejectValue("amount", "error.amount", "Requested amount exceeds available amount.");
-//            prepareForm(model, vendorId);
             return "vendor/payout/payout_form";
         }
 
-        vendorPayoutRepository.save(vendorPayout);
-
-        redirectAttributes.addFlashAttribute(
-                "message",
-                "Your payout request was submitted successfully and is now pending processing."
-        );
+        try {
+            vendorPayoutRepository.save(vendorPayout);
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Your payout request was submitted successfully and is now pending processing."
+            );
+        } catch (Exception e) {
+            model.addAttribute("availableBalance", available);
+            Map<Long, String> method = vendorPayoutMethodService.getPayoutMethodList(vendorId);
+            model.addAttribute("method", method);
+            model.addAttribute("errorMessage", "Runtime error while saving payout request: " + e.getMessage());
+            return "vendor/payout/payout_form";
+        }
 
         return "redirect:/vendor-payout/list";
     }
 
-//    @PostMapping("/request")
-//    public String requestPayout(@RequestParam VendorPayoutMethod method, RedirectAttributes redirectAttributes) {
-//        Vendorprofile vendor = vendorUserContext.getActiveVendor();
-//        try {
-//            vendorFinanceService.requestPayout(vendor, method);
-//            redirectAttributes.addFlashAttribute("message", "Payout requested successfully!");
-//        } catch (Exception e) {
-//            redirectAttributes.addFlashAttribute("error", e.getMessage());
-//        }
-//        return "redirect:/vendor/payout/request";
-//    }
+//    @PreAuthorize("""
+//            @vendorAccessAuthorityChecker.hasAuthority(authentication, 'vendor.payout.manage')
+//            or @vendorRoleChecker.hasVendorRole(authentication, 'ADMIN')
+//            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
+//            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
+//            """)
     @PostMapping("/request-payout")
     public String requestPayout2(@RequestParam VendorPayoutMethod method, RedirectAttributes redirectAttributes) {
         Vendorprofile vendor = vendorUserContext.getActiveVendor();
         try {
             vendorFinanceService.requestPayout(vendor, method);
-            redirectAttributes.addFlashAttribute("message", "Payout request submitted.");
+            redirectAttributes.addFlashAttribute("successMessage", "Payout request submitted.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/vendor/balance";
+        return "redirect:/vendor-payout";
     }
 
 }

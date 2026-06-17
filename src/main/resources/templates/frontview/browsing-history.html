@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="front-layout-inner-page">
+
+    <th:block layout:fragment="page_css">
+        <style>
+            .browsing-history-hero {
+                background:
+                    radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 28%),
+                    linear-gradient(135deg, #12304f 0%, #15616d 52%, #1c9a7f 100%);
+                color: #fff;
+                padding: 52px 0;
+            }
+
+            .browsing-history-eyebrow {
+                display: inline-block;
+                padding: 0.45rem 0.8rem;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.14);
+                font-size: 0.82rem;
+                font-weight: 600;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+            }
+
+            .browsing-history-hero h1 {
+                margin: 1rem 0 0.75rem;
+                font-size: clamp(2rem, 4vw, 3rem);
+                font-weight: 700;
+            }
+
+            .browsing-history-hero p {
+                margin: 0;
+                max-width: 760px;
+                color: rgba(255, 255, 255, 0.9);
+                line-height: 1.7;
+            }
+
+            .browsing-history-breadcrumb {
+                color: rgba(255, 255, 255, 0.82);
+                font-size: 0.95rem;
+            }
+
+            .browsing-history-breadcrumb a {
+                color: #fff;
+                text-decoration: none;
+            }
+
+            .browsing-history-section {
+                background: linear-gradient(180deg, #f4f7f9 0%, #ffffff 100%);
+                padding: 3rem 0 4rem;
+            }
+
+            .browsing-history-metric,
+            .browsing-history-panel,
+            .browsing-history-note {
+                border: 1px solid rgba(18, 48, 79, 0.08);
+                border-radius: 24px;
+                background: #fff;
+                box-shadow: 0 20px 45px rgba(18, 48, 79, 0.08);
+            }
+
+            .browsing-history-metric {
+                height: 100%;
+                padding: 1.35rem 1.5rem;
+            }
+
+            .browsing-history-metric-label {
+                display: block;
+                color: #5d6d7e;
+                font-size: 0.9rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+            }
+
+            .browsing-history-metric-value {
+                display: block;
+                margin-top: 0.5rem;
+                color: #12304f;
+                font-size: clamp(1.9rem, 3vw, 2.4rem);
+                font-weight: 700;
+            }
+
+            .browsing-history-panel {
+                padding: 1.6rem;
+            }
+
+            .browsing-history-panel h2 {
+                margin-bottom: 0.35rem;
+                color: #12304f;
+                font-size: 1.35rem;
+                font-weight: 700;
+            }
+
+            .browsing-history-panel p,
+            .browsing-history-note p {
+                color: #5d6d7e;
+            }
+
+            .browsing-history-note {
+                margin-bottom: 1.5rem;
+                padding: 1.2rem 1.4rem;
+                background: linear-gradient(180deg, #ffffff 0%, #f8fcfd 100%);
+            }
+
+            .browsing-history-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+                margin-top: 1rem;
+            }
+
+            .browsing-history-actions .btn {
+                border-radius: 999px;
+                padding: 0.7rem 1.1rem;
+                font-weight: 600;
+            }
+
+            .browsing-history-table th {
+                color: #12304f;
+                font-size: 0.88rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                white-space: nowrap;
+            }
+
+            .browsing-history-table td {
+                vertical-align: middle;
+            }
+
+            .browsing-history-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.35rem;
+                padding: 0.42rem 0.72rem;
+                border-radius: 999px;
+                font-size: 0.84rem;
+                font-weight: 600;
+            }
+
+            .browsing-history-badge--product {
+                background: rgba(13, 110, 253, 0.12);
+                color: #0d6efd;
+            }
+
+            .browsing-history-badge--category {
+                background: rgba(25, 135, 84, 0.12);
+                color: #198754;
+            }
+
+            .browsing-history-item {
+                color: #12304f;
+                font-weight: 600;
+            }
+
+            .browsing-history-item-meta {
+                display: block;
+                margin-top: 0.3rem;
+                color: #7a8795;
+                font-size: 0.88rem;
+            }
+
+            .browsing-history-empty {
+                text-align: center;
+                padding: 2.2rem 1rem;
+            }
+
+            .browsing-history-empty i {
+                font-size: 2.3rem;
+                color: #1c9a7f;
+            }
+
+            @media (max-width: 991.98px) {
+                .browsing-history-panel,
+                .browsing-history-metric,
+                .browsing-history-note {
+                    border-radius: 20px;
+                }
+            }
+        </style>
+    </th:block>
+
+    <div layout:fragment="main_content">
+        <section class="browsing-history-hero">
+            <div class="container">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3">
+                    <div>
+                        <div class="browsing-history-eyebrow">Customer Activity</div>
+                        <h1 th:text="${historyTitle}">Your Browsing History</h1>
+                        <p th:text="${historySubtitle}">Every viewed product and category is saved as its own history row.</p>
+                    </div>
+                    <div class="browsing-history-breadcrumb">
+                        <a th:href="@{/}">Home</a>
+                        <span class="mx-2">/</span>
+                        <span th:text="${historyTitle}">Browsing History</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="browsing-history-section">
+            <div class="container">
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="browsing-history-metric">
+                            <span class="browsing-history-metric-label">Total Records</span>
+                            <span class="browsing-history-metric-value" th:text="${historyCount}">0</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="browsing-history-metric">
+                            <span class="browsing-history-metric-label">Product Views</span>
+                            <span class="browsing-history-metric-value" th:text="${productHistoryCount}">0</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="browsing-history-metric">
+                            <span class="browsing-history-metric-label">Category Views</span>
+                            <span class="browsing-history-metric-value" th:text="${categoryHistoryCount}">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="browsing-history-note" th:unless="${authenticatedHistoryUser}">
+                    <strong class="d-block mb-2 text-dark">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Guest browser history
+                    </strong>
+                    <p class="mb-0">
+                        This page is showing the history saved for the current browser. After you sign in, this browser history will be attached to your account and future visits will keep saving there too.
+                    </p>
+                    <div class="browsing-history-actions">
+                        <a class="btn btn-danger" th:href="@{/public/member-login}">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>
+                            Sign In
+                        </a>
+                        <a class="btn btn-outline-secondary" th:href="@{/public/product}">
+                            <i class="bi bi-bag me-1"></i>
+                            Continue Shopping
+                        </a>
+                    </div>
+                </div>
+
+                <div class="browsing-history-panel" th:if="${#lists.isEmpty(historyEntries)}">
+                    <div class="browsing-history-empty">
+                        <i class="bi bi-clock-history"></i>
+                        <h2 class="mt-3">No browsing history found</h2>
+                        <p class="mb-0">Once you open a product or category page, it will appear here as a separate history record.</p>
+                    </div>
+                </div>
+
+                <div class="browsing-history-panel" th:unless="${#lists.isEmpty(historyEntries)}">
+                    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-2 mb-3">
+                        <div>
+                            <h2>Saved View Records</h2>
+                            <p class="mb-0">Every product view and category view is stored as its own row. Repeat visits stay separate.</p>
+                        </div>
+                        <a class="btn btn-outline-secondary btn-sm" th:href="@{/public/product}">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Back to Products
+                        </a>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover browsing-history-table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 70px;">#</th>
+                                    <th style="width: 190px;">Viewed At</th>
+                                    <th style="width: 150px;">Type</th>
+                                    <th>Item</th>
+                                    <th style="width: 150px;">Saved To</th>
+                                    <th style="width: 150px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="entry, status : ${historyEntries}">
+                                    <td th:text="${status.count}">1</td>
+                                    <td th:text="${entry.viewedAt != null ? #temporals.format(entry.viewedAt, 'dd MMM yyyy hh:mm a') : '-'}">26 May 2026 10:00 AM</td>
+                                    <td>
+                                        <span class="browsing-history-badge browsing-history-badge--product"
+                                              th:if="${entry.viewType != null and entry.viewType.name() == 'PRODUCT'}">
+                                            <i class="bi bi-box-seam"></i>
+                                            <span>Product</span>
+                                        </span>
+                                        <span class="browsing-history-badge browsing-history-badge--category"
+                                              th:if="${entry.viewType != null and entry.viewType.name() == 'CATEGORY'}">
+                                            <i class="bi bi-grid"></i>
+                                            <span>Category</span>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="browsing-history-item"
+                                              th:if="${entry.viewType != null and entry.viewType.name() == 'PRODUCT' and entry.product != null and entry.product.title != null}"
+                                              th:text="${entry.product.title}">
+                                            Product title
+                                        </span>
+                                        <span class="browsing-history-item"
+                                              th:if="${entry.viewType != null and entry.viewType.name() == 'CATEGORY' and entry.category != null and entry.category.name != null}"
+                                              th:text="${entry.category.name}">
+                                            Category name
+                                        </span>
+                                        <span class="browsing-history-item text-muted"
+                                              th:if="${(entry.viewType != null and entry.viewType.name() == 'PRODUCT' and (entry.product == null or entry.product.title == null)) or (entry.viewType != null and entry.viewType.name() == 'CATEGORY' and (entry.category == null or entry.category.name == null))}">
+                                            Item no longer available
+                                        </span>
+                                        <span class="browsing-history-item-meta"
+                                              th:text="${entry.user != null ? 'Saved to your account' : 'Saved to this browser'}">
+                                            Saved to your account
+                                        </span>
+                                    </td>
+                                    <td th:text="${entry.user != null ? 'Account' : 'Browser'}">Account</td>
+                                    <td>
+                                        <a class="btn btn-sm btn-outline-primary"
+                                           th:if="${entry.viewType != null and entry.viewType.name() == 'PRODUCT' and entry.product != null and entry.product.uuid != null}"
+                                           th:href="@{/public/single-product/{prodid}(prodid=${entry.product.uuid})}">
+                                            Open
+                                        </a>
+                                        <a class="btn btn-sm btn-outline-success"
+                                           th:if="${entry.viewType != null and entry.viewType.name() == 'CATEGORY' and entry.category != null and entry.category.uuid != null}"
+                                           th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${entry.category.uuid})}">
+                                            Open
+                                        </a>
+                                        <span class="text-muted"
+                                              th:if="${(entry.viewType != null and entry.viewType.name() == 'PRODUCT' and (entry.product == null or entry.product.uuid == null)) or (entry.viewType != null and entry.viewType.name() == 'CATEGORY' and (entry.category == null or entry.category.uuid == null))}">
+                                            Unavailable
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

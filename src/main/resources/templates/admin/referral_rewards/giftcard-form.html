@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section>
+            <div class="row">
+                <div class="col-sm-3"><h4> Gift Card System </h4></div>
+                <div class="col-sm-5">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Promotions</li>
+                            <li class="breadcrumb-item active" aria-current="page">Gift Cards</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </section>
+        <hr/>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-sm-6 font-weight-bold">
+                        <strong><i class="bi bi-gift"></i> Gift Card Form</strong>
+                    </div>
+                    <div class="col-sm-6 text-end">
+                        <a class="btn btn-secondary btn-sm" th:href="@{/giftcard/list}">
+                            <i class="bi bi-arrow-left"></i> Back
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <form th:action="@{/giftcard/save}" method="post" th:object="${giftCard}">
+                    <input type="hidden" th:field="*{id}"/>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Code</label>
+                            <input type="text" class="form-control" th:field="*{code}" required/>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Initial Value</label>
+                            <input type="number" step="0.01" class="form-control" th:field="*{initialValue}" required/>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Balance</label>
+                            <input type="number" step="0.01" class="form-control" th:field="*{balance}" required/>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" th:field="*{status}">
+                                <option th:each="s:${giftCardStatuses}" th:value="${s}" th:text="${s}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Redeemed</label>
+                            <select class="form-select" th:field="*{redeemed}">
+                                <option th:value="false">false</option>
+                                <option th:value="true">true</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-save"></i> Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+

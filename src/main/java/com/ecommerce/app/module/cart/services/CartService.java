@@ -9,12 +9,15 @@ import com.ecommerce.app.module.shipping.model.PackagingRate;
 import com.ecommerce.app.module.shipping.services.CarrierRateService;
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.ProductDimension;
-import com.ecommerce.app.product.model.ProductVariants;
+import com.ecommerce.app.product.model.ProductTypeEnum;
+import com.ecommerce.app.product.model.ProductVariant;
 import com.ecommerce.app.product.model.Unitofmeasurement;
 import com.ecommerce.app.product.ripository.ProductDimensionRepository;
 import com.ecommerce.app.product.ripository.ProductRepository;
-import com.ecommerce.app.product.ripository.ProductVariantsRepository;
+import com.ecommerce.app.product.ripository.ProductVariantRepository;
 import com.ecommerce.app.product.services.ProductService;
+import com.ecommerce.app.product.services.ProductVariantCatalogService;
+import com.ecommerce.app.product.services.StockLedgerService;
 import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -22,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,31 +47,89 @@ public class CartService {
     ProductDimensionRepository productDimensionRepository;
 
     @Autowired
+    StockLedgerService stockLedgerService;
+
+    @Autowired
     ProductRepository productRepository;
 
     @Autowired
     ProductService productService;
     @Autowired
-    ProductVariantsRepository productVariantsRepository;
+    ProductVariantRepository productVariantRepository;
+    @Autowired
+    ProductVariantCatalogService productVariantCatalogService;
 
-    public boolean addToCart(Long productId, Long variantId, BigDecimal quantity, HttpSession session) {
-
-        if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
+    public boolean addToCart(Long productId, String catalogVariantUuid, BigDecimal quantity, HttpSession session) {
+        if (productId == null) {
             return false;
         }
-
         Product product = productRepository.findById(productId).orElse(null);
-        if (product == null) {
+        if (product == null || product.getUuid() == null || product.getUuid().isBlank()) {
+            return false;
+        }
+        return addToCart(product.getUuid(), catalogVariantUuid, quantity, session);
+    }
+
+    public boolean addToCart(String productUuid, String catalogVariantUuid, BigDecimal quantity, HttpSession session) {
+
+        if (productUuid == null || productUuid.isBlank()
+                || quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
             return false;
         }
 
-        ProductVariants variants = productVariantsRepository.findById(variantId)
-                .orElseThrow(null);
-        if (variants == null) {
+        Product product = productRepository.findByUuid(productUuid).orElse(null);
+        if (product == null || product.getId() == null) {
+            return false;
+        }
+        if (!hasValidVendor(product)) {
             return false;
         }
 
-        BigDecimal salesPrice = product.getSalesPrice().setScale(2, RoundingMode.HALF_UP);
+        ProductVariant catalogVariant = null;
+
+        if (Boolean.TRUE.equals(product.getManageProductVariants())
+                && (catalogVariantUuid == null || catalogVariantUuid.isBlank())) {
+            return false;
+        }
+
+        if (catalogVariantUuid != null && !catalogVariantUuid.isBlank()) {
+            catalogVariant = productVariantRepository.findByUuid(catalogVariantUuid).orElse(null);
+            if (catalogVariant == null || catalogVariant.getProduct() == null
+                    || !Objects.equals(catalogVariant.getProduct().getUuid(), productUuid)) {
+                return false;
+            }
+        }
+
+        List<CartItem> cart = (List<CartItem>) session.getAttribute("sessioncart");
+        if (cart == null) {
+            cart = new ArrayList<>();
+            session.setAttribute("sessioncart", cart);
+        }
+
+        int index = exists(productUuid, catalogVariantUuid, cart);
+        BigDecimal existingQty = index >= 0 ? cart.get(index).getQuantity() : BigDecimal.ZERO;
+        BigDecimal totalRequestedQty = existingQty.add(quantity);
+
+        BigDecimal availableStock = stockLedgerService.getAvailableQuantity(
+                product.getId(),
+                catalogVariant != null ? catalogVariant.getUuid() : null
+        );
+
+        boolean preorderAllowed = Boolean.TRUE.equals(product.getAllowPreorder());
+        boolean preorderItem = Boolean.TRUE.equals(product.getManageStock())
+                && totalRequestedQty.compareTo(availableStock) > 0
+                && preorderAllowed;
+
+        if (Boolean.TRUE.equals(product.getManageStock())
+                && totalRequestedQty.compareTo(availableStock) > 0
+                && !preorderItem) {
+            return false;
+        }
+
+        BigDecimal salesPrice = catalogVariant != null
+                ? (catalogVariant.getSpecialPrice() != null ? catalogVariant.getSpecialPrice() : catalogVariant.getSellingPrice())
+                : product.getSalesPrice();
+        salesPrice = (salesPrice == null ? BigDecimal.ZERO : salesPrice).setScale(2, RoundingMode.HALF_UP);
         BigDecimal subTotal = salesPrice.multiply(quantity);
 
         BigDecimal discountRate = productService.totalDiscountPercentCalculate(
@@ -97,25 +159,25 @@ public class CartService {
         Unitofmeasurement uom = product.getUom();
 
         ProductDimension dim = productDimensionRepository.findByProduct_Id(product.getId());
-        BigDecimal weight = (dim != null && dim.getWeight() != null) ? dim.getWeight() : BigDecimal.ZERO.setScale(2);
+        BigDecimal weight = catalogVariant != null && catalogVariant.getWeight() != null
+                ? catalogVariant.getWeight()
+                : (dim != null && dim.getWeight() != null ? dim.getWeight() : BigDecimal.ZERO.setScale(2));
         BigDecimal grandweight = weight.multiply(quantity).setScale(2);
+        String catalogVariantSummary = catalogVariant != null
+                ? productVariantCatalogService.buildVariantSummaryLabel(catalogVariant)
+                : null;
 
-        // Get or create session cart
-        List<CartItem> cart = (List<CartItem>) session.getAttribute("sessioncart");
-        if (cart == null) {
-            cart = new ArrayList<>();
-            session.setAttribute("sessioncart", cart);
-        }
-
-        // Check if product exists in cart
-        int index = exists(productId.intValue(), cart);
         if (index == -1) {
-            // Add new item
             cart.add(new CartItem(
                     product,
-                    product.getVendorprofile().getId(),
+                    product.getVendorprofile() != null ? product.getVendorprofile().getId() : null,
+                    product.getVendorprofile() != null ? product.getVendorprofile().getUuid() : null,
                     product.getId(),
-                    variants.getId(),
+                    product.getUuid(),
+                    catalogVariant != null ? catalogVariant.getUuid() : null,
+                    catalogVariantSummary,
+                    preorderItem,
+                    preorderItem ? product.getPreorderAvailableFrom() : null,
                     quantity.setScale(2, RoundingMode.HALF_UP),
                     uom,
                     salesPrice.setScale(2, RoundingMode.HALF_UP),
@@ -131,10 +193,9 @@ public class CartService {
             ));
 
         } else {
-            // Update existing item
             CartItem existingItem = cart.get(index);
             BigDecimal newQuantity = existingItem.getQuantity().add(quantity).setScale(2, RoundingMode.HALF_UP);
-            BigDecimal newWeight = newQuantity.multiply(weight);
+            BigDecimal newWeight = newQuantity.multiply(weight).setScale(2, RoundingMode.HALF_UP);
             BigDecimal newSubTotal = salesPrice.multiply(newQuantity);
             BigDecimal newTotalDiscount = newSubTotal.multiply(discountRate)
                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
@@ -146,13 +207,22 @@ public class CartService {
                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
             BigDecimal newItemTotal = newAfterDiscountTotal.add(newVat);
 
+            existingItem.setProduct(product);
+            existingItem.setVendorId(product.getVendorprofile() != null ? product.getVendorprofile().getId() : null);
+            existingItem.setVendorUuid(product.getVendorprofile() != null ? product.getVendorprofile().getUuid() : null);
+            existingItem.setProductId(product.getId());
+            existingItem.setProductUuid(product.getUuid());
+            existingItem.setPreorder(preorderItem);
+            existingItem.setPreorderAvailableFrom(preorderItem ? product.getPreorderAvailableFrom() : null);
+            existingItem.setCatalogVariantUuid(catalogVariant != null ? catalogVariant.getUuid() : existingItem.getCatalogVariantUuid());
+            existingItem.setVariantSummary(catalogVariantSummary != null ? catalogVariantSummary : existingItem.getVariantSummary());
             existingItem.setQuantity(newQuantity);
             existingItem.setDiscountAmount(newTotalDiscount);
             existingItem.setMarketPlaceCommissionAmount(newTotalCommission);
             existingItem.setVendorAmount(newVendorAmount);
             existingItem.setVatAmount(newVat);
-            existingItem.setWeight(newWeight.setScale(2));
-            existingItem.setItemTotal(newItemTotal);
+            existingItem.setWeight(newWeight);
+            existingItem.setItemTotal(newItemTotal.setScale(2, RoundingMode.HALF_UP));
         }
 
         session.setAttribute("sessioncart", cart);
@@ -192,6 +262,10 @@ public class CartService {
 
         CartItem cartItem = new CartItem();
         cartItem.setProduct(product);
+        cartItem.setVendorId(product != null && product.getVendorprofile() != null ? product.getVendorprofile().getId() : null);
+        cartItem.setVendorUuid(product != null && product.getVendorprofile() != null ? product.getVendorprofile().getUuid() : null);
+        cartItem.setProductId(product != null ? product.getId() : null);
+        cartItem.setProductUuid(product != null ? product.getUuid() : null);
         cartItem.setQuantity(quantity);
         cartItem.setSalesPrice(salesPrice);
         cartItem.setDiscountRate(discountRate);
@@ -212,7 +286,7 @@ public class CartService {
             shoppingCart = new ArrayList<>();
         }
 
-        int index = exists(product.getId().intValue(), shoppingCart);
+        int index = exists(product.getUuid(), null, shoppingCart);
         CartItem updatedItem = calculateCartItem(product, quantity);
 
         if (index != -1) {
@@ -224,10 +298,124 @@ public class CartService {
         session.setAttribute("sessioncart", shoppingCart);
     }
 
+    public boolean updateQuantityInCart(Long productId, String catalogVariantUuid, BigDecimal quantity, HttpSession session) {
+        if (productId == null) {
+            return false;
+        }
+        Product product = productRepository.findById(productId).orElse(null);
+        if (product == null || product.getUuid() == null || product.getUuid().isBlank()) {
+            return false;
+        }
+        return updateQuantityInCart(product.getUuid(), catalogVariantUuid, quantity, session);
+    }
+
+    public boolean updateQuantityInCart(String productUuid, String catalogVariantUuid, BigDecimal quantity, HttpSession session) {
+        if (productUuid == null || productUuid.isBlank()
+                || quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
+            return false;
+        }
+
+        List<CartItem> cart = (List<CartItem>) session.getAttribute("sessioncart");
+        if (cart == null || cart.isEmpty()) {
+            return false;
+        }
+
+        int index = exists(productUuid, catalogVariantUuid, cart);
+        if (index < 0) {
+            return false;
+        }
+
+        CartItem existingItem = cart.get(index);
+        Product product = productRepository.findByUuid(productUuid).orElse(existingItem.getProduct());
+        if (product == null || product.getId() == null) {
+            return false;
+        }
+
+        BigDecimal availableStock = stockLedgerService.getAvailableQuantity(
+                product.getId(),
+                existingItem.getCatalogVariantUuid()
+        );
+        boolean preorderAllowed = Boolean.TRUE.equals(product.getAllowPreorder());
+        boolean preorderItem = Boolean.TRUE.equals(product.getManageStock())
+                && quantity.compareTo(availableStock) > 0
+                && preorderAllowed;
+
+        if (Boolean.TRUE.equals(product.getManageStock())
+                && quantity.compareTo(availableStock) > 0
+                && !preorderItem) {
+            return false;
+        }
+
+        BigDecimal newQuantity = quantity.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal salesPrice = (existingItem.getSalesPrice() != null
+                ? existingItem.getSalesPrice()
+                : product.getSalesPrice()).setScale(2, RoundingMode.HALF_UP);
+
+        BigDecimal discountRate = existingItem.getDiscountRate() != null
+                ? existingItem.getDiscountRate().setScale(2, RoundingMode.HALF_UP)
+                : productService.totalDiscountPercentCalculate(
+                        product.getVendordiscount(),
+                        product.getMarketPlaceDiscount()
+                ).setScale(2, RoundingMode.HALF_UP);
+
+        BigDecimal commissionRate = existingItem.getMarketPlaceCommissionRate() != null
+                ? existingItem.getMarketPlaceCommissionRate().setScale(2, RoundingMode.HALF_UP)
+                : (product.getMarketPlaceCommissionRate() != null
+                ? product.getMarketPlaceCommissionRate().setScale(2, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
+
+        BigDecimal vatRate = existingItem.getVatRate() != null
+                ? existingItem.getVatRate().setScale(2, RoundingMode.HALF_UP)
+                : (product.getVatRate() != null
+                ? product.getVatRate().setScale(2, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
+
+        ProductDimension dim = productDimensionRepository.findByProduct_Id(product.getId());
+        BigDecimal unitWeight = (dim != null && dim.getWeight() != null)
+                ? dim.getWeight()
+                : BigDecimal.ZERO;
+
+        BigDecimal subTotal = salesPrice.multiply(newQuantity);
+        BigDecimal totalDiscount = subTotal.multiply(discountRate)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        BigDecimal afterDiscountTotal = subTotal.subtract(totalDiscount);
+        BigDecimal totalCommission = afterDiscountTotal.multiply(commissionRate)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        BigDecimal vendorAmount = afterDiscountTotal.subtract(totalCommission);
+        BigDecimal totalVat = afterDiscountTotal.multiply(vatRate)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        BigDecimal itemTotal = afterDiscountTotal.add(totalVat).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal weight = unitWeight.multiply(newQuantity).setScale(2, RoundingMode.HALF_UP);
+
+        existingItem.setProduct(product);
+        existingItem.setVendorId(product.getVendorprofile() != null ? product.getVendorprofile().getId() : null);
+        existingItem.setVendorUuid(product.getVendorprofile() != null ? product.getVendorprofile().getUuid() : null);
+        existingItem.setProductId(product.getId());
+        existingItem.setProductUuid(product.getUuid());
+        existingItem.setPreorder(preorderItem);
+        existingItem.setPreorderAvailableFrom(preorderItem ? product.getPreorderAvailableFrom() : null);
+        existingItem.setQuantity(newQuantity);
+        existingItem.setSalesPrice(salesPrice);
+        existingItem.setDiscountRate(discountRate);
+        existingItem.setDiscountAmount(totalDiscount.setScale(2, RoundingMode.HALF_UP));
+        existingItem.setMarketPlaceCommissionRate(commissionRate);
+        existingItem.setMarketPlaceCommissionAmount(totalCommission.setScale(2, RoundingMode.HALF_UP));
+        existingItem.setVendorAmount(vendorAmount.setScale(2, RoundingMode.HALF_UP));
+        existingItem.setVatRate(vatRate);
+        existingItem.setVatAmount(totalVat.setScale(2, RoundingMode.HALF_UP));
+        existingItem.setWeight(weight);
+        existingItem.setItemTotal(itemTotal);
+
+        session.setAttribute("sessioncart", cart);
+        return true;
+    }
+
     // Helper to check if product exists in cart
-    private int exists(int productId, List<CartItem> cart) {
+    private int exists(String productUuid, String catalogVariantUuid, List<CartItem> cart) {
         for (int i = 0; i < cart.size(); i++) {
-            if (cart.get(i).getProductId() == productId) {
+            CartItem item = cart.get(i);
+            if (Objects.equals(item.getProductUuid(), productUuid)
+                    && Objects.equals(item.getCatalogVariantUuid(), catalogVariantUuid)) {
                 return i;
             }
         }
@@ -311,8 +499,46 @@ public class CartService {
 
     // 1️⃣ Get cart from session
     public List<CartItem> getCartFromSession(HttpSession session) {
-        List<CartItem> cart = (List<CartItem>) session.getAttribute("sessioncart");
-        return cart != null ? cart : new ArrayList<>();
+        return sanitizeSessionCart(session);
+    }
+
+    public List<CartItem> sanitizeSessionCart(HttpSession session) {
+        List<CartItem> sessionCart = (List<CartItem>) session.getAttribute("sessioncart");
+        if (sessionCart == null || sessionCart.isEmpty()) {
+            session.removeAttribute("sessioncart");
+            return new ArrayList<>();
+        }
+
+        List<CartItem> sanitized = new ArrayList<>();
+        for (CartItem item : sessionCart) {
+            if (item == null) {
+                continue;
+            }
+
+            Product product = resolveCartProduct(item);
+            if (product == null || product.getId() == null || product.getUuid() == null || product.getUuid().isBlank()) {
+                continue;
+            }
+
+            if (!hasValidVendor(product)) {
+                continue;
+            }
+
+            item.setProduct(product);
+            item.setVendorId(product.getVendorprofile().getId());
+            item.setVendorUuid(product.getVendorprofile().getUuid());
+            item.setProductId(product.getId());
+            item.setProductUuid(product.getUuid());
+            sanitized.add(item);
+        }
+
+        if (sanitized.isEmpty()) {
+            session.removeAttribute("sessioncart");
+        } else {
+            session.setAttribute("sessioncart", sanitized);
+        }
+
+        return sanitized;
     }
 
 // 2️⃣ Filter cart items for a specific vendor
@@ -320,6 +546,53 @@ public class CartService {
         return cart.stream()
                 .filter(c -> c.getProduct().getVendorprofile().getId().equals(vendorId))
                 .collect(Collectors.toList());
+    }
+
+    public List<CartItem> getVendorCart(List<CartItem> cart, String vendorUuid) {
+        if (cart == null || vendorUuid == null || vendorUuid.isBlank()) {
+            return List.of();
+        }
+        return cart.stream()
+                .filter(c -> Objects.equals(c.getVendorUuid(), vendorUuid))
+                .collect(Collectors.toList());
+    }
+
+    public boolean requiresShipping(Product product) {
+        return product != null && product.getProductType() != ProductTypeEnum.Virtual;
+    }
+
+    public boolean supportsEmi(Product product) {
+        return product != null
+                && Boolean.TRUE.equals(product.getEmiavailable())
+                && product.getProductType() != ProductTypeEnum.Virtual;
+    }
+
+    public boolean vendorCartSupportsEmi(List<CartItem> vendorCart) {
+        return vendorCart != null
+                && !vendorCart.isEmpty()
+                && vendorCart.stream()
+                        .map(CartItem::getProduct)
+                        .allMatch(this::supportsEmi);
+    }
+
+    public boolean cartSupportsEmi(List<CartItem> cart) {
+        return cart != null
+                && !cart.isEmpty()
+                && cart.stream()
+                        .map(CartItem::getProduct)
+                        .allMatch(this::supportsEmi);
+    }
+
+    public boolean vendorCartRequiresShipping(List<CartItem> vendorCart) {
+        return vendorCart != null && vendorCart.stream()
+                .map(CartItem::getProduct)
+                .anyMatch(this::requiresShipping);
+    }
+
+    public boolean cartRequiresShipping(List<CartItem> cart) {
+        return cart != null && cart.stream()
+                .map(CartItem::getProduct)
+                .anyMatch(this::requiresShipping);
     }
 
 // 3️⃣ Calculate subtotal
@@ -391,6 +664,50 @@ public class CartService {
     }
     // 5️⃣ Calculate packaging cost
 
+    public BigDecimal calculateShipping(String shippingOption, String vendorUuid, HttpSession session) {
+        if (vendorUuid == null || vendorUuid.isBlank()) {
+            return BigDecimal.ZERO;
+        }
+
+        Map<String, BigDecimal> shippingMap = (Map<String, BigDecimal>) session.getAttribute("shippingCosts");
+        if (shippingMap == null) {
+            shippingMap = new HashMap<>();
+        }
+
+        List<CartItem> fullCart = (List<CartItem>) session.getAttribute("sessioncart");
+        if (fullCart == null || fullCart.isEmpty()) {
+            shippingMap.put(vendorUuid, BigDecimal.ZERO);
+            session.setAttribute("shippingCosts", shippingMap);
+            return BigDecimal.ZERO;
+        }
+
+        List<CartItem> vendorCart = fullCart.stream()
+                .filter(item -> Objects.equals(item.getVendorUuid(), vendorUuid))
+                .toList();
+
+        if (vendorCart.isEmpty()) {
+            shippingMap.put(vendorUuid, BigDecimal.ZERO);
+            session.setAttribute("shippingCosts", shippingMap);
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal totalWeight = vendorCart.stream()
+                .map(item -> item.getWeight()
+                .multiply(BigDecimal.valueOf(item.getQuantity().intValue())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal cost = carrierRateService.calculateShippingRateByUuid(
+                shippingOption,
+                totalWeight,
+                true
+        );
+
+        shippingMap.put(vendorUuid, cost);
+        session.setAttribute("shippingCosts", shippingMap);
+
+        return cost;
+    }
+
     public BigDecimal calculatePackagings(Long packagingId, List<CartItem> vendorCart, HttpSession session) {
         if (packagingId == null) {
             return BigDecimal.ZERO;
@@ -405,6 +722,32 @@ public class CartService {
             return pack.getBasePrice().add(pack.getAdditionalPrice().multiply(totalWeight));
         }
         return BigDecimal.ZERO;
+    }
+
+    private Product resolveCartProduct(CartItem item) {
+        if (item.getProduct() != null) {
+            return item.getProduct();
+        }
+
+        String productUuid = item.getProductUuid();
+        if (productUuid != null && !productUuid.isBlank()) {
+            return productRepository.findByUuid(productUuid.trim()).orElse(null);
+        }
+
+        Long productId = item.getProductId();
+        if (productId != null) {
+            return productRepository.findById(productId).orElse(null);
+        }
+
+        return null;
+    }
+
+    public boolean hasValidVendor(Product product) {
+        return product != null
+                && product.getVendorprofile() != null
+                && product.getVendorprofile().getId() != null
+                && product.getVendorprofile().getUuid() != null
+                && !product.getVendorprofile().getUuid().isBlank();
     }
 
 }

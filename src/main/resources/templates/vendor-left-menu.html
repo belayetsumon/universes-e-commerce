@@ -1,29 +1,29 @@
-<div class="card">
-    <div class="card-header">
+<div class="card vendor-sidebar-menu border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom-0 fw-semibold">
         Navigation : Vendor
     </div>
 
     <ul class="list-group list-group-flush">
-        <li class="list-group-item"><a class=" nav-link" th:href="@{/vendor/home}">   <i class="bi bi-house"></i> Home </a></li>
-        <li class="list-group-item"><a class=" nav-link" th:href="@{/productvendor/index}">  <i class="bi bi-box-seam"></i> Product List</a></li>
-        <li class="list-group-item"><a class=" nav-link" th:href="@{/vendor-order/index}"> <i class="bi bi-journal-text"></i>Sales Order List</a></li>
-        <li class="list-group-item"><a class=" nav-link" th:href="@{/vendor/home}"> <i class="bi bi-archive"></i>Stock/Inventory</a></li>
-        <li class="list-group-item"><a class=" nav-link" th:href="@{/vendor-transaction/list}">  <i class="bi bi-graph-up-arrow"></i>Vendor Transaction</a></li>
-        <li class="list-group-item"><a class=" nav-link" th:href="@{/vendor-payout/list}">  <i class="bi bi-credit-card"></i>Vendor Payout</a></li>
-        <li class="list-group-item"><a class=" nav-link" th:href="@{/vendor-payout-methods/list}">  <i class="bi bi-wallet2"></i>Add Pay out Method</a></li>
+        <li class="list-group-item"><a class="nav-link" th:href="@{/vendor/home}"><i class="bi bi-house"></i><span>Home</span></a></li>
+        <li class="list-group-item"><a class="nav-link" th:href="@{/productvendor/index}"><i class="bi bi-box-seam"></i><span>Product List</span></a></li>
+        <li class="list-group-item"><a class="nav-link" th:href="@{/vendor-order/index}"><i class="bi bi-journal-text"></i><span>Sales Order List</span></a></li>
+        <li class="list-group-item"><a class="nav-link" th:href="@{/vendor/shipments}"><i class="bi bi-truck"></i><span>Shipments</span></a></li>
+        <li class="list-group-item"><a class="nav-link" th:href="@{/vendor/stock/transactions}"><i class="bi bi-archive"></i><span>Stock/Inventory</span></a></li>
+        <li class="list-group-item"><a class="nav-link" th:href="@{/vendor/finance/dashboard}"><i class="bi bi-cash-stack"></i><span>Finance Dashboard</span></a></li>
+        <li class="list-group-item"><a class="nav-link" th:href="@{/vendor/finance/ledger}"><i class="bi bi-graph-up-arrow"></i><span>Vendor Ledger</span></a></li>
+        <li class="list-group-item"><a class="nav-link" th:href="@{/vendor-payout/list}"><i class="bi bi-credit-card"></i><span>Vendor Payout</span></a></li>
+        <li class="list-group-item"><a class="nav-link" th:href="@{/vendor-payout-methods/list}"><i class="bi bi-wallet2"></i><span>Add Pay out Method</span></a></li>
         <!--
 
                                                                                                                                                                        <li class="list-group-item"><a class="textMaroon" th:href="@{/}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>POS</a></li>
 <li class="list-group-item"><a class="textMaroon" th:href="@{/}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Stock Adjustment</a></li>
 <li class="list-group-item"><a class="textMaroon" th:href="@{/}"> <span class="fa-li"><i class="fas fa-cart-plus"></i></span>Stock</a></li>-->
-        <li class="list-group-item"> <a class=" nav-link" th:href="@{/vendorprofile/details}"> <i class="bi bi-person-circle"></i> Vendor Profile</a></li>
-        <li class="list-group-item"> <a class=" nav-link" th:href="@{/vendorprofileimage/index}"> <i class="bi bi-image"></i>Vendor Logo</a></li>
-        <li class="list-group-item"> <a class=" nav-link" th:href="@{/vendor-users/userlist}"> <i class="bi bi-people"></i> Vendor User Management </a></li>
+        <li class="list-group-item"><a class="nav-link" th:href="@{/vendorprofile/details}"><i class="bi bi-person-circle"></i><span>Vendor Profile</span></a></li>
+        <li class="list-group-item"><a class="nav-link" th:href="@{/vendorlogo/index}"><i class="bi bi-image"></i><span>Vendor Logo</span></a></li>
+        <li class="list-group-item"><a class="nav-link" th:href="@{/vendor-users/userlist}"><i class="bi bi-people"></i><span>Vendor User Management</span></a></li>
         <!--            <li class="list-group-item"> <a class="textMaroon" th:href="@{/instructor}"> <span class="fa-li"><i class="fas fa-map-marked"></i></span> Addresses</a></li>
                     <li class="list-group-item"> <a class="textMaroon" th:href="@{/instructor}"> <span class="fa-li"><i class="fas fa-credit-card"></i> </span>Payment Options</a></li>
                     <li class="list-group-item"> <a class="textMaroon " th:href="@{/instructor}"> <span class="fa-li"><i class="fas fa-lock"></i> </span>Login & Security</a></li>
                     <li class="list-group-item"> <a class="textMaroon " th:href="@{/instructor}"> <span class="fa-li"><i class="far fa-bell"></i></span> Notifications</a></li>-->
     </ul>
 </div>
-
-

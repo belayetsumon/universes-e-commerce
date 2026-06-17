@@ -82,22 +82,30 @@ and open the template in the editor.
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Upload Image</label>
                                     <input type="file"
-                                           name="file"
-                                           class="form-control"
-                                           accept="image/*">
+                                            name="file"
+                                            class="form-control"
+                                            accept="image/*">
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('imageUrl')}" th:errors="*{imageUrl}"></div>
+                                    <div class="mt-2" th:if="${not #strings.isEmpty(ads.imageUrl)}">
+                                        <img class="img-thumbnail" th:src="@{/files/banner/}+${ads.imageUrl}" alt="Current ad image" style="max-width: 180px; max-height: 120px;" />
+                                    </div>
                                 </div>
 
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Width</label>
                                     <input type="number"  min="100"  th:field="*{width}"
-                                           class="form-control" required="true">
+                                           class="form-control"
+                                           th:classappend="${#fields.hasErrors('width')} ? 'is-invalid'" required="true">
+                                    <div class="invalid-feedback" th:errors="*{width}"></div>
 
                                 </div>
 
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Height</label>
                                     <input type="number"  min="100"  th:field="*{height}"
-                                           class="form-control" required="true">
+                                           class="form-control"
+                                           th:classappend="${#fields.hasErrors('height')} ? 'is-invalid'" required="true">
+                                    <div class="invalid-feedback" th:errors="*{height}"></div>
                                 </div>
 
                                 <!-- Target Type -->
@@ -116,38 +124,46 @@ and open the template in the editor.
                                 <!-- Category -->
                                 <div class="col-md-6 mb-3" id="categoryBox">
                                     <label class="form-label">Category</label>
-                                    <select th:field="*{categoryId}" class="form-select">
+                                    <select th:field="*{categoryId}" class="form-select"
+                                            th:classappend="${#fields.hasErrors('categoryId')} ? 'is-invalid'">
                                         <option value="">-- select category --</option>
                                         <option th:each="c : ${categoryList}"
                                                 th:value="${c.uuid}" th:text="${c.name}"></option>
                                     </select>
+                                    <div class="invalid-feedback" th:errors="*{categoryId}"></div>
                                 </div>
 
                                 <!-- Product -->
                                 <div class="col-md-6 mb-3" id="productBox">
                                     <label class="form-label">Product</label>
-                                    <select th:field="*{productId}" class="form-select">
+                                    <select th:field="*{productId}" class="form-select"
+                                            th:classappend="${#fields.hasErrors('productId')} ? 'is-invalid'">
                                         <option value="">-- select product --</option>
                                         <option th:each="p : ${productList}"
                                                 th:value="${p.uuid}" th:text="${p.title}"></option>
                                     </select>
+                                    <div class="invalid-feedback" th:errors="*{productId}"></div>
                                 </div>
 
                                 <!-- Vendor -->
                                 <div class="col-md-6 mb-3" id="vendorBox">
                                     <label class="form-label">Vendor</label>
-                                    <select th:field="*{vendorId}" class="form-select">
+                                    <select th:field="*{vendorId}" class="form-select"
+                                            th:classappend="${#fields.hasErrors('vendorId')} ? 'is-invalid'">
                                         <option value="">-- select vendor --</option>
                                         <option th:each="v : ${vendorList}"
                                                 th:value="${v.uuid}"
                                                 th:text="${v.vendorCode + ' - ' + v.companyName}"></option>
                                     </select>
+                                    <div class="invalid-feedback" th:errors="*{vendorId}"></div>
                                 </div>
 
                                 <!-- External URL -->
                                 <div class="col-md-12 mb-3" id="externalBox">
                                     <label class="form-label">External URL</label>
-                                    <input type="text" th:field="*{externalUrl}" class="form-control">
+                                    <input type="text" th:field="*{externalUrl}" class="form-control"
+                                           th:classappend="${#fields.hasErrors('externalUrl')} ? 'is-invalid'">
+                                    <div class="invalid-feedback" th:errors="*{externalUrl}"></div>
                                 </div>
 
                                 <!-- Active -->
@@ -167,7 +183,7 @@ and open the template in the editor.
                             </div>
 
                             <button class="btn btn-primary mt-3" type="submit">Save</button>
-                            <a href="/admin/ads" class="btn btn-secondary mt-3">Cancel</a>
+                            <a th:href="@{/admin/ads/list}" class="btn btn-secondary mt-3">Cancel</a>
                         </form>
                     </div>
                 </div>
@@ -176,4 +192,30 @@ and open the template in the editor.
 
 
         </div><!--  Main Content  end-->
+        <script th:inline="javascript">
+            function toggleTargetFields() {
+                const targetType = document.getElementById('targetType');
+                const selected = targetType ? targetType.value : '';
+
+                const categoryBox = document.getElementById('categoryBox');
+                const productBox = document.getElementById('productBox');
+                const vendorBox = document.getElementById('vendorBox');
+                const externalBox = document.getElementById('externalBox');
+
+                if (categoryBox) {
+                    categoryBox.style.display = selected === 'CATEGORY' ? '' : 'none';
+                }
+                if (productBox) {
+                    productBox.style.display = selected === 'PRODUCT' ? '' : 'none';
+                }
+                if (vendorBox) {
+                    vendorBox.style.display = selected === 'VENDOR' ? '' : 'none';
+                }
+                if (externalBox) {
+                    externalBox.style.display = selected === 'EXTERNAL' ? '' : 'none';
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', toggleTargetFields);
+        </script>
     </div>   <!--  Layout end-->      </div><!--  Main Content  end-->

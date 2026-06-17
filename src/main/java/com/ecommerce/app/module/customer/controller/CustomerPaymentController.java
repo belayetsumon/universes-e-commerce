@@ -8,6 +8,8 @@ import com.ecommerce.app.order.model.PaymentMethod;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  *
@@ -18,9 +20,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class CustomerPaymentController {
 
     @RequestMapping("/payment_method")
-    public String index(Model model) {
-        model.addAttribute("methods", PaymentMethod.values());
-        return "customer/order/payment_method";
+    public String index(Model model,
+            @RequestParam(name = "orderId", required = false) Long orderId,
+            RedirectAttributes redirectAttributes) {
+        if (orderId != null) {
+            return "redirect:/customerorder/payment/" + orderId;
+        }
+
+        redirectAttributes.addFlashAttribute("errorMessage", "Please choose an order before paying.");
+        return "redirect:/customerorder/index";
     }
 
 }

@@ -1,192 +1,1104 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
-    <div layout:fragment = "main_content">
-        <section>
-            <div class="d-flex justify-content-start align-items-center mb-4">
-                <h2 class="mb-0 me-3">Dashboard</h2>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a  class="nav-link"href="#">Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-                    </ol>
-                </nav>
+    <th:block layout:fragment="page_css">
+        <style>
+            .admin-dashboard-page {
+                --ad-surface: #ffffff;
+                --ad-border: rgba(15, 23, 42, 0.08);
+                --ad-text-strong: #0f172a;
+                --ad-text-soft: #64748b;
+                --ad-primary: #123a63;
+                --ad-primary-deep: #0b2743;
+                --ad-primary-soft: #dbeafe;
+                --ad-teal-soft: #dff8f6;
+                --ad-emerald-soft: #dcfce7;
+                --ad-amber-soft: #fef3c7;
+                --ad-rose-soft: #ffe4e6;
+                --ad-slate-soft: #e2e8f0;
+                --ad-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+            }
+
+            .admin-dashboard-page .dashboard-shell {
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .admin-dashboard-page .hero-panel {
+                position: relative;
+                overflow: hidden;
+                border-radius: 1.5rem;
+                padding: 2rem;
+                background:
+                    radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 30%),
+                    linear-gradient(135deg, #102d4d 0%, #123a63 48%, #0e7490 100%);
+                color: #fff;
+                box-shadow: var(--ad-shadow);
+            }
+
+            .admin-dashboard-page .hero-panel::after {
+                content: "";
+                position: absolute;
+                inset: auto -5rem -6rem auto;
+                width: 18rem;
+                height: 18rem;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.08);
+            }
+
+            .admin-dashboard-page .hero-panel > * {
+                position: relative;
+                z-index: 1;
+            }
+
+            .admin-dashboard-page .hero-chip {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+                padding: 0.45rem 0.85rem;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.12);
+                font-size: 0.8rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            .admin-dashboard-page .hero-title {
+                margin: 1rem 0 0.6rem;
+                font-size: clamp(2rem, 2.3vw, 2.9rem);
+                font-weight: 700;
+                letter-spacing: -0.04em;
+            }
+
+            .admin-dashboard-page .hero-copy {
+                max-width: 52rem;
+                margin-bottom: 0;
+                color: rgba(255, 255, 255, 0.82);
+                line-height: 1.7;
+            }
+
+            .admin-dashboard-page .hero-meta {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+                margin-top: 1.25rem;
+            }
+
+            .admin-dashboard-page .hero-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+                padding: 0.6rem 0.95rem;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.12);
+                font-size: 0.9rem;
+                font-weight: 600;
+            }
+
+            .admin-dashboard-page .hero-actions .btn {
+                min-width: 11.5rem;
+                border-radius: 0.95rem;
+                font-weight: 600;
+            }
+
+            .admin-dashboard-page .hero-actions .btn-light {
+                color: var(--ad-primary-deep);
+            }
+
+            .admin-dashboard-page .section-heading-group {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+            }
+
+            .admin-dashboard-page .section-eyebrow {
+                color: var(--ad-primary);
+                font-size: 0.78rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+            }
+
+            .admin-dashboard-page .section-title {
+                margin: 0.2rem 0 0.15rem;
+                color: var(--ad-text-strong);
+                font-size: 1.15rem;
+                font-weight: 700;
+            }
+
+            .admin-dashboard-page .section-copy {
+                margin-bottom: 0;
+                color: var(--ad-text-soft);
+                font-size: 0.92rem;
+            }
+
+            .admin-dashboard-page .surface-card,
+            .admin-dashboard-page .stat-card,
+            .admin-dashboard-page .period-card {
+                border: 1px solid var(--ad-border);
+                border-radius: 1.25rem;
+                background: var(--ad-surface);
+                box-shadow: 0 12px 32px rgba(15, 23, 42, 0.05);
+            }
+
+            .admin-dashboard-page .surface-card .card-body,
+            .admin-dashboard-page .stat-card,
+            .admin-dashboard-page .period-card {
+                padding: 1.35rem;
+            }
+
+            .admin-dashboard-page .stat-card {
+                height: 100%;
+            }
+
+            .admin-dashboard-page .stat-top {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.75rem;
+                margin-bottom: 1rem;
+            }
+
+            .admin-dashboard-page .stat-label {
+                color: var(--ad-text-soft);
+                font-size: 0.8rem;
+                font-weight: 700;
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
+            }
+
+            .admin-dashboard-page .stat-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 2.8rem;
+                height: 2.8rem;
+                border-radius: 1rem;
+                font-size: 1.15rem;
+            }
+
+            .admin-dashboard-page .tone-navy .stat-icon {
+                background: var(--ad-primary-soft);
+                color: var(--ad-primary);
+            }
+
+            .admin-dashboard-page .tone-teal .stat-icon {
+                background: var(--ad-teal-soft);
+                color: #0f766e;
+            }
+
+            .admin-dashboard-page .tone-emerald .stat-icon {
+                background: var(--ad-emerald-soft);
+                color: #15803d;
+            }
+
+            .admin-dashboard-page .tone-amber .stat-icon {
+                background: var(--ad-amber-soft);
+                color: #b45309;
+            }
+
+            .admin-dashboard-page .tone-rose .stat-icon {
+                background: var(--ad-rose-soft);
+                color: #be123c;
+            }
+
+            .admin-dashboard-page .tone-slate .stat-icon {
+                background: var(--ad-slate-soft);
+                color: #475569;
+            }
+
+            .admin-dashboard-page .stat-value {
+                color: var(--ad-text-strong);
+                font-size: clamp(1.55rem, 1.8vw, 2rem);
+                font-weight: 700;
+                letter-spacing: -0.03em;
+                margin-bottom: 0.45rem;
+            }
+
+            .admin-dashboard-page .stat-note {
+                margin-bottom: 0.8rem;
+                color: var(--ad-text-soft);
+                font-size: 0.92rem;
+                line-height: 1.6;
+            }
+
+            .admin-dashboard-page .stat-link {
+                color: var(--ad-primary);
+                font-size: 0.92rem;
+                font-weight: 600;
+                text-decoration: none;
+            }
+
+            .admin-dashboard-page .stat-link:hover {
+                color: var(--ad-primary-deep);
+            }
+
+            .admin-dashboard-page .period-card {
+                height: 100%;
+            }
+
+            .admin-dashboard-page .mini-metric-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.9rem;
+                margin-top: 1.2rem;
+            }
+
+            .admin-dashboard-page .mini-metric {
+                padding: 0.95rem 1rem;
+                border-radius: 1rem;
+                background: #f8fafc;
+                border: 1px solid rgba(15, 23, 42, 0.05);
+            }
+
+            .admin-dashboard-page .mini-metric-label {
+                display: block;
+                margin-bottom: 0.35rem;
+                color: var(--ad-text-soft);
+                font-size: 0.78rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            .admin-dashboard-page .mini-metric-value {
+                color: var(--ad-text-strong);
+                font-size: 1.02rem;
+                font-weight: 700;
+            }
+
+            .admin-dashboard-page .chart-wrap {
+                position: relative;
+                min-height: 20rem;
+            }
+
+            .admin-dashboard-page .chart-wrap--compact {
+                min-height: 17rem;
+            }
+
+            .admin-dashboard-page .chart-note {
+                margin-top: 1rem;
+                margin-bottom: 0;
+                color: var(--ad-text-soft);
+                font-size: 0.9rem;
+            }
+
+            .admin-dashboard-page .status-pill,
+            .admin-dashboard-page .badge-soft {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.35rem 0.7rem;
+                border-radius: 999px;
+                font-size: 0.78rem;
+                font-weight: 700;
+                letter-spacing: 0.03em;
+            }
+
+            .admin-dashboard-page .badge-success {
+                background: rgba(22, 163, 74, 0.12);
+                color: #166534;
+            }
+
+            .admin-dashboard-page .badge-warning {
+                background: rgba(245, 158, 11, 0.15);
+                color: #92400e;
+            }
+
+            .admin-dashboard-page .badge-danger {
+                background: rgba(239, 68, 68, 0.12);
+                color: #b91c1c;
+            }
+
+            .admin-dashboard-page .badge-neutral {
+                background: rgba(100, 116, 139, 0.14);
+                color: #475569;
+            }
+
+            .admin-dashboard-page .status-pill.tone-emerald {
+                background: rgba(22, 163, 74, 0.12);
+                color: #166534;
+            }
+
+            .admin-dashboard-page .status-pill.tone-amber {
+                background: rgba(245, 158, 11, 0.15);
+                color: #92400e;
+            }
+
+            .admin-dashboard-page .status-pill.tone-rose {
+                background: rgba(239, 68, 68, 0.12);
+                color: #b91c1c;
+            }
+
+            .admin-dashboard-page .status-pill.tone-slate {
+                background: rgba(100, 116, 139, 0.14);
+                color: #475569;
+            }
+
+            .admin-dashboard-page .dashboard-table {
+                margin-bottom: 0;
+            }
+
+            .admin-dashboard-page .dashboard-table thead th {
+                border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+                color: var(--ad-text-soft);
+                font-size: 0.76rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+            }
+
+            .admin-dashboard-page .dashboard-table tbody td {
+                vertical-align: middle;
+                border-color: rgba(15, 23, 42, 0.06);
+                color: var(--ad-text-strong);
+                font-size: 0.92rem;
+            }
+
+            .admin-dashboard-page .table-link {
+                color: var(--ad-primary);
+                font-weight: 600;
+                text-decoration: none;
+            }
+
+            .admin-dashboard-page .table-link:hover {
+                color: var(--ad-primary-deep);
+            }
+
+            .admin-dashboard-page .watchlist {
+                display: grid;
+                gap: 0.9rem;
+            }
+
+            .admin-dashboard-page .watchlist-item {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 1rem;
+                padding: 1rem 1.05rem;
+                border-radius: 1rem;
+                background: #f8fafc;
+                border: 1px solid rgba(15, 23, 42, 0.06);
+                text-decoration: none;
+            }
+
+            .admin-dashboard-page .watchlist-item:hover {
+                background: #f1f5f9;
+            }
+
+            .admin-dashboard-page .watchlist-title {
+                margin-bottom: 0.2rem;
+                color: var(--ad-text-strong);
+                font-size: 0.95rem;
+                font-weight: 700;
+            }
+
+            .admin-dashboard-page .watchlist-copy {
+                color: var(--ad-text-soft);
+                font-size: 0.88rem;
+                line-height: 1.55;
+            }
+
+            .admin-dashboard-page .queue-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 1rem;
+            }
+
+            .admin-dashboard-page .queue-panel {
+                border-radius: 1rem;
+                background: #f8fafc;
+                border: 1px solid rgba(15, 23, 42, 0.06);
+                padding: 1rem;
+            }
+
+            .admin-dashboard-page .queue-title {
+                margin-bottom: 0.2rem;
+                color: var(--ad-text-strong);
+                font-size: 1rem;
+                font-weight: 700;
+            }
+
+            .admin-dashboard-page .queue-copy {
+                margin-bottom: 0.95rem;
+                color: var(--ad-text-soft);
+                font-size: 0.88rem;
+            }
+
+            .admin-dashboard-page .queue-list {
+                display: grid;
+                gap: 0.75rem;
+            }
+
+            .admin-dashboard-page .queue-item {
+                display: block;
+                padding: 0.9rem 0.95rem;
+                border-radius: 0.95rem;
+                background: #fff;
+                border: 1px solid rgba(15, 23, 42, 0.06);
+                text-decoration: none;
+            }
+
+            .admin-dashboard-page .queue-item:hover {
+                background: #f8fafc;
+            }
+
+            .admin-dashboard-page .queue-item-title {
+                margin-bottom: 0.15rem;
+                color: var(--ad-text-strong);
+                font-size: 0.92rem;
+                font-weight: 700;
+            }
+
+            .admin-dashboard-page .queue-item-meta {
+                color: var(--ad-text-soft);
+                font-size: 0.84rem;
+                line-height: 1.55;
+            }
+
+            .admin-dashboard-page .empty-state {
+                margin: 0;
+                color: var(--ad-text-soft);
+                font-size: 0.9rem;
+            }
+
+            @media (max-width: 1199.98px) {
+                .admin-dashboard-page .hero-panel {
+                    padding: 1.5rem;
+                }
+            }
+
+            @media (max-width: 991.98px) {
+                .admin-dashboard-page .queue-grid,
+                .admin-dashboard-page .mini-metric-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </th:block>
+
+    <div layout:fragment="main_content">
+        <section class="admin-dashboard-page">
+            <div class="dashboard-shell">
+                <div th:if="${not #strings.isEmpty(errorMessage)}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <div class="hero-panel">
+                    <div class="d-flex flex-column flex-xl-row justify-content-between gap-4">
+                        <div>
+                            <div class="hero-chip">
+                                <i class="bi bi-speedometer2"></i>
+                                Marketplace Control Center
+                            </div>
+                            <h1 class="hero-title">Enterprise Admin Dashboard</h1>
+                            <p class="hero-copy">
+                                Monitor marketplace growth, payout pressure, vendor onboarding, catalog risk, and support workload from one executive-grade operating surface.
+                            </p>
+                            <div class="hero-meta">
+                                <div class="hero-badge">
+                                    <i class="bi bi-clock-history"></i>
+                                    <span th:text="${dashboard.lastUpdatedLabel}">26 May 2026, 10:10 AM</span>
+                                </div>
+                                <div class="hero-badge">
+                                    <i class="bi bi-box-seam"></i>
+                                    <span th:text="${dashboard.lowStockThresholdLabel}">Low stock threshold is 5 available units.</span>
+                                </div>
+                                <div class="hero-badge">
+                                    <i class="bi bi-hourglass-bottom"></i>
+                                    <span th:text="${dashboard.overdueSettlementLabel}">Overdue settlements are payout requests older than 7 days.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="hero-actions d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2">
+                            <a class="btn btn-light" th:href="@{/admin-customer/orderlist}">
+                                <i class="bi bi-receipt-cutoff me-2"></i>Order Command
+                            </a>
+                            <a class="btn btn-outline-light" th:href="@{/admin/finance/dashboard}">
+                                <i class="bi bi-bank2 me-2"></i>Finance View
+                            </a>
+                            <a class="btn btn-outline-light" th:href="@{/product/index}">
+                                <i class="bi bi-grid me-2"></i>Catalog Review
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div th:each="stat : ${dashboard.heroStats}" class="col-12 col-md-6 col-xl-3">
+                        <div class="stat-card" th:classappend="${stat.tone}">
+                            <div class="stat-top">
+                                <div class="stat-label" th:text="${stat.label}">Total Sales</div>
+                                <div class="stat-icon">
+                                    <i th:class="|bi ${stat.icon}|"></i>
+                                </div>
+                            </div>
+                            <div class="stat-value" th:text="${stat.value}">Tk 0.00</div>
+                            <p class="stat-note" th:text="${stat.note}">Gross marketplace sales recorded across all orders.</p>
+                            <a th:if="${stat.href != null}" class="stat-link" th:href="@{${stat.href}}">
+                                Open detail <i class="bi bi-arrow-up-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="section-heading-group mb-3">
+                        <div>
+                            <div class="section-eyebrow">Performance Windows</div>
+                            <h2 class="section-title">Today, 7-Day, And 30-Day Readout</h2>
+                            <p class="section-copy">Quick performance snapshots for sales, orders, customer growth, and vendor onboarding.</p>
+                        </div>
+                    </div>
+                    <div class="row g-4">
+                        <div th:each="period : ${dashboard.periodPerformance}" class="col-12 col-xl-4">
+                            <div class="period-card">
+                                <div class="section-heading-group">
+                                    <div>
+                                        <div class="section-eyebrow" th:text="${period.label}">Today</div>
+                                        <h3 class="section-title" th:text="${period.rangeLabel}">26 May 2026</h3>
+                                    </div>
+                                </div>
+                                <div class="mini-metric-grid">
+                                    <div th:each="metric : ${period.metrics}" class="mini-metric">
+                                        <span class="mini-metric-label" th:text="${metric.label}">Sales</span>
+                                        <span class="mini-metric-value" th:text="${metric.value}">Tk 0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-12 col-xl-8">
+                        <div class="surface-card h-100">
+                            <div class="card-body">
+                                <div class="section-heading-group mb-3">
+                                    <div>
+                                        <div class="section-eyebrow">Sales Trend</div>
+                                        <h2 class="section-title">Last 30 Days Revenue And Order Flow</h2>
+                                        <p class="section-copy">Gross sales, net sales, and order volume layered together for daily trend visibility.</p>
+                                    </div>
+                                </div>
+                                <div class="chart-wrap">
+                                    <canvas id="salesTrendChart"></canvas>
+                                </div>
+                                <p class="chart-note">Net sales deduct processed return refunds on the day the return was completed.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-4">
+                        <div class="surface-card h-100">
+                            <div class="card-body">
+                                <div class="section-heading-group mb-3">
+                                    <div>
+                                        <div class="section-eyebrow">Order Mix</div>
+                                        <h2 class="section-title">30-Day Status Distribution</h2>
+                                        <p class="section-copy">See where recent marketplace orders are concentrating in the lifecycle.</p>
+                                    </div>
+                                </div>
+                                <div class="chart-wrap chart-wrap--compact">
+                                    <canvas id="orderStatusChart"></canvas>
+                                </div>
+                                <p class="chart-note">Use this view to spot fulfillment bottlenecks, return spikes, or delivery backlog quickly.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="section-heading-group mb-3">
+                        <div>
+                            <div class="section-eyebrow">Finance</div>
+                            <h2 class="section-title">Revenue And Settlement Summary</h2>
+                            <p class="section-copy">Core financial signals across orders, commission, vendor earnings, and payout movement.</p>
+                        </div>
+                    </div>
+                    <div class="row g-4">
+                        <div th:each="stat : ${dashboard.financialStats}" class="col-12 col-md-6 col-xl-3">
+                            <div class="stat-card" th:classappend="${stat.tone}">
+                                <div class="stat-top">
+                                    <div class="stat-label" th:text="${stat.label}">Gross Sales</div>
+                                    <div class="stat-icon">
+                                        <i th:class="|bi ${stat.icon}|"></i>
+                                    </div>
+                                </div>
+                                <div class="stat-value" th:text="${stat.value}">Tk 0.00</div>
+                                <p class="stat-note" th:text="${stat.note}">Before refunds or return reversals.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="section-heading-group mb-3">
+                        <div>
+                            <div class="section-eyebrow">Operations</div>
+                            <h2 class="section-title">Payout Pressure And Conversion</h2>
+                            <p class="section-copy">Focus on settlement responsiveness, average basket size, and customer-to-buyer conversion.</p>
+                        </div>
+                    </div>
+                    <div class="row g-4">
+                        <div th:each="stat : ${dashboard.operationsStats}" class="col-12 col-md-6 col-xl-3">
+                            <div class="stat-card" th:classappend="${stat.tone}">
+                                <div class="stat-top">
+                                    <div class="stat-label" th:text="${stat.label}">Pending Payouts</div>
+                                    <div class="stat-icon">
+                                        <i th:class="|bi ${stat.icon}|"></i>
+                                    </div>
+                                </div>
+                                <div class="stat-value" th:text="${stat.value}">Tk 0.00</div>
+                                <p class="stat-note" th:text="${stat.note}">0 payout requests are waiting for action.</p>
+                                <a th:if="${stat.href != null}" class="stat-link" th:href="@{${stat.href}}">
+                                    Review queue <i class="bi bi-arrow-up-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="section-heading-group mb-3">
+                        <div>
+                            <div class="section-eyebrow">Risk And Service</div>
+                            <h2 class="section-title">Returns, Onboarding, And Support Signals</h2>
+                            <p class="section-copy">Monitor refund pressure, approval queue, support inbox, and unresolved customer complaints.</p>
+                        </div>
+                    </div>
+                    <div class="row g-4">
+                        <div th:each="stat : ${dashboard.riskStats}" class="col-12 col-md-6 col-xl-4">
+                            <div class="stat-card" th:classappend="${stat.tone}">
+                                <div class="stat-top">
+                                    <div class="stat-label" th:text="${stat.label}">Refund Amount</div>
+                                    <div class="stat-icon">
+                                        <i th:class="|bi ${stat.icon}|"></i>
+                                    </div>
+                                </div>
+                                <div class="stat-value" th:text="${stat.value}">0</div>
+                                <p class="stat-note" th:text="${stat.note}">Refund value already recorded on returned order items.</p>
+                                <a th:if="${stat.href != null}" class="stat-link" th:href="@{${stat.href}}">
+                                    Drill down <i class="bi bi-arrow-up-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-12 col-xl-5">
+                        <div class="surface-card h-100">
+                            <div class="card-body">
+                                <div class="section-heading-group mb-3">
+                                    <div>
+                                        <div class="section-eyebrow">Inventory Health</div>
+                                        <h2 class="section-title">Catalog Availability And Visibility</h2>
+                                        <p class="section-copy">Published, low-stock, out-of-stock, and unpublished product exposure across the catalog.</p>
+                                    </div>
+                                </div>
+                                <div class="chart-wrap chart-wrap--compact">
+                                    <canvas id="productHealthChart"></canvas>
+                                </div>
+                                <div class="row g-3 mt-1">
+                                    <div th:each="stat : ${dashboard.inventoryStats}" class="col-12">
+                                        <div class="mini-metric">
+                                            <span class="mini-metric-label" th:text="${stat.label}">Low Stock</span>
+                                            <span class="mini-metric-value" th:text="${stat.value}">0</span>
+                                            <p class="chart-note mt-2 mb-0" th:text="${stat.note}">Published items with more than 0 and no more than 5 units left.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-7">
+                        <div class="surface-card h-100">
+                            <div class="card-body">
+                                <div class="section-heading-group mb-3">
+                                    <div>
+                                        <div class="section-eyebrow">Inbox</div>
+                                        <h2 class="section-title">Support And Complaint Intake</h2>
+                                        <p class="section-copy">Most recent customer contact messages and return-related complaints that still need staff attention.</p>
+                                    </div>
+                                </div>
+                                <div class="queue-grid">
+                                    <div class="queue-panel">
+                                        <h3 class="queue-title">Support Inbox</h3>
+                                        <p class="queue-copy">Customer contact requests captured by the storefront contact flow.</p>
+                                        <div class="queue-list" th:if="${not #lists.isEmpty(dashboard.supportRows)}">
+                                            <div th:each="row : ${dashboard.supportRows}" class="queue-item">
+                                                <div class="queue-item-title" th:text="${row.subject}">Order issue</div>
+                                                <div class="queue-item-meta">
+                                                    <div th:text="${row.name}">John Doe</div>
+                                                    <div th:text="${row.summary}">john@example.com</div>
+                                                    <div th:text="${row.createdLabel}">26 May 2026, 10:10 AM</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p th:if="${#lists.isEmpty(dashboard.supportRows)}" class="empty-state">No contact requests have been captured yet.</p>
+                                    </div>
+
+                                    <div class="queue-panel">
+                                        <h3 class="queue-title">Complaint Queue</h3>
+                                        <p class="queue-copy">Return requests that are still waiting for marketplace resolution.</p>
+                                        <div class="queue-list" th:if="${not #lists.isEmpty(dashboard.complaintRows)}">
+                                            <a th:each="row : ${dashboard.complaintRows}" class="queue-item" th:href="@{${row.href}}">
+                                                <div class="queue-item-title" th:text="${row.orderCode + ' - ' + row.productTitle}">ORD-1001 - Product title</div>
+                                                <div class="queue-item-meta">
+                                                    <div th:text="${row.summary}">Customer Name</div>
+                                                    <div th:text="${row.createdLabel}">26 May 2026, 10:10 AM</div>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        <p th:if="${#lists.isEmpty(dashboard.complaintRows)}" class="empty-state">No unresolved complaint entries are waiting right now.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-12 col-xl-7">
+                        <div class="surface-card h-100">
+                            <div class="card-body">
+                                <div class="section-heading-group mb-3">
+                                    <div>
+                                        <div class="section-eyebrow">Live Orders</div>
+                                        <h2 class="section-title">Most Recent Marketplace Orders</h2>
+                                        <p class="section-copy">Latest order activity with direct links into the admin order detail flow.</p>
+                                    </div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table dashboard-table align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Order</th>
+                                                <th>Customer</th>
+                                                <th>Status</th>
+                                                <th>Created</th>
+                                                <th class="text-end">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:if="${#lists.isEmpty(dashboard.recentOrders)}">
+                                                <td colspan="5" class="text-center text-muted">No recent orders to display.</td>
+                                            </tr>
+                                            <tr th:each="row : ${dashboard.recentOrders}">
+                                                <td>
+                                                    <a class="table-link" th:href="@{${row.href}}" th:text="${row.orderCode}">ORD-1001</a>
+                                                </td>
+                                                <td th:text="${row.customerName}">Customer</td>
+                                                <td>
+                                                    <span class="status-pill" th:classappend="${row.statusTone}" th:text="${row.statusLabel}">Pending</span>
+                                                </td>
+                                                <td th:text="${row.createdLabel}">26 May 2026, 10:10 AM</td>
+                                                <td class="text-end" th:text="${row.totalLabel}">Tk 0.00</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-5">
+                        <div class="d-grid gap-4">
+                            <div class="surface-card">
+                                <div class="card-body">
+                                    <div class="section-heading-group mb-3">
+                                        <div>
+                                            <div class="section-eyebrow">Vendor Queue</div>
+                                            <h2 class="section-title">Applications And Approval Watch</h2>
+                                            <p class="section-copy">Pending approvals are shown first, followed by the newest vendor applications.</p>
+                                        </div>
+                                    </div>
+                                    <div class="watchlist" th:if="${not #lists.isEmpty(dashboard.vendorQueueRows)}">
+                                        <a th:each="row : ${dashboard.vendorQueueRows}" class="watchlist-item" th:href="@{${row.href}}">
+                                            <div>
+                                                <div class="watchlist-title" th:text="${row.companyName}">Vendor name</div>
+                                                <div class="watchlist-copy">
+                                                    <div th:text="${row.vendorCode}">VEN-XX-2026-0001</div>
+                                                    <div th:text="${row.contactLabel}">contact@example.com</div>
+                                                    <div th:text="${row.submittedLabel}">26 May 2026, 10:10 AM</div>
+                                                </div>
+                                            </div>
+                                            <span class="status-pill" th:classappend="${row.statusTone}" th:text="${row.statusLabel}">Pending</span>
+                                        </a>
+                                    </div>
+                                    <p th:if="${#lists.isEmpty(dashboard.vendorQueueRows)}" class="empty-state">No pending or recently submitted vendor applications are waiting right now.</p>
+                                </div>
+                            </div>
+
+                            <div class="surface-card">
+                                <div class="card-body">
+                                    <div class="section-heading-group mb-3">
+                                        <div>
+                                            <div class="section-eyebrow">Product Watchlist</div>
+                                            <h2 class="section-title">Low Stock, Outages, And Hidden SKUs</h2>
+                                            <p class="section-copy">Highest-priority catalog issues that need merchandising or operations action.</p>
+                                        </div>
+                                    </div>
+                                    <div class="watchlist" th:if="${not #lists.isEmpty(dashboard.productAttentionRows)}">
+                                        <a th:each="row : ${dashboard.productAttentionRows}" class="watchlist-item" th:href="@{${row.href}}">
+                                            <div>
+                                                <div class="watchlist-title" th:text="${row.title}">Product title</div>
+                                                <div class="watchlist-copy">
+                                                    <div th:text="${row.vendorName}">Vendor</div>
+                                                    <div th:text="${row.stockLabel}">0 units</div>
+                                                </div>
+                                            </div>
+                                            <span class="status-pill" th:classappend="${row.stateTone}" th:text="${row.stateLabel}">Low stock</span>
+                                        </a>
+                                    </div>
+                                    <p th:if="${#lists.isEmpty(dashboard.productAttentionRows)}" class="empty-state">No catalog products are currently in the alert watchlist.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
-        <div class="row">
-            <div class="col-sm-3">
-                <div class="card mb-3 bg-info text-white">
-                    <div class="card-header bg-info">
-                        Total Orders
-                    </div>
-                    <div class="card-body">
-                        <h1>     <i class="bi bi-cart-fill"></i> 500000</h1>
-                    </div>
-                    <div class="card-footer">
-                        <a href="#" class="btn btn-p"></a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-3">
-                <div class="card mb-3 bg-info text-white">
-                    <div class="card-header bg-info">
-                        Total Sales
-                    </div>
-                    <div class="card-body">
-                        <h1>     <i class="bi bi-credit-card"></i>70000</h1>
-                    </div>
-                    <div class="card-footer">
-                        <a href="#" class="btn btn-p"></a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-3">
-                <div class="card mb-3 bg-info text-white">
-                    <div class="card-header bg-info">
-                        Total Customers
-                    </div>
-                    <div class="card-body">
-                        <h1>   <i class="bi bi-people-fill"></i> 50000</h1>
-                    </div>
-                    <div class="card-footer">
-                        <a href="#" class="btn btn-p"></a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-3">
-                <div class="card mb-3 bg-info text-white">
-                    <div class="card-header bg-info">
-                        People Online
-                    </div>
-                    <div class="card-body">
-                        <h1> <i class="bi bi-people"></i> 5000</h1>
-                    </div>
-                    <div class="card-footer">
-                        <a href="#" class="btn btn-p"></a>
-                    </div>
-                </div>
-            </div>
+    </div>
 
-        </div>
-        <div class="row">
+    <th:block layout:fragment="page_js">
+        <script th:src="@{/webjars/chartjs/4.5.1/dist/chart.umd.min.js}"></script>
+        <script th:inline="javascript">
+            const trendLabels = /*[[${dashboard.trendLabels}]]*/ [];
+            const grossTrend = /*[[${dashboard.grossTrend}]]*/ [];
+            const netTrend = /*[[${dashboard.netTrend}]]*/ [];
+            const orderTrend = /*[[${dashboard.orderTrend}]]*/ [];
+            const orderStatusLabels = /*[[${dashboard.orderStatusLabels}]]*/ [];
+            const orderStatusCounts = /*[[${dashboard.orderStatusCounts}]]*/ [];
+            const productHealthLabels = /*[[${dashboard.productHealthLabels}]]*/ [];
+            const productHealthCounts = /*[[${dashboard.productHealthCounts}]]*/ [];
 
-            <div class="col-sm-6">
-                <div class="card mb-3">
-                    <div class="card-header"><i class="fa-solid fa-shopping-cart"></i> Latest Orders</div>
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <td class="text-end">Order ID</td>
-                                    <td>Customer</td>
-                                    <td>Status</td>
-                                    <td>Date Added</td>
-                                    <td class="text-end">Total</td>
+            const moneyFormatter = new Intl.NumberFormat('en-BD', {
+                style: 'currency',
+                currency: 'BDT',
+                maximumFractionDigits: 0
+            });
 
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="text-end">1138</td>
-                                    <td>kumar4 m</td>
-                                    <td>Pending</td>
-                                    <td>04/11/2024</td>
-                                    <td class="text-end">$130.00</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-end">1137</td>
-                                    <td>kumar4 m</td>
-                                    <td>Pending</td>
-                                    <td>04/11/2024</td>
-                                    <td class="text-end">$131.20</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-end">1135</td>
-                                    <td>Le Duy Quan</td>
-                                    <td>Pending</td>
-                                    <td>04/11/2024</td>
-                                    <td class="text-end">$106.00</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-end">1134</td>
-                                    <td>Le Duy Quan</td>
-                                    <td>Pending</td>
-                                    <td>04/11/2024</td>
-                                    <td class="text-end">$106.00</td>
+            function hasPositiveValues(values) {
+                return Array.isArray(values) && values.some(value => Number(value) > 0);
+            }
 
-                                </tr>
-                                <tr>
-                                    <td class="text-end">1132</td>
-                                    <td>Hoang Dang</td>
-                                    <td>Pending</td>
-                                    <td>04/11/2024</td>
-                                    <td class="text-end">88.54€</td>
+            function buildDoughnutData(labels, values, colors, fallbackLabel) {
+                if (!hasPositiveValues(values)) {
+                    return {
+                        labels: [fallbackLabel],
+                        datasets: [{
+                            data: [1],
+                            backgroundColor: ['#d0d7e2'],
+                            borderWidth: 0
+                        }]
+                    };
+                }
 
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-6">
-                <div class="card mb-3">
-                    <div class="card-header"><i class="fa-solid fa-shopping-cart"></i> Latest Orders</div>
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <td class="text-end">Order ID</td>
-                                    <td>Customer</td>
-                                    <td>Status</td>
-                                    <td>Date Added</td>
-                                    <td class="text-end">Total</td>
+                return {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors,
+                        borderWidth: 0
+                    }]
+                };
+            }
 
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="text-end">1138</td>
-                                    <td>kumar4 m</td>
-                                    <td>Pending</td>
-                                    <td>04/11/2024</td>
-                                    <td class="text-end">$130.00</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-end">1137</td>
-                                    <td>kumar4 m</td>
-                                    <td>Pending</td>
-                                    <td>04/11/2024</td>
-                                    <td class="text-end">$131.20</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-end">1135</td>
-                                    <td>Le Duy Quan</td>
-                                    <td>Pending</td>
-                                    <td>04/11/2024</td>
-                                    <td class="text-end">$106.00</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-end">1134</td>
-                                    <td>Le Duy Quan</td>
-                                    <td>Pending</td>
-                                    <td>04/11/2024</td>
-                                    <td class="text-end">$106.00</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-end">1132</td>
-                                    <td>Hoang Dang</td>
-                                    <td>Pending</td>
-                                    <td>04/11/2024</td>
-                                    <td class="text-end">88.54€</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div></div>
+            if (typeof Chart !== 'undefined') {
+                const salesCanvas = document.getElementById('salesTrendChart');
+                if (salesCanvas) {
+                    new Chart(salesCanvas, {
+                        type: 'bar',
+                        data: {
+                            labels: trendLabels,
+                            datasets: [
+                                {
+                                    type: 'bar',
+                                    label: 'Orders',
+                                    data: orderTrend,
+                                    yAxisID: 'yOrders',
+                                    backgroundColor: 'rgba(18, 58, 99, 0.15)',
+                                    borderColor: 'rgba(18, 58, 99, 0.85)',
+                                    borderWidth: 1.4,
+                                    borderRadius: 10,
+                                    maxBarThickness: 22
+                                },
+                                {
+                                    type: 'line',
+                                    label: 'Gross Sales',
+                                    data: grossTrend,
+                                    yAxisID: 'yMoney',
+                                    borderColor: '#0f766e',
+                                    backgroundColor: 'rgba(15, 118, 110, 0.14)',
+                                    fill: true,
+                                    tension: 0.35,
+                                    pointRadius: 2.5,
+                                    pointHoverRadius: 4.5
+                                },
+                                {
+                                    type: 'line',
+                                    label: 'Net Sales',
+                                    data: netTrend,
+                                    yAxisID: 'yMoney',
+                                    borderColor: '#f59e0b',
+                                    backgroundColor: 'rgba(245, 158, 11, 0.14)',
+                                    fill: false,
+                                    tension: 0.35,
+                                    pointRadius: 2.5,
+                                    pointHoverRadius: 4.5
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: {
+                                mode: 'index',
+                                intersect: false
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                    labels: {
+                                        usePointStyle: true,
+                                        boxWidth: 10
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label(context) {
+                                            const label = context.dataset.label || '';
+                                            if (context.dataset.yAxisID === 'yMoney') {
+                                                return `${label}: ${moneyFormatter.format(context.parsed.y || 0)}`;
+                                            }
+                                            return `${label}: ${context.parsed.y || 0}`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                yMoney: {
+                                    type: 'linear',
+                                    position: 'left',
+                                    ticks: {
+                                        callback(value) {
+                                            return moneyFormatter.format(value);
+                                        }
+                                    },
+                                    grid: {
+                                        color: 'rgba(15, 23, 42, 0.06)'
+                                    }
+                                },
+                                yOrders: {
+                                    type: 'linear',
+                                    position: 'right',
+                                    grid: {
+                                        drawOnChartArea: false
+                                    },
+                                    ticks: {
+                                        precision: 0
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                const orderStatusCanvas = document.getElementById('orderStatusChart');
+                if (orderStatusCanvas) {
+                    new Chart(orderStatusCanvas, {
+                        type: 'doughnut',
+                        data: buildDoughnutData(
+                            orderStatusLabels,
+                            orderStatusCounts,
+                            ['#123a63', '#0f766e', '#f59e0b', '#ef4444', '#64748b', '#16a34a', '#0ea5e9', '#8b5cf6'],
+                            'No recent order activity'
+                        ),
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '64%',
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        usePointStyle: true,
+                                        boxWidth: 10
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                const productHealthCanvas = document.getElementById('productHealthChart');
+                if (productHealthCanvas) {
+                    const healthData = hasPositiveValues(productHealthCounts)
+                        ? {
+                            labels: productHealthLabels,
+                            datasets: [{
+                                label: 'Products',
+                                data: productHealthCounts,
+                                backgroundColor: ['#123a63', '#f59e0b', '#ef4444', '#64748b'],
+                                borderRadius: 10,
+                                maxBarThickness: 22
+                            }]
+                        }
+                        : {
+                            labels: ['No products yet'],
+                            datasets: [{
+                                label: 'Products',
+                                data: [0],
+                                backgroundColor: ['#d0d7e2'],
+                                borderRadius: 10,
+                                maxBarThickness: 22
+                            }]
+                        };
+
+                    new Chart(productHealthCanvas, {
+                        type: 'bar',
+                        data: healthData,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            indexAxis: 'y',
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        precision: 0
+                                    },
+                                    grid: {
+                                        color: 'rgba(15, 23, 42, 0.06)'
+                                    }
+                                },
+                                y: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        </script>
+    </th:block>
+</div>

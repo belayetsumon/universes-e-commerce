@@ -11,6 +11,10 @@ package com.ecommerce.app.order.model;
  */
 public enum PaymentMethod {
     COD("Cash on Delivery"),
+    WALLET("Wallet"),
+    EMI("Meritten EMI"),
+    SSLCOMMERZ("SSLCommerz"),
+    BKASH("bKash"),
     CARD("Credit/Debit Card"),
     MOBILE_BANKING("Mobile Banking"),
     PAYPAL("PayPal"),
@@ -26,5 +30,9 @@ public enum PaymentMethod {
 
     public String getDisplayName() {
         return displayName;
+    }
+
+    public boolean isOnlineGateway() {
+        return this == SSLCOMMERZ || this == BKASH;
     }
 }

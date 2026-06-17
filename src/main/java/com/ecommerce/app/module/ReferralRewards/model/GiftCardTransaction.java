@@ -4,33 +4,22 @@
  */
 package com.ecommerce.app.module.ReferralRewards.model;
 
+import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.order.model.SalesOrder;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 /**
  *
  * @author libertyerp_local
  */
 @Entity
-@EntityListeners(AuditingEntityListener.class)
-public class GiftCardTransaction {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+//@EntityListeners(AuditingEntityListener.class)
+@Table(name = "promotions_gift_card_transaction")
+public class GiftCardTransaction extends BaseEntityPromotions {
 
     @ManyToOne
     private GiftCard giftCard;
@@ -38,47 +27,25 @@ public class GiftCardTransaction {
     @ManyToOne
     private SalesOrder order;
 
-    private BigDecimal amountUsed;
     private LocalDateTime usedAt;
 
-    /// Audit ///
-    @CreatedBy
-    @Column(nullable = false, updatable = false)
-    private String createdBy;
+    @ManyToOne
+    private Users user;
 
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime created;
+    private BigDecimal amountUsed;
 
-    @LastModifiedBy
-    @Column(insertable = false)
-    private String modifiedBy;
-
-    @LastModifiedDate
-    @Column(insertable = false)
-    private LocalDateTime modified;
+    private BigDecimal remainingBalance;
 
     public GiftCardTransaction() {
     }
 
-    public GiftCardTransaction(Long id, GiftCard giftCard, SalesOrder order, BigDecimal amountUsed, LocalDateTime usedAt, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
-        this.id = id;
+    public GiftCardTransaction(GiftCard giftCard, SalesOrder order, LocalDateTime usedAt, Users user, BigDecimal amountUsed, BigDecimal remainingBalance) {
         this.giftCard = giftCard;
         this.order = order;
-        this.amountUsed = amountUsed;
         this.usedAt = usedAt;
-        this.createdBy = createdBy;
-        this.created = created;
-        this.modifiedBy = modifiedBy;
-        this.modified = modified;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+        this.user = user;
+        this.amountUsed = amountUsed;
+        this.remainingBalance = remainingBalance;
     }
 
     public GiftCard getGiftCard() {
@@ -97,14 +64,6 @@ public class GiftCardTransaction {
         this.order = order;
     }
 
-    public BigDecimal getAmountUsed() {
-        return amountUsed;
-    }
-
-    public void setAmountUsed(BigDecimal amountUsed) {
-        this.amountUsed = amountUsed;
-    }
-
     public LocalDateTime getUsedAt() {
         return usedAt;
     }
@@ -113,36 +72,28 @@ public class GiftCardTransaction {
         this.usedAt = usedAt;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
+    public Users getUser() {
+        return user;
     }
 
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
+    public void setUser(Users user) {
+        this.user = user;
     }
 
-    public LocalDateTime getCreated() {
-        return created;
+    public BigDecimal getAmountUsed() {
+        return amountUsed;
     }
 
-    public void setCreated(LocalDateTime created) {
-        this.created = created;
+    public void setAmountUsed(BigDecimal amountUsed) {
+        this.amountUsed = amountUsed;
     }
 
-    public String getModifiedBy() {
-        return modifiedBy;
+    public BigDecimal getRemainingBalance() {
+        return remainingBalance;
     }
 
-    public void setModifiedBy(String modifiedBy) {
-        this.modifiedBy = modifiedBy;
-    }
-
-    public LocalDateTime getModified() {
-        return modified;
-    }
-
-    public void setModified(LocalDateTime modified) {
-        this.modified = modified;
+    public void setRemainingBalance(BigDecimal remainingBalance) {
+        this.remainingBalance = remainingBalance;
     }
 
 }

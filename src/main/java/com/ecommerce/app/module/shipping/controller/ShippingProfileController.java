@@ -4,6 +4,7 @@
  */
 package com.ecommerce.app.module.shipping.controller;
 
+import com.ecommerce.app.globalServices.District;
 import com.ecommerce.app.module.shipping.model.Carrier;
 import com.ecommerce.app.module.shipping.model.ShippingProfile;
 import com.ecommerce.app.module.shipping.model.ShippingProfile.ProfileType;
@@ -58,7 +59,7 @@ public class ShippingProfileController {
         model.addAttribute("vendors", vendorprofileService.findAll()); // <-- add vendors
         model.addAttribute("types", ProfileType.values());
         model.addAttribute("carriers", carrierService.getAll());
-        model.addAttribute("allDistricts", List.of("Dhaka", "Chattogram", "Cumilla", "Gazipur", "Khulna")); // Add all districts
+        model.addAttribute("allDistricts", District.values());
         return "admin/shipping/shipping_profiles/admin_shipping_profiles_create";
     }
 
@@ -74,8 +75,8 @@ public class ShippingProfileController {
             model.addAttribute("types", ShippingProfile.ProfileType.values());
             model.addAttribute("vendors", vendorprofileService.findAll()); // <-- add vendors
             model.addAttribute("carriers", carrierService.getAll());
-            model.addAttribute("allDistricts", List.of("Dhaka", "Chattogram", "Cumilla", "Gazipur", "Khulna"));
-            return "shipping/form";
+            model.addAttribute("allDistricts", District.values());
+            return "admin/shipping/shipping_profiles/admin_shipping_profiles_create";
         }
 
         // Handle carriers selection
@@ -98,7 +99,7 @@ public class ShippingProfileController {
         model.addAttribute("profile", profile);
         model.addAttribute("types", ProfileType.values());
         model.addAttribute("carriers", carrierService.getAll());
-        model.addAttribute("allDistricts", List.of("Dhaka", "Chattogram", "Cumilla", "Gazipur", "Khulna")); // same
+        model.addAttribute("allDistricts", District.values());
         return "admin/shipping/shipping_profiles/admin_shipping_profiles_create";
     }
 

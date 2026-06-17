@@ -29,7 +29,7 @@ public class UsersService {
     @Autowired
     private EntityNameResolver entityNameResolver;
 
-    public String generateRefaraleCode() {
+    public String generateReferralCode() {
 
         char[] chars = "abcdefghijklmnopqrstuvwxyz1234567890".toCharArray();
         StringBuilder sb = new StringBuilder();
@@ -41,6 +41,10 @@ public class UsersService {
         String output = sb.toString().toUpperCase();
 
         return output;
+    }
+
+    public String generateRefaraleCode() {
+        return generateReferralCode();
     }
 
 //    public void deleteById(Long id) {

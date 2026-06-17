@@ -16,9 +16,19 @@ import org.springframework.data.repository.query.Param;
 
 public interface WalletTransactionRepository extends JpaRepository<WalletTransaction, Long> {
 
+    @Query("""
+            SELECT wt
+            FROM WalletTransaction wt
+            JOIN FETCH wt.wallet w
+            JOIN FETCH w.users
+            JOIN FETCH wt.users
+            ORDER BY wt.createdAt DESC, wt.id DESC
+            """)
+    List<WalletTransaction> findAllForAdminList();
+
     // 1. Expired & unredeemed REWARD transactions
     @Query("SELECT t FROM WalletTransaction t "
-            + "WHERE t.type = 'REWARD' AND t.redeemed = false AND t.expiryDate IS NOT NULL AND t.expiryDate <= :now")
+            + "WHERE t.type = 'REWARD' AND t.redeemed = false AND t.expired = false AND t.expiryDate IS NOT NULL AND t.expiryDate <= :now")
     List<WalletTransaction> findExpiredUnredeemed(@Param("now") LocalDateTime now);
 
     // 2. Sum of active, unredeemed rewards in a wallet
@@ -31,22 +41,22 @@ public interface WalletTransactionRepository extends JpaRepository<WalletTransac
 
     // 3. Sum of rewards for user not expired and not redeemed
     @Query("SELECT SUM(wt.amount) FROM WalletTransaction wt "
-            + "WHERE wt.users = :user AND wt.expiryDate > :now AND wt.redeemed = false")
+            + "WHERE wt.wallet.users = :user AND wt.expiryDate > :now AND wt.redeemed = false")
     Optional<BigDecimal> sumAvailableByUser(@Param("user") Users user, @Param("now") LocalDateTime now);
 
     // 4. Sum of credited amounts for a user
     @Query("SELECT SUM(wt.amount) FROM WalletTransaction wt "
-            + "WHERE wt.users = :user AND wt.type = 'CREDIT'")
+            + "WHERE wt.wallet.users = :user AND wt.type = 'CREDIT'")
     Optional<BigDecimal> sumCreditsByUser(@Param("user") Users user);
 
     // 5. Sum of debited amounts for a user
     @Query("SELECT SUM(wt.amount) FROM WalletTransaction wt "
-            + "WHERE wt.users = :user AND wt.amount < :amount")
+            + "WHERE wt.wallet.users = :user AND wt.amount < :amount")
     Optional<BigDecimal> sumDebitsByUser(@Param("user") Users user, @Param("amount") BigDecimal amount);
 
     // 6. Sum by type and user since a date
     @Query("SELECT SUM(wt.amount) FROM WalletTransaction wt "
-            + "WHERE wt.users = :user AND wt.type = :type AND wt.createdAt >= :date")
+            + "WHERE wt.wallet.users = :user AND wt.type = :type AND wt.createdAt >= :date")
     Optional<BigDecimal> sumByUserTypeSince(
             @Param("user") Users user,
             @Param("type") TransactionType type,
@@ -79,7 +89,7 @@ public interface WalletTransactionRepository extends JpaRepository<WalletTransac
 
     // 11. Sum of non-redeemed user amounts that haven't expired
     @Query("SELECT COALESCE(SUM(wt.amount), 0) FROM WalletTransaction wt "
-            + "WHERE wt.users = :user AND wt.expiryDate > :expiryDate AND wt.redeemed = false")
+            + "WHERE wt.wallet.users = :user AND wt.expiryDate > :expiryDate AND wt.redeemed = false")
     Optional<BigDecimal> sumAmountByUserAndExpiryDateAfterAndRedeemedFalse(
             @Param("user") Users user,
             @Param("expiryDate") LocalDateTime expiryDate
@@ -87,7 +97,7 @@ public interface WalletTransactionRepository extends JpaRepository<WalletTransac
 
     // 12. Sum of user's credited transactions (amount >= X)
     @Query("SELECT COALESCE(SUM(wt.amount), 0) FROM WalletTransaction wt "
-            + "WHERE wt.users = :user AND wt.amount >= :amount")
+            + "WHERE wt.wallet.users = :user AND wt.amount >= :amount")
     Optional<BigDecimal> sumAmountByUserAndAmountGreaterThanEqual(
             @Param("user") Users user,
             @Param("amount") BigDecimal amount
@@ -95,7 +105,7 @@ public interface WalletTransactionRepository extends JpaRepository<WalletTransac
 
     // 13. Sum of user's debited transactions (amount < X)
     @Query("SELECT COALESCE(SUM(wt.amount), 0) FROM WalletTransaction wt "
-            + "WHERE wt.users = :user AND wt.amount < :amount")
+            + "WHERE wt.wallet.users = :user AND wt.amount < :amount")
     Optional<BigDecimal> sumAmountByUserAndAmountLessThan(
             @Param("user") Users user,
             @Param("amount") BigDecimal amount
@@ -112,6 +122,8 @@ public interface WalletTransactionRepository extends JpaRepository<WalletTransac
 
     // 15. List by wallet
     List<WalletTransaction> findByWallet(Wallet wallet);
+
+    boolean existsByWallet(Wallet wallet);
 
     // 16. List user's transactions sorted newest first
     List<WalletTransaction> findByWallet_UsersOrderByCreatedAtDesc(Users user);

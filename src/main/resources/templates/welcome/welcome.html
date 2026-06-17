@@ -1,71 +1,55 @@
 <!DOCTYPE html>
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-home">
-    <div layout:fragment = "main_content">
+    <div layout:fragment="main_content">
 
         <div class="container-fluid p-0">
+            <div th:if="${banner == null or #lists.isEmpty(banner)}" class="bg-light border text-center py-5">
+                <h4 class="mb-2">Welcome to Musapir</h4>
+                <p class="mb-0 text-muted">Featured products, latest arrivals, and the best deals are ready below.</p>
+            </div>
 
-
-
-
-            <div class="container-fluid p-0">
-
-                <!-- When banner list is empty or null -->
-                <div th:if="${banner == null or #lists.isEmpty(banner)}"
-                     class="text-center py-5 bg-light border">
-                    <h5>No banner found</h5>
-                </div>
-
-                <!-- When banners exist -->
-                <div th:unless="${banner == null or #lists.isEmpty(banner)}"
-                     id="myCarousel" class="carousel slide carousel-container" data-bs-ride="carousel">
-
-                    <div class="carousel-inner">
-
-                        <div th:each="ad, i : ${banner}"
-                             class="carousel-item"
-                             th:classappend="${i.index == 0} ? ' active'">
-
+            <div th:unless="${banner == null or #lists.isEmpty(banner)}"
+                 id="myCarousel"
+                 class="carousel slide carousel-container"
+                 data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <div th:each="ad, i : ${banner}"
+                         class="carousel-item"
+                         th:classappend="${i.index == 0} ? ' active'">
+                        <a th:if="${not #strings.isEmpty(ad.targetUrl)}"
+                           th:href="${ad.targetUrl}"
+                           th:target="${ad.openInNewTab} ? '_blank' : null"
+                           th:rel="${ad.openInNewTab} ? 'noopener noreferrer' : null">
                             <img th:src="@{'/files/banner/' + ${ad.imageUrl}}"
                                  class="d-block w-100"
                                  th:alt="${ad.title}" />
-                        </div>
-
+                        </a>
+                        <img th:if="${#strings.isEmpty(ad.targetUrl)}"
+                             th:src="@{'/files/banner/' + ${ad.imageUrl}}"
+                             class="d-block w-100"
+                             th:alt="${ad.title}" />
                     </div>
-
-                    <!-- Controls only if there are banners -->
-                    <button class="carousel-control-prev" type="button"
-                            data-bs-target="#myCarousel" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon"></span>
-                        <span class="visually-hidden">Previous</span>
-                    </button>
-
-                    <button class="carousel-control-next" type="button"
-                            data-bs-target="#myCarousel" data-bs-slide="next">
-                        <span class="carousel-control-next-icon"></span>
-                        <span class="visually-hidden">Next</span>
-                    </button>
-
                 </div>
 
+                <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
             </div>
-
         </div>
 
-
-
-
-        <section class="pt-5 pb-2"> <!-- Latest Product  -->
-
-            <div class="container my-3 featured-cat-container card border-0 shadow-none h-100">
+        <section class="pt-1 pb-2">
+            <div class="container-fluid my-3 featured-cat-container card border-0 shadow-none h-100">
                 <div class="row justify-content-between align-items-center mb-2">
-                    <!-- Title -->
                     <div class="col text-start section_title d-flex align-items-center">
                         <span class="section-title-square"></span>
                         Featured Category
                     </div>
-
-                    <!-- Arrows beside title (always visible) -->
-                    <div class="col-auto d-flex gap-2">
+                    <div class="col-auto d-flex gap-2" th:if="${featureCatList != null and !#lists.isEmpty(featureCatList)}">
                         <button class="btn p-0 border-0 bg-transparent" type="button" onclick="scrollLeft('featuredCarousel')">
                             <span class="bi bi-arrow-left fs-3 text-danger"></span>
                         </button>
@@ -76,22 +60,25 @@
                 </div>
                 <hr>
 
-                <div class="position-relative">
-                    <!-- Scrollable carousel -->
+                <div th:if="${featureCatList == null or #lists.isEmpty(featureCatList)}" class="text-center py-4 text-muted">
+                    Featured categories will appear here once they are marked from admin.
+                </div>
+
+                <div th:unless="${featureCatList == null or #lists.isEmpty(featureCatList)}" class="position-relative">
                     <div class="featured-cat-carousel" id="featuredCarousel">
-                        <div class="featured-cat-item" th:each="featureCatLists : ${featureCatList}">
+                        <div class="featured-cat-item" th:each="featureCat : ${featureCatList}">
                             <div class="card border-0 h-100 d-flex flex-column align-items-center">
-                                <span th:if="${not #strings.isEmpty(featureCatLists.imageName)}">
+                                <span th:if="${not #strings.isEmpty(featureCat.imageName)}">
                                     <img class="rounded-circle featured-cat-img hvr-bounce-in"
-                                         th:src="@{/files/}+${featureCatLists.imageName}" />
+                                         th:src="@{/files/}+${featureCat.imageName}" />
                                 </span>
-                                <span th:if="${#strings.isEmpty(featureCatLists.imageName)}">
+                                <span th:if="${#strings.isEmpty(featureCat.imageName)}">
                                     <img class="rounded-circle featured-cat-img hvr-bounce-in"
                                          th:src="@{/img/image-not-available.png}" />
                                 </span>
                                 <a class="nav-link text-center mt-2 featured-cat-text hvr-bounce-in"
-                                   th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${featureCatLists.id})}">
-                                    [[${featureCatLists.name}]]
+                                   th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${featureCat.uuid})}">
+                                    [[${featureCat.name}]]
                                 </a>
                             </div>
                         </div>
@@ -99,86 +86,94 @@
                 </div>
             </div>
 
-
             <script>
                 const carousel = document.getElementById('featuredCarousel');
-                let isDown = false;
-                let startX, scrollLeftPos;
 
-// Mouse drag
-                carousel.addEventListener('mousedown', (e) => {
-                    isDown = true;
-                    carousel.classList.add('active');
-                    startX = e.pageX - carousel.offsetLeft;
-                    scrollLeftPos = carousel.scrollLeft;
-                });
-                carousel.addEventListener('mouseleave', () => {
-                    isDown = false;
-                    carousel.classList.remove('active');
-                });
-                carousel.addEventListener('mouseup', () => {
-                    isDown = false;
-                    carousel.classList.remove('active');
-                });
-                carousel.addEventListener('mousemove', (e) => {
-                    if (!isDown)
-                        return;
-                    e.preventDefault();
-                    const x = e.pageX - carousel.offsetLeft;
-                    const walk = (x - startX);
-                    carousel.scrollLeft = scrollLeftPos - walk;
-                });
+                if (carousel) {
+                    let isDown = false;
+                    let startX;
+                    let scrollLeftPos;
 
-// Touch events
-                carousel.addEventListener('touchstart', (e) => {
-                    startX = e.touches[0].pageX - carousel.offsetLeft;
-                    scrollLeftPos = carousel.scrollLeft;
-                });
-                carousel.addEventListener('touchmove', (e) => {
-                    const x = e.touches[0].pageX - carousel.offsetLeft;
-                    const walk = (x - startX);
-                    carousel.scrollLeft = scrollLeftPos - walk;
-                });
+                    carousel.addEventListener('mousedown', (e) => {
+                        isDown = true;
+                        carousel.classList.add('active');
+                        startX = e.pageX - carousel.offsetLeft;
+                        scrollLeftPos = carousel.scrollLeft;
+                    });
+                    carousel.addEventListener('mouseleave', () => {
+                        isDown = false;
+                        carousel.classList.remove('active');
+                    });
+                    carousel.addEventListener('mouseup', () => {
+                        isDown = false;
+                        carousel.classList.remove('active');
+                    });
+                    carousel.addEventListener('mousemove', (e) => {
+                        if (!isDown) {
+                            return;
+                        }
+                        e.preventDefault();
+                        const x = e.pageX - carousel.offsetLeft;
+                        const walk = x - startX;
+                        carousel.scrollLeft = scrollLeftPos - walk;
+                    });
 
-// Arrow button scrolling
+                    carousel.addEventListener('touchstart', (e) => {
+                        startX = e.touches[0].pageX - carousel.offsetLeft;
+                        scrollLeftPos = carousel.scrollLeft;
+                    });
+                    carousel.addEventListener('touchmove', (e) => {
+                        const x = e.touches[0].pageX - carousel.offsetLeft;
+                        const walk = x - startX;
+                        carousel.scrollLeft = scrollLeftPos - walk;
+                    });
+
+                    carousel.tabIndex = 0;
+                    carousel.addEventListener('keydown', (e) => {
+                        if (e.key === 'ArrowLeft') {
+                            scrollLeft('featuredCarousel');
+                        }
+                        if (e.key === 'ArrowRight') {
+                            scrollRight('featuredCarousel');
+                        }
+                    });
+                }
+
                 function scrollLeft(id) {
                     const container = document.getElementById(id);
-                    const itemWidth = container.querySelector('.featured-cat-item').offsetWidth + 16;
+                    if (!container) {
+                        return;
+                    }
+                    const firstItem = container.querySelector('.featured-cat-item');
+                    const itemWidth = firstItem ? firstItem.offsetWidth + 16 : 240;
                     container.scrollBy({left: -itemWidth, behavior: 'smooth'});
                 }
+
                 function scrollRight(id) {
                     const container = document.getElementById(id);
-                    const itemWidth = container.querySelector('.featured-cat-item').offsetWidth + 16;
+                    if (!container) {
+                        return;
+                    }
+                    const firstItem = container.querySelector('.featured-cat-item');
+                    const itemWidth = firstItem ? firstItem.offsetWidth + 16 : 240;
                     container.scrollBy({left: itemWidth, behavior: 'smooth'});
                 }
-
-// Keyboard navigation
-                carousel.tabIndex = 0;
-                carousel.addEventListener('keydown', (e) => {
-                    if (e.key === 'ArrowLeft')
-                        scrollLeft('featuredCarousel');
-                    if (e.key === 'ArrowRight')
-                        scrollRight('featuredCarousel');
-                });
-
             </script>
-
-
         </section>
 
         <section class="my-1">
-            <div class="container my-3   border-0 p-0 "> <!-- full width -->
-                <div class="row g-1"> <!-- g-0 removes all gutters/padding between cols -->
+            <div class="container-fluid  "> <!-- full width -->
+                <div class="row row-gap-3"> <!-- g-0 removes all gutters/padding between cols -->
 
                     <!-- First Promo Image -->
-                    <div class="col-12 col-md-6 pe-2 banner-effect">
+                    <div class="col-6 col-sm-6 pe-2 banner-effect">
                         <a>    <img th:src="@{/img/banner/promo_1.jpg}"
                                     alt="Promo 1"
                                     class="img-fluid w-100"> </a>
                     </div>
 
                     <!-- Second Promo Image -->
-                    <div class="col-12 col-md-6 ps-2 banner-effect">
+                    <div class="col-6 col-sm-6 ps-2 banner-effect">
                         <a>     <img th:src="@{/img/banner/promo_2.jpg}"
                                      alt="Promo 2"
                                      class="img-fluid w-100"></a>
@@ -187,116 +182,104 @@
                 </div>
             </div>
         </section>
-
-        <section class="pt-5 pb-2 trending-products"> <!-- Latest Product  -->
-            <div class="container my-3 featured-cat-container card border-0 shadow-none h-100">
-
-                <!-- 🔹 Row: Title left, Tabs + Nav right -->
+        <section class="pt-2 pb-2 trending-products">
+            <div class="container-fluid my-3 featured-cat-container card border-0 shadow-none h-100">
                 <div class="row justify-content-between align-items-center mb-3">
-
-                    <!-- Title -->
                     <div class="col-auto text-start section_title d-flex align-items-center">
                         <span class="section-title-square me-2"></span>
                         <h5 class="mb-0">Deals Today</h5>
                     </div>
-
-                    <!-- Tabs + Arrows -->
-
-
                 </div>
                 <hr class="mb-3">
-                <!-- 🔹 Tab Content -->
-                <div class="row row-cols-1 row-cols-md-5 g-4 ">
 
-                    <div class="col" th:each="productlists,status:${productlist}">
+                <div th:if="${dealProducts == null or #lists.isEmpty(dealProducts)}" class="text-center py-4 text-muted">
+                    No active deals are available right now.
+                </div>
 
-
-                        <div class="card product-card  position-relative mb-4 hvr-bounce-in h-100">
-
-                            <span th:if="${ not #strings.isEmpty(productlists.imageName)}" class="">
-                                <!--                                <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />-->
-                                <img class="card-img-top" th:src="@{${productlists.imageUrl}}" />
-
-
+                <div th:unless="${dealProducts == null or #lists.isEmpty(dealProducts)}" class="row row-cols-1 row-cols-md-5 g-4">
+                    <div class="col-6" th:each="product : ${dealProducts}">
+                        <div class="card product-card position-relative mb-4 hvr-bounce-in h-100">
+                            <span th:if="${not #strings.isEmpty(#strings.trim(product.imageName))}">
+                                <img class="card-img-top"
+                                     th:src="@{${product.imageUrl}}"
+                                     th:attr="onerror=|this.onerror=null;this.src='@{/img/image-not-available.png}';|"
+                                     th:alt="${product.title}" />
                             </span>
-                            <span th:if="${#strings.isEmpty(productlists.imageName)}" >
-                                <img  class="card-img-top" th:src="@{/img/image-not-available.png}" />
+                            <span th:if="${#strings.isEmpty(#strings.trim(product.imageName))}">
+                                <img class="card-img-top" th:src="@{/img/image-not-available.png}" th:alt="${product.title}" />
                             </span>
 
-                            <div class="badge-container">
-                                <span th:if="${productlists.totalDiscountPercent != null and productlists.totalDiscountPercent > 0}" class="badge rounded-pill bg-danger badge-custom" >
-                                    -[[${productlists.totalDiscountPercent}]]%
+                            <div class="product-status-badge-stack"
+                                 th:if="${product['showPreorderBadge'] == true or product['showOutOfStockBadge'] == true}">
+                                <span class="product-status-badge preorder"
+                                      th:if="${product['showPreorderBadge'] == true}">
+                                    Preorder
                                 </span>
-                                <span  th:if="${productlists.featuredProduct}" class="badge rounded-pill bg-info badge-custom">Featured</span>
-                                <!--                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>-->
+                                <span class="product-status-badge out-of-stock badge bg-danger"
+                                      th:if="${product['showOutOfStockBadge'] == true}">
+                                    Out of stock
+                                </span>
                             </div>
 
-                            <div class="card-body">
+                            <div class="badge-container">
+                                <span th:if="${product.totalDiscountPercent != null and product.totalDiscountPercent > 0}"
+                                      class="badge rounded-pill bg-danger badge-custom">
+                                    -[[${product.totalDiscountPercent}]]%
+                                </span>
+                                <span th:if="${product.featuredProduct}" class="badge rounded-pill bg-info badge-custom">Featured</span>
+                            </div>
+
+                            <div class="card-body d-flex flex-column">
                                 <div class="card-title">
-                                    <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.id})}" >
-                                        <!--                                        <span  th:text="${productlists.title}"></span> -->
-                                        <p th:text="${productlists.title.length() > 40 ? #strings.substring(productlists.title, 0, 40) + '...' : productlists.title}"></p></a>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="row"  th:if="${productlists.totalDiscountPercent > 0}">
-                                        <div class=" col-auto text-muted text-decoration-line-through"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
-                                        <div class=" col-auto  text-success">-[[${productlists.totalDiscountedAmount}]]</div>
-                                        <div class=" col-auto  text-reds">[[${productlists.afterDiscountRemainingAmount}]]</div>
-                                    </div>
-
-                                    <div class="row"  th:unless="${productlists.totalDiscountPercent > 0}">
-                                        <div class="  text-center"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
-                                    </div>
-                                    <div>
-                                        <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
-                                        <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
-                                    </div>
+                                    <a class="nav-link text-decoration-none text-dark text-reds"
+                                       th:href="@{/public/single-product/{prodid}(prodid=${product.uuid})}">
+                                        <p th:text="${#strings.length(product.title) > 40 ? #strings.substring(product.title, 0, 40) + '...' : product.title}"></p>
+                                    </a>
                                 </div>
 
-                                <form  class="" th:action="@{/cart/add}"  enctype="multipart/form-data" method="post" >
-
-                                    <input type="hidden" class="form-control" th:name ="product_id" th:value="${productlists.id}" />
-
-                                    <!--                                            <label  class="col-auto" for="exampleInputEmail1">Quantity:</label>-->
-
-                                    <!--                                        <div class="fs-6 text-danger"> <strong> Price: </strong><span  th:text="${productlists.salesPrice}">    </span></div>-->
-                                    <input  type="hidden" min="1"   class="col-auto form-control mb-3"  size="10" th:name="quantity" value="1" />
-
-                                    <div class=" form-group text-center ">
-                                        <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Buy Now</button>
-                                        <button class="btn btn-sm btn-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i>  </button>
+                                <div class="mb-3">
+                                    <div class="row" th:if="${product.totalDiscountPercent != null and product.totalDiscountPercent > 0}">
+                                        <div class="col-auto text-muted text-decoration-line-through">
+                                            <span th:text="${product.salesPrice}"></span> /-
+                                        </div>
+                                        <div class="col-auto text-success">-[[${product.totalDiscountedAmount}]]</div>
+                                        <div class="col-auto text-reds">[[${product.afterDiscountRemainingAmount}]]</div>
                                     </div>
-                                </form>
+                                    <div class="row" th:unless="${product.totalDiscountPercent != null and product.totalDiscountPercent > 0}">
+                                        <div class="text-center">
+                                            <span th:text="${product.salesPrice}"></span> /-
+                                        </div>
+                                    </div>
+                                </div>
 
-
-                                <!--                                <div class="mt-2">
-                                                                    <span class="badge bg-warning text-dark">Rating: 4.5 <i class="fas fa-star"></i></span>
-                                                                    <span class="badge bg-secondary">Top</span>
-                                                                    <span class="badge bg-primary">Trend</span>
-                                                                </div>-->
-
+                                <div class="mt-auto d-grid gap-2">
+                                    <a class="btn btn-sm btn-danger  responsive-btn"
+                                       th:href="@{/public/single-product/{prodid}(prodid=${product.uuid})}">
+                                        <i class="bi bi-eye text-warning"></i> View Details
+                                    </a>
+                                    <a class="btn btn-sm btn-outline-secondary"
+                                       th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${product.category.uuid})}">
+                                        More In Category
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
-
-
                 </div>
-
             </div>
         </section>
-
         <section class="my-1">
-            <div class="container p-0">
-                <div class="row">
+            <div class="container-fluid p-0">
+                <div class="row row-gap-3">
                     <!-- First Promo Image -->
-                    <div class="col-12 col-md-4 pe-md-2 banner-effect">
+                    <div class="col-4 col-md-4 pe-md-2 banner-effect">
                         <a> <img th:src="@{/img/banner/promo_1.jpg}"
                                  alt="Promo 1"
                                  class="img-fluid w-100 rounded shadow-sm"> </a>
                     </div>
 
                     <!-- Second Promo Image -->
-                    <div class="col-12 col-md-4 px-md-1 banner-effect">
+                    <div class="col-4 col-md-4 px-md-1 banner-effect">
                         <a>  <img th:src="@{/img/banner/promo_2.jpg}"
                                   alt="Promo 2"
                                   class="img-fluid w-100 rounded shadow-sm"></a>
@@ -304,7 +287,7 @@
 
 
                     <!-- Third Promo Image -->
-                    <div class="col-12 col-md-4 ps-md-1 banner-effect">
+                    <div class="col-4 col-md-4 ps-md-1 banner-effect">
                         <a>    <img th:src="@{/img/banner/promo_2.jpg}"
                                     alt="Promo 3"
                                     class="img-fluid w-100 rounded shadow-sm"> </a>
@@ -314,291 +297,227 @@
             </div>
 
         </section>
-
-        <section class="pt-5 pb-2 trending-products"> <!-- Latest Product  -->
-            <div class="container my-3 featured-cat-container card border-0 shadow-none h-100">
-
-                <!-- 🔹 Row: Title left, Tabs + Nav right -->
+        <section class="pt-5 pb-2 trending-products">
+            <div class="container-fluid my-3 featured-cat-container card border-0 shadow-none h-100">
                 <div class="row justify-content-between align-items-center mb-3">
-
-                    <!-- Title -->
                     <div class="col-auto text-start section_title d-flex align-items-center">
                         <span class="section-title-square me-2"></span>
-                        <h5 class="mb-0">Trending Products</h5>
+                        <h5 class="mb-0">Browse Products</h5>
                     </div>
 
-                    <!-- Tabs + Arrows -->
-                    <div class="col d-flex justify-content-end align-items-center gap-3 ">
-
-                        <!-- Tab Navigation -->
+                    <div class="col d-flex justify-content-end align-items-center gap-3">
                         <ul class="nav nav-pills border-0 mt-1" id="productTabs" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="featured-tab" data-bs-toggle="tab" data-bs-target="#featured" type="button" role="tab">
                                     Featured
                                 </button>
                             </li>
-
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="best-tab" data-bs-toggle="tab" data-bs-target="#best" type="button" role="tab">
-                                    BestSaller
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="new-tab" data-bs-toggle="tab" data-bs-target="#new" type="button" role="tab">
+                                <button class="nav-link" id="latest-tab" data-bs-toggle="tab" data-bs-target="#latest" type="button" role="tab">
                                     Latest
                                 </button>
                             </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="new-arrivals-tab" data-bs-toggle="tab" data-bs-target="#new-arrivals" type="button" role="tab">
+                                    New Arrivals
+                                </button>
+                            </li>
                         </ul>
-
                     </div>
-
                 </div>
+
                 <hr class="m-0">
-                <!-- 🔹 Tab Content -->
-                <div class="tab-content  p-3 " id="productTabsContent">
-                    <!-- Featured -->
+
+                <div class="tab-content p-3" id="productTabsContent">
                     <div class="tab-pane fade show active" id="featured" role="tabpanel">
-                        <div class="row row-cols-1 row-cols-md-5 g-4 ">
-
-                            <div class="col" th:each="productlists,status:${productlist}">
-
-
-                                <div class="card product-card  position-relative mb-4 hvr-bounce-in h-100">
-
-                                    <span th:if="${ not #strings.isEmpty(productlists.imageName)}" class="">
-                                        <!--                                <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />-->
-                                        <img class="card-img-top" th:src="@{${productlists.imageUrl}}" />
-
-
+                        <div th:if="${featuredProducts == null or #lists.isEmpty(featuredProducts)}" class="text-center py-4 text-muted">
+                            No featured products are available right now.
+                        </div>
+                        <div th:unless="${featuredProducts == null or #lists.isEmpty(featuredProducts)}" class="row row-cols-1 row-cols-md-5 g-4">
+                            <div class="col" th:each="product : ${featuredProducts}">
+                                <div class="card product-card position-relative mb-4 hvr-bounce-in h-100">
+                                    <span th:if="${not #strings.isEmpty(#strings.trim(product.imageName))}">
+                                        <img class="card-img-top"
+                                             th:src="@{${product.imageUrl}}"
+                                             th:attr="onerror=|this.onerror=null;this.src='@{/img/image-not-available.png}';|"
+                                             th:alt="${product.title}" />
                                     </span>
-                                    <span th:if="${#strings.isEmpty(productlists.imageName)}" >
-                                        <img  class="card-img-top" th:src="@{/img/image-not-available.png}" />
+                                    <span th:if="${#strings.isEmpty(#strings.trim(product.imageName))}">
+                                        <img class="card-img-top" th:src="@{/img/image-not-available.png}" th:alt="${product.title}" />
                                     </span>
-
-                                    <div class="badge-container">
-                                        <span th:if="${productlists.totalDiscountPercent != null and productlists.totalDiscountPercent > 0}" class="badge rounded-pill bg-danger badge-custom" >
-                                            -[[${productlists.totalDiscountPercent}]]%
+                                    <div class="product-status-badge-stack"
+                                         th:if="${product['showPreorderBadge'] == true or product['showOutOfStockBadge'] == true}">
+                                        <span class="product-status-badge preorder"
+                                              th:if="${product['showPreorderBadge'] == true}">
+                                            Preorder
                                         </span>
-                                        <span  th:if="${productlists.featuredProduct}" class="badge rounded-pill bg-info badge-custom">Featured</span>
-                                        <!--                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>-->
+                                        <span class="product-status-badge out-of-stock badge bg-danger"
+                                              th:if="${product['showOutOfStockBadge'] == true}">
+                                            Out of stock
+                                        </span>
                                     </div>
-
-                                    <div class="card-body">
+                                    <div class="badge-container">
+                                        <span th:if="${product.totalDiscountPercent != null and product.totalDiscountPercent > 0}"
+                                              class="badge rounded-pill bg-danger badge-custom">
+                                            -[[${product.totalDiscountPercent}]]%
+                                        </span>
+                                        <span class="badge rounded-pill bg-info badge-custom">Featured</span>
+                                    </div>
+                                    <div class="card-body d-flex flex-column">
                                         <div class="card-title">
-                                            <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.id})}" >  <span  th:text="${productlists.title}">    </span> </a>
+                                            <a class="nav-link text-decoration-none text-dark text-reds"
+                                               th:href="@{/public/single-product/{prodid}(prodid=${product.uuid})}">
+                                                <p th:text="${#strings.length(product.title) > 40 ? #strings.substring(product.title, 0, 40) + '...' : product.title}"></p>
+                                            </a>
                                         </div>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="row"  th:if="${productlists.totalDiscountPercent > 0}">
-                                                <div class=" col-auto text-muted text-decoration-line-through"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
-                                                <div class=" col-auto  text-success">-[[${productlists.totalDiscountedAmount}]]</div>
-                                                <div class=" col-auto  text-reds">[[${productlists.afterDiscountRemainingAmount}]]</div>
+                                        <div class="mb-3">
+                                            <div class="row" th:if="${product.totalDiscountPercent != null and product.totalDiscountPercent > 0}">
+                                                <div class="col-auto text-muted text-decoration-line-through"><span th:text="${product.salesPrice}"></span> /-</div>
+                                                <div class="col-auto text-success">-[[${product.totalDiscountedAmount}]]</div>
+                                                <div class="col-auto text-reds">[[${product.afterDiscountRemainingAmount}]]</div>
                                             </div>
-
-                                            <div class="row"  th:unless="${productlists.totalDiscountPercent > 0}">
-                                                <div class="  text-center"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
-                                            </div>
-                                            <div>
-                                                <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
-                                                <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
+                                            <div class="row" th:unless="${product.totalDiscountPercent != null and product.totalDiscountPercent > 0}">
+                                                <div class="text-center"><span th:text="${product.salesPrice}"></span> /-</div>
                                             </div>
                                         </div>
-
-                                        <form  class="" th:action="@{/cart/add}"  enctype="multipart/form-data" method="post" >
-
-                                            <input type="hidden" class="form-control" th:name ="product_id" th:value="${productlists.id}" />
-
-                                            <!--                                            <label  class="col-auto" for="exampleInputEmail1">Quantity:</label>-->
-
-                                            <!--                                        <div class="fs-6 text-danger"> <strong> Price: </strong><span  th:text="${productlists.salesPrice}">    </span></div>-->
-                                            <input  type="hidden" min="1"   class="col-auto form-control mb-3"  size="10" th:name="quantity" value="1" />
-
-                                            <div class=" form-group text-center ">
-                                                <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Buy Now</button>
-                                                <button class="btn btn-sm btn-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i>  </button>
-                                            </div>
-                                        </form>
-
-
-                                        <!--                                <div class="mt-2">
-                                                                            <span class="badge bg-warning text-dark">Rating: 4.5 <i class="fas fa-star"></i></span>
-                                                                            <span class="badge bg-secondary">Top</span>
-                                                                            <span class="badge bg-primary">Trend</span>
-                                                                        </div>-->
-
+                                        <a class="btn btn-sm btn-danger mt-auto"
+                                           th:href="@{/public/single-product/{prodid}(prodid=${product.uuid})}">
+                                            <i class="bi bi-eye text-warning"></i> View Details
+                                        </a>
                                     </div>
                                 </div>
                             </div>
-
-
                         </div>
                     </div>
 
-                    <!-- New -->
-                    <div class="tab-pane fade" id="new" role="tabpanel">
-                        <div class="row row-cols-1 row-cols-md-5 g-4 ">
-
-                            <div class="col" th:each="productlists,status:${productlist}">
-
-
-                                <div class="card product-card  position-relative mb-4 hvr-bounce-in h-100">
-
-                                    <span th:if="${ not #strings.isEmpty(productlists.imageName)}" class="">
-                                        <!--                                <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />-->
-                                        <img class="card-img-top" th:src="@{${productlists.imageUrl}}" />
-
-
+                    <div class="tab-pane fade" id="latest" role="tabpanel">
+                        <div th:if="${latestProducts == null or #lists.isEmpty(latestProducts)}" class="text-center py-4 text-muted">
+                            Latest products will appear here soon.
+                        </div>
+                        <div th:unless="${latestProducts == null or #lists.isEmpty(latestProducts)}" class="row row-cols-1 row-cols-md-5 g-4">
+                            <div class="col" th:each="product : ${latestProducts}">
+                                <div class="card product-card position-relative mb-4 hvr-bounce-in h-100">
+                                    <span th:if="${not #strings.isEmpty(#strings.trim(product.imageName))}">
+                                        <img class="card-img-top"
+                                             th:src="@{${product.imageUrl}}"
+                                             th:attr="onerror=|this.onerror=null;this.src='@{/img/image-not-available.png}';|"
+                                             th:alt="${product.title}" />
                                     </span>
-                                    <span th:if="${#strings.isEmpty(productlists.imageName)}" >
-                                        <img  class="card-img-top" th:src="@{/img/image-not-available.png}" />
+                                    <span th:if="${#strings.isEmpty(#strings.trim(product.imageName))}">
+                                        <img class="card-img-top" th:src="@{/img/image-not-available.png}" th:alt="${product.title}" />
                                     </span>
-
-                                    <div class="badge-container">
-                                        <span th:if="${productlists.totalDiscountPercent != null and productlists.totalDiscountPercent > 0}" class="badge rounded-pill bg-danger badge-custom" >
-                                            -[[${productlists.totalDiscountPercent}]]%
+                                    <div class="product-status-badge-stack"
+                                         th:if="${product['showPreorderBadge'] == true or product['showOutOfStockBadge'] == true}">
+                                        <span class="product-status-badge preorder"
+                                              th:if="${product['showPreorderBadge'] == true}">
+                                            Preorder
                                         </span>
-                                        <span  th:if="${productlists.featuredProduct}" class="badge rounded-pill bg-info badge-custom">Featured</span>
-                                        <!--                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>-->
+                                        <span class="product-status-badge out-of-stock badge bg-danger"
+                                              th:if="${product['showOutOfStockBadge'] == true}">
+                                            Out of stock
+                                        </span>
                                     </div>
-
-                                    <div class="card-body">
+                                    <div class="badge-container">
+                                        <span th:if="${product.totalDiscountPercent != null and product.totalDiscountPercent > 0}"
+                                              class="badge rounded-pill bg-danger badge-custom">
+                                            -[[${product.totalDiscountPercent}]]%
+                                        </span>
+                                        <span class="badge rounded-pill bg-secondary badge-custom">Latest</span>
+                                    </div>
+                                    <div class="card-body d-flex flex-column">
                                         <div class="card-title">
-                                            <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.id})}" >  <span  th:text="${productlists.title}">    </span> </a>
+                                            <a class="nav-link text-decoration-none text-dark text-reds"
+                                               th:href="@{/public/single-product/{prodid}(prodid=${product.uuid})}">
+                                                <p th:text="${#strings.length(product.title) > 40 ? #strings.substring(product.title, 0, 40) + '...' : product.title}"></p>
+                                            </a>
                                         </div>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="row"  th:if="${productlists.totalDiscountPercent > 0}">
-                                                <div class=" col-auto text-muted text-decoration-line-through"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
-                                                <div class=" col-auto  text-success">-[[${productlists.totalDiscountedAmount}]]</div>
-                                                <div class=" col-auto  text-reds">[[${productlists.afterDiscountRemainingAmount}]]</div>
+                                        <div class="mb-3">
+                                            <div class="row" th:if="${product.totalDiscountPercent != null and product.totalDiscountPercent > 0}">
+                                                <div class="col-auto text-muted text-decoration-line-through"><span th:text="${product.salesPrice}"></span> /-</div>
+                                                <div class="col-auto text-success">-[[${product.totalDiscountedAmount}]]</div>
+                                                <div class="col-auto text-reds">[[${product.afterDiscountRemainingAmount}]]</div>
                                             </div>
-
-                                            <div class="row"  th:unless="${productlists.totalDiscountPercent > 0}">
-                                                <div class="  text-center"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
-                                            </div>
-                                            <div>
-                                                <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
-                                                <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
+                                            <div class="row" th:unless="${product.totalDiscountPercent != null and product.totalDiscountPercent > 0}">
+                                                <div class="text-center"><span th:text="${product.salesPrice}"></span> /-</div>
                                             </div>
                                         </div>
-
-                                        <form  class="" th:action="@{/cart/add}"  enctype="multipart/form-data" method="post" >
-
-                                            <input type="hidden" class="form-control" th:name ="product_id" th:value="${productlists.id}" />
-
-                                            <!--                                            <label  class="col-auto" for="exampleInputEmail1">Quantity:</label>-->
-
-                                            <!--                                        <div class="fs-6 text-danger"> <strong> Price: </strong><span  th:text="${productlists.salesPrice}">    </span></div>-->
-                                            <input  type="hidden" min="1"   class="col-auto form-control mb-3"  size="10" th:name="quantity" value="1" />
-
-                                            <div class=" form-group text-center ">
-                                                <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i>Buy Now</button>
-                                                <button class="btn btn-sm btn-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i>  </button>
-                                            </div>
-                                        </form>
-
-
-                                        <!--                                <div class="mt-2">
-                                                                            <span class="badge bg-warning text-dark">Rating: 4.5 <i class="fas fa-star"></i></span>
-                                                                            <span class="badge bg-secondary">Top</span>
-                                                                            <span class="badge bg-primary">Trend</span>
-                                                                        </div>-->
-
+                                        <a class="btn btn-sm btn-danger mt-auto"
+                                           th:href="@{/public/single-product/{prodid}(prodid=${product.uuid})}">
+                                            <i class="bi bi-eye text-warning"></i> View Details
+                                        </a>
                                     </div>
                                 </div>
                             </div>
-
-
                         </div>
                     </div>
 
-                    <!-- Best Sale -->
-                    <div class="tab-pane fade" id="best" role="tabpanel">
-                        <div class="row row-cols-1 row-cols-md-5 g-4 ">
-
-                            <div class="col" th:each="productlists,status:${productlist}">
-
-
-                                <div class="card product-card  position-relative mb-4 hvr-bounce-in h-100">
-
-                                    <span th:if="${ not #strings.isEmpty(productlists.imageName)}" class="">
-                                        <!--                                <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />-->
-                                        <img class="card-img-top" th:src="@{${productlists.imageUrl}}" />
-
-
+                    <div class="tab-pane fade" id="new-arrivals" role="tabpanel">
+                        <div th:if="${newArrivalProducts == null or #lists.isEmpty(newArrivalProducts)}" class="text-center py-4 text-muted">
+                            No new-arrival products are marked yet.
+                        </div>
+                        <div th:unless="${newArrivalProducts == null or #lists.isEmpty(newArrivalProducts)}" class="row row-cols-1 row-cols-md-5 g-4">
+                            <div class="col" th:each="product : ${newArrivalProducts}">
+                                <div class="card product-card position-relative mb-4 hvr-bounce-in h-100">
+                                    <span th:if="${not #strings.isEmpty(#strings.trim(product.imageName))}">
+                                        <img class="card-img-top"
+                                             th:src="@{${product.imageUrl}}"
+                                             th:attr="onerror=|this.onerror=null;this.src='@{/img/image-not-available.png}';|"
+                                             th:alt="${product.title}" />
                                     </span>
-                                    <span th:if="${#strings.isEmpty(productlists.imageName)}" >
-                                        <img  class="card-img-top" th:src="@{/img/image-not-available.png}" />
+                                    <span th:if="${#strings.isEmpty(#strings.trim(product.imageName))}">
+                                        <img class="card-img-top" th:src="@{/img/image-not-available.png}" th:alt="${product.title}" />
                                     </span>
-
-                                    <div class="badge-container">
-                                        <span th:if="${productlists.totalDiscountPercent != null and productlists.totalDiscountPercent > 0}" class="badge rounded-pill bg-danger badge-custom" >
-                                            -[[${productlists.totalDiscountPercent}]]%
+                                    <div class="product-status-badge-stack"
+                                         th:if="${product['showPreorderBadge'] == true or product['showOutOfStockBadge'] == true}">
+                                        <span class="product-status-badge preorder"
+                                              th:if="${product['showPreorderBadge'] == true}">
+                                            Preorder
                                         </span>
-                                        <span  th:if="${productlists.featuredProduct}" class="badge rounded-pill bg-info badge-custom">Featured</span>
-                                        <!--                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>-->
+                                        <span class="product-status-badge out-of-stock badge bg-danger"
+                                              th:if="${product['showOutOfStockBadge'] == true}">
+                                            Out of stock
+                                        </span>
                                     </div>
-
-                                    <div class="card-body">
+                                    <div class="badge-container">
+                                        <span th:if="${product.totalDiscountPercent != null and product.totalDiscountPercent > 0}"
+                                              class="badge rounded-pill bg-danger badge-custom">
+                                            -[[${product.totalDiscountPercent}]]%
+                                        </span>
+                                        <span class="badge rounded-pill bg-success badge-custom">New</span>
+                                    </div>
+                                    <div class="card-body d-flex flex-column">
                                         <div class="card-title">
-                                            <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.id})}" >  <span  th:text="${productlists.title}">    </span> </a>
+                                            <a class="nav-link text-decoration-none text-dark text-reds"
+                                               th:href="@{/public/single-product/{prodid}(prodid=${product.uuid})}">
+                                                <p th:text="${#strings.length(product.title) > 40 ? #strings.substring(product.title, 0, 40) + '...' : product.title}"></p>
+                                            </a>
                                         </div>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="row"  th:if="${productlists.totalDiscountPercent > 0}">
-                                                <div class=" col-auto text-muted text-decoration-line-through"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
-                                                <div class=" col-auto  text-success">-[[${productlists.totalDiscountedAmount}]]</div>
-                                                <div class=" col-auto  text-reds">[[${productlists.afterDiscountRemainingAmount}]]</div>
+                                        <div class="mb-3">
+                                            <div class="row" th:if="${product.totalDiscountPercent != null and product.totalDiscountPercent > 0}">
+                                                <div class="col-auto text-muted text-decoration-line-through"><span th:text="${product.salesPrice}"></span> /-</div>
+                                                <div class="col-auto text-success">-[[${product.totalDiscountedAmount}]]</div>
+                                                <div class="col-auto text-reds">[[${product.afterDiscountRemainingAmount}]]</div>
                                             </div>
-
-                                            <div class="row"  th:unless="${productlists.totalDiscountPercent > 0}">
-                                                <div class="  text-center"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
-                                            </div>
-                                            <div>
-                                                <a href="#" class="text-danger me-2"><i class="fas fa-heart"></i></a>
-                                                <a href="#" class="text-primary"><i class="fas fa-shopping-cart"></i></a>
+                                            <div class="row" th:unless="${product.totalDiscountPercent != null and product.totalDiscountPercent > 0}">
+                                                <div class="text-center"><span th:text="${product.salesPrice}"></span> /-</div>
                                             </div>
                                         </div>
-
-                                        <form  class="" th:action="@{/cart/add}"  enctype="multipart/form-data" method="post" >
-
-                                            <input type="hidden" class="form-control" th:name ="product_id" th:value="${productlists.id}" />
-
-                                            <!--                                            <label  class="col-auto" for="exampleInputEmail1">Quantity:</label>-->
-
-                                            <!--                                        <div class="fs-6 text-danger"> <strong> Price: </strong><span  th:text="${productlists.salesPrice}">    </span></div>-->
-                                            <input  type="hidden" min="1"   class="col-auto form-control mb-3"  size="10" th:name="quantity" value="1" />
-
-                                            <div class=" form-group text-center ">
-                                                <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i>Buy Now</button>
-                                                <button class="btn btn-sm btn-warning mt-1" >  <i class="bi bi-suit-heart bi-4x text-reds"> </i>  </button>
-                                            </div>
-                                        </form>
-
-
-                                        <!--                                <div class="mt-2">
-                                                                            <span class="badge bg-warning text-dark">Rating: 4.5 <i class="fas fa-star"></i></span>
-                                                                            <span class="badge bg-secondary">Top</span>
-                                                                            <span class="badge bg-primary">Trend</span>
-                                                                        </div>-->
-
+                                        <a class="btn btn-sm btn-danger mt-auto"
+                                           th:href="@{/public/single-product/{prodid}(prodid=${product.uuid})}">
+                                            <i class="bi bi-eye text-warning"></i> View Details
+                                        </a>
                                     </div>
                                 </div>
                             </div>
-
-
                         </div>
                     </div>
                 </div>
-
             </div>
         </section>
 
-
-
-
-
         <section class="pt-1 pb-1">
-            <div class="container p-0">
-                <div class="row g-3"><!-- g-3 adds spacing between cols -->
-
+            <div class="container-fluid p-0">
+                <div class="row g-3">
                     <div class="col-sm-3 col-md-3 d-flex">
                         <div class="support-box flex-fill">
                             <div class="support-box-inner text-center">
@@ -606,8 +525,8 @@
                                     <i class="bi bi-truck"></i>
                                 </div>
                                 <div class="support-description">
-                                    <h5>Free Shipping</h5>
-                                    <p>Free shipping on all US order or order above $200</p>
+                                    <h5>Fast Delivery</h5>
+                                    <p>Location-based shipping support for physical products.</p>
                                 </div>
                             </div>
                         </div>
@@ -620,8 +539,8 @@
                                     <i class="bi bi-arrow-repeat"></i>
                                 </div>
                                 <div class="support-description">
-                                    <h5>90 Days Return</h5>
-                                    <p>Simply return it within 30 days for an exchange</p>
+                                    <h5>Easy Returns</h5>
+                                    <p>Return policy details stay visible from the product page.</p>
                                 </div>
                             </div>
                         </div>
@@ -635,7 +554,7 @@
                                 </div>
                                 <div class="support-description">
                                     <h5>Secure Payment</h5>
-                                    <p>100% <br>secure payment</p>
+                                    <p>Trusted checkout flow for both digital and physical orders.</p>
                                 </div>
                             </div>
                         </div>
@@ -648,17 +567,15 @@
                                     <i class="bi bi-headset"></i>
                                 </div>
                                 <div class="support-description">
-                                    <h5>24/7 Support</h5>
-                                    <p>Dedicated support</p>
+                                    <h5>Customer Support</h5>
+                                    <p>Product details and delivery rules are clear before checkout.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
         </section>
 
-
-    </div> <!-- End main Content -->
-</div> <!-- End fragment -->
+    </div>
+</div>

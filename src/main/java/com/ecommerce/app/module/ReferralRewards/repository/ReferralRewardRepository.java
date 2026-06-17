@@ -4,13 +4,13 @@
  */
 package com.ecommerce.app.module.ReferralRewards.repository;
 
-import com.ecommerce.app.module.ReferralRewards.model.ReferralReward;
+import com.ecommerce.app.module.ReferralRewards.model.RewardPoint;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
  *
  * @author libertyerp_local
  */
-public interface ReferralRewardRepository extends JpaRepository<ReferralReward, Long> {
+public interface ReferralRewardRepository extends JpaRepository<RewardPoint, Long> {
 
 }

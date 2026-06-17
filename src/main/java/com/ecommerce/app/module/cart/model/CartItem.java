@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import org.springframework.context.annotation.Scope;
 
 /**
@@ -24,10 +25,15 @@ public class CartItem implements Serializable {
     @JsonIgnore
     public Product product;
     public Long vendorId;
+    private String vendorUuid;
 
     private Long productId;
+    private String productUuid;
 
-    private Long variantId;
+    private String catalogVariantUuid;
+    private String variantSummary;
+    private Boolean preorder = Boolean.FALSE;
+    private LocalDate preorderAvailableFrom;
 
     public BigDecimal quantity;
     @JsonIgnore
@@ -54,11 +60,16 @@ public class CartItem implements Serializable {
     public CartItem() {
     }
 
-    public CartItem(Product product, Long vendorId, Long productId, Long variantId, BigDecimal quantity, Unitofmeasurement uom, BigDecimal salesPrice, BigDecimal discountRate, BigDecimal discountAmount, BigDecimal marketPlaceCommissionRate, BigDecimal marketPlaceCommissionAmount, BigDecimal vendorAmount, BigDecimal vatRate, BigDecimal weight, BigDecimal vatAmount, BigDecimal itemTotal) {
+    public CartItem(Product product, Long vendorId, String vendorUuid, Long productId, String productUuid, String catalogVariantUuid, String variantSummary, Boolean preorder, LocalDate preorderAvailableFrom, BigDecimal quantity, Unitofmeasurement uom, BigDecimal salesPrice, BigDecimal discountRate, BigDecimal discountAmount, BigDecimal marketPlaceCommissionRate, BigDecimal marketPlaceCommissionAmount, BigDecimal vendorAmount, BigDecimal vatRate, BigDecimal weight, BigDecimal vatAmount, BigDecimal itemTotal) {
         this.product = product;
         this.vendorId = vendorId;
+        this.vendorUuid = vendorUuid;
         this.productId = productId;
-        this.variantId = variantId;
+        this.productUuid = productUuid;
+        this.catalogVariantUuid = catalogVariantUuid;
+        this.variantSummary = variantSummary;
+        this.preorder = preorder;
+        this.preorderAvailableFrom = preorderAvailableFrom;
         this.quantity = quantity;
         this.uom = uom;
         this.salesPrice = salesPrice;
@@ -89,6 +100,20 @@ public class CartItem implements Serializable {
         this.vendorId = vendorId;
     }
 
+    public String getVendorUuid() {
+        if (vendorUuid != null && !vendorUuid.isBlank()) {
+            return vendorUuid;
+        }
+        if (product != null && product.getVendorprofile() != null) {
+            return product.getVendorprofile().getUuid();
+        }
+        return null;
+    }
+
+    public void setVendorUuid(String vendorUuid) {
+        this.vendorUuid = vendorUuid;
+    }
+
     public Long getProductId() {
         return productId;
     }
@@ -97,12 +122,50 @@ public class CartItem implements Serializable {
         this.productId = productId;
     }
 
-    public Long getVariantId() {
-        return variantId;
+    public String getProductUuid() {
+        if (productUuid != null && !productUuid.isBlank()) {
+            return productUuid;
+        }
+        if (product != null) {
+            return product.getUuid();
+        }
+        return null;
     }
 
-    public void setVariantId(Long variantId) {
-        this.variantId = variantId;
+    public void setProductUuid(String productUuid) {
+        this.productUuid = productUuid;
+    }
+
+    public String getCatalogVariantUuid() {
+        return catalogVariantUuid;
+    }
+
+    public void setCatalogVariantUuid(String catalogVariantUuid) {
+        this.catalogVariantUuid = catalogVariantUuid;
+    }
+
+    public String getVariantSummary() {
+        return variantSummary;
+    }
+
+    public void setVariantSummary(String variantSummary) {
+        this.variantSummary = variantSummary;
+    }
+
+    public Boolean getPreorder() {
+        return preorder;
+    }
+
+    public void setPreorder(Boolean preorder) {
+        this.preorder = preorder;
+    }
+
+    public LocalDate getPreorderAvailableFrom() {
+        return preorderAvailableFrom;
+    }
+
+    public void setPreorderAvailableFrom(LocalDate preorderAvailableFrom) {
+        this.preorderAvailableFrom = preorderAvailableFrom;
     }
 
     public BigDecimal getQuantity() {

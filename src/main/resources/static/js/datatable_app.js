@@ -1,6 +1,6 @@
 $(document).ready(function () {
 
-    $("#tablesdata").DataTable({
+    const table = $("#tablesdata").DataTable({
         "ordering": true, // Enable column ordering
 //        "responsive": true, // Make table responsive
         "lengthChange": true, // Allow changing the number of records per page
@@ -14,6 +14,11 @@ $(document).ready(function () {
         "columnDefs": [
             {targets: '_all', visible: true} // Ensure all columns are visible
         ]
-    }).buttons().container().appendTo('#tablesdata_wrapper  .col-md-6:eq(1)');
+    });
+
+    // 2026-04-22: Guard against missing DataTables Buttons plugin so unrelated JS errors do not obscure form issues.
+    if (table && typeof table.buttons === "function") {
+        table.buttons().container().appendTo('#tablesdata_wrapper  .col-md-6:eq(1)');
+    }
 
 });

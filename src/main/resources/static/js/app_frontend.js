@@ -12,14 +12,14 @@ $(document).ready(function () {
 //        asNavFor: '.slider-nav'
 //    });
 
-    $('.slider-nav').slick({
-        slidesToShow: 4,
-        slidesToScroll: 1,
-        arrows: true,
-        dots: false,
-        centerMode: false,
-        focusOnSelect: true
-    });
+//    $('.slider-nav').slick({
+//        slidesToShow: 4,
+//        slidesToScroll: 1,
+//        arrows: true,
+//        dots: false,
+//        centerMode: false,
+//        focusOnSelect: true
+//    });
 //    $('.slider-nav').slick({
 //        slidesToShow: 4,
 //        slidesToScroll: 1,
@@ -30,10 +30,15 @@ $(document).ready(function () {
 //    });
 
 
-    // Click to replace main image
-    $('.slider-nav').on('click', 'img', function () {
+    // Date: 2026-04-26
+    // Restore product thumbnail click behavior on single-product page.
+    $('.slider-nav').on('click', 'img[data-img]', function () {
         const newSrc = $(this).data('img');
-        $('#mainImage').attr('src', newSrc);
+        const mainImage = $('#mainImage');
+        if (!newSrc || !mainImage.length) {
+            return;
+        }
+        mainImage.attr('src', newSrc);
     });
 });
 
@@ -94,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-//// header district select 
+//// header district select
 
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -131,4 +136,66 @@ document.addEventListener('DOMContentLoaded', function () {
                     .catch(err => console.error('Error saving district:', err));
         });
     });
+});
+
+// Date: 2026-04-26
+// Make category filters feel instantaneous while keeping price fields explicit.
+document.addEventListener('change', function (event) {
+    var target = event.target;
+    var filterForm = target.closest('.category-filter-form');
+
+    if (!filterForm) {
+        return;
+    }
+
+    if (target.matches('input[type="checkbox"], input[type="radio"], select')) {
+        if (typeof filterForm.requestSubmit === 'function') {
+            filterForm.requestSubmit();
+        } else {
+            filterForm.submit();
+        }
+    }
+});
+
+document.addEventListener('click', function (event) {
+    var clearButton = event.target.closest('.filter-clear-link');
+    if (!clearButton) {
+        return;
+    }
+
+    var filterForm = clearButton.closest('form');
+    var groupName = clearButton.dataset.clearGroup;
+
+    if (!filterForm || !groupName) {
+        return;
+    }
+
+    filterForm.querySelectorAll('[name="' + groupName + '"]').forEach(function (input) {
+        if (input.type === 'checkbox' || input.type === 'radio') {
+            input.checked = false;
+        } else {
+            input.value = '';
+        }
+    });
+
+    if (typeof filterForm.requestSubmit === 'function') {
+        filterForm.requestSubmit();
+    } else {
+        filterForm.submit();
+    }
+});
+
+document.addEventListener('htmx:beforeRequest', function (event) {
+    var requestElement = event.detail && event.detail.elt ? event.detail.elt : event.target;
+    if (!requestElement || requestElement.id !== 'productFilterForm') {
+        return;
+    }
+
+    var offcanvasEl = document.getElementById('categoryFilterOffcanvas');
+    if (!offcanvasEl || !offcanvasEl.classList.contains('show') || typeof bootstrap === 'undefined') {
+        return;
+    }
+
+    var offcanvasInstance = bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl);
+    offcanvasInstance.hide();
 });

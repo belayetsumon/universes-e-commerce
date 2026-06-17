@@ -10,14 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-import com.ecommerce.app.order.repository.SalesOrderRepository;
-import com.ecommerce.app.vendor.model.VendorTransactionStatusEnum;
+import com.ecommerce.app.vendor.dto.VendorDashboardDto;
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import com.ecommerce.app.vendor.repository.VendorprofileRepository;
-import com.ecommerce.app.vendor.services.VendorFinanceService;
+import com.ecommerce.app.vendor.services.VendorDashboardService;
 import com.ecommerce.app.vendor.user.componant.VendorUserContext;
-import java.math.BigDecimal;
-import java.util.EnumMap;
 import java.util.Optional;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -34,16 +31,13 @@ public class VendorController {
     LoggedUserService loggedUserService;
 
     @Autowired
-    SalesOrderRepository salesOrderRepository;
-
-    @Autowired
     VendorprofileRepository vendorprofileRepository;
 
     @Autowired
     private VendorUserContext vendorUserContext;
 
     @Autowired
-    VendorFinanceService vendorFinanceService;
+    private VendorDashboardService vendorDashboardService;
 
     @RequestMapping(value = {"/home"})
     public String home() {
@@ -57,12 +51,9 @@ public class VendorController {
         Optional<Vendorprofile> vendorprofile = vendorprofileRepository.findById(id);
         Vendorprofile vendorprofiles = vendorprofile.get();
         vendorUserContext.setActiveVendor(vendorprofiles);
-        EnumMap<VendorTransactionStatusEnum, BigDecimal> balance = vendorFinanceService
-                .getVendorBalance(id);
+        VendorDashboardDto dashboard = vendorDashboardService.buildDashboard(vendorprofiles);
 
-        model.addAttribute("pending", balance.get(VendorTransactionStatusEnum.PENDING));
-        model.addAttribute("available", balance.get(VendorTransactionStatusEnum.AVAILABLE));
-        model.addAttribute("paid", balance.get(VendorTransactionStatusEnum.PAID));
+        model.addAttribute("dashboard", dashboard);
         model.addAttribute("vendorprofile", vendorUserContext.getActiveVendor());
 
         return "vendor/dashboards";

@@ -86,7 +86,7 @@ public class ShippingProfile {
 
     // Enum for type
     public enum ProfileType {
-        ORIGIN, DESTINATION
+        Shipping_From, DESTINATION
     }
 
     /// Audit ///

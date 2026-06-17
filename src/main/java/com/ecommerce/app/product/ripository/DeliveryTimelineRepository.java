@@ -14,4 +14,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface DeliveryTimelineRepository extends JpaRepository<DeliveryTimeline, Long> {
      List<DeliveryTimeline> findByProductIdOrderByIdDesc(Long id);
+
+     List<DeliveryTimeline> findByProduct_UuidOrderByIdDesc(String productUuid);
 }

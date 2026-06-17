@@ -36,15 +36,11 @@ public class PackagingRateController {
     @Autowired
     VendorprofileService vendorprofileService;
 
-    // Supplies PackagingType enum values
     @ModelAttribute("packagingTypes")
     public PackagingType[] populatePackagingTypes() {
         return PackagingType.values();
     }
 
-    /**
-     * CREATE: Shows the form for a new rate.
-     */
     @GetMapping("/new")
     public String showAddForm(Model model) {
         model.addAttribute("packagingRate", new PackagingRate());
@@ -52,12 +48,14 @@ public class PackagingRateController {
         return "admin/shipping/packagingrate/create_package_rate";
     }
 
-    /**
-     * CREATE/UPDATE: Saves the rate.
-     */
     @GetMapping("list")
     public String list(Model model) {
-        model.addAttribute("rates", service.getAll());
+        try {
+            model.addAttribute("rates", service.getAll());
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Runtime error while loading packaging rates: " + e.getMessage());
+            model.addAttribute("rates", java.util.List.of());
+        }
         return "admin/shipping/packagingrate/packegeratelist";
     }
 
@@ -66,27 +64,36 @@ public class PackagingRateController {
             BindingResult result,
             RedirectAttributes redirect) {
         if (result.hasErrors()) {
-            model.addAttribute("packagingRate", new PackagingRate());
+            model.addAttribute("packagingRate", packagingRate);
             model.addAttribute("vendors", vendorprofileService.findAll());
             return "admin/shipping/packagingrate/create_package_rate";
         }
         try {
             service.save(packagingRate);
-            redirect.addFlashAttribute("success", "Saved successfully!");
+            redirect.addFlashAttribute("successMessage", "Packaging rate saved successfully!");
             return "redirect:/packagingrates/list";
         } catch (UniqueConstraintViolationException e) {
             result.rejectValue("packagingType", "error.rate", e.getMessage());
-
-            model.addAttribute("packagingRate", new PackagingRate());
+            model.addAttribute("packagingRate", packagingRate);
             model.addAttribute("vendors", vendorprofileService.findAll());
-
+            return "admin/shipping/packagingrate/create_package_rate";
+        } catch (Exception e) {
+            // 2026-04-22: Show older packaging form runtime failures with the new standard message key.
+            model.addAttribute("errorMessage", "Runtime error while saving packaging rate: " + e.getMessage());
+            model.addAttribute("packagingRate", packagingRate);
+            model.addAttribute("vendors", vendorprofileService.findAll());
             return "admin/shipping/packagingrate/create_package_rate";
         }
     }
 
     @GetMapping("/edit/{id}")
     public String edit(@PathVariable Long id, Model model, PackagingRate packagingRate) {
-        model.addAttribute("packagingRate", service.getById(id));
+        try {
+            model.addAttribute("packagingRate", service.getById(id));
+        } catch (Exception e) {
+            model.addAttribute("packagingRate", new PackagingRate());
+            model.addAttribute("errorMessage", "Runtime error while loading packaging rate: " + e.getMessage());
+        }
         model.addAttribute("vendors", vendorprofileService.findAll());
         return "admin/shipping/packagingrate/create_package_rate";
     }
@@ -94,16 +101,14 @@ public class PackagingRateController {
     @GetMapping("/delete/{id}")
     public String delete(@PathVariable Long id, RedirectAttributes redirect) {
         try {
-            service.delete(id);  // will attempt delete
-            redirect.addFlashAttribute("success", "Deleted successfully!");
+            service.delete(id);
+            redirect.addFlashAttribute("successMessage", "Packaging rate deleted successfully!");
         } catch (DataIntegrityViolationException ex) {
-            // Handle foreign key or integrity constraint violation
-            redirect.addFlashAttribute("error",
+            redirect.addFlashAttribute("errorMessage",
                     "Cannot delete this record because it is linked with other data.");
         } catch (Exception ex) {
-            // Catch other unexpected exceptions
-            redirect.addFlashAttribute("error",
-                    "An error occurred while deleting the record.");
+            redirect.addFlashAttribute("errorMessage",
+                    "Runtime error while deleting packaging rate: " + ex.getMessage());
         }
         return "redirect:/packagingrates/list";
     }

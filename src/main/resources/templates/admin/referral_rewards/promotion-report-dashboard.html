@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section>
+            <div class="row">
+                <div class="col-sm-4"><h4>Promotion Reports</h4></div>
+                <div class="col-sm-8">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Promotions</li>
+                            <li class="breadcrumb-item active" aria-current="page">Reports</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </section>
+        <hr/>
+
+        <div class="promo-admin-page">
+            <div class="promo-admin-hero">
+                <h2>Incentive Liability Summary</h2>
+                <p>Current operational totals from wallet, reward, cashback, and gift card records.</p>
+            </div>
+
+            <div class="promo-kpi-grid">
+                <div class="promo-kpi">
+                    <span>Wallet Money Liability</span>
+                    <strong th:text="${summary.walletMoneyLiability}">0</strong>
+                </div>
+                <div class="promo-kpi">
+                    <span>Reward Point Liability</span>
+                    <strong th:text="${summary.rewardPointLiability}">0</strong>
+                </div>
+                <div class="promo-kpi">
+                    <span>Pending Cashback Liability</span>
+                    <strong th:text="${summary.pendingCashbackLiability}">0</strong>
+                </div>
+                <div class="promo-kpi">
+                    <span>Outstanding Gift Card Balance</span>
+                    <strong th:text="${summary.outstandingGiftCardBalance}">0</strong>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <strong><i class="bi bi-clipboard-check"></i> Production Reconciliation Notes</strong>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Area</th>
+                                <th>Status</th>
+                                <th>Next Review</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Wallet and reward balances</td>
+                                <td><span class="badge bg-success">Queryable</span></td>
+                                <td>Compare ledger totals against account balances before release.</td>
+                            </tr>
+                            <tr>
+                                <td>Cashback liability</td>
+                                <td><span class="badge bg-warning text-dark">Pending queue basis</span></td>
+                                <td>Review pending cashback before payout/release jobs run.</td>
+                            </tr>
+                            <tr>
+                                <td>Gift card outstanding balance</td>
+                                <td><span class="badge bg-success">Queryable</span></td>
+                                <td>Validate issued cards against unused balance.</td>
+                            </tr>
+                            <tr>
+                                <td>Fraud flags</td>
+                                <td><span class="badge bg-info text-dark">Review queue available</span></td>
+                                <td>Clear or block open flags before releasing medium-risk rewards.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

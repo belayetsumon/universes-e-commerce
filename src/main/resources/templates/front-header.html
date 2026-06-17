@@ -1,11 +1,13 @@
 
 <section>
-    <div class="container py-1" style="font-size: 12px;">
+    <div class="container py-1 storefront-topbar">
         <div class="row align-items-center">
 
             <!-- 🔹 Left: Welcome text -->
             <div class="col-12 col-sm-6 text-start">
-                Welcome to Musapir Online Shopping Store!
+                <span th:text="${session.globalSettings.siteTagline != null and !#strings.isEmpty(session.globalSettings.siteTagline) ? session.globalSettings.siteTagline : 'Welcome to ' + session.globalSettings.siteName + '!'}">
+                    Welcome to our store!
+                </span>
             </div>
 
             <!-- 🔹 Right: Menu items -->
@@ -47,7 +49,8 @@
                     <!-- Currency Dropdown -->
                     <div class="dropdown">
                         <a href="#" class="nav-link dropdown-toggle text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-currency-exchange"></i> Currency
+                            <i class="bi bi-currency-exchange"></i>
+                            <span th:text="${session.globalSettings.defaultCurrency != null ? session.globalSettings.defaultCurrency : session.globalSettings.currency}">Currency</span>
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="#">USD</a></li>
@@ -78,12 +81,23 @@
 <header>
 
     <nav class="navbar navbar-expand-md navbar-light bg-white py-3">
-        <div class="container d-flex justify-content-between align-items-center">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
 
             <!-- 🔹 Left: Logo -->
             <div class="d-flex align-items-center">
-                <a class="navbar-brand" href="/">
-                    <img th:src="@{/img/logo.png}" alt="Logo" class="img-fluid" style="max-height: 50px;">
+
+                <a class="navbar-brand" th:href="@{/}">
+                    <picture th:if="${session.globalSettings.resolvedSiteLogoDesktop != null}">
+                        <source media="(max-width: 767.98px)"
+                                th:srcset="@{${session.globalSettings.resolvedSiteLogoMobile}}">
+                        <img th:src="@{${session.globalSettings.resolvedSiteLogoDesktop}}"
+                             th:alt="${session.globalSettings.siteName}"
+                             class="storefront-logo-image">
+                    </picture>
+                    <span th:if="${session.globalSettings.resolvedSiteLogoDesktop == null}"
+                          th:text="${session.globalSettings.siteName}">
+                        Store Name
+                    </span>
                 </a>
             </div>
 
@@ -101,9 +115,10 @@
             <div class="d-flex align-items-center gap-3">
 
                 <!-- Wishlist -->
-                <a class="nav-link d-flex align-items-center" th:href="@{/cart/index}">
+                <a class="nav-link d-flex align-items-center" th:href="@{/wishlist/index}">
                     <i class="bi bi-suit-heart text-reds fs-4 me-1"></i>
                     <span>Wishlist</span>
+                    <span class="badge bg-danger ms-1 text-white" th:text="${wishlistCount}">0</span>
                 </a>
 
                 <!-- My Cart Dropdown -->
@@ -115,7 +130,7 @@
                         <span class="badge bg-danger ms-1 text-white cart-count" id="cart-count">0</span>
                     </div>
 
-                    <div class="dropdown-menu table-dropdown p-2" aria-labelledby="cartDropdown" style="min-width: 350px;">
+                    <div class="dropdown-menu table-dropdown p-2 storefront-cart-dropdown-menu" aria-labelledby="cartDropdown">
                         <table class="table table-sm  mb-0">
                             <thead class="table-light">
                                 <tr>
@@ -167,7 +182,7 @@
                 </div>
 
                 <!-- Register -->
-                <div sec:authorize="!isAuthenticated()">
+                <div sec:authorize="!isAuthenticated()" th:if="${session.globalSettings.registrationEnabled}">
                     <a class="nav-link d-flex align-items-center" th:href="@{/public/front-registration}">
                         <i class="bi bi-person-plus text-reds fs-5 me-1"></i> Register
                     </a>
@@ -181,7 +196,7 @@
 
 
 </header>
-<section style="background-color: #cd0c2b;" class="mb-3">
+<section class="mb-3 storefront-main-nav">
     <div class="container">
         <div class="row navbar-custom">
             <!-- Left: Categories Dropdown (col-md-2) -->
@@ -194,7 +209,7 @@
                                 <ul class=" main-category dropdown-menu " aria-labelledby="categoryDropdown">
                                     <li th:each="menu : ${maincategory}">
                                         <a class="dropdown-item "
-                                           th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${menu.id})}"
+                                           th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${menu.uuid})}"
                                            th:text="${menu.name}"></a>
                                     </li>
 
@@ -219,7 +234,7 @@
                     <ul class="dropdown-menu w-100" aria-labelledby="categoryDropdown">
                         <li th:each="menu : ${maincategory}">
                             <a class="dropdown-item"
-                               th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${menu.id})}"
+                               th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${menu.uuid})}"
                                th:text="${menu.name}"></a>
                         </li>
                     </ul>
@@ -244,7 +259,7 @@
                             <ul class="list-group list-group-flush">
                                 <li th:each="menu : ${maincategory}" class="list-group-item">
                                     <a class="text-decoration-none"
-                                       th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${menu.id})}"
+                                       th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${menu.uuid})}"
                                        th:text="${menu.name}"></a>
                                 </li>
                             </ul>
@@ -264,6 +279,7 @@
                     <li class="list-inline-item">
                         <a class="nav-link link-light" th:href="@{/public/product}">Product</a>
                     </li>
+
 
                     <li class="list-inline-item">
                         <a class="nav-link link-light" th:href="@{/public/product}">Latest Offers</a>

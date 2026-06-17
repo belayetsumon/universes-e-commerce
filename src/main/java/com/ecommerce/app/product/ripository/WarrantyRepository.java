@@ -15,5 +15,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface WarrantyRepository extends JpaRepository<Warranty, Long> {
 
     List<Warranty> findByProductIdOrderByIdDesc(Long id);
+
+    List<Warranty> findByProduct_UuidOrderByIdDesc(String productUuid);
     
 }

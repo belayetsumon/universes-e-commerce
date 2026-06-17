@@ -22,8 +22,12 @@ public class LogoutSuccessListener implements ApplicationListener<LogoutSuccessE
 
     @Override
     public void onApplicationEvent(LogoutSuccessEvent event) {
+        if (event.getAuthentication() == null) {
+            return;
+        }
+
         String username = event.getAuthentication().getName();
-        loginEventService.logLogoutTime(username);
+        loginEventService.logLogoutTime(username, true);
     }
 
 }

@@ -7,6 +7,7 @@ package com.ecommerce.app.module.shipping.services;
 import com.ecommerce.app.module.shipping.model.CarrierRate;
 import com.ecommerce.app.module.shipping.repository.CarrierRateRepository;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,24 +25,31 @@ public class CarrierRateService {
         CarrierRate rate = carrierRateRepository.findByUuid(uuid)
                 .orElseThrow(() -> new RuntimeException("Rate not found for UUID: " + uuid));
 
-        BigDecimal baseWeight = BigDecimal.ONE; // ✅ or replace with a field in CarrierRate if exists
-        BigDecimal price;
+        BigDecimal weight = totalWeight == null || totalWeight.compareTo(BigDecimal.ZERO) <= 0
+                ? BigDecimal.ONE
+                : totalWeight;
+        BigDecimal baseWeight = rate.getBaseWeight() == null || rate.getBaseWeight().compareTo(BigDecimal.ZERO) <= 0
+                ? BigDecimal.ONE
+                : rate.getBaseWeight();
+        BigDecimal additionalWeightUnit = rate.getAdditionalWeightUnit() == null || rate.getAdditionalWeightUnit().compareTo(BigDecimal.ZERO) <= 0
+                ? BigDecimal.ONE
+                : rate.getAdditionalWeightUnit();
 
-        // ✅ If totalWeight is less than or equal to base weight → only base price
-        if (totalWeight.compareTo(baseWeight) <= 0) {
-            price = rate.getBasePrice();
-        } // ✅ Otherwise → base price + extra weight * perKg
-        else {
-            BigDecimal extraWeight = totalWeight.subtract(baseWeight);  // weight over baseWeight
-            price = rate.getBasePrice().add(rate.getPerKg().multiply(extraWeight));
+        BigDecimal price = rate.getBasePrice();
+
+        // 2026-04-22: Apply base price up to base weight, then charge one slab at a time.
+        if (weight.compareTo(baseWeight) > 0) {
+            BigDecimal extraWeight = weight.subtract(baseWeight);
+            BigDecimal extraSlabs = extraWeight.divide(additionalWeightUnit, 0, RoundingMode.CEILING);
+            price = price.add(rate.getPerKg().multiply(extraSlabs));
         }
 
-        // ✅ Add COD fee if needed
-        if (isCod) {
+        // 2026-04-22: Add COD fee only when the selected rate allows COD.
+        if (isCod && rate.isCodAvailable()) {
             price = price.add(rate.getCodFee());
         }
 
-        return price;
+        return price.setScale(2, RoundingMode.HALF_UP);
     }
 
 }

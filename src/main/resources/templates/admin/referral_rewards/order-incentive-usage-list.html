@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section>
+            <div class="row">
+                <div class="col-sm-4"><h4>Order Incentive Usage</h4></div>
+                <div class="col-sm-8">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Promotions</li>
+                            <li class="breadcrumb-item active" aria-current="page">Order Incentives</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </section>
+        <hr/>
+
+        <div class="card">
+            <div class="card-header">
+                <strong><i class="bi bi-clipboard-data"></i> Order Incentive Snapshots</strong>
+            </div>
+            <div class="card-body table-responsive">
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <table id="example" class="table table-bordered table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Order</th>
+                            <th>Coupon</th>
+                            <th>Coupon Discount</th>
+                            <th>Reward Points</th>
+                            <th>Reward Discount</th>
+                            <th>Gift Card</th>
+                            <th>Gift Used</th>
+                            <th>Wallet Used</th>
+                            <th>Status</th>
+                            <th>Quote</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(usages)}">
+                            <td colspan="12" class="text-center">No incentive usage snapshots found.</td>
+                        </tr>
+                        <tr th:each="usage,status:${usages}">
+                            <td th:text="${status.count}">1</td>
+                            <td th:text="${usage.orderId}">0</td>
+                            <td th:text="${usage.couponCode != null ? usage.couponCode : '-'}">-</td>
+                            <td th:text="${usage.couponDiscount != null ? usage.couponDiscount : 0}">0</td>
+                            <td th:text="${usage.rewardPointsUsed != null ? usage.rewardPointsUsed : 0}">0</td>
+                            <td th:text="${usage.rewardDiscount != null ? usage.rewardDiscount : 0}">0</td>
+                            <td th:text="${usage.giftCardCode != null ? usage.giftCardCode : '-'}">-</td>
+                            <td th:text="${usage.giftCardUsed != null ? usage.giftCardUsed : 0}">0</td>
+                            <td th:text="${usage.walletUsed != null ? usage.walletUsed : 0}">0</td>
+                            <td>
+                                <span class="badge bg-success" th:if="${usage.incentiveStatus == 'SUCCESS'}">SUCCESS</span>
+                                <span class="badge bg-danger" th:if="${usage.incentiveStatus == 'REVERSED'}">REVERSED</span>
+                                <span class="badge bg-secondary" th:if="${usage.incentiveStatus != 'SUCCESS' and usage.incentiveStatus != 'REVERSED'}" th:text="${usage.incentiveStatus != null ? usage.incentiveStatus : '-'}">-</span>
+                            </td>
+                            <td th:text="${usage.quoteReference != null ? usage.quoteReference : '-'}">-</td>
+                            <td>
+                                <form th:if="${usage.incentiveStatus != 'REVERSED'}"
+                                      th:action="@{|/admin/promotions/order-incentives/${usage.id}/reverse|}"
+                                      method="post"
+                                      class="d-flex gap-1">
+                                    <input type="text" name="reason" class="form-control form-control-sm" placeholder="Reason"/>
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                            onclick="return confirm('Reverse incentives for this order?')">Reverse</button>
+                                </form>
+                                <span th:if="${usage.incentiveStatus == 'REVERSED'}" class="text-muted">Done</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

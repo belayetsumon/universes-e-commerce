@@ -80,12 +80,11 @@ public enum District {
     JAMALPUR("Jamalpur"),
     MYMENSINGH("Mymensingh"),
     NETRAKONA("Netrokona"),
-    SHERPUR("Sherpur"),
-    All("All");
-
+    SHERPUR("Sherpur");
     private final String displayName;
 
-    District(String displayName) {
+    District(String displayName
+    ) {
         this.displayName = displayName;
     }
 

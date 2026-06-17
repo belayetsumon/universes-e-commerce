@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section>
+            <div class="row">
+                <div class="col-sm-4"><h4>Promotion Notifications</h4></div>
+                <div class="col-sm-8">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Promotions</li>
+                            <li class="breadcrumb-item active" aria-current="page">Notification Log</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </section>
+        <hr/>
+
+        <div class="card">
+            <div class="card-header">
+                <strong><i class="bi bi-bell"></i> Notification Log</strong>
+            </div>
+            <div class="card-body table-responsive">
+                <table id="example" class="table table-bordered table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Event</th>
+                            <th>Customer</th>
+                            <th>Channel</th>
+                            <th>Recipient</th>
+                            <th>Status</th>
+                            <th>Retry</th>
+                            <th>Sent At</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(notifications)}">
+                            <td colspan="9" class="text-center">No notification records found.</td>
+                        </tr>
+                        <tr th:each="notification,status:${notifications}">
+                            <td th:text="${status.count}">1</td>
+                            <td th:text="${notification.eventName != null ? notification.eventName : '-'}">EVENT</td>
+                            <td th:text="${notification.user != null ? notification.user.email : '-'}">user</td>
+                            <td th:text="${notification.channel != null ? notification.channel : '-'}">IN_APP</td>
+                            <td th:text="${notification.recipient != null ? notification.recipient : '-'}">recipient</td>
+                            <td>
+                                <span class="badge bg-success" th:if="${notification.status == 'SENT'}">SENT</span>
+                                <span class="badge bg-secondary" th:if="${notification.status != 'SENT'}" th:text="${notification.status != null ? notification.status : '-'}">-</span>
+                            </td>
+                            <td th:text="${notification.retryCount}">0</td>
+                            <td th:text="${notification.sentAt != null ? notification.sentAt : '-'}">-</td>
+                            <td th:text="${notification.message != null ? notification.message : notification.payloadSummary}">Message</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
