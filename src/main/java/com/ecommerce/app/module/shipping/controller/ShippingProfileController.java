@@ -4,11 +4,11 @@
  */
 package com.ecommerce.app.module.shipping.controller;
 
-import com.ecommerce.app.globalServices.District;
 import com.ecommerce.app.module.shipping.model.Carrier;
 import com.ecommerce.app.module.shipping.model.ShippingProfile;
 import com.ecommerce.app.module.shipping.model.ShippingProfile.ProfileType;
 import com.ecommerce.app.module.shipping.services.CarrierService;
+import com.ecommerce.app.module.shipping.services.ShippingLocationService;
 import com.ecommerce.app.module.shipping.services.ShippingProfileService;
 import com.ecommerce.app.vendor.services.VendorprofileService;
 import jakarta.validation.Valid;
@@ -43,6 +43,9 @@ public class ShippingProfileController {
     @Autowired
     VendorprofileService vendorprofileService;
 
+    @Autowired
+    ShippingLocationService locationService;
+
     public ShippingProfileController(ShippingProfileService service) {
         this.service = service;
     }
@@ -56,10 +59,7 @@ public class ShippingProfileController {
     @GetMapping("/create")
     public String createForm(Model model) {
         model.addAttribute("profile", new ShippingProfile());
-        model.addAttribute("vendors", vendorprofileService.findAll()); // <-- add vendors
-        model.addAttribute("types", ProfileType.values());
-        model.addAttribute("carriers", carrierService.getAll());
-        model.addAttribute("allDistricts", District.values());
+        populateFormOptions(model);
         return "admin/shipping/shipping_profiles/admin_shipping_profiles_create";
     }
 
@@ -71,11 +71,7 @@ public class ShippingProfileController {
             Model model) {
 
         if (result.hasErrors()) {
-            // Re-populate carriers and districts for the form
-            model.addAttribute("types", ShippingProfile.ProfileType.values());
-            model.addAttribute("vendors", vendorprofileService.findAll()); // <-- add vendors
-            model.addAttribute("carriers", carrierService.getAll());
-            model.addAttribute("allDistricts", District.values());
+            populateFormOptions(model);
             return "admin/shipping/shipping_profiles/admin_shipping_profiles_create";
         }
 
@@ -95,15 +91,19 @@ public class ShippingProfileController {
     @GetMapping("/edit/{id}")
     public String editForm(@PathVariable Long id, Model model) {
         ShippingProfile profile = service.getById(id);
-        model.addAttribute("vendors", vendorprofileService.findAll()); // <-- add vendors
         model.addAttribute("profile", profile);
-        model.addAttribute("types", ProfileType.values());
-        model.addAttribute("carriers", carrierService.getAll());
-        model.addAttribute("allDistricts", District.values());
+        populateFormOptions(model);
         return "admin/shipping/shipping_profiles/admin_shipping_profiles_create";
     }
 
-    @GetMapping("/delete/{id}")
+    private void populateFormOptions(Model model) {
+        model.addAttribute("vendors", vendorprofileService.findAll());
+        model.addAttribute("types", ProfileType.values());
+        model.addAttribute("carriers", carrierService.getAll());
+        model.addAttribute("allDistricts", locationService.getActiveLocations());
+    }
+
+    @PostMapping("/delete/{id}")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
 
         // Check if profile exists

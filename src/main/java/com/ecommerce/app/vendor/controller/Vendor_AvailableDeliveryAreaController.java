@@ -4,14 +4,18 @@
  */
 package com.ecommerce.app.vendor.controller;
 
-import com.ecommerce.app.globalServices.District;
+import com.ecommerce.app.module.shipping.services.ShippingLocationService;
 import com.ecommerce.app.product.model.AvailableDeliveryArea;
 import com.ecommerce.app.product.model.AvailableDeliveryAreaMode;
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.ripository.AvailableDeliveryAreaRepository;
+import com.ecommerce.app.product.ripository.ProductRepository;
+import com.ecommerce.app.vendor.model.Vendorprofile;
+import com.ecommerce.app.vendor.user.componant.VendorUserContext;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -36,6 +40,13 @@ public class Vendor_AvailableDeliveryAreaController {
     @Autowired
     AvailableDeliveryAreaRepository availableDeliveryAreaRepository;
 
+    @Autowired
+    ShippingLocationService shippingLocationService;
+    @Autowired
+    ProductRepository productRepository;
+    @Autowired
+    VendorUserContext vendorUserContext;
+
     @RequestMapping("/index")
     public String index(Model model) {
         model.addAttribute("attribute", "value");
@@ -56,8 +67,12 @@ public class Vendor_AvailableDeliveryAreaController {
 
     @GetMapping("/add/{pid}")
     public String add(Model model, @PathVariable Long pid) {
-        Product product = new Product();
-        product.setId(pid);
+        Product product = productRepository.findById(pid).orElse(null);
+        if (!isOwnedByActiveVendor(product)) {
+            AvailableDeliveryArea availableDeliveryArea = new AvailableDeliveryArea();
+            populateFormModel(model, availableDeliveryArea, "Product not found for the active vendor.");
+            return "vendor/product/deliveryoption/delivery_area";
+        }
 
         AvailableDeliveryArea availableDeliveryArea = new AvailableDeliveryArea();
         availableDeliveryArea.setProduct(product);
@@ -69,6 +84,10 @@ public class Vendor_AvailableDeliveryAreaController {
     public Object save(@Valid AvailableDeliveryArea availableDeliveryArea, BindingResult bindingResult, HttpServletResponse response, Model model) {
         // 2026-04-22: Normalize fields by selected mode so validation and saved data stay predictable.
         normalizeByMode(availableDeliveryArea);
+        if (!isOwnedByActiveVendor(availableDeliveryArea != null ? availableDeliveryArea.getProduct() : null)) {
+            populateFormModel(model, availableDeliveryArea, "Product not found for the active vendor.");
+            return "vendor/product/deliveryoption/delivery_area";
+        }
 
         String errorMessage = validateDeliveryArea(availableDeliveryArea);
         if (bindingResult.hasErrors() || errorMessage != null) {
@@ -97,9 +116,9 @@ public class Vendor_AvailableDeliveryAreaController {
         Optional<AvailableDeliveryArea> availableDeliveryAreaopt = availableDeliveryAreaRepository.findById(id);
 
         AvailableDeliveryArea availableDeliveryArea = availableDeliveryAreaopt.orElse(null);
-        if (availableDeliveryArea == null) {
+        if (availableDeliveryArea == null || !isOwnedByActiveVendor(availableDeliveryArea.getProduct())) {
             AvailableDeliveryArea fallback = new AvailableDeliveryArea();
-            populateFormModel(model, fallback, "Delivery area not found.");
+            populateFormModel(model, fallback, "Delivery area not found for the active vendor.");
             return "vendor/product/deliveryoption/delivery_area";
         }
 
@@ -113,9 +132,13 @@ public class Vendor_AvailableDeliveryAreaController {
     public String deleteUnit(@PathVariable Long id, HttpServletResponse response) {
         String message;
         String messageType;
-        if (!availableDeliveryAreaRepository.existsById(id)) {
+        Optional<AvailableDeliveryArea> existing = availableDeliveryAreaRepository.findById(id);
+        if (existing.isEmpty()) {
             message = "Error: Item not found!";
             messageType = "danger"; // Error message type
+        } else if (!isOwnedByActiveVendor(existing.get().getProduct())) {
+            message = "Error: Item not found for the active vendor!";
+            messageType = "danger";
         } else {
             try {
                 // 2026-04-22: Delete only once so the UI does not trigger a second missing-row failure.
@@ -133,7 +156,7 @@ public class Vendor_AvailableDeliveryAreaController {
 
     private void populateFormModel(Model model, AvailableDeliveryArea availableDeliveryArea, String errorMessage) {
         model.addAttribute("deliveryAreaModes", AvailableDeliveryAreaMode.values());
-        model.addAttribute("districts", District.values());
+        model.addAttribute("districts", shippingLocationService.getActiveLocations());
         model.addAttribute("availableDeliveryArea", availableDeliveryArea);
         model.addAttribute("errorMessage", errorMessage);
     }
@@ -186,5 +209,17 @@ public class Vendor_AvailableDeliveryAreaController {
                     ? "Please select at least one excluded district for All Area Except mode."
                     : null;
         };
+    }
+
+    private boolean isOwnedByActiveVendor(Product product) {
+        if (product != null && product.getId() != null && product.getVendorprofile() == null) {
+            product = productRepository.findById(product.getId()).orElse(product);
+        }
+        Vendorprofile vendorprofile = vendorUserContext.getActiveVendor();
+        return product != null
+                && vendorprofile != null
+                && vendorprofile.getId() != null
+                && product.getVendorprofile() != null
+                && Objects.equals(product.getVendorprofile().getId(), vendorprofile.getId());
     }
 }

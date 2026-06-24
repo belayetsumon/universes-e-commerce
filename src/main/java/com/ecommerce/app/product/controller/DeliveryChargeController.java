@@ -75,7 +75,6 @@ public class DeliveryChargeController {
             message = "Deleted successfully!";
             messageType = "success"; // Success message type
         }
-        deliveryChargeRepository.deleteById(id);
         response.setHeader("HX-Refresh", "true");
         return "<div id='messageContainer' class='alert alert-" + messageType + "'>" + message + "</div>";
     }

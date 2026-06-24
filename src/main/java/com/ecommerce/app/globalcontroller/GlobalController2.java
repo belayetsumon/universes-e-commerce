@@ -6,7 +6,8 @@
 package com.ecommerce.app.globalcontroller;
 
 import com.ecommerce.app.globalComponant.EntityNameResolver;
-import com.ecommerce.app.globalServices.District;
+import com.ecommerce.app.module.shipping.model.ShippingLocation;
+import com.ecommerce.app.module.shipping.services.ShippingLocationService;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.wishlist.service.WishlistService;
 import com.ecommerce.app.product.model.ProductStatusEnum;
@@ -40,6 +41,9 @@ public class GlobalController2 {
 
     @Autowired
     WishlistService wishlistService;
+
+    @Autowired
+    ShippingLocationService shippingLocationService;
 
     @ModelAttribute
     public void addAttributes(Model model) {
@@ -84,28 +88,46 @@ public class GlobalController2 {
         return productcategoryRepository.findByStatusAndParentIsNull(ProductStatusEnum.Active);
     }
 
-    // Expose enum values for Thymeleaf dropdown
     @ModelAttribute("shippinglocations")
-    public District[] shippingLocations() {
-        return District.values();
+    public List<ShippingLocation> shippingLocations() {
+        return shippingLocationService.getActiveLocations();
     }
 
-    @ModelAttribute("currentShippingDistrict")
-    public District currentShippingDistrict(HttpSession session) {
-        Object obj = session.getAttribute("shippingdistrict");
+    @ModelAttribute("currentShippingLocation")
+    public ShippingLocation currentShippingLocation(HttpSession session) {
+        Object obj = session.getAttribute("shippingLocation");
+        if (obj == null) {
+            obj = session.getAttribute("shippingLocationId");
+        }
         if (obj == null) {
             return null;
         }
-        if (obj instanceof District) {
-            return (District) obj;
+        if (obj instanceof ShippingLocation location) {
+            return location;
         }
-        if (obj instanceof String) {
-            try {
-                return District.valueOf((String) obj);
-            } catch (IllegalArgumentException e) {
-                return null;
-            }
+        if (obj instanceof Long locationId) {
+            return shippingLocationService.getById(locationId);
+        }
+        if (obj instanceof String value) {
+            return resolveLocation(value);
         }
         return null;
+    }
+
+    private ShippingLocation resolveLocation(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return shippingLocationService.getById(Long.valueOf(value.trim()));
+        } catch (NumberFormatException ignored) {
+            String normalized = value.trim();
+            return shippingLocationService.getActiveLocations().stream()
+                    .filter(location -> normalized.equalsIgnoreCase(location.getCode())
+                    || normalized.equalsIgnoreCase(location.getName())
+                    || normalized.equalsIgnoreCase(location.getDisplayLabel()))
+                    .findFirst()
+                    .orElse(null);
+        }
     }
 }

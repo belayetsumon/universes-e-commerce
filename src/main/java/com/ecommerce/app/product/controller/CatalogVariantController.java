@@ -5,9 +5,12 @@ import com.ecommerce.app.product.model.ProductStatusEnum;
 import com.ecommerce.app.product.model.ProductVariant;
 import com.ecommerce.app.product.ripository.ProductRepository;
 import com.ecommerce.app.product.services.ProductVariantCatalogService;
+import com.ecommerce.app.vendor.model.Vendorprofile;
+import com.ecommerce.app.vendor.user.componant.VendorUserContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -32,9 +35,15 @@ public class CatalogVariantController {
 
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private VendorUserContext vendorUserContext;
 
     @GetMapping("/add/{productUuid}")
     public String add(@PathVariable String productUuid, Model model) {
+        if (!canAccessProductUuid(productUuid)) {
+            populateVariantForm(model, productUuid, null, "Product not found for the active vendor.");
+            return "product/catalogvariants/form";
+        }
         populateVariantForm(model, productUuid, null, null);
         return "product/catalogvariants/form";
     }
@@ -42,6 +51,10 @@ public class CatalogVariantController {
     @GetMapping("/edit/{uuid}")
     public String edit(@PathVariable String uuid, Model model) {
         ProductVariant variant = productVariantCatalogService.findByUuid(uuid);
+        if (variant == null || !canAccessProduct(variant.getProduct())) {
+            populateVariantForm(model, null, null, "Catalog variant not found for the active vendor.");
+            return "product/catalogvariants/form";
+        }
         populateVariantForm(model, variant.getProduct().getUuid(), variant, null);
         return "product/catalogvariants/form";
     }
@@ -60,6 +73,9 @@ public class CatalogVariantController {
             HttpServletResponse response,
             Model model) {
         try {
+            if (!canAccessProductUuid(productUuid)) {
+                throw new IllegalArgumentException("Product not found for the active vendor.");
+            }
             productVariantCatalogService.saveVariant(
                     productUuid,
                     variantUuid,
@@ -86,6 +102,11 @@ public class CatalogVariantController {
     @GetMapping("/generate/{productUuid}")
     public String generateForm(@PathVariable String productUuid, Model model) {
         Product product = productRepository.findByUuid(productUuid).orElse(null);
+        if (!canAccessProduct(product)) {
+            model.addAttribute("productUuid", productUuid);
+            model.addAttribute("errorMessage", "Product not found for the active vendor.");
+            return "product/catalogvariants/generate";
+        }
         model.addAttribute("productUuid", productUuid);
         model.addAttribute("productTitle", product != null ? product.getTitle() : null);
         model.addAttribute("variantSelections",
@@ -99,6 +120,9 @@ public class CatalogVariantController {
             HttpServletResponse response,
             Model model) {
         try {
+            if (!canAccessProductUuid(productUuid)) {
+                throw new IllegalArgumentException("Product not found for the active vendor.");
+            }
             int createdCount = productVariantCatalogService.autoGenerateVariants(productUuid, request.getParameterMap());
             response.setHeader("HX-Refresh", "true");
             return ResponseEntity.ok().header("X-Variant-Generated", String.valueOf(createdCount)).build();
@@ -115,6 +139,10 @@ public class CatalogVariantController {
     @ResponseBody
     public String delete(@PathVariable String uuid, HttpServletResponse response) {
         try {
+            ProductVariant variant = productVariantCatalogService.findByUuid(uuid);
+            if (variant == null || !canAccessProduct(variant.getProduct())) {
+                return "<div class='alert alert-danger'>Catalog variant not found for the active vendor.</div>";
+            }
             productVariantCatalogService.deleteByUuid(uuid);
             response.setHeader("HX-Refresh", "true");
             return "<div class='alert alert-success'>Catalog variant deleted successfully.</div>";
@@ -128,7 +156,9 @@ public class CatalogVariantController {
         model.addAttribute("catalogVariant", safeVariant);
         model.addAttribute("productUuid", productUuid);
         model.addAttribute("variantSelections",
-                productVariantCatalogService.buildVariantSelectionViews(productUuid, safeVariant.getUuid()));
+                productUuid == null || productUuid.isBlank()
+                        ? java.util.List.of()
+                        : productVariantCatalogService.buildVariantSelectionViews(productUuid, safeVariant.getUuid()));
         model.addAttribute("statusList", ProductStatusEnum.values());
         model.addAttribute("errorMessage", errorMessage);
     }
@@ -142,5 +172,30 @@ public class CatalogVariantController {
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;")
                 .replace("'", "&#39;");
+    }
+
+    private boolean canAccessProductUuid(String productUuid) {
+        if (productUuid == null || productUuid.isBlank()) {
+            return false;
+        }
+        return canAccessProduct(productRepository.findByUuid(productUuid).orElse(null));
+    }
+
+    private boolean canAccessProduct(Product product) {
+        Vendorprofile activeVendor = activeVendorOrNull();
+        if (activeVendor == null || activeVendor.getId() == null) {
+            return product != null;
+        }
+        return product != null
+                && product.getVendorprofile() != null
+                && Objects.equals(product.getVendorprofile().getId(), activeVendor.getId());
+    }
+
+    private Vendorprofile activeVendorOrNull() {
+        try {
+            return vendorUserContext.getActiveVendor();
+        } catch (Exception ex) {
+            return null;
+        }
     }
 }

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
+    <div layout:fragment="main_content">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+                <h4 class="mb-1">Carrier Manifests</h4>
+                <p class="text-muted mb-0">Group selected shipments into a carrier handover batch.</p>
+            </div>
+            <a th:href="@{/vendor/shipping-documents/manifests/create}" class="btn btn-success btn-sm">
+                <i class="bi bi-clipboard-plus"></i> Create Manifest
+            </a>
+        </div>
+
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="card">
+            <div class="card-body table-responsive">
+                <table class="table table-bordered table-hover table-striped align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Manifest</th>
+                            <th>Carrier</th>
+                            <th>Shipments</th>
+                            <th>Handover</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(manifests)}">
+                            <td colspan="6" class="text-center text-muted">No manifests created yet.</td>
+                        </tr>
+                        <tr th:each="manifest, stat : ${manifests}">
+                            <td th:text="${stat.count}"></td>
+                            <td th:text="${manifest.manifestNumber}"></td>
+                            <td th:text="${manifest.carrier != null ? manifest.carrier.name : '-'}"></td>
+                            <td>
+                                <span class="badge bg-light text-dark" th:text="${manifest.shipments != null ? manifest.shipments.size() : 0}"></span>
+                                <div class="small text-muted" th:if="${manifest.shipments != null}">
+                                    <span th:each="s, sStat : ${manifest.shipments}">
+                                        <span th:text="${'#' + s.id}"></span><span th:if="${!sStat.last}">, </span>
+                                    </span>
+                                </div>
+                            </td>
+                            <td th:text="${manifest.handoverTime != null ? manifest.handoverTime : '-'}"></td>
+                            <td>
+                                <span class="badge" th:classappend="${manifest.closed} ? ' bg-success' : ' bg-warning text-dark'" th:text="${manifest.closed ? 'Handed over' : 'Open'}"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

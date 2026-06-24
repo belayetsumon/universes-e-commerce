@@ -48,7 +48,7 @@ and open the template in the editor.
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>District</th>
+                                        <th>Location</th>
                                         <th>Carrier</th>
                                         <th>Delivery Person</th>
                                         <th>Tracking Number</th>
@@ -67,6 +67,7 @@ and open the template in the editor.
                                         <th>Commission</th>
                                         <th>Vendor Payable</th>
                                         <th>Marketplace Payable</th>
+                                        <th>Label</th>
                                         <!--                                        <th>Created By</th>
                                                                                 <th>Created At</th>
                                                                                 <th>Modified By</th>
@@ -78,7 +79,7 @@ and open the template in the editor.
                                     <tr th:each="s , stat  : ${shipments}">
                                         <td th:text="${stat.count}"></td>
                                         <td th:text="${s.district}"></td>
-                                        <td th:text="${s.carrier.name}"></td>
+                                        <td th:text="${s.carrier != null ? s.carrier.name : '-'}"></td>
                                         <td th:text="${s.deliveryPerson != null ? s.deliveryPerson.name : '-'}"></td>
                                         <td th:text="${s.trackingNumber}"></td>
                                         <td th:text="${s.shippingCost}"></td>
@@ -96,6 +97,13 @@ and open the template in the editor.
                                         <td th:text="${s.marketplaceCommissionAmount}"></td>
                                         <td th:text="${s.vendorPayableAmount}"></td>
                                         <td th:text="${s.marketplacePayableAmount}"></td>
+                                        <td>
+                                            <a th:if="${s.labelUrl != null and !#strings.isEmpty(s.labelUrl)}"
+                                               th:href="${s.labelUrl}"
+                                               target="_blank"
+                                               class="btn btn-sm btn-outline-dark">Open Label</a>
+                                            <span th:if="${s.labelUrl == null or #strings.isEmpty(s.labelUrl)}" class="text-muted">No label</span>
+                                        </td>
                                         <!--                                        <td th:text="${s.packagingRate != null ? s.packagingRate.packagingType + ' - ' + s.packagingRate.basePrice : '-'}"></td>-->
                                         <!--                                        <td th:text="${s.createdBy}"></td>
                                                                                 <td th:text="${#dates.format(s.created, 'yyyy-MM-dd HH:mm')}"></td>
@@ -104,8 +112,15 @@ and open the template in the editor.
                                         -->
                                         <td>
                                             <a th:href="@{/admin/shipments/edit/{id}(id=${s.id})}" class="btn btn-sm btn-primary">Edit</a>
-                                            <a th:href="@{/admin/shipments/delete/{id}(id=${s.id})}" class="btn btn-sm btn-danger"
-                                               onclick="return confirm('Are you sure you want to delete this shipment?');">Delete</a>
+                                            <form th:action="@{/admin/shipments/{id}/generate-label(id=${s.id})}" method="post" class="d-inline">
+                                                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                                <button type="submit" class="btn btn-sm btn-outline-dark">Make Label</button>
+                                            </form>
+                                            <form th:action="@{/admin/shipments/delete/{id}(id=${s.id})}" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Are you sure you want to delete this shipment?');">
+                                                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                            </form>
                                         </td>
                                     </tr>
                                 </tbody>

@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section class="mb-4 d-flex justify-content-between align-items-center"><h4 class="mb-0"><i class="bi bi-clipboard-check me-2 text-primary"></i>Shipping Manifests</h4><a class="btn btn-success btn-sm" th:href="@{/admin/shipping-documents/manifests/create}">Add Manifest</a></section>
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div class="card"><div class="card-body table-responsive"><table class="table table-bordered table-sm align-middle">
+            <thead><tr><th>#</th><th>Manifest</th><th>Carrier</th><th>Shipments</th><th>Closed</th><th>Handover</th><th>Actions</th></tr></thead>
+            <tbody><tr th:if="${#lists.isEmpty(manifests)}"><td colspan="7" class="text-center text-muted">No manifests found.</td></tr>
+                <tr th:each="m, stat : ${manifests}"><td th:text="${stat.count}"></td><td th:text="${m.manifestNumber}"></td><td th:text="${m.carrier != null ? m.carrier.name : '-'}"></td><td th:text="${m.shipments != null ? m.shipments.size() : 0}"></td><td th:text="${m.closed}"></td><td th:text="${m.handoverTime}"></td><td><form method="post" th:action="@{/admin/shipping-documents/manifests/delete/{id}(id=${m.id})}" onsubmit="return confirm('Delete this manifest?')"><input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /><button class="btn btn-sm btn-danger">Delete</button></form></td></tr>
+            </tbody></table></div></div>
+    </div>
+</div>

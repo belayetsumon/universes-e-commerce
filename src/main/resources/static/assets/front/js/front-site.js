@@ -121,7 +121,7 @@ $(document).ready(function () {
 
 
 
-//// cart district popup  start //////////////////////////////
+//// cart location popup  start //////////////////////////////
 document.addEventListener('DOMContentLoaded', function () {
     var modalEl = document.getElementById('districtModal');
 
@@ -134,24 +134,24 @@ document.addEventListener('DOMContentLoaded', function () {
         districtModal.show();
     }
 
-    // Save selected district
-    var saveBtn = document.getElementById('saveDistrict');
+    // Save selected location
+    var saveBtn = document.getElementById('saveLocation');
     if (saveBtn) {
         saveBtn.addEventListener('click', function () {
-            var districtSelect = document.getElementById('districtSelect');
-            if (!districtSelect)
+            var locationSelect = document.getElementById('locationSelect');
+            if (!locationSelect)
                 return;
 
-            var district = districtSelect.value;
-            if (!district) {
-                alert('Please select a district!');
+            var location = locationSelect.value;
+            if (!location) {
+                alert('Please select a location!');
                 return;
             }
 
             fetch('/district/save-district', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'districtName=' + encodeURIComponent(district)
+                body: 'location=' + encodeURIComponent(location)
             })
                     .then(res => {
                         if (!res.ok)
@@ -162,8 +162,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (data === 'success') {
                             districtModal.hide(); // Close modal
                         } else {
-                            alert('Invalid district selection');
-                            console.log('Invalid district selection');
+                            alert('Invalid location selection');
+                            console.log('Invalid location selection');
                         }
                     })
                     .catch(err => console.error('Fetch error:', err));
@@ -176,26 +176,26 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-//// header district select
+//// header location select
 
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Get all district buttons
-    var districtButtons = document.querySelectorAll('.district-btn');
+    // Get all location buttons
+    var locationButtons = document.querySelectorAll('.location-btn');
 
-    districtButtons.forEach(function (btn) {
+    locationButtons.forEach(function (btn) {
         btn.addEventListener('click', function () {
-            var district = btn.dataset.district;
+            var location = btn.dataset.location;
 
-            if (!district) {
-                alert('Invalid district!');
+            if (!location) {
+                alert('Invalid location!');
                 return;
             }
 
             fetch('/district/save-district', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'districtName=' + encodeURIComponent(district)
+                body: 'location=' + encodeURIComponent(location)
             })
                     .then(res => {
                         if (!res.ok)
@@ -204,13 +204,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     })
                     .then(data => {
                         if (data === 'success') {
-                            console.log('District saved:', district);
+                            console.log('Location saved:', location);
                             window.location.reload(); // refresh page after saving
                         } else {
-                            alert('Failed to save district');
+                            alert('Failed to save location');
                         }
                     })
-                    .catch(err => console.error('Error saving district:', err));
+                    .catch(err => console.error('Error saving location:', err));
         });
     });
 });
@@ -307,7 +307,7 @@ const formatCurrency = num => `৳ ${parseFloat(num || 0).toFixed(2)}`;
  *
  * What changed and why:
  * - Previously the shipping <select> used option.value = price (client-controlled).
- *   That is unsafe and also prevents correct server-side calculation by vendor/district/weight.
+ *   That is unsafe and also prevents correct server-side calculation by vendor/location/weight.
  * - Now we send:
  *   - shippingOptionCode (CarrierRate UUID) for shipping
  *   - packagingRateUuid (PackagingRate UUID) for packaging
@@ -331,7 +331,14 @@ async function postForm(url, bodyObj) {
     });
     if (!res.ok) {
         const msg = await res.text();
-        throw new Error(msg || "Request failed");
+        let errorMessage = msg || "Request failed";
+        try {
+            const json = JSON.parse(msg);
+            errorMessage = json.message || errorMessage;
+        } catch (ignored) {
+            // Keep the plain server response when it is not JSON.
+        }
+        throw new Error(errorMessage);
     }
     return res.json();
 }
@@ -638,6 +645,9 @@ document.addEventListener("change", async (e) => {
     } catch (err) {
         // console.error(err);
         alert(err?.message || "Update failed");
+        if (qtyInput) {
+            await loadCart();
+        }
     } finally {
         vendorDiv?.classList.remove("vendor-loading");
     }

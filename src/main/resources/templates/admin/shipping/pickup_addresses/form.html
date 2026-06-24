@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section class="mb-4 d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="bi bi-pin-map me-2 text-primary"></i><span th:text="${address.id != null ? 'Edit Pickup Address' : 'Create Pickup Address'}"></span></h4>
+            <a class="btn btn-danger btn-sm" th:href="@{/admin/pickup-addresses/list}">Close</a>
+        </section>
+        <div class="card"><div class="card-body">
+            <form th:action="@{/admin/pickup-addresses/save}" th:object="${address}" method="post" class="row g-3">
+                <input type="hidden" th:field="*{id}" />
+                <div class="col-md-4"><label class="form-label">Vendor</label><select th:field="*{vendorId}" class="form-select" required><option value="">Select vendor</option><option th:each="v : ${vendors}" th:value="${v.id}" th:text="${v.vendorCode + ' - ' + v.companyName}"></option></select><div class="text-danger small" th:if="${#fields.hasErrors('vendorId')}" th:errors="*{vendorId}"></div></div>
+                <div class="col-md-4"><label class="form-label">Name</label><input th:field="*{name}" class="form-control" required/><div class="text-danger small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div></div>
+                <div class="col-md-4"><label class="form-label">Location</label><select th:field="*{district}" class="form-select" required><option value="">Select location</option><option th:each="d : ${districts}" th:value="${d.id}" th:text="${d.displayLabel}"></option></select><div class="text-danger small" th:if="${#fields.hasErrors('district')}" th:errors="*{district}"></div></div>
+                <div class="col-md-4"><label class="form-label">Contact Person</label><input th:field="*{contactPerson}" class="form-control" required/><div class="text-danger small" th:if="${#fields.hasErrors('contactPerson')}" th:errors="*{contactPerson}"></div></div>
+                <div class="col-md-4"><label class="form-label">Phone</label><input th:field="*{phone}" class="form-control" required/><div class="text-danger small" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div></div>
+                <div class="col-md-4"><label class="form-label">Postal Code</label><input th:field="*{postalCode}" class="form-control"/></div>
+                <div class="col-12"><label class="form-label">Address</label><input th:field="*{addressLine}" class="form-control" required/><div class="text-danger small" th:if="${#fields.hasErrors('addressLine')}" th:errors="*{addressLine}"></div></div>
+                <div class="col-12"><label class="form-label">Instructions</label><textarea th:field="*{instructions}" class="form-control" rows="3"></textarea></div>
+                <div class="col-md-3 form-check ms-2"><input th:field="*{defaultAddress}" class="form-check-input" type="checkbox" id="defaultAddress"/><label for="defaultAddress" class="form-check-label">Default for vendor</label></div>
+                <div class="col-md-3 form-check"><input th:field="*{active}" class="form-check-input" type="checkbox" id="active"/><label for="active" class="form-check-label">Active</label></div>
+                <div class="col-12 text-end"><a th:href="@{/admin/pickup-addresses/list}" class="btn btn-secondary">Cancel</a><button class="btn btn-primary" type="submit">Save</button></div>
+            </form>
+        </div></div>
+    </div>
+</div>

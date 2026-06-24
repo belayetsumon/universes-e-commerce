@@ -60,7 +60,8 @@
                                     <tr>
                                         <th>#</th>
                                         <th>Carrier</th>
-                                        <th>Districts</th>
+                                        <th>Zone</th>
+                                        <th>Locations</th>
                                         <th>Speed</th>
                                         <th>Delivery Type</th>
                                         <th class="text-end">Base</th>
@@ -80,11 +81,12 @@
                                             <div class="fw-semibold" th:text="${r.carrier != null ? r.carrier.name : '-'}"></div>
                                             <div class="small text-muted" th:if="${r.carrier != null}" th:text="${r.carrier.code}"></div>
                                         </td>
+                                        <td th:text="${r.zone != null ? r.zone.name : '-'}"></td>
                                         <td>
                                             <span th:if="${r.district == null or #lists.isEmpty(r.district)}">-</span>
                                             <span th:each="d : ${r.district}"
                                                   class="badge bg-info text-dark me-1 mb-1"
-                                                  th:text="${d.displayName}">District</span>
+                                                  th:text="${d.displayLabel}">Location</span>
                                         </td>
                                         <td>
                                             <span class="badge bg-secondary" th:text="${r.speed}">STANDARD</span>
@@ -105,11 +107,16 @@
                                             <a th:href="@{'/admin/carrier-rates/edit/' + ${r.id}}" class="btn btn-sm btn-primary">
                                                 <i class="bi bi-pencil-square"></i> Edit
                                             </a>
-                                            <a th:href="@{'/admin/carrier-rates/delete/' + ${r.id}}"
-                                               class="btn btn-sm btn-danger"
-                                               onclick="return confirm('Delete this carrier rate?')">
-                                                <i class="bi bi-trash"></i> Delete
+                                            <a th:href="@{/admin/carrier-rate-slabs/list(rateId=${r.id})}" class="btn btn-sm btn-secondary">
+                                                <i class="bi bi-layers"></i> Slabs
                                             </a>
+                                            <form th:action="@{/admin/carrier-rates/delete/{id}(id=${r.id})}" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Delete this carrier rate?')">
+                                                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    <i class="bi bi-trash"></i> Delete
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                 </tbody>

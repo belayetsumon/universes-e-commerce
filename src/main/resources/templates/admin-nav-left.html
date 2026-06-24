@@ -28,8 +28,8 @@
                     <li class="nav-item"><a class="nav-link"  th:href="@{/admin-customer/orderlist}"><i class="bi-box-seam me-2"></i>Orders</a></li>
 
                     <li class="nav-item"><a class="nav-link" href="#"><i class="bi-receipt me-2"></i>Transactions</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-arrow-left-circle me-2"></i>Refunds</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-arrow-return-left me-2"></i>Returns</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/finance/refunds}"><i class="bi-arrow-left-circle me-2"></i>Refunds</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/finance/returns}"><i class="bi-arrow-return-left me-2"></i>Returns</a></li>
                 </ul>
             </li>
 
@@ -41,10 +41,18 @@
                 </a>
                 <ul class="nav flex-column collapse" id="shipping-collapse">
                     <li class="nav-item"><a class="nav-link" th:href="@{/admin/carriers/list}"><i class="bi-bag-check me-2"></i>Carrier</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/shipping-locations/list}"><i class="bi-globe2 me-2"></i>Locations</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/shipping-zones/list}"><i class="bi-geo-alt me-2"></i>Shipping Zones</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/admin/carrier-rates/list}"><i class="bi-bag-check me-2"></i>Carrier Rates</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/admin/shipments/list}"><i class="bi-bag-check me-2"></i>Shipments</a></li>
 
                     <li class="nav-item"><a class="nav-link" th:href="@{/admin/shipping-profiles/list}"><i class="bi-bag-check me-2"></i>Shipping Profiles</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/delivery-person}"><i class="bi-person-badge me-2"></i>Delivery Persons</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/pickup-addresses/list}"><i class="bi-pin-map me-2"></i>Pickup Addresses</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/shipping-rules/list}"><i class="bi-sliders me-2"></i>Shipping Rules</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/shipping-documents/labels}"><i class="bi-upc-scan me-2"></i>Labels</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/shipping-documents/manifests}"><i class="bi-clipboard-check me-2"></i>Manifests</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/shipping-documents/invoices}"><i class="bi-receipt me-2"></i>Shipment Invoices</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/packagingrates/list}"><i class="bi-bag-check me-2"></i>Packaging Rates</a></li>
                 </ul>
             </li>
@@ -211,6 +219,8 @@
                 <ul class="nav flex-column collapse" id="reports-collapse">
                     <li class="nav-item"><a class="nav-link" href="#">Bestsellers</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Sales summary</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/finance/returns}">Return Report</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/finance/refunds}">Refund Report</a></li>
                 </ul>
             </li>
             <li class="nav-item">

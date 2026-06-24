@@ -39,6 +39,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.imageio.ImageIO;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -301,7 +302,7 @@ public class VendorProductController {
 //            """)
     @RequestMapping("/save")
     public String create(Model model, @Valid Product product, BindingResult bindingResult, RedirectAttributes redirectAttributes,
-            @RequestParam("pic") MultipartFile pic,
+            @RequestParam(value = "pic", required = false) MultipartFile pic,
             HttpServletRequest request
     ) {
         if (bindingResult.hasErrors()) {
@@ -315,6 +316,10 @@ public class VendorProductController {
         }
 
         Vendorprofile vendorprofile = vendorUserContext.getActiveVendor();
+        if (vendorprofile == null || vendorprofile.getId() == null) {
+            redirectAttributes.addFlashAttribute("message", "Vendor context not found.");
+            return "redirect:/productvendor/index";
+        }
         product.setVendorprofile(vendorprofile);
         Users userss = new Users();
         userss.setId(loggedUserService.activeUserid());
@@ -322,18 +327,22 @@ public class VendorProductController {
 
         if (product.getId() != null) {
             Product oldProduct = productRepository.findById(product.getId()).orElse(null);
+            if (!isOwnedByVendor(oldProduct, vendorprofile)) {
+                redirectAttributes.addFlashAttribute("message", "Product not found for the active vendor.");
+                return "redirect:/productvendor/index";
+            }
             if (oldProduct != null) {
                 product.setUuid(oldProduct.getUuid());
                 if (product.getSlug() == null || product.getSlug().isBlank()) {
                     product.setSlug(oldProduct.getSlug());
                 }
-                if (pic.isEmpty()) {
+                if (pic == null || pic.isEmpty()) {
                     product.setImageName(oldProduct.getImageName());
                 }
             }
         }
 
-        if (!pic.isEmpty()) {
+        if (pic != null && !pic.isEmpty()) {
             try {
                 // byte[] bytes = pic.getBytes();
 
@@ -376,7 +385,7 @@ public class VendorProductController {
                 redirectAttributes.addFlashAttribute("message", pic.getOriginalFilename() + " => " + e.getMessage());
                 return "redirect:/productvendor/index";
             }
-        } else if (pic.isEmpty() && product.getId() != null) {
+        } else if ((pic == null || pic.isEmpty()) && product.getId() != null) {
 
 //            Product products = productRepository.findById(product.getId()).orElse(null);
 //
@@ -412,7 +421,13 @@ public class VendorProductController {
             @PathVariable Long id,
             @RequestParam(value = "tab", required = false) String activeTab,
             Product product,
-            ProductImage productImage) {
+            ProductImage productImage,
+            RedirectAttributes redirectAttributes) {
+        Product existingProduct = productRepository.findById(id).orElse(null);
+        if (!isOwnedByActiveVendor(existingProduct)) {
+            redirectAttributes.addFlashAttribute("message", "Product not found for the active vendor.");
+            return "redirect:/productvendor/index";
+        }
         populateProductDetailsModel(model, id, null, normalizeDetailsTab(activeTab));
         return "vendor/product/product_details";
 
@@ -424,7 +439,7 @@ public class VendorProductController {
             HttpServletRequest request,
             RedirectAttributes redirectAttributes) {
         Product product = productRepository.findById(id).orElse(null);
-        if (product == null) {
+        if (!isOwnedByActiveVendor(product)) {
             redirectAttributes.addFlashAttribute("message", "Product not found.");
             return "redirect:/productvendor/index";
         }
@@ -457,8 +472,12 @@ public class VendorProductController {
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
 //            """)
     @RequestMapping("/edit/{id}")
-    public String edit(Model model, @PathVariable Long id, Product product) {
+    public String edit(Model model, @PathVariable Long id, Product product, RedirectAttributes redirectAttributes) {
         Product existingProduct = productRepository.findById(id).orElse(null);
+        if (!isOwnedByActiveVendor(existingProduct)) {
+            redirectAttributes.addFlashAttribute("message", "Product not found for the active vendor.");
+            return "redirect:/productvendor/index";
+        }
         model.addAttribute("product", existingProduct);
         loadProductFormData(model);
         Users userss = new Users();
@@ -482,9 +501,15 @@ public class VendorProductController {
     public String delete(Model model, @PathVariable Long id, Product product, RedirectAttributes redirectAttributes) {
 
         product = productRepository.findById(id).orElse(null);
-        File file = new File(properties.getRootPath() + File.separator + product.getImageName());
+        if (!isOwnedByActiveVendor(product)) {
+            redirectAttributes.addFlashAttribute("message", "Product not found for the active vendor.");
+            return "redirect:/productvendor/index";
+        }
+        if (product.getImageName() != null && !product.getImageName().isBlank()) {
+            File file = new File(properties.getRootPath() + File.separator + product.getImageName());
+            file.delete();
+        }
 
-        file.delete();
         productRepository.deleteById(id);
         redirectAttributes.addFlashAttribute("message", "Deleted successfully.");
 
@@ -629,6 +654,18 @@ public class VendorProductController {
         return productcategoryRepository.findById(product.getProductcategory().getId())
                 .map(existingCategory -> existingCategory.getUuid())
                 .orElse(null);
+    }
+
+    private boolean isOwnedByActiveVendor(Product product) {
+        return isOwnedByVendor(product, vendorUserContext.getActiveVendor());
+    }
+
+    private boolean isOwnedByVendor(Product product, Vendorprofile vendorprofile) {
+        return product != null
+                && vendorprofile != null
+                && vendorprofile.getId() != null
+                && product.getVendorprofile() != null
+                && Objects.equals(product.getVendorprofile().getId(), vendorprofile.getId());
     }
 
 }

@@ -12,10 +12,55 @@ body {
 
 .vendor-header-nav.navbar {
     position: static;
+    min-height: 64px;
+}
+
+.vendor-header-nav .container-fluid {
+    min-height: 48px;
 }
 
 .vendor-header-nav .nav-link {
     font-size: 0.95rem;
+}
+
+.vendor-topbar-brand.navbar-brand {
+    display: inline-flex;
+    align-items: center;
+    max-width: min(42vw, 360px);
+    min-width: 0;
+    min-height: 42px;
+    padding: 0;
+    margin-right: 1rem;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+.vendor-topbar-logo-picture {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    min-width: 0;
+}
+
+.vendor-topbar-logo-image {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 150px;
+    max-height: 38px;
+    object-fit: contain;
+    object-position: left center;
+}
+
+.vendor-topbar-brand-name {
+    max-width: 150px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.vendor-topbar-badge {
+    flex: 0 0 auto;
 }
 
 .vendor-shell__sidebar {
@@ -87,5 +132,22 @@ body {
         max-height: none;
         overflow: visible;
         padding-right: 0;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .vendor-topbar-brand.navbar-brand {
+        max-width: calc(100vw - 96px);
+        margin-right: 0.5rem;
+    }
+
+    .vendor-topbar-logo-image {
+        max-width: 116px;
+        max-height: 32px;
+    }
+
+    .vendor-topbar-brand-name {
+        max-width: 105px;
+        font-size: 0.92rem;
     }
 }

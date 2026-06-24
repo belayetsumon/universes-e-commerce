@@ -4,25 +4,26 @@
  */
 package com.ecommerce.app.module.shipping.model;
 
-import com.ecommerce.app.globalServices.District;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.CollectionTable;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -59,6 +60,10 @@ public class CarrierRate {
     @JsonIgnore // prevent recursion
     private Carrier carrier;
 
+    @ManyToOne
+    @JoinColumn(name = "zone_id")
+    private ShippingZone zone;
+
     /**
      * Expose lightweight carrier info for JSON
      */
@@ -74,15 +79,17 @@ public class CarrierRate {
         return map;
     }
 
-    @ElementCollection(targetClass = District.class)
-    @CollectionTable(
-            name = "carrier_rate_districts",
-            joinColumns = @JoinColumn(name = "carrier_rate_id")
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "carrier_rate_locations",
+            joinColumns = @JoinColumn(name = "carrier_rate_id"),
+            inverseJoinColumns = @JoinColumn(name = "location_id")
     )
-    @Column(name = "district", nullable = false)
-    @Enumerated(EnumType.STRING)
-    @NotEmpty(message = "At least one district is required")
-    private List<District> district = new ArrayList<>();
+    private List<ShippingLocation> district = new ArrayList<>();
+
+    @OneToMany(mappedBy = "carrierRate", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<CarrierRateSlab> slabs = new ArrayList<>();
 
     @Column(nullable = false)
     @DecimalMin(value = "0.0", inclusive = true, message = "Base price must be 0 or more")
@@ -187,12 +194,46 @@ public class CarrierRate {
         this.carrier = carrier;
     }
 
-    public List<District> getDistrict() {
+    public ShippingZone getZone() {
+        return zone;
+    }
+
+    public void setZone(ShippingZone zone) {
+        this.zone = zone;
+    }
+
+    public List<ShippingLocation> getDistrict() {
         return district;
     }
 
-    public void setDistrict(List<District> district) {
+    public void setDistrict(List<ShippingLocation> district) {
         this.district = district;
+    }
+
+    public List<CarrierRateSlab> getSlabs() {
+        return slabs;
+    }
+
+    public void setSlabs(List<CarrierRateSlab> slabs) {
+        this.slabs = slabs;
+    }
+
+    public boolean appliesToLocation(ShippingLocation customerLocation) {
+        if (customerLocation == null) {
+            return false;
+        }
+        if (zone != null && zone.isActive()
+                && locationListApplies(zone.getCoverageLocations(), customerLocation)) {
+            return true;
+        }
+        return locationListApplies(district, customerLocation);
+    }
+
+    private boolean locationListApplies(List<ShippingLocation> locations, ShippingLocation customerLocation) {
+        return locations != null
+                && locations.stream()
+                        .filter(java.util.Objects::nonNull)
+                        .anyMatch(location -> location.isSameOrAncestorOf(customerLocation));
     }
 
     public BigDecimal getBasePrice() {

@@ -3,17 +3,18 @@
      th:fragment="vendorHeader">
     <nav class="navbar navbar-expand-lg vendor-header-nav bg-white border-bottom shadow-sm py-2">
         <div class="container-fluid px-3 px-lg-4">
-            <a class="navbar-brand d-flex align-items-center gap-2 mb-0" th:href="@{/vendor/home}">
-                <picture th:if="${session.globalSettings.resolvedSiteLogoDesktop != null}">
+            <a class="navbar-brand d-flex align-items-center gap-2 mb-0 vendor-topbar-brand" th:href="@{/vendor/home}">
+                <picture class="vendor-topbar-logo-picture"
+                         th:if="${session.globalSettings.resolvedSiteLogoDesktop != null}">
                     <img th:src="@{${session.globalSettings.resolvedSiteLogoDesktop}}"
                          th:alt="${session.globalSettings.siteName}"
-                         class="storefront-logo-image">
+                         class="vendor-topbar-logo-image">
                 </picture>
-                <span class="fw-semibold"
+                <span class="fw-semibold vendor-topbar-brand-name"
                       th:text="${session.globalSettings.siteName != null ? session.globalSettings.siteName : 'Store'}">
                     Store
                 </span>
-                <span class="badge text-bg-primary">Vendor</span>
+                <span class="badge text-bg-primary vendor-topbar-badge">Vendor</span>
             </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#vendorHeaderNav" aria-controls="vendorHeaderNav" aria-expanded="false" aria-label="Toggle navigation">

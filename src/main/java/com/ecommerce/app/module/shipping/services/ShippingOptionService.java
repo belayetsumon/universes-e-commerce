@@ -4,10 +4,10 @@
  */
 package com.ecommerce.app.module.shipping.services;
 
-import com.ecommerce.app.globalServices.District;
 import com.ecommerce.app.module.shipping.dto.ShippingOption;
 import com.ecommerce.app.module.shipping.model.Carrier;
 import com.ecommerce.app.module.shipping.model.CarrierRate;
+import com.ecommerce.app.module.shipping.model.ShippingLocation;
 import com.ecommerce.app.module.shipping.model.ShippingProfile;
 import com.ecommerce.app.module.shipping.repository.CarrierRateRepository;
 import com.ecommerce.app.module.shipping.repository.ShippingProfileRepository;
@@ -34,14 +34,17 @@ public class ShippingOptionService {
     @Autowired
     private CarrierRateService carrierRateService;
 
+    @Autowired
+    private ShippingLocationService shippingLocationService;
+
     public List<ShippingOption> getShippingOptions(
             Long vendorId,
-            District customerDistrict,
+            ShippingLocation customerLocation,
             BigDecimal totalWeight
     ) {
         List<ShippingOption> options = new ArrayList<>();
 
-        if (customerDistrict == null) {
+        if (customerLocation == null) {
             return options;
         }
 
@@ -56,18 +59,18 @@ public class ShippingOptionService {
                 continue;
             }
 
-            List<District> allowedDistricts = profile.getAllowedDistricts();
-            if (allowedDistricts != null && !allowedDistricts.isEmpty()
-                    && !allowedDistricts.contains(customerDistrict)) {
+            List<ShippingLocation> allowedLocations = profile.getAllowedDistricts();
+            if (allowedLocations != null && !allowedLocations.isEmpty()
+                    && !shippingLocationService.appliesToAnyLocation(allowedLocations, customerLocation)) {
                 continue;
             }
 
             for (Carrier carrier : allowedCarriers) {
-                // ✅ Fetch rates for customer district or fallback ALL
-                List<CarrierRate> rates = rateRepo.findByCarrierAndDistrictIn(
-                        carrier,
-                        List.of(customerDistrict)
-                );
+                // Fetch rates that cover the selected shipping location.
+                List<CarrierRate> rates = rateRepo.findByCarrier(carrier).stream()
+                        .filter(rate -> rate.appliesToLocation(customerLocation)
+                        || shippingLocationService.rateAppliesToLocation(rate, customerLocation))
+                        .toList();
 
                 for (CarrierRate rate : rates) {
                     ShippingOption option = new ShippingOption();

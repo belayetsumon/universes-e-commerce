@@ -1,0 +1,43 @@
+<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="front-layout-inner-vendor-page">
+    <div layout:fragment="main_content">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong><i class="bi bi-arrow-left-circle me-1"></i> Refunds</strong>
+                <a class="btn btn-sm btn-outline-primary" th:href="@{/vendor-order/returns}">Returns</a>
+            </div>
+            <div class="card-body">
+                <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+                <form class="row g-3 align-items-end mb-4" method="get" th:action="@{/vendor-order/refunds}">
+                    <div class="col-md-4"><label class="form-label" for="fromDate">From Date</label><input class="form-control" type="date" id="fromDate" name="fromDate" th:value="${fromDate}"></div>
+                    <div class="col-md-4"><label class="form-label" for="toDate">To Date</label><input class="form-control" type="date" id="toDate" name="toDate" th:value="${toDate}"></div>
+                    <div class="col-md-4"><button class="btn btn-primary w-100" type="submit">Filter</button></div>
+                </form>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6"><div class="alert alert-info mb-0">Refund Rows: <strong th:text="${report.totalReturnRows}">0</strong></div></div>
+                    <div class="col-md-6"><div class="alert alert-success mb-0">Total Refund: <strong th:text="${report.totalRefundAmount}">0.00</strong></div></div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead><tr><th>#</th><th>Refund Date</th><th>Order</th><th>Customer</th><th>Product</th><th>Qty</th><th>Refund</th><th>Action</th></tr></thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(report.rows)}"><td colspan="8" class="text-center">No refund records found.</td></tr>
+                            <tr th:each="row, stat : ${report.rows}">
+                                <td th:text="${stat.count}">1</td>
+                                <td th:text="${row.returnedAt != null ? row.returnedAt : row.returnRequestedAt}">-</td>
+                                <td th:text="${row.orderCode}">ORD</td>
+                                <td th:text="${row.customerName}">Customer</td>
+                                <td><span th:text="${row.productTitle}">Product</span><div class="text-muted small" th:if="${not #strings.isEmpty(row.variantSummary)}" th:text="${row.variantSummary}">Variant</div></td>
+                                <td th:text="${row.quantity}">0</td>
+                                <td class="fw-semibold" th:text="${row.refundAmount}">0.00</td>
+                                <td><a class="btn btn-sm btn-primary" th:if="${row.orderId != null}" th:href="@{/vendor-order/details/{oid}(oid=${row.orderId})}">Open Order</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

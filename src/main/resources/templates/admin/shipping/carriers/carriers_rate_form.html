@@ -63,14 +63,23 @@
                                     <div class="text-danger small" th:if="${#fields.hasErrors('deliveryType')}" th:errors="*{deliveryType}"></div>
                                 </div>
 
-                                <div class="col-md-12">
-                                    <label class="form-label">Covered Districts</label>
-                                    <select multiple="multiple" th:field="*{district}" class="form-select" size="10" required>
-                                        <option th:each="d : ${districts}"
-                                                th:value="${d}"
-                                                th:text="${d.displayName}"></option>
+                                <div class="col-md-4">
+                                    <label class="form-label">Shipping Zone</label>
+                                    <select th:field="*{zone}" class="form-select">
+                                        <option value="">Use direct coverage locations</option>
+                                        <option th:each="z : ${zones}" th:value="${z.id}" th:text="${z.name}"></option>
                                     </select>
-                                    <div class="form-text">Hold Ctrl to select multiple districts. Choose All for a fallback rate used across Bangladesh.</div>
+                                    <div class="form-text">Use a reusable zone when multiple rates share the same coverage.</div>
+                                </div>
+
+                                <div class="col-md-8">
+                                    <label class="form-label">Covered Locations</label>
+                                    <select multiple="multiple" th:field="*{district}" class="form-select" size="10">
+                                        <option th:each="d : ${districts}"
+                                                th:value="${d.id}"
+                                                th:text="${d.type + ' - ' + d.displayLabel}"></option>
+                                    </select>
+                                    <div class="form-text">Hold Ctrl to select multiple country, division, district, or thana locations. Leave blank when a zone is selected.</div>
                                     <div class="text-danger small" th:if="${#fields.hasErrors('district')}" th:errors="*{district}"></div>
                                 </div>
                             </div>

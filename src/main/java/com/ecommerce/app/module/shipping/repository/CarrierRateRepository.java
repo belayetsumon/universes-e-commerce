@@ -4,9 +4,9 @@
  */
 package com.ecommerce.app.module.shipping.repository;
 
-import com.ecommerce.app.globalServices.District;
 import com.ecommerce.app.module.shipping.model.Carrier;
 import com.ecommerce.app.module.shipping.model.CarrierRate;
+import com.ecommerce.app.module.shipping.model.ShippingLocation;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,11 +19,11 @@ import org.springframework.data.repository.query.Param;
  */
 public interface CarrierRateRepository extends JpaRepository<CarrierRate, Long> {
 
-    @Query("select distinct r from CarrierRate r join r.district d where r.carrier = :carrier and d = :district")
-    List<CarrierRate> findByCarrierAndDistrict(@Param("carrier") Carrier carrier, @Param("district") District district);
+    @Query("select distinct r from CarrierRate r join r.district d where r.carrier = :carrier and d = :location")
+    List<CarrierRate> findByCarrierAndLocation(@Param("carrier") Carrier carrier, @Param("location") ShippingLocation location);
 
-    @Query("select distinct r from CarrierRate r join r.district d where r.carrier = :carrier and d in :districts")
-    List<CarrierRate> findByCarrierAndDistrictIn(@Param("carrier") Carrier carrier, @Param("districts") List<District> districts);
+    @Query("select distinct r from CarrierRate r join r.district d where r.carrier = :carrier and d in :locations")
+    List<CarrierRate> findByCarrierAndLocationIn(@Param("carrier") Carrier carrier, @Param("locations") List<ShippingLocation> locations);
 
     List<CarrierRate> findByCarrier(Carrier carrier);
 

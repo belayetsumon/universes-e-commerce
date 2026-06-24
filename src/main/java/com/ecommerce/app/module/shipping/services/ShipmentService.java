@@ -32,14 +32,17 @@ public class ShipmentService {
     private final SalesOrderRepository salesOrderRepository;
     private final SalesOrderService salesOrderService;
     private final PaymentService paymentService;
+    private final ShipmentTrackingService shipmentTrackingService;
 
     public ShipmentService(ShipmentRepository repo, SalesOrderRepository salesOrderRepository,
             SalesOrderService salesOrderService,
-            PaymentService paymentService) {
+            PaymentService paymentService,
+            ShipmentTrackingService shipmentTrackingService) {
         this.repo = repo;
         this.salesOrderRepository = salesOrderRepository;
         this.salesOrderService = salesOrderService;
         this.paymentService = paymentService;
+        this.shipmentTrackingService = shipmentTrackingService;
     }
 
     public List<Shipment> getAll() {
@@ -66,11 +69,19 @@ public class ShipmentService {
     }
 
     public Shipment save(Shipment shipment) {
+        ShipmentStatus previousStatus = null;
+        if (shipment != null && shipment.getId() != null) {
+            previousStatus = repo.findById(shipment.getId())
+                    .map(Shipment::getStatus)
+                    .orElse(null);
+        }
         Shipment preparedShipment = syncCodFromOrder(shipment);
         if (preparedShipment != null) {
             preparedShipment.recalculateSettlementAmounts();
         }
-        return repo.save(preparedShipment);
+        Shipment savedShipment = repo.save(preparedShipment);
+        shipmentTrackingService.recordStatusChange(savedShipment, previousStatus, savedShipment.getStatus(), "shipment form");
+        return savedShipment;
     }
 
     public void delete(Long id) {
@@ -104,6 +115,20 @@ public class ShipmentService {
     @Transactional
     public void collectPayment(Long shipmentId, BigDecimal amount) {
         Shipment shipment = repo.findById(shipmentId).orElseThrow();
+        collectPayment(shipment, amount);
+    }
+
+    @Transactional
+    public void collectVendorPayment(Long vendorId, Long shipmentId, BigDecimal amount) {
+        Shipment shipment = repo.findById(shipmentId).orElseThrow();
+        if (vendorId == null || shipment.getVendorId() == null || !vendorId.equals(shipment.getVendorId())) {
+            throw new IllegalArgumentException("Shipment not found for the active vendor.");
+        }
+        collectPayment(shipment, amount);
+    }
+
+    private void collectPayment(Shipment shipment, BigDecimal amount) {
+        ShipmentStatus previousStatus = shipment.getStatus();
         BigDecimal normalizedAmount = defaultAmount(amount);
         if (normalizedAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("COD collection amount must be greater than zero.");
@@ -135,7 +160,8 @@ public class ShipmentService {
             shipment.setStatus(ShipmentStatus.DELIVERED);
         }
 
-        repo.save(shipment);
+        Shipment savedShipment = repo.save(shipment);
+        shipmentTrackingService.recordStatusChange(savedShipment, previousStatus, savedShipment.getStatus(), "COD collection");
     }
 
     public boolean isShipmentEligibleStatus(OrderStatus status) {

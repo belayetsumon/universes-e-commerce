@@ -4,13 +4,13 @@
  */
 package com.ecommerce.app.module.cart.controller;
 
-import com.ecommerce.app.globalServices.District;
 import com.ecommerce.app.module.cart.model.CartItem;
 import com.ecommerce.app.module.cart.services.CartService;
 import com.ecommerce.app.module.shipping.dto.ShippingOption;
+import com.ecommerce.app.module.shipping.model.ShippingLocation;
 import com.ecommerce.app.module.shipping.model.PackagingRate;
 import com.ecommerce.app.module.shipping.services.PackagingRateService;
-import com.ecommerce.app.module.shipping.services.ShippingOptionService;
+import com.ecommerce.app.module.shipping.services.ShippingQuoteService;
 import com.ecommerce.app.product.ripository.ProductRepository;
 import com.ecommerce.app.vendor.repository.VendorprofileRepository;
 import jakarta.servlet.http.HttpSession;
@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,7 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class CartsController {
 
     @Autowired
-    ShippingOptionService shippingOptionService;
+    ShippingQuoteService shippingQuoteService;
 
     @Autowired
     PackagingRateService packagingRateService;
@@ -92,7 +93,7 @@ public class CartsController {
         Map<String, Boolean> vendorRequiresShipping = new LinkedHashMap<>();
         Map<String, String> selectedShippingOption = new LinkedHashMap<>();
         Map<String, String> selectedPackagingRate = new LinkedHashMap<>();
-        District district = (District) session.getAttribute("shippingdistrict");
+        ShippingLocation customerLocation = currentShippingLocation(session);
 
         for (Map.Entry<String, List<CartItem>> entry : grouped.entrySet()) {
 
@@ -130,7 +131,7 @@ public class CartsController {
                     vendorUuid,
                     requiresShipping && vendorId != null
                             ? Optional.ofNullable(
-                                    shippingOptionService.getShippingOptions(vendorId, district, totalWeight)
+                                    shippingQuoteService.getShippingOptions(vendorId, customerLocation, totalWeight, subtotal)
                             ).orElse(Collections.emptyList())
                             : Collections.emptyList()
             );
@@ -187,6 +188,11 @@ public class CartsController {
         return ResponseEntity.ok(response);
     }
 
+    private ShippingLocation currentShippingLocation(HttpSession session) {
+        Object value = session.getAttribute("shippingLocation");
+        return value instanceof ShippingLocation location ? location : null;
+    }
+
     @PostMapping("/updateQuantity")
     public ResponseEntity<Map<String, Object>> updateQuantity(
             @RequestParam(required = false) String productUuid,
@@ -195,8 +201,12 @@ public class CartsController {
             @RequestParam BigDecimal quantity,
             HttpSession session) {
         String resolvedProductUuid = resolveProductUuid(productUuid, productId);
-        if (resolvedProductUuid != null) {
-            cartService.updateQuantityInCart(resolvedProductUuid, catalogVariantUuid, quantity, session);
+        if (resolvedProductUuid == null) {
+            return cartError("Product not found.", session);
+        }
+        boolean updated = cartService.updateQuantityInCart(resolvedProductUuid, normalizeUuid(catalogVariantUuid), quantity, session);
+        if (!updated) {
+            return cartError("Quantity could not be updated. Please check stock and try again.", session);
         }
         return getCart(session);
     }
@@ -210,8 +220,9 @@ public class CartsController {
         String resolvedProductUuid = resolveProductUuid(productUuid, productId);
         List<CartItem> cart = (List<CartItem>) session.getAttribute("sessioncart");
         if (cart != null && resolvedProductUuid != null) {
+            String resolvedCatalogVariantUuid = normalizeUuid(catalogVariantUuid);
             cart.removeIf(c -> Objects.equals(c.getProductUuid(), resolvedProductUuid)
-                    && Objects.equals(c.getCatalogVariantUuid(), catalogVariantUuid));
+                    && Objects.equals(normalizeUuid(c.getCatalogVariantUuid()), resolvedCatalogVariantUuid));
         }
         session.setAttribute("sessioncart", cart);
         return getCart(session);
@@ -351,6 +362,20 @@ public class CartsController {
         return productRepository.findById(productId)
                 .map(product -> product.getUuid())
                 .orElse(null);
+    }
+
+    private ResponseEntity<Map<String, Object>> cartError(String message, HttpSession session) {
+        Map<String, Object> body = getCart(session).getBody();
+        if (body == null) {
+            body = new HashMap<>();
+        }
+        body.put("success", false);
+        body.put("message", message);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    private String normalizeUuid(String uuid) {
+        return uuid == null || uuid.isBlank() ? null : uuid.trim();
     }
 
     private String resolveVendorUuid(String vendorUuid, Long vendorId) {

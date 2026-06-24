@@ -57,7 +57,11 @@ public class ProductImageController {
 
         try {
             // Check file extension
-            String fileExtension = FilenameUtils.getExtension(productimg.getOriginalFilename()).toLowerCase();
+            String originalFilename = productimg.getOriginalFilename();
+            if (productimg.isEmpty() || originalFilename == null) {
+                return ResponseEntity.ok("<div class='alert alert-danger'>Invalid file format. Only JPG and PNG files are allowed.</div>");
+            }
+            String fileExtension = FilenameUtils.getExtension(originalFilename).toLowerCase();
 
             if (!allowedExtensions.contains(fileExtension)) {
                 return ResponseEntity.ok("<div class='alert alert-danger'>Invalid file format. Only JPG and PNG files are allowed.</div>");
@@ -76,6 +80,9 @@ public class ProductImageController {
 
             // Process and save the image
             BufferedImage originalImage = ImageIO.read(productimg.getInputStream());
+            if (originalImage == null) {
+                return ResponseEntity.ok("<div class='alert alert-danger'>Invalid image file.</div>");
+            }
             Thumbnails.of(originalImage).forceSize(800, 600).toFile(serverFile);
 
             // Save file details to the database
@@ -87,7 +94,7 @@ public class ProductImageController {
             return ResponseEntity.ok("<div class='alert alert-success'>Successfully uploaded: " + filename + "</div>"
             );
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             // Log error and return error message
             System.out.println("Error saving file: " + e.getMessage());
             return ResponseEntity.ok("<div class='alert alert-danger'>Error saving file: " + e.getMessage() + "</div>");

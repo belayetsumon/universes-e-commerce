@@ -1,0 +1,160 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4><i class="bi bi-arrow-counterclockwise me-2 text-primary"></i>Return And Refund Report</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a th:href="@{/admin/index}" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/admin/finance/dashboard}" class="nav-link">Finance</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Returns And Refunds</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+
+        <div th:if="${not #strings.isEmpty(errorMessage)}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card alert alert-info mb-0">
+                    <div class="card-body">
+                        <strong>Total Return Rows</strong>
+                        <div class="fs-5" th:text="${report.totalReturnRows}">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card alert alert-warning mb-0">
+                    <div class="card-body">
+                        <strong>Requested</strong>
+                        <div class="fs-5" th:text="${report.requestedCount}">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card alert alert-success mb-0">
+                    <div class="card-body">
+                        <strong>Returned</strong>
+                        <div class="fs-5" th:text="${report.returnedCount}">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card alert alert-danger mb-0">
+                    <div class="card-body">
+                        <strong>Total Refund</strong>
+                        <div class="fs-5" th:text="${report.totalRefundAmount}">0.00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Filters</strong>
+                <a class="btn btn-sm btn-outline-secondary" th:href="@{/admin/finance/returns-refunds}">Reset</a>
+            </div>
+            <div class="card-body">
+                <form class="row g-3 align-items-end" method="get" th:action="@{/admin/finance/returns-refunds}">
+                    <div class="col-md-3">
+                        <label class="form-label" for="status">Return Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">All statuses</option>
+                            <option th:each="statusOption : ${statuses}"
+                                    th:if="${statusOption.name() != 'NONE'}"
+                                    th:value="${statusOption}"
+                                    th:selected="${selectedStatus == statusOption}"
+                                    th:text="${statusOption}">RETURN_REQUESTED</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="fromDate">From Date</label>
+                        <input class="form-control" type="date" id="fromDate" name="fromDate" th:value="${fromDate}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="toDate">To Date</label>
+                        <input class="form-control" type="date" id="toDate" name="toDate" th:value="${toDate}">
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-primary w-100" type="submit"><i class="bi bi-funnel me-1"></i>Apply Filter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Return And Refund Details</strong>
+                <span class="text-muted small">Pending refund value: <span th:text="${report.pendingRefundAmount}">0.00</span></span>
+            </div>
+            <div class="card-body table-responsive">
+                <table class="table table-bordered table-hover table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Requested</th>
+                            <th>Returned</th>
+                            <th>Order</th>
+                            <th>Customer</th>
+                            <th>Vendor</th>
+                            <th>Product</th>
+                            <th>Status</th>
+                            <th>Qty</th>
+                            <th>Item Total</th>
+                            <th>Refund</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(report.rows)}">
+                            <td colspan="12" class="text-center">No return or refund records found.</td>
+                        </tr>
+                        <tr th:each="row, status : ${report.rows}">
+                            <td th:text="${status.count}">1</td>
+                            <td th:text="${row.returnRequestedAt != null ? row.returnRequestedAt : '-'}">-</td>
+                            <td th:text="${row.returnedAt != null ? row.returnedAt : '-'}">-</td>
+                            <td>
+                                <a th:if="${row.orderId != null}" th:href="@{/admin-customer/order-details/{oid}(oid=${row.orderId})}" th:text="${row.orderCode}">ORD-1</a>
+                                <span th:if="${row.orderId == null}" th:text="${row.orderCode}">-</span>
+                                <div class="text-muted small" th:text="${row.orderStatus != null ? row.orderStatus : '-'}">-</div>
+                            </td>
+                            <td>
+                                <span th:text="${row.customerName}">Customer</span>
+                                <div class="text-muted small" th:text="${row.customerEmail}">email@example.com</div>
+                            </td>
+                            <td>
+                                <span th:text="${row.vendorName}">Vendor</span>
+                                <div class="text-muted small" th:text="${row.vendorId != null ? 'ID ' + row.vendorId : '-'}">-</div>
+                            </td>
+                            <td>
+                                <span th:text="${row.productTitle}">Product</span>
+                                <div class="text-muted small" th:if="${not #strings.isEmpty(row.variantSummary)}" th:text="${row.variantSummary}">Variant</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-warning text-dark" th:if="${row.returnStatus != null && row.returnStatus.name() == 'RETURN_REQUESTED'}" th:text="${row.returnStatus}">RETURN_REQUESTED</span>
+                                <span class="badge bg-success" th:if="${row.returnStatus != null && row.returnStatus.name() == 'RETURNED'}" th:text="${row.returnStatus}">RETURNED</span>
+                                <span class="badge bg-secondary" th:if="${row.returnStatus == null}" th:text="'-'">-</span>
+                            </td>
+                            <td th:text="${row.quantity}">0</td>
+                            <td th:text="${row.itemTotal}">0.00</td>
+                            <td th:text="${row.refundAmount}">0.00</td>
+                            <td>
+                                <div th:if="${not #strings.isEmpty(row.requestRemark)}">
+                                    <strong>Request:</strong> <span th:text="${row.requestRemark}"></span>
+                                </div>
+                                <div th:if="${not #strings.isEmpty(row.processedRemark)}">
+                                    <strong>Processed:</strong> <span th:text="${row.processedRemark}"></span>
+                                </div>
+                                <span th:if="${#strings.isEmpty(row.requestRemark) && #strings.isEmpty(row.processedRemark)}">-</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

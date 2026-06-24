@@ -5,7 +5,6 @@
  */
 package com.ecommerce.app.module.cart.controller;
 
-import com.ecommerce.app.globalServices.District;
 import com.ecommerce.app.module.ReferralRewards.model.RewardAccount;
 import com.ecommerce.app.module.ReferralRewards.model.Wallet;
 import com.ecommerce.app.module.ReferralRewards.repository.RewardAccountRepository;
@@ -13,9 +12,10 @@ import com.ecommerce.app.module.ReferralRewards.repository.WalletRepository;
 import com.ecommerce.app.module.cart.model.CartItem;
 import com.ecommerce.app.module.cart.services.CartService;
 import com.ecommerce.app.module.shipping.dto.ShippingOption;
+import com.ecommerce.app.module.shipping.model.ShippingLocation;
 import com.ecommerce.app.module.shipping.model.PackagingRate;
 import com.ecommerce.app.module.shipping.services.PackagingRateService;
-import com.ecommerce.app.module.shipping.services.ShippingOptionService;
+import com.ecommerce.app.module.shipping.services.ShippingQuoteService;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.user.services.LoggedUserService;
 import com.ecommerce.app.product.model.AvailableDeliveryArea;
@@ -63,7 +63,7 @@ public class CartController {
     VendorprofileRepository vendorprofileRepository;
 
     @Autowired
-    ShippingOptionService shippingOptionService;
+    ShippingQuoteService shippingQuoteService;
 
     @Autowired
     PackagingRateService packagingRateService;
@@ -134,9 +134,9 @@ public class CartController {
 
                 vendorWeights.put(vendorId, totalWeight);
 
-                District district = (District) session.getAttribute("shippingdistrict");
+                ShippingLocation customerLocation = currentShippingLocation(session);
                 List<ShippingOption> shippingOptions = vendorRequiresShipping
-                        ? shippingOptionService.getShippingOptions(vendorId, district, totalWeight)
+                        ? shippingQuoteService.getShippingOptions(vendorId, customerLocation, totalWeight, subtotal)
                         : new ArrayList<>();
                 vendorShippingOptions.put(vendorId, shippingOptions);
 
@@ -371,22 +371,22 @@ public class CartController {
         }
         boolean requiresShipping = cartService.requiresShipping(product);
 
-        if (requiresShipping && session.getAttribute("shippingdistrict") == null) {
+        if (requiresShipping && currentShippingLocation(session) == null) {
             redirectAttributes.addFlashAttribute("errorMessage", "Please select delivery district before adding to cart.");
             return "redirect:/public/single-product/" + resolvedProductUuid;
         }
 
-        District customerDistrict = (District) session.getAttribute("shippingdistrict");
+        ShippingLocation customerLocation = currentShippingLocation(session);
         List<AvailableDeliveryArea> deliveryAreas = availableDeliveryAreaRepository.findByProduct_UuidOrderByIdDesc(resolvedProductUuid);
 
         if (requiresShipping && deliveryAreas != null && !deliveryAreas.isEmpty()) {
-            boolean districtMatched = deliveryAreas.stream()
-                    .anyMatch(area -> area.matchesDistrict(customerDistrict));
+            boolean locationMatched = deliveryAreas.stream()
+                    .anyMatch(area -> area.matchesLocation(customerLocation));
 
-            if (!districtMatched) {
+            if (!locationMatched) {
                 redirectAttributes.addFlashAttribute(
                         "errorMessage",
-                        "This product is not available for delivery in your selected district: " + customerDistrict.getDisplayName()
+                        "This product is not available for delivery in your selected location: " + customerLocation.getDisplayLabel()
                 );
                 return "redirect:/public/single-product/" + resolvedProductUuid;
             }
@@ -412,6 +412,11 @@ public class CartController {
 
         redirectAttributes.addFlashAttribute("successMessage", "Item added to cart successfully!");
         return "redirect:/cart/index";
+    }
+
+    private ShippingLocation currentShippingLocation(HttpSession session) {
+        Object value = session.getAttribute("shippingLocation");
+        return value instanceof ShippingLocation location ? location : null;
     }
 
 //    @PostMapping("/quantityUpdate")

@@ -30,18 +30,18 @@
             </select>
         </div>
 
-        <div class="mb-3" id="vendorSpecificDistrictGroup">
+        <div class="mb-3" id="vendorSpecificLocationGroup">
             <label class="form-label">Selected Areas</label>
-            <select class="form-select" th:field="*{selectedDistricts}" id="vendorDeliveryDistricts" multiple size="8">
-                <option th:each="district : ${districts}" th:value="${district}" th:text="${district.displayName}"></option>
+            <select class="form-select" th:field="*{selectedDistricts}" id="vendorDeliveryLocations" multiple size="8">
+                <option th:each="location : ${districts}" th:value="${location.id}" th:text="${location.displayLabel}"></option>
             </select>
             <div class="form-text">Use multi-select for Specific Area mode.</div>
         </div>
 
-        <div class="mb-3 d-none" id="vendorExcludedDistrictGroup">
-            <label class="form-label">Excluded Districts</label>
-            <select class="form-select" th:field="*{excludedDistricts}" id="vendorExcludedDistricts" multiple size="8">
-                <option th:each="district : ${districts}" th:value="${district}" th:text="${district.displayName}"></option>
+        <div class="mb-3 d-none" id="vendorExcludedLocationGroup">
+            <label class="form-label">Excluded Locations</label>
+            <select class="form-select" th:field="*{excludedDistricts}" id="vendorExcludedLocations" multiple size="8">
+                <option th:each="location : ${districts}" th:value="${location.id}" th:text="${location.displayLabel}"></option>
             </select>
             <div class="form-text">Use this for "All Area Except", for example exclude Cumilla only.</div>
         </div>
@@ -49,7 +49,7 @@
         <div class="mb-3">
             <label class="form-label">Note</label>
             <textarea min="0" class="form-control" th:field="*{description}" rows="3"></textarea>
-            <div class="form-text">2026-04-22: Optional note only. Delivery matching now uses enum selection above.</div>
+            <div class="form-text">Optional note only. Delivery matching uses the selected structured locations above.</div>
         </div>
 
         <div class="modal-footer">
@@ -60,13 +60,13 @@
     </form>
 
     <script>
-        // 2026-04-22: Show only the relevant district inputs for the selected delivery coverage mode.
+        // Show only the relevant location inputs for the selected delivery coverage mode.
         (() => {
             const modeSelect = document.getElementById('vendorDeliveryAreaMode');
-            const specificGroup = document.getElementById('vendorSpecificDistrictGroup');
-            const excludedGroup = document.getElementById('vendorExcludedDistrictGroup');
-            const districtSelect = document.getElementById('vendorDeliveryDistricts');
-            const excludedSelect = document.getElementById('vendorExcludedDistricts');
+            const specificGroup = document.getElementById('vendorSpecificLocationGroup');
+            const excludedGroup = document.getElementById('vendorExcludedLocationGroup');
+            const locationSelect = document.getElementById('vendorDeliveryLocations');
+            const excludedSelect = document.getElementById('vendorExcludedLocations');
 
             if (!modeSelect) {
                 return;
@@ -80,9 +80,9 @@
                 specificGroup.classList.toggle('d-none', !isSpecific);
                 excludedGroup.classList.toggle('d-none', !isAllExcept);
 
-                if (districtSelect) {
+                if (locationSelect) {
                     if (!isSpecific) {
-                        Array.from(districtSelect.options).forEach((option) => option.selected = false);
+                        Array.from(locationSelect.options).forEach((option) => option.selected = false);
                     }
                 }
 

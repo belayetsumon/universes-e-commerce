@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h4 class="mb-1">
+                        <i class="bi bi-geo-alt me-2 text-primary"></i>
+                        <span th:text="${zone.id} != null ? 'Edit Shipping Zone' : 'Create Shipping Zone'">Shipping Zone</span>
+                    </h4>
+                    <div class="text-muted small">Create reusable country, division, district, and thana groups for carrier rates.</div>
+                </div>
+                <a th:href="@{/admin/shipping-zones/list}" type="button" class="btn btn-danger btn-sm">
+                    <i class="bi bi-x-circle"></i> Close
+                </a>
+            </div>
+        </section>
+
+        <div class="card">
+            <div class="card-header">
+                <strong><i class="bi bi-sliders"></i> Zone Details</strong>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/admin/shipping-zones/save}" th:object="${zone}" method="post">
+                    <input type="hidden" th:field="*{id}"/>
+
+                    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
+                        <div th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label class="form-label">Name</label>
+                            <input type="text" th:field="*{name}" class="form-control" required/>
+                            <div class="text-danger small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Code</label>
+                            <input type="text" th:field="*{code}" class="form-control"/>
+                            <div class="form-text">Optional unique code.</div>
+                            <div class="text-danger small" th:if="${#fields.hasErrors('code')}" th:errors="*{code}"></div>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Priority</label>
+                            <input type="number" min="0" th:field="*{priority}" class="form-control"/>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Active</label>
+                            <div class="form-check mt-2">
+                                <input type="checkbox" th:field="*{active}" class="form-check-input" id="zoneActive"/>
+                                <label class="form-check-label" for="zoneActive">Enabled</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label">Coverage Locations</label>
+                            <select multiple="multiple" name="coverageLocationIds" class="form-select" size="12">
+                                <option th:each="location : ${locations}"
+                                        th:value="${location.id}"
+                                        th:selected="${#lists.contains(selectedCoverageLocationIds, location.id)}"
+                                        th:text="${location.type + ' - ' + location.displayLabel + ' [' + location.code + ']'}"></option>
+                            </select>
+                            <div class="form-text">Select country, division/state, district/city, or thana/upazila. Higher levels include their children.</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a th:href="@{/admin/shipping-zones/list}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Save Zone
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

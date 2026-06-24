@@ -37,12 +37,15 @@ public class ShippingServiceImpl implements ShippingService {
     private final CarrierRepository carrierRepository;
 
     private final Map<String, CarrierAdapter> adapters;
+    private final ShipmentTrackingService shipmentTrackingService;
 
     public ShippingServiceImpl(ShipmentRepository shipmentRepository,
             CarrierRepository carrierRepository,
-            List<CarrierAdapter> adapterList) {
+            List<CarrierAdapter> adapterList,
+            ShipmentTrackingService shipmentTrackingService) {
         this.shipmentRepository = shipmentRepository;
         this.carrierRepository = carrierRepository;
+        this.shipmentTrackingService = shipmentTrackingService;
         this.adapters = new HashMap<>();
 
         for (CarrierAdapter a : adapterList) {
@@ -85,7 +88,7 @@ public class ShippingServiceImpl implements ShippingService {
         sh.setVendorId(vendorId);
         sh.setShippingCost(option.getPrice());
         sh.setCarrier(carrier);
-        sh.setDistrict(extractDistrict(meta));
+        sh.setDistrict(extractLocation(meta));
         sh.setSpeed(option.getSpeed() != null ? option.getSpeed() : DeliverySpeed.STANDARD);
         sh.setDeliveryType(option.getDeliveryType() != null ? option.getDeliveryType() : DeliveryType.HOME_DELIVERY);
         sh.setCarrierModeSnapshot(carrier.getMode());
@@ -124,7 +127,9 @@ public class ShippingServiceImpl implements ShippingService {
             sh.setTrackingNumber(buildManualTrackingNumber(carrier));
         }
 
-        return shipmentRepository.save(sh);
+        Shipment savedShipment = shipmentRepository.save(sh);
+        shipmentTrackingService.recordStatusChange(savedShipment, null, savedShipment.getStatus(), "shipping service");
+        return savedShipment;
     }
 
     @Override
@@ -146,6 +151,7 @@ public class ShippingServiceImpl implements ShippingService {
         Optional<Shipment> os = shipmentRepository.findByTrackingNumber(tracking);
         if (os.isPresent()) {
             Shipment s = os.get();
+            ShipmentStatus previousStatus = s.getStatus();
             ShipmentStatus shipmentStatus;
             try {
                 shipmentStatus = ShipmentStatus.valueOf(status.toUpperCase());
@@ -153,25 +159,26 @@ public class ShippingServiceImpl implements ShippingService {
                 shipmentStatus = ShipmentStatus.IN_TRANSIT;
             }
             s.setStatus(shipmentStatus);
-            shipmentRepository.save(s);
+            Shipment savedShipment = shipmentRepository.save(s);
+            shipmentTrackingService.recordStatusChange(savedShipment, previousStatus, shipmentStatus, "carrier webhook");
         }
     }
 
-    private String extractDistrict(Map<String, Object> meta) {
+    private String extractLocation(Map<String, Object> meta) {
         if (meta == null || meta.isEmpty()) {
-            return "Unknown District";
+            return "Unknown Location";
         }
 
-        Object district = meta.get("district");
-        if (district == null) {
-            district = meta.get("shippingDistrict");
+        Object location = meta.get("location");
+        if (location == null) {
+            location = meta.get("shippingLocation");
         }
-        if (district == null) {
-            district = meta.get("customerDistrict");
+        if (location == null) {
+            location = meta.get("district");
         }
 
-        String districtText = district != null ? String.valueOf(district).trim() : "";
-        return districtText.isEmpty() ? "Unknown District" : districtText;
+        String locationText = location != null ? String.valueOf(location).trim() : "";
+        return locationText.isEmpty() ? "Unknown Location" : locationText;
     }
 
     private String buildInitialMetadata(ShippingOption option, Carrier carrier, Map<String, Object> meta) {

@@ -36,4 +36,14 @@ public class AdminController {
         return "/admin/index";
     }
 
+    @RequestMapping(value = {"/returns-refunds", "/return-refund", "/return-refunds", "/returns"})
+    public String returnsRefunds() {
+        return "redirect:/admin/finance/returns";
+    }
+
+    @RequestMapping(value = {"/refunds"})
+    public String refunds() {
+        return "redirect:/admin/finance/refunds";
+    }
+
 }

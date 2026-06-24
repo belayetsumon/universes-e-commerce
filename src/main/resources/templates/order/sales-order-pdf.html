@@ -1,0 +1,335 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <title th:text="'Sales Order ' + ${order.orderCode}">Sales Order PDF</title>
+        <style>
+            @page {
+                size: A4;
+                margin: 16mm 14mm;
+            }
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                color: #172033;
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 11px;
+                line-height: 1.42;
+                margin: 0;
+            }
+            .header {
+                border-bottom: 2px solid #1b5f8f;
+                display: table;
+                margin-bottom: 16px;
+                padding-bottom: 12px;
+                width: 100%;
+            }
+            .header-left,
+            .header-right {
+                display: table-cell;
+                vertical-align: top;
+                width: 50%;
+            }
+            .brand {
+                color: #12324f;
+                font-size: 21px;
+                font-weight: 700;
+                letter-spacing: 0;
+                margin: 0 0 4px;
+            }
+            .document-title {
+                color: #1b5f8f;
+                font-size: 15px;
+                font-weight: 700;
+                margin: 0;
+                text-transform: uppercase;
+            }
+            .muted {
+                color: #65738a;
+            }
+            .right {
+                text-align: right;
+            }
+            .barcode {
+                height: 46px;
+                margin-top: 6px;
+                max-width: 260px;
+            }
+            .qr {
+                height: 82px;
+                width: 82px;
+            }
+            .section {
+                margin-bottom: 13px;
+            }
+            .section-title {
+                background: #eef5fb;
+                border-left: 4px solid #1b5f8f;
+                color: #12324f;
+                font-size: 12px;
+                font-weight: 700;
+                margin: 0 0 7px;
+                padding: 6px 8px;
+                text-transform: uppercase;
+            }
+            .grid {
+                display: table;
+                table-layout: fixed;
+                width: 100%;
+            }
+            .col {
+                display: table-cell;
+                padding-right: 10px;
+                vertical-align: top;
+                width: 50%;
+            }
+            .col:last-child {
+                padding-right: 0;
+            }
+            .info-box {
+                border: 1px solid #d8e0ea;
+                min-height: 92px;
+                padding: 8px;
+            }
+            .label {
+                color: #65738a;
+                display: inline-block;
+                min-width: 92px;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+            th {
+                background: #12324f;
+                color: #ffffff;
+                font-size: 10px;
+                font-weight: 700;
+                padding: 7px 6px;
+                text-align: left;
+            }
+            td {
+                border-bottom: 1px solid #d8e0ea;
+                padding: 6px;
+                vertical-align: top;
+            }
+            .amount {
+                text-align: right;
+                white-space: nowrap;
+            }
+            .status {
+                background: #eef5fb;
+                border: 1px solid #c9ddec;
+                color: #12324f;
+                display: inline-block;
+                font-size: 10px;
+                font-weight: 700;
+                padding: 3px 6px;
+            }
+            .summary {
+                margin-left: auto;
+                width: 42%;
+            }
+            .summary td {
+                border-bottom: 1px solid #d8e0ea;
+            }
+            .summary .grand td {
+                background: #12324f;
+                color: #ffffff;
+                font-size: 12px;
+                font-weight: 700;
+            }
+            .footer {
+                border-top: 1px solid #d8e0ea;
+                color: #65738a;
+                font-size: 10px;
+                margin-top: 18px;
+                padding-top: 8px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="header-left">
+                <h1 class="brand">Universes Ecommerce</h1>
+                <p class="document-title" th:text="${documentTitle}">Sales Order</p>
+                <p class="muted">
+                    Generated for <span th:text="${issuedBy}">Panel</span>
+                    on <span th:text="${issuedAt}">Date</span>
+                </p>
+                <img class="barcode" th:if="${barcodeBase64 != null}" th:src="${barcodeBase64}" alt="Order barcode" />
+            </div>
+            <div class="header-right right">
+                <img class="qr" th:if="${qrBase64 != null}" th:src="${qrBase64}" alt="Order QR" />
+                <p>
+                    <strong>Order:</strong> <span th:text="${order.orderCode}">ORD-0001</span><br />
+                    <strong>Status:</strong> <span th:text="${order.status}">PENDING</span><br />
+                    <strong>Date:</strong> <span th:text="${order.created}">Date</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="grid">
+                <div class="col">
+                    <h2 class="section-title">Customer</h2>
+                    <div class="info-box">
+                        <div><span class="label">Name</span><span th:text="${order.customer != null ? order.customer.firstName + ' ' + order.customer.lastName : '-'}">Customer</span></div>
+                        <div><span class="label">Email</span><span th:text="${order.customer != null ? order.customer.email : '-'}">Email</span></div>
+                        <div><span class="label">Mobile</span><span th:text="${order.customer != null ? order.customer.mobile : '-'}">Mobile</span></div>
+                    </div>
+                </div>
+                <div class="col" th:if="${showVendorDetails}">
+                    <h2 class="section-title">Vendor</h2>
+                    <div class="info-box">
+                        <div><span class="label">Name</span><span th:text="${vendor != null ? vendor.companyName : order.vendorId}">Vendor</span></div>
+                        <div><span class="label">Code</span><span th:text="${vendor != null ? vendor.vendorCode : '-'}">Code</span></div>
+                        <div><span class="label">Vendor ID</span><span th:text="${order.vendorId}">ID</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="grid">
+                <div class="col">
+                    <h2 class="section-title">Billing Address</h2>
+                    <div class="info-box" th:if="${billingAddress != null}">
+                        <div th:text="${billingAddress.firstName + ' ' + billingAddress.lastName}">Name</div>
+                        <div th:text="${billingAddress.company}">Company</div>
+                        <div th:text="${billingAddress.addressLineOne}">Address</div>
+                        <div th:text="${billingAddress.addressLinetwo}">Address</div>
+                        <div>
+                            <span th:text="${billingAddress.city}">City</span>,
+                            <span th:text="${billingAddress.district}">District</span>,
+                            <span th:text="${billingAddress.country}">Country</span>
+                        </div>
+                        <div th:text="${billingAddress.mobile}">Mobile</div>
+                    </div>
+                    <div class="info-box muted" th:if="${billingAddress == null}">No billing address available.</div>
+                </div>
+                <div class="col">
+                    <h2 class="section-title">Shipping Address</h2>
+                    <div class="info-box" th:if="${shippingAddress != null}">
+                        <div th:text="${shippingAddress.firstName + ' ' + shippingAddress.lastName}">Name</div>
+                        <div th:text="${shippingAddress.company}">Company</div>
+                        <div th:text="${shippingAddress.addressLineOne}">Address</div>
+                        <div th:text="${shippingAddress.addressLinetwo}">Address</div>
+                        <div>
+                            <span th:text="${shippingAddress.city}">City</span>,
+                            <span th:text="${shippingAddress.district}">District</span>,
+                            <span th:text="${shippingAddress.country}">Country</span>
+                        </div>
+                        <div th:text="${shippingAddress.mobile}">Mobile</div>
+                    </div>
+                    <div class="info-box muted" th:if="${shippingAddress == null}">No shipping address available.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Product Lines</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Product</th>
+                        <th class="amount">Unit</th>
+                        <th class="amount">Qty</th>
+                        <th class="amount">Discount</th>
+                        <th class="amount">VAT</th>
+                        <th class="amount" th:if="${showInternalFinancials}">Commission</th>
+                        <th class="amount" th:if="${showVendorSettlement}">Vendor</th>
+                        <th class="amount">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="item, status : ${orderItems}">
+                        <td th:text="${status.count}">1</td>
+                        <td>
+                            <strong th:text="${item.title}">Product</strong>
+                            <div class="muted" th:if="${item.variantSummary != null}" th:text="${item.variantSummary}">Variant</div>
+                            <div class="muted">Item ID: <span th:text="${item.id}">1</span></div>
+                        </td>
+                        <td class="amount" th:text="${item.salesPrice}">0</td>
+                        <td class="amount" th:text="${item.quantity}">0</td>
+                        <td class="amount" th:text="${item.discountAmount}">0</td>
+                        <td class="amount" th:text="${item.vatAmount}">0</td>
+                        <td class="amount" th:if="${showInternalFinancials}" th:text="${item.marketPlaceCommissionAmount}">0</td>
+                        <td class="amount" th:if="${showVendorSettlement}" th:text="${item.vendorAmount}">0</td>
+                        <td class="amount" th:text="${item.itemTotal}">0</td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(orderItems)}">
+                        <td th:colspan="${showInternalFinancials ? 9 : (showVendorSettlement ? 8 : 7)}" class="muted">No order items found.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <table class="summary">
+                <tr>
+                    <td>Item Total</td>
+                    <td class="amount" th:text="${itemTotal}">0</td>
+                </tr>
+                <tr>
+                    <td>Discount</td>
+                    <td class="amount" th:text="${totalDiscount}">0</td>
+                </tr>
+                <tr>
+                    <td>VAT</td>
+                    <td class="amount" th:text="${totalVat}">0</td>
+                </tr>
+                <tr>
+                    <td>Packaging</td>
+                    <td class="amount" th:text="${order.packingCharge}">0</td>
+                </tr>
+                <tr>
+                    <td>Shipping</td>
+                    <td class="amount" th:text="${order.deliveryCharge}">0</td>
+                </tr>
+                <tr th:if="${showInternalFinancials}">
+                    <td>Marketplace Commission</td>
+                    <td class="amount" th:text="${totalCommission}">0</td>
+                </tr>
+                <tr th:if="${showVendorSettlement}">
+                    <td>Vendor Settlement</td>
+                    <td class="amount" th:text="${totalVendorAmount}">0</td>
+                </tr>
+                <tr class="grand">
+                    <td>Grand Total</td>
+                    <td class="amount" th:text="${order.grandTotal}">0</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section" th:if="${showOrderHistory}">
+            <h2 class="section-title">Order History</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Changed By</th>
+                        <th>Remark</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="history : ${orderHistory}">
+                        <td th:text="${history.created}">Date</td>
+                        <td><span class="status" th:text="${history.status}">Status</span></td>
+                        <td th:text="${history.orderStatusChanged}">By</td>
+                        <td th:text="${history.remark}">Remark</td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(orderHistory)}">
+                        <td colspan="4" class="muted">No order history found.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            This PDF is generated from the order record in Universes Ecommerce. Verify payment, shipment, and return state in the application before settlement or delivery action.
+        </div>
+    </body>
+</html>

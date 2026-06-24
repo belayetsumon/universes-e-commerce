@@ -30,6 +30,10 @@ and open the template in the editor.
                                th:href="@{/vendor/shipments/edit/{id}(id=${existingShipmentId})}">
                                 Edit Shipment
                             </a>
+                            <a class="btn btn-outline-danger btn-sm"
+                               th:href="@{/vendor-order/orders/{id}/pdf(id=${orderdetails.id})}">
+                                <i class="bi bi-file-earmark-pdf"></i> PDF
+                            </a>
 
                             <a class="btn btn-danger btn-sm float-right" th:href="@{/vendor-order/index}">Close</a>
                         </div>

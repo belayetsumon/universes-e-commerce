@@ -82,13 +82,13 @@ and open the template in the editor.
                             </div>
 
                             <div class="mb-3">
-                                <label  class="form-label">Allowed Districts</label>
-                                <div class="form-check" th:each="district : ${allDistricts}">
+                                <label  class="form-label">Allowed Locations</label>
+                                <div class="form-check" th:each="location : ${allDistricts}">
                                     <input class="form-check-input" type="checkbox"
-                                           th:value="${district}"
+                                           th:value="${location.id}"
                                            th:field="*{allowedDistricts}"
-                                           th:checked="${profile.allowedDistricts != null} ? ${profile.allowedDistricts.contains(district)} : false">
-                                    <label class="form-check-label" th:text="${district.displayName}"></label>
+                                           th:checked="${profile.allowedDistricts != null} ? ${profile.allowedDistricts.contains(location)} : false">
+                                    <label class="form-check-label" th:text="${location.type + ' - ' + location.displayLabel}"></label>
                                 </div>
                             </div>
                             <div class="mb-2 form-check">

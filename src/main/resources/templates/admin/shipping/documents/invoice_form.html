@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section class="mb-4 d-flex justify-content-between align-items-center"><h4 class="mb-0">Create Shipment Invoice</h4><a class="btn btn-danger btn-sm" th:href="@{/admin/shipping-documents/invoices}">Close</a></section>
+        <div class="card"><div class="card-body"><form th:action="@{/admin/shipping-documents/invoices/save}" th:object="${invoice}" method="post" class="row g-3">
+            <div class="col-md-6"><label class="form-label">Shipment</label><select th:field="*{shipment}" class="form-select" required><option value="">Select shipment</option><option th:each="s : ${shipments}" th:value="${s.id}" th:text="${'Shipment #' + s.id + ' / Order ' + s.salesOrderId}"></option></select></div>
+            <div class="col-md-6"><label class="form-label">Invoice Number</label><input th:field="*{invoiceNumber}" class="form-control" placeholder="Auto if blank"/></div>
+            <div class="col-12 text-end"><button class="btn btn-primary" type="submit">Save Snapshot</button></div>
+        </form></div></div>
+    </div>
+</div>

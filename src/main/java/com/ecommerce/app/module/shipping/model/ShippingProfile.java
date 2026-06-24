@@ -4,12 +4,9 @@
  */
 package com.ecommerce.app.module.shipping.model;
 
-import com.ecommerce.app.globalServices.District;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
@@ -74,13 +71,13 @@ public class ShippingProfile {
         return list;
     }
 
-    /* ================= Allowed Districts ================= */
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "shipping_profile_districts",
-            joinColumns = @JoinColumn(name = "profile_id"))
-    @Enumerated(EnumType.STRING)
-    @Column(name = "district")
-    private List<District> allowedDistricts; // Example: ["Dhaka", "Chattogram"]
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "shipping_profile_locations",
+            joinColumns = @JoinColumn(name = "profile_id"),
+            inverseJoinColumns = @JoinColumn(name = "location_id")
+    )
+    private List<ShippingLocation> allowedDistricts = new ArrayList<>();
 
     private boolean active;
 
@@ -109,7 +106,7 @@ public class ShippingProfile {
     public ShippingProfile() {
     }
 
-    public ShippingProfile(Long id, Long vendorId, String name, ProfileType type, List<Carrier> allowedCarriers, List<District> allowedDistricts, boolean active, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
+    public ShippingProfile(Long id, Long vendorId, String name, ProfileType type, List<Carrier> allowedCarriers, List<ShippingLocation> allowedDistricts, boolean active, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
         this.id = id;
         this.vendorId = vendorId;
         this.name = name;
@@ -163,11 +160,11 @@ public class ShippingProfile {
         this.allowedCarriers = allowedCarriers;
     }
 
-    public List<District> getAllowedDistricts() {
+    public List<ShippingLocation> getAllowedDistricts() {
         return allowedDistricts;
     }
 
-    public void setAllowedDistricts(List<District> allowedDistricts) {
+    public void setAllowedDistricts(List<ShippingLocation> allowedDistricts) {
         this.allowedDistricts = allowedDistricts;
     }
 

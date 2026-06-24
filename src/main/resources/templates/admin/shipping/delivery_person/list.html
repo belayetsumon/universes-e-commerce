@@ -1,21 +1,102 @@
-<table>
-    <thead>
-        <tr>
-            <th>ID</th><th>Name</th><th>Phone</th><th>Vendor</th><th>Status</th><th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr th:each="d : ${list}">
-            <td th:text="${d.id}"></td>
-            <td th:text="${d.name}"></td>
-            <td th:text="${d.phone}"></td>
-            <td th:text="${d.vendorId}"></td>
-            <td th:text="${d.active ? 'Active' : 'Inactive'}"></td>
-            <td>
-                <a th:href="@{'/delivery-person/edit/' + ${d.id}}">Edit</a>
-                <a th:href="@{'/delivery-person/delete/' + ${d.id}}" onclick="return confirm('Delete?')">Delete</a>
-            </td>
-        </tr>
-    </tbody>
-</table>
-<a href="/delivery-person/create">+ Add New</a>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-1"><i class="bi bi-person-badge me-2 text-primary"></i>Delivery Persons</h4>
+                    <div class="text-muted small">Shipping and fulfillment staff assigned to vendor deliveries.</div>
+                </div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a th:href="@{/admin/index}" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Delivery Persons</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card alert alert-primary mb-0">
+                    <div class="card-body">
+                        <strong>Total Delivery Persons</strong>
+                        <div class="fs-5" th:text="${list != null ? list.size() : 0}">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card alert alert-success mb-0">
+                    <div class="card-body">
+                        <strong>Active</strong>
+                        <div class="fs-5" th:text="${activeCount}">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card alert alert-secondary mb-0">
+                    <div class="card-body">
+                        <strong>Inactive</strong>
+                        <div class="fs-5" th:text="${inactiveCount}">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Delivery Person List</strong>
+                <a class="btn btn-sm btn-primary" th:href="@{/delivery-person/create}">
+                    <i class="bi bi-plus-circle me-1"></i>Add New
+                </a>
+            </div>
+            <div class="card-body table-responsive">
+                <table class="table table-bordered table-hover table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Vendor</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(list)}">
+                            <td colspan="6" class="text-center">No delivery person records found.</td>
+                        </tr>
+                        <tr th:each="d, status : ${list}">
+                            <td th:text="${status.count}">1</td>
+                            <td>
+                                <strong th:text="${d.name}">Name</strong>
+                                <div class="text-muted small" th:text="${d.id != null ? 'ID ' + d.id : 'New'}">ID</div>
+                            </td>
+                            <td th:text="${d.phone}">Phone</td>
+                            <td>
+                                <span th:text="${vendorLookup[d.vendorId] != null ? vendorLookup[d.vendorId].companyName : d.vendorId}">Vendor</span>
+                                <div class="text-muted small" th:if="${vendorLookup[d.vendorId] != null}" th:text="${vendorLookup[d.vendorId].vendorCode}">Vendor Code</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-success" th:if="${d.active}">Active</span>
+                                <span class="badge bg-secondary" th:if="${!d.active}">Inactive</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a class="btn btn-outline-primary" th:href="@{/delivery-person/edit/{id}(id=${d.id})}">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <form th:action="@{/delivery-person/delete/{id}(id=${d.id})}" method="post" onsubmit="return confirm('Delete this delivery person?')">
+                                        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                        <button type="submit" class="btn btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

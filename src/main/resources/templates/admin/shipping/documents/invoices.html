@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section class="mb-4 d-flex justify-content-between align-items-center"><h4 class="mb-0"><i class="bi bi-receipt me-2 text-primary"></i>Shipment Invoices</h4><a class="btn btn-success btn-sm" th:href="@{/admin/shipping-documents/invoices/create}">Add Invoice</a></section>
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div class="card"><div class="card-body table-responsive"><table class="table table-bordered table-sm align-middle">
+            <thead><tr><th>#</th><th>Invoice</th><th>Shipment</th><th>Shipping</th><th>COD Fee</th><th>Vendor Payable</th><th>Marketplace Payable</th><th>Actions</th></tr></thead>
+            <tbody><tr th:if="${#lists.isEmpty(invoices)}"><td colspan="8" class="text-center text-muted">No invoices found.</td></tr>
+                <tr th:each="i, stat : ${invoices}"><td th:text="${stat.count}"></td><td th:text="${i.invoiceNumber}"></td><td th:text="${i.shipment != null ? i.shipment.id : '-'}"></td><td th:text="${i.shippingCost}"></td><td th:text="${i.codFeeAmount}"></td><td th:text="${i.vendorPayableAmount}"></td><td th:text="${i.marketplacePayableAmount}"></td><td><form method="post" th:action="@{/admin/shipping-documents/invoices/delete/{id}(id=${i.id})}" onsubmit="return confirm('Delete this invoice?')"><input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /><button class="btn btn-sm btn-danger">Delete</button></form></td></tr>
+            </tbody></table></div></div>
+    </div>
+</div>

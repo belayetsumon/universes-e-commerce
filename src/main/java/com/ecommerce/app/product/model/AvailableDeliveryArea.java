@@ -4,24 +4,22 @@
  */
 package com.ecommerce.app.product.model;
 
-import com.ecommerce.app.globalServices.District;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import com.ecommerce.app.module.shipping.model.ShippingLocation;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -54,27 +52,25 @@ public class AvailableDeliveryArea {
     @Column(nullable = false)
     private AvailableDeliveryAreaMode mode = AvailableDeliveryAreaMode.SPECIFIC_AREA;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = true)
-    private District district;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "district_location_id")
+    private ShippingLocation district;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(
-            name = "available_delivery_area_selected_districts",
-            joinColumns = @JoinColumn(name = "available_delivery_area_id")
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "available_delivery_area_selected_locations",
+            joinColumns = @JoinColumn(name = "available_delivery_area_id"),
+            inverseJoinColumns = @JoinColumn(name = "location_id")
     )
-    @Column(name = "district", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private List<District> selectedDistricts = new ArrayList<>();
+    private List<ShippingLocation> selectedDistricts = new ArrayList<>();
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(
-            name = "available_delivery_area_excluded_districts",
-            joinColumns = @JoinColumn(name = "available_delivery_area_id")
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "available_delivery_area_excluded_locations",
+            joinColumns = @JoinColumn(name = "available_delivery_area_id"),
+            inverseJoinColumns = @JoinColumn(name = "location_id")
     )
-    @Column(name = "district", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private List<District> excludedDistricts = new ArrayList<>();
+    private List<ShippingLocation> excludedDistricts = new ArrayList<>();
 
     @Lob
     private String description;
@@ -99,7 +95,7 @@ public class AvailableDeliveryArea {
     public AvailableDeliveryArea() {
     }
 
-    public AvailableDeliveryArea(Long id, Product product, AvailableDeliveryAreaMode mode, District district, List<District> selectedDistricts, List<District> excludedDistricts, String description, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
+    public AvailableDeliveryArea(Long id, Product product, AvailableDeliveryAreaMode mode, ShippingLocation district, List<ShippingLocation> selectedDistricts, List<ShippingLocation> excludedDistricts, String description, String createdBy, LocalDateTime created, String modifiedBy, LocalDateTime modified) {
         this.id = id;
         this.product = product;
         this.mode = mode;
@@ -137,27 +133,27 @@ public class AvailableDeliveryArea {
         this.mode = mode;
     }
 
-    public District getDistrict() {
+    public ShippingLocation getDistrict() {
         return district;
     }
 
-    public void setDistrict(District district) {
+    public void setDistrict(ShippingLocation district) {
         this.district = district;
     }
 
-    public List<District> getSelectedDistricts() {
+    public List<ShippingLocation> getSelectedDistricts() {
         return selectedDistricts;
     }
 
-    public void setSelectedDistricts(List<District> selectedDistricts) {
+    public void setSelectedDistricts(List<ShippingLocation> selectedDistricts) {
         this.selectedDistricts = selectedDistricts;
     }
 
-    public List<District> getExcludedDistricts() {
+    public List<ShippingLocation> getExcludedDistricts() {
         return excludedDistricts;
     }
 
-    public void setExcludedDistricts(List<District> excludedDistricts) {
+    public void setExcludedDistricts(List<ShippingLocation> excludedDistricts) {
         this.excludedDistricts = excludedDistricts;
     }
 
@@ -202,26 +198,30 @@ public class AvailableDeliveryArea {
     }
 
     @Transient
-    public boolean matchesDistrict(District customerDistrict) {
-        if (customerDistrict == null) {
+    public boolean matchesLocation(ShippingLocation customerLocation) {
+        if (customerLocation == null) {
             return false;
         }
 
-        // 2026-04-22: Prefer enum-driven delivery rules and keep legacy description text as fallback.
+        // Prefer structured location rules and keep description text as fallback for older records.
         if (mode == AvailableDeliveryAreaMode.ALL_AREA) {
             return true;
         }
 
         if (mode == AvailableDeliveryAreaMode.ALL_AREA_EXCEPT) {
-            return excludedDistricts == null || !excludedDistricts.contains(customerDistrict);
+            return excludedDistricts == null || excludedDistricts.stream()
+                    .filter(java.util.Objects::nonNull)
+                    .noneMatch(location -> location.isSameOrAncestorOf(customerLocation));
         }
 
         if (mode == AvailableDeliveryAreaMode.SPECIFIC_AREA) {
             if (selectedDistricts != null && !selectedDistricts.isEmpty()) {
-                return selectedDistricts.contains(customerDistrict);
+                return selectedDistricts.stream()
+                        .filter(java.util.Objects::nonNull)
+                        .anyMatch(location -> location.isSameOrAncestorOf(customerLocation));
             }
             if (district != null) {
-                return district == customerDistrict;
+                return district.isSameOrAncestorOf(customerLocation);
             }
         }
 
@@ -230,8 +230,9 @@ public class AvailableDeliveryArea {
         }
 
         String normalizedDescription = description.trim();
-        return normalizedDescription.equalsIgnoreCase(customerDistrict.name())
-                || normalizedDescription.equalsIgnoreCase(customerDistrict.getDisplayName())
+        return normalizedDescription.equalsIgnoreCase(customerLocation.getCode())
+                || normalizedDescription.equalsIgnoreCase(customerLocation.getName())
+                || normalizedDescription.equalsIgnoreCase(customerLocation.getDisplayLabel())
                 || normalizedDescription.equalsIgnoreCase("All");
     }
 
@@ -245,19 +246,19 @@ public class AvailableDeliveryArea {
             String excluded = excludedDistricts == null || excludedDistricts.isEmpty()
                     ? "None"
                     : excludedDistricts.stream()
-                            .map(District::getDisplayName)
+                            .map(ShippingLocation::getDisplayLabel)
                             .collect(Collectors.joining(", "));
             return "All Area Except: " + excluded;
         }
 
         if (selectedDistricts != null && !selectedDistricts.isEmpty()) {
             return selectedDistricts.stream()
-                    .map(District::getDisplayName)
+                    .map(ShippingLocation::getDisplayLabel)
                     .collect(Collectors.joining(", "));
         }
 
         if (district != null) {
-            return district.getDisplayName();
+            return district.getDisplayLabel();
         }
 
         return description;

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
+    <div layout:fragment="main_content">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+                <h4 class="mb-1">Delivery Persons</h4>
+                <p class="text-muted mb-0">Manage the delivery staff available for your shipment assignments.</p>
+            </div>
+            <a th:href="@{/vendor/delivery-persons/new}" class="btn btn-success btn-sm">
+                <i class="bi bi-plus-circle"></i> Add Delivery Person
+            </a>
+        </div>
+
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="text-muted small">Vendor</div>
+                        <div class="fw-semibold" th:text="${activeVendor != null ? activeVendor.companyName : '-'}">Vendor</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="text-muted small">Active</div>
+                        <div class="fs-5 fw-semibold text-success" th:text="${activeCount}">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="text-muted small">Inactive</div>
+                        <div class="fs-5 fw-semibold text-secondary" th:text="${inactiveCount}">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="tablesdata" class="table table-bordered table-hover table-striped align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(deliveryPersons)}">
+                                <td colspan="6" class="text-center text-muted">No delivery persons found.</td>
+                            </tr>
+                            <tr th:each="person : ${deliveryPersons}">
+                                <td th:text="${person.id}">1</td>
+                                <td>
+                                    <span class="fw-semibold" th:text="${person.name}">Name</span>
+                                </td>
+                                <td th:text="${person.phone}">Phone</td>
+                                <td>
+                                    <span th:if="${person.active}" class="badge bg-success">Active</span>
+                                    <span th:if="${!person.active}" class="badge bg-secondary">Inactive</span>
+                                </td>
+                                <td th:text="${person.created != null ? person.created : '-'}">-</td>
+                                <td class="text-end">
+                                    <div class="d-flex gap-2 justify-content-end flex-wrap">
+                                        <a th:href="@{/vendor/delivery-persons/edit/{id}(id=${person.id})}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </a>
+                                        <form th:action="@{/vendor/delivery-persons/delete/{id}(id=${person.id})}" method="post"
+                                              onsubmit="return confirm('Delete this delivery person?')">
+                                            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

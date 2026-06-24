@@ -7,13 +7,17 @@ package com.ecommerce.app.vendor.controller;
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.ProductImage;
 import com.ecommerce.app.product.ripository.ProductImageRepository;
+import com.ecommerce.app.product.ripository.ProductRepository;
 import com.ecommerce.app.product.services.ProductImageService;
 import com.ecommerce.app.services.StorageProperties;
+import com.ecommerce.app.vendor.model.Vendorprofile;
+import com.ecommerce.app.vendor.user.componant.VendorUserContext;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import javax.imageio.ImageIO;
 import net.coobird.thumbnailator.Thumbnails;
@@ -46,6 +50,10 @@ public class Vendor_ProductImageController {
 
     @Autowired
     ProductImageService productImageService;
+    @Autowired
+    ProductRepository productRepository;
+    @Autowired
+    VendorUserContext vendorUserContext;
 
     @PostMapping("/upload")
     public ResponseEntity<String> save(@ModelAttribute ProductImage productImage,
@@ -56,8 +64,18 @@ public class Vendor_ProductImageController {
         List<String> allowedExtensions = Arrays.asList("jpg", "jpeg", "png");
 
         try {
+            Product existingProduct = product != null && product.getId() != null
+                    ? productRepository.findById(product.getId()).orElse(null)
+                    : null;
+            if (!isOwnedByActiveVendor(existingProduct)) {
+                return ResponseEntity.ok("<div class='alert alert-danger'>Product not found for the active vendor.</div>");
+            }
             // Check file extension
-            String fileExtension = FilenameUtils.getExtension(productimg.getOriginalFilename()).toLowerCase();
+            String originalFilename = productimg.getOriginalFilename();
+            if (productimg.isEmpty() || originalFilename == null) {
+                return ResponseEntity.ok("<div class='alert alert-danger'>Invalid file format. Only JPG and PNG files are allowed.</div>");
+            }
+            String fileExtension = FilenameUtils.getExtension(originalFilename).toLowerCase();
 
             if (!allowedExtensions.contains(fileExtension)) {
                 return ResponseEntity.ok("<div class='alert alert-danger'>Invalid file format. Only JPG and PNG files are allowed.</div>");
@@ -76,10 +94,13 @@ public class Vendor_ProductImageController {
 
             // Process and save the image
             BufferedImage originalImage = ImageIO.read(productimg.getInputStream());
+            if (originalImage == null) {
+                return ResponseEntity.ok("<div class='alert alert-danger'>Invalid image file.</div>");
+            }
             Thumbnails.of(originalImage).forceSize(800, 600).toFile(serverFile);
 
             // Save file details to the database
-            productImage.setProduct(product);
+            productImage.setProduct(existingProduct);
             productImage.setProductImageName(filename);
             productImageRepository.save(productImage);
 
@@ -87,7 +108,7 @@ public class Vendor_ProductImageController {
             return ResponseEntity.ok("<div class='alert alert-success'>Successfully uploaded: " + filename + "</div>"
             );
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             // Log error and return error message
             System.out.println("Error saving file: " + e.getMessage());
             return ResponseEntity.ok("<div class='alert alert-danger'>Error saving file: " + e.getMessage() + "</div>");
@@ -103,6 +124,9 @@ public class Vendor_ProductImageController {
             Optional<ProductImage> productImage = productImageService.findById(productId);
 
             if (productImage.isPresent()) {
+                if (!isOwnedByActiveVendor(productImage.get().getProduct())) {
+                    return ResponseEntity.ok("<div class='alert alert-danger'>Product image not found for the active vendor.</div>");
+                }
                 // Get the image associated with the product
                 String imageName = productImage.get().getProductImageName();
 
@@ -134,8 +158,20 @@ public class Vendor_ProductImageController {
 
     @RequestMapping("/list/{id}")
     public String list(Model model, @PathVariable Long id) {
-        model.addAttribute("img_list", productImageRepository.findByProductIdOrderByIdDesc(id));
+        Product product = productRepository.findById(id).orElse(null);
+        model.addAttribute("img_list", isOwnedByActiveVendor(product)
+                ? productImageRepository.findByProductIdOrderByIdDesc(id)
+                : List.of());
         return "product/fragments/productImageTable::productImageTable";
+    }
+
+    private boolean isOwnedByActiveVendor(Product product) {
+        Vendorprofile vendorprofile = vendorUserContext.getActiveVendor();
+        return product != null
+                && vendorprofile != null
+                && vendorprofile.getId() != null
+                && product.getVendorprofile() != null
+                && Objects.equals(product.getVendorprofile().getId(), vendorprofile.getId());
     }
 
 }

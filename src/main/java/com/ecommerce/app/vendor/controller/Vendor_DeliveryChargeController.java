@@ -7,8 +7,12 @@ package com.ecommerce.app.vendor.controller;
 import com.ecommerce.app.product.model.DeliveryCharge;
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.ripository.DeliveryChargeRepository;
+import com.ecommerce.app.product.ripository.ProductRepository;
+import com.ecommerce.app.vendor.model.Vendorprofile;
+import com.ecommerce.app.vendor.user.componant.VendorUserContext;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import java.util.Objects;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -30,11 +34,18 @@ public class Vendor_DeliveryChargeController {
 
     @Autowired
     DeliveryChargeRepository deliveryChargeRepository;
+    @Autowired
+    ProductRepository productRepository;
+    @Autowired
+    VendorUserContext vendorUserContext;
 
     @GetMapping("/add/{pid}")
     public String add(Model model, @PathVariable Long pid) {
-        Product product = new Product();
-        product.setId(pid);
+        Product product = productRepository.findById(pid).orElse(null);
+        if (!isOwnedByActiveVendor(product)) {
+            model.addAttribute("errorMessage", "Product not found for the active vendor.");
+            return "vendor/product/deliveryoption/delivery_charge";
+        }
 
         DeliveryCharge deliveryCharge = new DeliveryCharge();
         deliveryCharge.setProduct(product);
@@ -44,11 +55,15 @@ public class Vendor_DeliveryChargeController {
 
     @PostMapping("/save")
     @ResponseBody
-    public void save(@Valid DeliveryCharge deliveryCharge, HttpServletResponse response) {
+    public String save(@Valid DeliveryCharge deliveryCharge, HttpServletResponse response) {
+        if (!isOwnedByActiveVendor(deliveryCharge != null ? deliveryCharge.getProduct() : null)) {
+            return "<div class='alert alert-danger'>Product not found for the active vendor.</div>";
+        }
 
         deliveryChargeRepository.save(deliveryCharge);
 
         response.setHeader("HX-Refresh", "true");
+        return "";
     }
 
     @GetMapping("/edit/{id}")
@@ -56,6 +71,10 @@ public class Vendor_DeliveryChargeController {
         Optional<DeliveryCharge> deliveryChargeopt = deliveryChargeRepository.findById(id);
 
         DeliveryCharge deliveryCharge = deliveryChargeopt.orElse(null);
+        if (deliveryCharge == null || !isOwnedByActiveVendor(deliveryCharge.getProduct())) {
+            model.addAttribute("errorMessage", "Delivery charge not found for the active vendor.");
+            return "vendor/product/deliveryoption/delivery_charge";
+        }
 
         model.addAttribute("deliveryCharge", deliveryCharge);
 
@@ -67,17 +86,32 @@ public class Vendor_DeliveryChargeController {
     public String deleteUnit(@PathVariable Long id, HttpServletResponse response) {
         String message;
         String messageType;
-        if (!deliveryChargeRepository.existsById(id)) {
+        Optional<DeliveryCharge> existing = deliveryChargeRepository.findById(id);
+        if (existing.isEmpty()) {
             message = "Error: Item not found!";
             messageType = "danger"; // Error message type
+        } else if (!isOwnedByActiveVendor(existing.get().getProduct())) {
+            message = "Error: Item not found for the active vendor!";
+            messageType = "danger";
         } else {
             deliveryChargeRepository.deleteById(id);
             message = "Deleted successfully!";
             messageType = "success"; // Success message type
         }
-        deliveryChargeRepository.deleteById(id);
         response.setHeader("HX-Refresh", "true");
         return "<div id='messageContainer' class='alert alert-" + messageType + "'>" + message + "</div>";
+    }
+
+    private boolean isOwnedByActiveVendor(Product product) {
+        if (product != null && product.getId() != null && product.getVendorprofile() == null) {
+            product = productRepository.findById(product.getId()).orElse(product);
+        }
+        Vendorprofile vendorprofile = vendorUserContext.getActiveVendor();
+        return product != null
+                && vendorprofile != null
+                && vendorprofile.getId() != null
+                && product.getVendorprofile() != null
+                && Objects.equals(product.getVendorprofile().getId(), vendorprofile.getId());
     }
 
 }

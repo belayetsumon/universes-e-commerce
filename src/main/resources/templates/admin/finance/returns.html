@@ -1,0 +1,69 @@
+<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4><i class="bi bi-arrow-return-left me-2 text-primary"></i>Return Report</h4>
+                <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/finance/refunds}">Refund Report</a>
+            </div>
+        </section>
+
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-3"><div class="card"><div class="card-body"><strong>Total Returns</strong><div class="fs-5" th:text="${report.totalReturnRows}">0</div></div></div></div>
+            <div class="col-md-3"><div class="card"><div class="card-body"><strong>Requested</strong><div class="fs-5" th:text="${report.requestedCount}">0</div></div></div></div>
+            <div class="col-md-3"><div class="card"><div class="card-body"><strong>Returned</strong><div class="fs-5" th:text="${report.returnedCount}">0</div></div></div></div>
+            <div class="col-md-3"><div class="card"><div class="card-body"><strong>Refund Value</strong><div class="fs-5" th:text="${report.totalRefundAmount}">0.00</div></div></div></div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Filters</strong>
+                <a class="btn btn-sm btn-outline-secondary" th:href="@{/admin/finance/returns}">Reset</a>
+            </div>
+            <div class="card-body">
+                <form class="row g-3 align-items-end" method="get" th:action="@{/admin/finance/returns}">
+                    <div class="col-md-3">
+                        <label class="form-label" for="status">Return Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">All statuses</option>
+                            <option th:each="statusOption : ${statuses}" th:if="${statusOption.name() != 'NONE'}" th:value="${statusOption}" th:selected="${selectedStatus == statusOption}" th:text="${statusOption}">RETURN_REQUESTED</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3"><label class="form-label" for="fromDate">From Date</label><input class="form-control" type="date" id="fromDate" name="fromDate" th:value="${fromDate}"></div>
+                    <div class="col-md-3"><label class="form-label" for="toDate">To Date</label><input class="form-control" type="date" id="toDate" name="toDate" th:value="${toDate}"></div>
+                    <div class="col-md-3"><button class="btn btn-primary w-100" type="submit">Apply Filter</button></div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><strong>Return Details</strong></div>
+            <div class="card-body table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th><th>Requested</th><th>Returned</th><th>Order</th><th>Customer</th><th>Vendor</th><th>Product</th><th>Status</th><th>Qty</th><th>Refund</th><th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(report.rows)}"><td colspan="11" class="text-center">No return records found.</td></tr>
+                        <tr th:each="row, stat : ${report.rows}">
+                            <td th:text="${stat.count}">1</td>
+                            <td th:text="${row.returnRequestedAt != null ? row.returnRequestedAt : '-'}">-</td>
+                            <td th:text="${row.returnedAt != null ? row.returnedAt : '-'}">-</td>
+                            <td><a th:if="${row.orderId != null}" th:href="@{/admin-customer/order-details/{oid}(oid=${row.orderId})}" th:text="${row.orderCode}">ORD</a></td>
+                            <td><span th:text="${row.customerName}">Customer</span><div class="text-muted small" th:text="${row.customerEmail}">email</div></td>
+                            <td><span th:text="${row.vendorName}">Vendor</span><div class="text-muted small" th:text="${row.vendorId != null ? 'ID ' + row.vendorId : '-'}">-</div></td>
+                            <td><span th:text="${row.productTitle}">Product</span><div class="text-muted small" th:if="${not #strings.isEmpty(row.variantSummary)}" th:text="${row.variantSummary}">Variant</div></td>
+                            <td><span class="badge bg-warning text-dark" th:if="${row.returnStatus != null && row.returnStatus.name() == 'RETURN_REQUESTED'}" th:text="${row.returnStatus}"></span><span class="badge bg-success" th:if="${row.returnStatus != null && row.returnStatus.name() == 'RETURNED'}" th:text="${row.returnStatus}"></span></td>
+                            <td th:text="${row.quantity}">0</td>
+                            <td th:text="${row.refundAmount}">0.00</td>
+                            <td><div th:if="${not #strings.isEmpty(row.requestRemark)}"><strong>Request:</strong> <span th:text="${row.requestRemark}"></span></div><div th:if="${not #strings.isEmpty(row.processedRemark)}"><strong>Processed:</strong> <span th:text="${row.processedRemark}"></span></div></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -98,7 +98,7 @@ public class PackagingRateController {
         return "admin/shipping/packagingrate/create_package_rate";
     }
 
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public String delete(@PathVariable Long id, RedirectAttributes redirect) {
         try {
             service.delete(id);

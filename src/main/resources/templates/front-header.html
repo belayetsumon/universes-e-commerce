@@ -19,31 +19,20 @@
                         <a href="#" class="nav-link dropdown-toggle text-decoration-none"
                            data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-translate"></i>
-                            <span th:text="${currentShippingDistrict != null ? currentShippingDistrict : 'Select Shipping District'}"></span>
+                            <span th:text="${currentShippingLocation != null ? currentShippingLocation.displayLabel : 'Select Shipping Location'}"></span>
                         </a>
 
                         <ul class="dropdown-menu">
                             <th:block th:each="d : ${shippinglocations}">
                                 <li>
-                                    <button class="dropdown-item district-btn"
+                                    <button class="dropdown-item location-btn"
                                             type="button"
-                                            th:data-district="${d}">
-                                        [[${d}]]
+                                            th:data-location="${d.id}">
+                                        [[${d.displayLabel}]]
                                     </button>
                                 </li>
                             </th:block>
                         </ul>
-
-                        <!--                        <ul class="dropdown-menu">
-                                                    <th:block th:each="d : ${shippinglocations}">
-                                                        <li>
-                                                            <form method="post" th:action="@{/district/select2}">
-                                                                <input type="hidden" name="district" th:value="${d}" />
-                                                                <button class="dropdown-item" type="submit" th:text="${d}"></button>
-                                                            </form>
-                                                        </li>
-                                                    </th:block>
-                                                </ul>-->
                     </div>
 
                     <!-- Currency Dropdown -->
@@ -80,14 +69,15 @@
 </section>
 <header>
 
-    <nav class="navbar navbar-expand-md navbar-light bg-white py-3">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
+    <nav class="navbar navbar-expand-md navbar-light bg-white py-2 storefront-header-nav">
+        <div class="container-fluid d-flex justify-content-between align-items-center storefront-header-row">
 
             <!-- 🔹 Left: Logo -->
-            <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center storefront-header-brand-wrap">
 
-                <a class="navbar-brand" th:href="@{/}">
-                    <picture th:if="${session.globalSettings.resolvedSiteLogoDesktop != null}">
+                <a class="navbar-brand storefront-brand" th:href="@{/}">
+                    <picture class="storefront-logo-picture"
+                             th:if="${session.globalSettings.resolvedSiteLogoDesktop != null}">
                         <source media="(max-width: 767.98px)"
                                 th:srcset="@{${session.globalSettings.resolvedSiteLogoMobile}}">
                         <img th:src="@{${session.globalSettings.resolvedSiteLogoDesktop}}"
@@ -95,6 +85,7 @@
                              class="storefront-logo-image">
                     </picture>
                     <span th:if="${session.globalSettings.resolvedSiteLogoDesktop == null}"
+                          class="storefront-brand-name"
                           th:text="${session.globalSettings.siteName}">
                         Store Name
                     </span>
@@ -102,7 +93,7 @@
             </div>
 
             <!-- 🔹 Center: Search -->
-            <div class="flex-fill mx-3">
+            <div class="flex-fill mx-3 storefront-header-search">
                 <div class="input-group">
                     <input type="text" class="form-control" placeholder="Search" aria-label="Search">
                     <button class="btn btn-danger" type="submit">
@@ -112,7 +103,7 @@
             </div>
 
             <!-- 🔹 Right: Icons & Login/Register -->
-            <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-3 storefront-header-actions">
 
                 <!-- Wishlist -->
                 <a class="nav-link d-flex align-items-center" th:href="@{/wishlist/index}">

@@ -116,7 +116,7 @@ public class CarrierController {
         return "admin/shipping/carriers/form";
     }
 
-    @GetMapping("/delete/{uuid}")
+    @PostMapping("/delete/{uuid}")
     public String delete(@PathVariable String uuid, RedirectAttributes redirectAttributes) {
 
         try {

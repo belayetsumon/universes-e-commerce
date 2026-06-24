@@ -45,6 +45,7 @@ public class OrderItemService {
                 orderItem.get("salesOrder").get("id").alias("salesOrderId"),
                 orderItem.get("vendorId").alias("vendorId"),
                 orderItem.get("productid").alias("productid"),
+                orderItem.get("variantSummary").alias("variantSummary"),
                 orderItem.get("quantity").alias("quantity"),
                 orderItem.get("salesPrice").alias("salesPrice"),
                 orderItem.get("discountRate").alias("discountRate"),

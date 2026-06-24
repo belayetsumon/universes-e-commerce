@@ -1,0 +1,46 @@
+<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="front-layout-inner-customar-page">
+    <div layout:fragment="main_content">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong><i class="bi bi-arrow-return-left me-1"></i> My Returns</strong>
+                <a class="btn btn-sm btn-outline-primary" th:href="@{/customerorder/refunds}">My Refunds</a>
+            </div>
+            <div class="card-body">
+                <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+                <form class="row g-3 align-items-end mb-4" method="get" th:action="@{/customerorder/returns}">
+                    <div class="col-md-3">
+                        <label class="form-label" for="status">Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">All statuses</option>
+                            <option th:each="statusOption : ${statuses}" th:if="${statusOption.name() != 'NONE'}" th:value="${statusOption}" th:selected="${selectedStatus == statusOption}" th:text="${statusOption}">RETURN_REQUESTED</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3"><label class="form-label" for="fromDate">From Date</label><input class="form-control" type="date" id="fromDate" name="fromDate" th:value="${fromDate}"></div>
+                    <div class="col-md-3"><label class="form-label" for="toDate">To Date</label><input class="form-control" type="date" id="toDate" name="toDate" th:value="${toDate}"></div>
+                    <div class="col-md-3"><button class="btn btn-primary w-100" type="submit">Filter</button></div>
+                </form>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead><tr><th>#</th><th>Requested</th><th>Returned</th><th>Order</th><th>Product</th><th>Status</th><th>Qty</th><th>Refund</th><th>Action</th></tr></thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(report.rows)}"><td colspan="9" class="text-center">No return records found.</td></tr>
+                            <tr th:each="row, stat : ${report.rows}">
+                                <td th:text="${stat.count}">1</td>
+                                <td th:text="${row.returnRequestedAt != null ? row.returnRequestedAt : '-'}">-</td>
+                                <td th:text="${row.returnedAt != null ? row.returnedAt : '-'}">-</td>
+                                <td th:text="${row.orderCode}">ORD</td>
+                                <td><span th:text="${row.productTitle}">Product</span><div class="text-muted small" th:if="${not #strings.isEmpty(row.variantSummary)}" th:text="${row.variantSummary}">Variant</div></td>
+                                <td><span class="badge bg-warning text-dark" th:if="${row.returnStatus != null && row.returnStatus.name() == 'RETURN_REQUESTED'}" th:text="${row.returnStatus}"></span><span class="badge bg-success" th:if="${row.returnStatus != null && row.returnStatus.name() == 'RETURNED'}" th:text="${row.returnStatus}"></span></td>
+                                <td th:text="${row.quantity}">0</td>
+                                <td th:text="${row.refundAmount}">0.00</td>
+                                <td><a class="btn btn-sm btn-primary" th:if="${row.orderId != null}" th:href="@{/customerorder/details/{oid}(oid=${row.orderId})}">Open Order</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

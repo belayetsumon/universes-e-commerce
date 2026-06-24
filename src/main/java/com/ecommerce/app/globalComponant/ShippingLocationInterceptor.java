@@ -15,7 +15,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
  * @author libertyerp_local
  */
 @Component
-public class DistrictInterceptor implements HandlerInterceptor {
+public class ShippingLocationInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request,
@@ -23,7 +23,10 @@ public class DistrictInterceptor implements HandlerInterceptor {
             Object handler) throws Exception {
 
         HttpSession session = request.getSession();
-        Object district = session.getAttribute("shippingdistrict");
+        Object location = session.getAttribute("shippingLocation");
+        if (location == null) {
+            location = session.getAttribute("shippingLocationId");
+        }
 
         String uri = request.getRequestURI();
 
@@ -36,9 +39,8 @@ public class DistrictInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        // If district is missing -> store target URL & redirect
-        if (district == null) {
-            session.setAttribute("redirectAfterDistrict", uri);
+        if (location == null) {
+            session.setAttribute("redirectAfterLocation", uri);
             response.sendRedirect("/district/select-district");
             return false;
         }

@@ -26,7 +26,9 @@ and open the template in the editor.
                             </div>
                             <div class="col-sm-7 text-end">
                                 <div class="btn-group ">
-                                    <a class="btn btn-success btn-sm float-right"  th:href="@{/admin-customer/pdf/{oid}(oid=${orderdetails.id})}" >PDF</a>
+                                    <a class="btn btn-success btn-sm float-right" th:href="@{/admin-customer/orders/{id}/pdf(id=${orderdetails.id})}">
+                                        <i class="bi bi-file-earmark-pdf"></i> PDF
+                                    </a>
                                     <a th:href="@{/admin-customer/orderlist}" type="button" class="btn  btn-danger btn-sm"><i class="bi bi-x-circle"></i> Close</a></div>
                             </div>
                         </div>

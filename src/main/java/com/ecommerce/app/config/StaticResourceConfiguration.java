@@ -5,7 +5,7 @@
  */
 package com.ecommerce.app.config;
 
-import com.ecommerce.app.globalComponant.DistrictInterceptor;
+import com.ecommerce.app.globalComponant.ShippingLocationInterceptor;
 import com.ecommerce.app.module.user.componant.LoginActivityInterceptor;
 import com.ecommerce.app.services.StorageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ public class StaticResourceConfiguration implements WebMvcConfigurer {
     StorageProperties properties;
 
     @Autowired
-    private DistrictInterceptor districtInterceptor;
+    private ShippingLocationInterceptor shippingLocationInterceptor;
 
     @Autowired
     private LoginActivityInterceptor loginActivityInterceptor;
@@ -37,7 +37,7 @@ public class StaticResourceConfiguration implements WebMvcConfigurer {
 
 //    @Override
 //    public void addInterceptors(InterceptorRegistry registry) {
-//        registry.addInterceptor(districtInterceptor)
+//        registry.addInterceptor(shippingLocationInterceptor)
 //                .addPathPatterns("/cart/**"); // apply to all paths
 //    }
     @Override

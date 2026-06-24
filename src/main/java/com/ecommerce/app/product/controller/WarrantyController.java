@@ -74,7 +74,6 @@ public class WarrantyController {
             message = "Deleted successfully!";
             messageType = "success"; // Success message type
         }
-        warrantyRepository.deleteById(id);
         response.setHeader("HX-Refresh", "true");
         return "<div id='messageContainer' class='alert alert-" + messageType + "'>" + message + "</div>";
     }

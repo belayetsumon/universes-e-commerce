@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
+    <div layout:fragment="main_content">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+                <h4 class="mb-1" th:text="${deliveryPerson.id != null ? 'Edit Delivery Person' : 'Add Delivery Person'}">Add Delivery Person</h4>
+                <p class="text-muted mb-0">Keep your local delivery team ready for shipment assignment.</p>
+            </div>
+            <a th:href="@{/vendor/delivery-persons}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <form th:action="@{/vendor/delivery-persons}" th:object="${deliveryPerson}" method="post">
+            <input type="hidden" th:field="*{id}">
+            <input type="hidden" th:field="*{vendorId}">
+            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <div class="card">
+                <div class="card-header bg-white">
+                    <strong><i class="bi bi-person-badge"></i> Delivery Person Details</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-lg-6">
+                            <label class="form-label">Vendor</label>
+                            <input class="form-control" th:value="${activeVendor != null ? activeVendor.companyName : deliveryPerson.vendorId}" readonly>
+                            <div class="form-text">Delivery person will be saved under your active vendor account.</div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <label class="form-label" for="name">Name</label>
+                            <input id="name" class="form-control" th:field="*{name}" required placeholder="Delivery person name">
+                        </div>
+
+                        <div class="col-lg-6">
+                            <label class="form-label" for="phone">Phone</label>
+                            <input id="phone" class="form-control" th:field="*{phone}" required placeholder="Phone number">
+                        </div>
+
+                        <div class="col-lg-6 d-flex align-items-end">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="active" th:field="*{active}">
+                                <label class="form-check-label" for="active">Active for shipment assignment</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white d-flex justify-content-end gap-2 flex-wrap">
+                    <a th:href="@{/vendor/delivery-persons}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Save
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

@@ -19,11 +19,8 @@ import com.ecommerce.app.order.repository.OrderHistoryRepository;
 import com.ecommerce.app.order.repository.SalesOrderRepository;
 import com.ecommerce.app.order.repository.ShippingAddressRepository;
 import com.ecommerce.app.order.services.OrderItemService;
+import com.ecommerce.app.order.services.SalesOrderPdfService;
 import com.ecommerce.app.order.services.SalesOrderService;
-import com.ecommerce.app.services.BarcodeService;
-import com.google.zxing.BarcodeFormat;
-import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
-import java.io.ByteArrayOutputStream;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,8 +35,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 
 /**
  *
@@ -75,9 +70,8 @@ public class AdminCustomerController {
     OrderItemService orderItemService;
 
     @Autowired
-    BarcodeService barcodeService;
-    @Autowired
-    private SpringTemplateEngine templateEngine;
+    SalesOrderPdfService salesOrderPdfService;
+
     @Autowired
     private ShipmentService shipmentService;
 
@@ -176,44 +170,14 @@ public class AdminCustomerController {
         return "redirect:/admin-customer/order-details/" + orderId;
     }
 
-    @GetMapping("/orders/{id}/pdf")
+    @GetMapping({"/orders/{id}/pdf", "/pdf/{id}"})
     public ResponseEntity<byte[]> orderPdf(@PathVariable Long id, SalesOrder salesOrder) throws Exception {
-
-        salesOrder = salesOrderRepository.getReferenceById(id);
-
-        Context ctx = new Context();
-
-        ctx.setVariable("order", salesOrder);
-
-        ctx.setVariable("company", salesOrder.getVendorId());
-
-// Logo as Base64
-//        ctx.setVariable("companyLogoBase64", toBase64(salesOrder.getVendorId().getLogoPath()));
-// Barcode + QR
-        ctx.setVariable("barcodeBase64", barcodeService.generateBarcodeBase64(salesOrder.getOrderCode(), BarcodeFormat.CODE_128, 400, 60));
-
-        ctx.setVariable("qrBase64", barcodeService.generateBarcodeBase64("https://example.com/orders/" + salesOrder.getOrderCode(), BarcodeFormat.QR_CODE, 150, 150));
-
-        String html = templateEngine.process("sales-order-pdf", ctx);
-
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-
-        PdfRendererBuilder builder = new PdfRendererBuilder();
-
-        builder.withHtmlContent(html, "");
-
-        builder.toStream(os);
-
-        builder.run();
-
-        byte[] pdfBytes = os.toByteArray();
+        salesOrder = salesOrderService.getOrderOrThrow(id);
+        byte[] pdfBytes = salesOrderPdfService.generateForAdmin(salesOrder);
 
         HttpHeaders headers = new HttpHeaders();
-
         headers.setContentType(MediaType.APPLICATION_PDF);
-
-        headers.setContentDispositionFormData("attachment", salesOrder.getOrderCode() + ".pdf");
-
+        headers.setContentDispositionFormData("attachment", salesOrderPdfService.filename(salesOrder));
         headers.setContentLength(pdfBytes.length);
 
         return ResponseEntity.ok().headers(headers).body(pdfBytes);

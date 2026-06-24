@@ -52,7 +52,7 @@ and open the template in the editor.
                                     <th>Vendor</th>
                                     <th>Name</th>
                                     <th>Type</th>
-                                    <th>Allowed Districts</th>
+                                    <th>Allowed Locations</th>
                                     <th>Allowed Carriers</th>
                                     <th>Active</th>
                                     <th>Actions</th>
@@ -66,9 +66,8 @@ and open the template in the editor.
 
                                     <td th:text="${p.type}"></td>
 
-                                    <!-- Display districts nicely -->
                                     <td>
-                                        <span th:each="district : ${p.allowedDistricts}" class="badge bg-info me-1" th:text="${district}"></span>
+                                        <span th:each="location : ${p.allowedDistricts}" class="badge bg-info me-1" th:text="${location.displayLabel}"></span>
                                     </td>
 
                                     <!-- Display carriers nicely -->
@@ -78,7 +77,11 @@ and open the template in the editor.
                                     <td th:text="${p.active}"></td>
                                     <td>
                                         <a th:href="@{'/admin/shipping-profiles/edit/' + ${p.id}}" class="btn btn-sm btn-primary">Edit</a>
-                                        <a th:href="@{'/admin/shipping-profiles/delete/' + ${p.id}}" class="btn btn-sm btn-danger">Delete</a>
+                                        <form th:action="@{/admin/shipping-profiles/delete/{id}(id=${p.id})}" method="post" class="d-inline"
+                                              onsubmit="return confirm('Delete this shipping profile?')">
+                                            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                        </form>
                                     </td>
                                 </tr>
                             </tbody>

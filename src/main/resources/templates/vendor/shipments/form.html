@@ -51,7 +51,7 @@
                                 <option th:each="order : ${salesOrders}"
                                         th:value="${order['id']}"
                                         th:text="${order['orderCode'] + ' | ID: ' + order['id']}"
-                                        th:attr="data-district=${order['district']},data-shipping-cost=${order['shippingCost']},data-grand-total=${order['grandTotal']}"></option>
+                                        th:attr="data-location=${order['district']},data-shipping-cost=${order['shippingCost']},data-grand-total=${order['grandTotal']}"></option>
                             </select>
                             <div class="form-text">Only shipment-ready orders for your active vendor are listed.</div>
                             <div class="text-danger small" th:if="${#fields.hasErrors('salesOrderId')}" th:errors="*{salesOrderId}"></div>
@@ -65,14 +65,14 @@
                         </div>
 
                         <div class="col-lg-3">
-                            <label class="form-label">District</label>
-                            <input th:field="*{district}" id="districtInput" class="form-control" readonly required />
+                            <label class="form-label">Location</label>
+                            <input th:field="*{district}" id="locationInput" class="form-control" readonly required />
                             <div class="text-danger small" th:if="${#fields.hasErrors('district')}" th:errors="*{district}"></div>
                         </div>
 
                         <div class="col-lg-4">
                             <label class="form-label">Carrier</label>
-                            <select th:field="*{carrier}" class="form-select" id="carrierSelect" required>
+                            <select th:field="*{carrier}" class="form-select" id="carrierSelect">
                                 <option value="">Select carrier</option>
                                 <option th:each="c : ${carriers}"
                                         th:value="${c.id}"
@@ -91,6 +91,17 @@
                             </select>
                             <div class="form-text">Optional if the carrier handles delivery directly.</div>
                             <div class="text-danger small" th:if="${#fields.hasErrors('deliveryPerson')}" th:errors="*{deliveryPerson}"></div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <label class="form-label">Pickup Address</label>
+                            <select th:field="*{pickupAddress}" class="form-select">
+                                <option value="">Select pickup address</option>
+                                <option th:each="p : ${pickupAddresses}" th:value="${p.id}"
+                                        th:text="${p.name + ' | ' + p.district.displayLabel}"></option>
+                            </select>
+                            <div class="form-text">Default pickup address is selected automatically when configured.</div>
+                            <div class="text-danger small" th:if="${#fields.hasErrors('pickupAddress')}" th:errors="*{pickupAddress}"></div>
                         </div>
 
                         <div class="col-lg-4">
@@ -255,7 +266,7 @@
             document.addEventListener('DOMContentLoaded', function () {
                 const salesOrderSelect = document.getElementById('salesOrderIdSelect');
                 const carrierSelect = document.getElementById('carrierSelect');
-                const districtInput = document.getElementById('districtInput');
+                const locationInput = document.getElementById('locationInput');
                 const shippingCostInput = document.getElementById('shippingCostInput');
                 const totalOrderAmountInput = document.getElementById('totalOrderAmountInput');
                 const productNetAmountInput = document.getElementById('productNetAmountInput');
@@ -287,12 +298,12 @@
                         return;
                     }
                     const selectedOption = salesOrderSelect.options[salesOrderSelect.selectedIndex];
-                    const district = selectedOption ? (selectedOption.getAttribute('data-district') || '') : '';
+                    const location = selectedOption ? (selectedOption.getAttribute('data-location') || '') : '';
                     const shippingCost = selectedOption ? (selectedOption.getAttribute('data-shipping-cost') || '') : '';
                     const grandTotal = selectedOption ? (selectedOption.getAttribute('data-grand-total') || '') : '';
 
-                    if (districtInput) {
-                        districtInput.value = district;
+                    if (locationInput) {
+                        locationInput.value = location;
                     }
                     if (shippingCostInput && shippingCost !== '') {
                         shippingCostInput.value = Number.parseFloat(shippingCost || '0').toFixed(2);

@@ -8,7 +8,10 @@ import com.ecommerce.app.module.shipping.model.Shipment;
 import com.ecommerce.app.module.shipping.model.ShipmentStatus;
 import com.ecommerce.app.module.shipping.services.CarrierService;
 import com.ecommerce.app.module.shipping.services.DeliveryPersonService;
+import com.ecommerce.app.module.shipping.services.PickupAddressService;
 import com.ecommerce.app.module.shipping.services.ShipmentService;
+import com.ecommerce.app.module.shipping.services.ShipmentTrackingService;
+import com.ecommerce.app.module.shipping.services.ShippingDocumentService;
 import com.ecommerce.app.order.model.SalesOrder;
 import com.ecommerce.app.order.repository.SalesOrderRepository;
 import com.ecommerce.app.order.services.SalesOrderService;
@@ -51,19 +54,28 @@ public class Vendor_ShipmentController {
     private final SalesOrderService salesOrderService;
     private final SalesOrderRepository salesOrderRepository;
     private final VendorUserContext vendorUserContext;
+    private final ShipmentTrackingService shipmentTrackingService;
+    private final PickupAddressService pickupAddressService;
+    private final ShippingDocumentService shippingDocumentService;
 
     public Vendor_ShipmentController(ShipmentService shipmentService,
             CarrierService carrierService,
             DeliveryPersonService deliveryPersonService,
             SalesOrderService salesOrderService,
             SalesOrderRepository salesOrderRepository,
-            VendorUserContext vendorUserContext) {
+            VendorUserContext vendorUserContext,
+            ShipmentTrackingService shipmentTrackingService,
+            PickupAddressService pickupAddressService,
+            ShippingDocumentService shippingDocumentService) {
         this.shipmentService = shipmentService;
         this.carrierService = carrierService;
         this.deliveryPersonService = deliveryPersonService;
         this.salesOrderService = salesOrderService;
         this.salesOrderRepository = salesOrderRepository;
         this.vendorUserContext = vendorUserContext;
+        this.shipmentTrackingService = shipmentTrackingService;
+        this.pickupAddressService = pickupAddressService;
+        this.shippingDocumentService = shippingDocumentService;
     }
 
     // List shipments for vendor
@@ -72,12 +84,16 @@ public class Vendor_ShipmentController {
         Vendorprofile activeVendor = vendorUserContext.getActiveVendor();
         if (activeVendor == null || activeVendor.getId() == null) {
             model.addAttribute("shipments", List.of());
+            model.addAttribute("trackingEventsByShipment", Map.of());
             model.addAttribute("errorMessage", "Vendor context not found.");
             return "vendor/shipments/list";
         }
 
         List<Shipment> shipments = shipmentService.getByVendor(activeVendor.getId());
         model.addAttribute("shipments", shipments);
+        model.addAttribute("trackingEventsByShipment", shipmentTrackingService.getEventsByShipmentIds(
+                shipments.stream().map(Shipment::getId).filter(Objects::nonNull).toList()
+        ));
         return "vendor/shipments/list";
     }
 
@@ -96,6 +112,7 @@ public class Vendor_ShipmentController {
         shipment.setVendorId(activeVendor.getId());
         shipment.setStatus(ShipmentStatus.PENDING);
         shipment.setShippingCost(BigDecimal.ZERO);
+        shipment.setPickupAddress(pickupAddressService.getDefaultForVendor(activeVendor.getId()));
 
         if (orderId != null) {
             String prefillError = prefillShipmentFromVendorOrder(shipment, activeVendor.getId(), orderId, true);
@@ -105,6 +122,7 @@ public class Vendor_ShipmentController {
         }
 
         model.addAttribute("shipment", shipment);
+        model.addAttribute("trackingEvents", List.of());
         populateFormOptions(model, activeVendor.getId(), shipment.getSalesOrderId());
         return "vendor/shipments/form";
     }
@@ -135,6 +153,12 @@ public class Vendor_ShipmentController {
             result.rejectValue("deliveryPerson", "error.shipment", "Selected delivery person does not belong to the active vendor");
         }
 
+        if (shipment.getPickupAddress() != null
+                && shipment.getPickupAddress().getVendorId() != null
+                && !Objects.equals(shipment.getPickupAddress().getVendorId(), activeVendor.getId())) {
+            result.rejectValue("pickupAddress", "error.shipment", "Selected pickup address does not belong to the active vendor");
+        }
+
         if (result.hasErrors()) {
             populateFormOptions(model, activeVendor.getId(), shipment.getSalesOrderId());
             return "vendor/shipments/form";
@@ -158,11 +182,40 @@ public class Vendor_ShipmentController {
     public String collectCod(@PathVariable Long id,
             @RequestParam("amount") BigDecimal amount,
             RedirectAttributes redirectAttributes) {
+        Vendorprofile activeVendor = vendorUserContext.getActiveVendor();
+        if (activeVendor == null || activeVendor.getId() == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Vendor context not found.");
+            return "redirect:/vendor-order/index";
+        }
+
         try {
-            shipmentService.collectPayment(id, amount);
+            shipmentService.collectVendorPayment(activeVendor.getId(), id, amount);
             redirectAttributes.addFlashAttribute("successMessage", "COD payment collected successfully.");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/vendor/shipments";
+    }
+
+    @PostMapping("/{id}/generate-label")
+    public String generateLabel(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        Vendorprofile activeVendor = vendorUserContext.getActiveVendor();
+        if (activeVendor == null || activeVendor.getId() == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Vendor context not found.");
+            return "redirect:/vendor-order/index";
+        }
+
+        Shipment shipment = shipmentService.getById(id);
+        if (shipment == null || !Objects.equals(shipment.getVendorId(), activeVendor.getId())) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Shipment not found for the active vendor.");
+            return "redirect:/vendor/shipments";
+        }
+
+        try {
+            shippingDocumentService.generateLabelForShipment(id, "Vendor Panel");
+            redirectAttributes.addFlashAttribute("successMessage", "Shipping label generated and linked with shipment.");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Could not generate shipping label: " + ex.getMessage());
         }
         return "redirect:/vendor/shipments";
     }
@@ -184,12 +237,13 @@ public class Vendor_ShipmentController {
 
         shipmentService.syncCodFromOrder(shipment);
         model.addAttribute("shipment", shipment);
+        model.addAttribute("trackingEvents", shipmentTrackingService.getEvents(shipment.getId()));
         populateFormOptions(model, activeVendor.getId(), shipment.getSalesOrderId());
         return "vendor/shipments/form";
     }
 
     // Delete shipment
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         Vendorprofile activeVendor = vendorUserContext.getActiveVendor();
         if (activeVendor == null || activeVendor.getId() == null) {
@@ -210,6 +264,7 @@ public class Vendor_ShipmentController {
     private void populateFormOptions(Model model, Long vendorId, Long includeOrderId) {
         model.addAttribute("carriers", carrierService.getAll());
         model.addAttribute("deliveryPersons", deliveryPersonService.getByVendor(vendorId));
+        model.addAttribute("pickupAddresses", pickupAddressService.getByVendor(vendorId));
         model.addAttribute("salesOrders", buildSalesOrderOptions(vendorId, includeOrderId));
         model.addAttribute("activeVendor", vendorUserContext.getActiveVendor());
     }

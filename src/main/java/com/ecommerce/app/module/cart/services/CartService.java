@@ -72,6 +72,8 @@ public class CartService {
 
     public boolean addToCart(String productUuid, String catalogVariantUuid, BigDecimal quantity, HttpSession session) {
 
+        catalogVariantUuid = normalizeUuid(catalogVariantUuid);
+
         if (productUuid == null || productUuid.isBlank()
                 || quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
             return false;
@@ -310,6 +312,8 @@ public class CartService {
     }
 
     public boolean updateQuantityInCart(String productUuid, String catalogVariantUuid, BigDecimal quantity, HttpSession session) {
+        catalogVariantUuid = normalizeUuid(catalogVariantUuid);
+
         if (productUuid == null || productUuid.isBlank()
                 || quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
             return false;
@@ -412,14 +416,19 @@ public class CartService {
 
     // Helper to check if product exists in cart
     private int exists(String productUuid, String catalogVariantUuid, List<CartItem> cart) {
+        catalogVariantUuid = normalizeUuid(catalogVariantUuid);
         for (int i = 0; i < cart.size(); i++) {
             CartItem item = cart.get(i);
             if (Objects.equals(item.getProductUuid(), productUuid)
-                    && Objects.equals(item.getCatalogVariantUuid(), catalogVariantUuid)) {
+                    && Objects.equals(normalizeUuid(item.getCatalogVariantUuid()), catalogVariantUuid)) {
                 return i;
             }
         }
         return -1;
+    }
+
+    private String normalizeUuid(String uuid) {
+        return uuid == null || uuid.isBlank() ? null : uuid.trim();
     }
 
     public BigDecimal subtotal() {

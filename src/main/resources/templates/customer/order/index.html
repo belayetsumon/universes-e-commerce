@@ -80,6 +80,10 @@ and open the template in the editor.
                                                th:href="@{/customerorder/details/{oid}(oid=${orderlists.orderId})}">
                                                 Details
                                             </a>
+                                            <a class="btn btn-sm btn-outline-danger ms-1"
+                                               th:href="@{/customerorder/orders/{id}/pdf(id=${orderlists.orderId})}">
+                                                <i class="bi bi-file-earmark-pdf"></i> PDF
+                                            </a>
                                             <a class="btn btn-sm btn-info ms-1"
                                                th:if="${emiPlanByOrderId != null and #maps.containsKey(emiPlanByOrderId, orderlists.orderId)}"
                                                th:href="@{/customer-meritten-emi/details/{planId}(planId=${emiPlanByOrderId[orderlists.orderId]})}">

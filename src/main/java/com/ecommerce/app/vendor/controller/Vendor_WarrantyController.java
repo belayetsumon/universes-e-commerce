@@ -6,9 +6,13 @@ package com.ecommerce.app.vendor.controller;
 
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.Warranty;
+import com.ecommerce.app.product.ripository.ProductRepository;
 import com.ecommerce.app.product.ripository.WarrantyRepository;
+import com.ecommerce.app.vendor.model.Vendorprofile;
+import com.ecommerce.app.vendor.user.componant.VendorUserContext;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import java.util.Objects;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -30,11 +34,18 @@ public class Vendor_WarrantyController {
 
     @Autowired
     WarrantyRepository warrantyRepository;
+    @Autowired
+    ProductRepository productRepository;
+    @Autowired
+    VendorUserContext vendorUserContext;
 
     @GetMapping("/add/{pid}")
     public String add(Model model, @PathVariable Long pid) {
-        Product product = new Product();
-        product.setId(pid);
+        Product product = productRepository.findById(pid).orElse(null);
+        if (!isOwnedByActiveVendor(product)) {
+            model.addAttribute("errorMessage", "Product not found for the active vendor.");
+            return "vendor/product/deliveryoption/warranty";
+        }
         Warranty warranty = new Warranty();
         warranty.setProduct(product);
         model.addAttribute("warranty", warranty);
@@ -43,11 +54,15 @@ public class Vendor_WarrantyController {
 
     @PostMapping("/save")
     @ResponseBody
-    public void save(@Valid Warranty warranty, HttpServletResponse response) {
+    public String save(@Valid Warranty warranty, HttpServletResponse response) {
+        if (!isOwnedByActiveVendor(warranty != null ? warranty.getProduct() : null)) {
+            return "<div class='alert alert-danger'>Product not found for the active vendor.</div>";
+        }
 
         warrantyRepository.save(warranty);
 
         response.setHeader("HX-Refresh", "true");
+        return "";
     }
 
     @GetMapping("/edit/{id}")
@@ -55,6 +70,10 @@ public class Vendor_WarrantyController {
         Optional<Warranty> warrantyopt = warrantyRepository.findById(id);
 
         Warranty warranty = warrantyopt.orElse(null);
+        if (warranty == null || !isOwnedByActiveVendor(warranty.getProduct())) {
+            model.addAttribute("errorMessage", "Warranty not found for the active vendor.");
+            return "vendor/product/deliveryoption/warranty";
+        }
 
         model.addAttribute("warranty", warranty);
 
@@ -66,17 +85,32 @@ public class Vendor_WarrantyController {
     public String deleteUnit(@PathVariable Long id, HttpServletResponse response) {
         String message;
         String messageType;
-        if (!warrantyRepository.existsById(id)) {
+        Optional<Warranty> existing = warrantyRepository.findById(id);
+        if (existing.isEmpty()) {
             message = "Error: Item not found!";
             messageType = "danger"; // Error message type
+        } else if (!isOwnedByActiveVendor(existing.get().getProduct())) {
+            message = "Error: Item not found for the active vendor!";
+            messageType = "danger";
         } else {
             warrantyRepository.deleteById(id);
             message = "Deleted successfully!";
             messageType = "success"; // Success message type
         }
-        warrantyRepository.deleteById(id);
         response.setHeader("HX-Refresh", "true");
         return "<div id='messageContainer' class='alert alert-" + messageType + "'>" + message + "</div>";
+    }
+
+    private boolean isOwnedByActiveVendor(Product product) {
+        if (product != null && product.getId() != null && product.getVendorprofile() == null) {
+            product = productRepository.findById(product.getId()).orElse(product);
+        }
+        Vendorprofile vendorprofile = vendorUserContext.getActiveVendor();
+        return product != null
+                && vendorprofile != null
+                && vendorprofile.getId() != null
+                && product.getVendorprofile() != null
+                && Objects.equals(product.getVendorprofile().getId(), vendorprofile.getId());
     }
 
 }

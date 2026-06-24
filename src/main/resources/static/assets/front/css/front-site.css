@@ -1541,10 +1541,68 @@ and open the template in the editor.
     font-size: 12px;
 }
 
+.storefront-header-nav.navbar {
+    min-height: 72px;
+}
+
+.storefront-header-row {
+    gap: 1rem;
+    flex-wrap: nowrap;
+}
+
+.storefront-header-brand-wrap {
+    flex: 0 0 auto;
+    min-width: 0;
+}
+
+.storefront-brand.navbar-brand {
+    display: inline-flex;
+    align-items: center;
+    max-width: 220px;
+    min-height: 52px;
+    height: auto;
+    line-height: 1;
+    padding: 0;
+    margin-right: 0;
+    text-decoration: none;
+}
+
+.storefront-logo-picture {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+}
+
 .storefront-logo-image {
-    height: 50px;
+    display: block;
+    height: auto;
     width: auto;
+    max-height: 52px;
+    max-width: 180px;
     object-fit: contain;
+    object-position: left center;
+}
+
+.storefront-brand-name {
+    display: block;
+    max-width: 200px;
+    min-width: 0;
+    color: #1f2937;
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+}
+
+.storefront-header-search {
+    min-width: 240px;
+}
+
+.storefront-header-actions {
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    min-width: max-content;
 }
 
 .storefront-cart-dropdown-menu {
@@ -1572,4 +1630,75 @@ and open the template in the editor.
 
 .facebook-pixel-fallback {
     display: none;
+}
+
+@media (max-width: 991.98px) {
+    .storefront-header-row {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .storefront-brand.navbar-brand {
+        max-width: 180px;
+        min-height: 48px;
+    }
+
+    .storefront-logo-image {
+        max-height: 48px;
+        max-width: 160px;
+    }
+
+    .storefront-brand-name {
+        max-width: 170px;
+        font-size: 1.05rem;
+    }
+
+    .storefront-header-search {
+        order: 3;
+        flex: 0 0 100%;
+        min-width: 100%;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    .storefront-header-actions {
+        flex: 1 1 auto;
+        min-width: 0;
+        gap: 0.65rem !important;
+    }
+
+    .storefront-header-actions .nav-link {
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .storefront-brand.navbar-brand {
+        max-width: 160px;
+        min-height: 44px;
+    }
+
+    .storefront-logo-image {
+        max-height: 42px;
+        max-width: 142px;
+    }
+
+    .storefront-brand-name {
+        max-width: 150px;
+        font-size: 1rem;
+    }
+
+    .storefront-header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .storefront-header-actions .nav-link {
+        font-size: 0.88rem;
+    }
+
+    .storefront-cart-dropdown-menu {
+        min-width: min(92vw, 350px);
+    }
 }

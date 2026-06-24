@@ -376,7 +376,12 @@ public class ProductController {
             @PathVariable Long id,
             @RequestParam(value = "tab", required = false) String activeTab,
             Product product,
-            ProductImage productImage) {
+            ProductImage productImage,
+            RedirectAttributes redirectAttributes) {
+        if (!productRepository.existsById(id)) {
+            redirectAttributes.addFlashAttribute("message", "Product not found.");
+            return "redirect:/product/index";
+        }
         populateProductDetailsModel(model, id, null, normalizeDetailsTab(activeTab));
         return "product/product_details";
     }
@@ -414,8 +419,12 @@ public class ProductController {
     }
 
     @RequestMapping("/edit/{id}")
-    public String edit(Model model, @PathVariable Long id, Product product) {
+    public String edit(Model model, @PathVariable Long id, Product product, RedirectAttributes redirectAttributes) {
         Product existingProduct = productRepository.findById(id).orElse(null);
+        if (existingProduct == null) {
+            redirectAttributes.addFlashAttribute("message", "Product not found.");
+            return "redirect:/product/index";
+        }
         model.addAttribute("product", existingProduct);
         loadProductFormData(model);
         Users userss = new Users();
@@ -432,9 +441,15 @@ public class ProductController {
     public String delete(Model model, @PathVariable Long id, Product product, RedirectAttributes redirectAttributes) {
 
         product = productRepository.findById(id).orElse(null);
-        File file = new File(properties.getRootPath() + File.separator + product.getImageName());
+        if (product == null) {
+            redirectAttributes.addFlashAttribute("message", "Product not found.");
+            return "redirect:/product/index";
+        }
 
-        file.delete();
+        if (product.getImageName() != null && !product.getImageName().isBlank()) {
+            File file = new File(properties.getRootPath() + File.separator + product.getImageName());
+            file.delete();
+        }
 
         productRepository.deleteById(id);
 

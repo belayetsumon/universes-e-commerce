@@ -4,12 +4,13 @@
  */
 package com.ecommerce.app.module.shipping.controller;
 
-import com.ecommerce.app.globalServices.District;
 import com.ecommerce.app.module.shipping.model.CarrierRate;
 import com.ecommerce.app.module.shipping.model.DeliverySpeed;
 import com.ecommerce.app.module.shipping.model.DeliveryType;
 import com.ecommerce.app.module.shipping.repository.CarrierRateRepository;
 import com.ecommerce.app.module.shipping.repository.CarrierRepository;
+import com.ecommerce.app.module.shipping.repository.ShippingZoneRepository;
+import com.ecommerce.app.module.shipping.services.ShippingLocationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -35,6 +36,10 @@ public class CarrierRateController {
     private CarrierRateRepository rateRepo;
     @Autowired
     private CarrierRepository carrierRepo;
+    @Autowired
+    private ShippingZoneRepository zoneRepo;
+    @Autowired
+    private ShippingLocationService locationService;
 
     @GetMapping("/list")
     public String list(Model model) {
@@ -59,6 +64,11 @@ public class CarrierRateController {
                 && carrierRate.getEstimatedMinDays() > carrierRate.getEstimatedMaxDays()) {
             result.rejectValue("estimatedMaxDays", "carrierRate.estimatedMaxDays.invalid",
                     "Estimated max days must be greater than or equal to estimated min days");
+        }
+        if (carrierRate.getZone() == null
+                && (carrierRate.getDistrict() == null || carrierRate.getDistrict().isEmpty())) {
+            result.rejectValue("district", "carrierRate.coverage.required",
+                    "Select a shipping zone or at least one covered location.");
         }
 
         if (result.hasErrors()) {
@@ -92,12 +102,13 @@ public class CarrierRateController {
 
     private void populateFormOptions(Model model) {
         model.addAttribute("carriers", carrierRepo.findAll());
-        model.addAttribute("districts", District.values());
+        model.addAttribute("zones", zoneRepo.findByActiveTrueOrderByPriorityAscNameAsc());
+        model.addAttribute("districts", locationService.getActiveLocations());
         model.addAttribute("speeds", DeliverySpeed.values());
         model.addAttribute("types", DeliveryType.values());
     }
 
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             rateRepo.deleteById(id);

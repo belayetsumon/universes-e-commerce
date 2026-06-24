@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section class="mb-4 d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="mb-1"><i class="bi bi-sliders me-2 text-primary"></i>Shipping Rules</h4>
+                <div class="text-muted small">Carrier, COD, extra fee, and priority controls for checkout quotes.</div>
+            </div>
+            <a class="btn btn-success btn-sm" th:href="@{/admin/shipping-rules/create}"><i class="bi bi-plus-circle"></i> Add Rule</a>
+        </section>
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+        <div class="card"><div class="card-body table-responsive">
+            <table class="table table-bordered table-striped table-sm align-middle">
+                <thead><tr><th>#</th><th>Name</th><th>Action</th><th>Vendor</th><th>Carrier</th><th>Location</th><th>Weight</th><th>Order Amount</th><th>Priority</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(rules)}"><td colspan="11" class="text-center text-muted">No rules found.</td></tr>
+                    <tr th:each="r, stat : ${rules}">
+                        <td th:text="${stat.count}"></td>
+                        <td><span class="fw-semibold" th:text="${r.name}"></span><small class="d-block text-muted" th:text="${r.message}"></small></td>
+                        <td th:text="${r.action}"></td>
+                        <td th:text="${r.vendorId != null ? r.vendorId : 'All'}"></td>
+                        <td th:text="${r.carrierCode != null and !#strings.isEmpty(r.carrierCode) ? r.carrierCode : 'All'}"></td>
+                        <td th:text="${r.district != null ? r.district.displayLabel : 'All'}"></td>
+                        <td th:text="${(r.minWeight != null ? r.minWeight : '-') + ' / ' + (r.maxWeight != null ? r.maxWeight : '-')}"></td>
+                        <td th:text="${(r.minOrderAmount != null ? r.minOrderAmount : '-') + ' / ' + (r.maxOrderAmount != null ? r.maxOrderAmount : '-')}"></td>
+                        <td th:text="${r.priority}"></td>
+                        <td><span class="badge" th:classappend="${r.active} ? ' bg-success' : ' bg-secondary'" th:text="${r.active ? 'Active' : 'Inactive'}"></span></td>
+                        <td>
+                            <a class="btn btn-sm btn-primary" th:href="@{/admin/shipping-rules/edit/{id}(id=${r.id})}">Edit</a>
+                            <form class="d-inline" method="post" th:action="@{/admin/shipping-rules/delete/{id}(id=${r.id})}" onsubmit="return confirm('Delete this rule?')">
+                                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div></div>
+    </div>
+</div>

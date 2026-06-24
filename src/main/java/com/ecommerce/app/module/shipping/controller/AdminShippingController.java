@@ -4,18 +4,19 @@
  */
 package com.ecommerce.app.module.shipping.controller;
 
-import com.ecommerce.app.globalServices.District;
 import com.ecommerce.app.module.shipping.model.Shipment;
 import com.ecommerce.app.module.shipping.repository.CarrierRepository;
 import com.ecommerce.app.module.shipping.repository.DeliveryPersonRepository;
 import com.ecommerce.app.module.shipping.repository.ShipmentRepository;
 import com.ecommerce.app.module.shipping.services.ShipmentService;
+import com.ecommerce.app.module.shipping.services.ShipmentTrackingService;
+import com.ecommerce.app.module.shipping.services.PickupAddressService;
+import com.ecommerce.app.module.shipping.services.ShippingDocumentService;
 import com.ecommerce.app.order.model.SalesOrder;
 import com.ecommerce.app.order.repository.SalesOrderRepository;
 import com.ecommerce.app.vendor.services.VendorprofileService;
 import jakarta.validation.Valid;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,14 +54,24 @@ public class AdminShippingController {
     private SalesOrderRepository salesOrderRepository;
     @Autowired
     private ShipmentService shipmentService;
+    @Autowired
+    private ShipmentTrackingService shipmentTrackingService;
+    @Autowired
+    private PickupAddressService pickupAddressService;
+    @Autowired
+    private ShippingDocumentService shippingDocumentService;
 
     @GetMapping("/list")
     public String list(Model model) {
         try {
             List<Shipment> shipments = shipmentService.getAll();
             model.addAttribute("shipments", shipments);
+            model.addAttribute("trackingEventsByShipment", shipmentTrackingService.getEventsByShipmentIds(
+                    shipments.stream().map(Shipment::getId).filter(Objects::nonNull).toList()
+            ));
         } catch (Exception ex) {
             model.addAttribute("shipments", List.of());
+            model.addAttribute("trackingEventsByShipment", Map.of());
             model.addAttribute("errorMessage", "Runtime error while loading shipments: " + ex.getMessage());
         }
         return "admin/shipping/shipment_list";
@@ -70,6 +81,7 @@ public class AdminShippingController {
     public String newForm(@RequestParam(name = "orderId", required = false) Long orderId, Model model) {
         Shipment shipment = new Shipment();
         model.addAttribute("shipment", shipment);
+        model.addAttribute("trackingEvents", List.of());
         try {
             if (orderId != null) {
                 String prefillError = prefillShipmentFromOrder(shipment, orderId, true);
@@ -95,6 +107,7 @@ public class AdminShippingController {
             }
             shipmentService.syncCodFromOrder(shipment);
             model.addAttribute("shipment", shipment);
+            model.addAttribute("trackingEvents", shipmentTrackingService.getEvents(shipment.getId()));
             populateFormOptions(model, shipment.getSalesOrderId());
         } catch (Exception ex) {
             redirectAttrs.addFlashAttribute("errorMessage", "Runtime error while loading shipment: " + ex.getMessage());
@@ -110,6 +123,7 @@ public class AdminShippingController {
             Model model) {
         Shipment existingShipment = shipment.getId() != null ? shipmentService.getById(shipment.getId()) : null;
         SalesOrder salesOrder = validateSelectedOrder(shipment, existingShipment, result, true);
+        validateShipmentHandler(shipment, result);
 
         if (result.hasErrors()) {
             populateFormOptions(model, shipment.getSalesOrderId());
@@ -127,7 +141,7 @@ public class AdminShippingController {
         return "redirect:/admin/shipments/list";
     }
 
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttrs) {
         try {
             shipmentRepo.deleteById(id);
@@ -140,20 +154,31 @@ public class AdminShippingController {
         return "redirect:/admin/shipments/list";
     }
 
+    @PostMapping("/{id}/generate-label")
+    public String generateLabel(@PathVariable Long id, RedirectAttributes redirectAttrs) {
+        try {
+            shippingDocumentService.generateLabelForShipment(id, "Admin Panel");
+            redirectAttrs.addFlashAttribute("successMessage", "Shipping label generated and linked with shipment.");
+        } catch (Exception ex) {
+            redirectAttrs.addFlashAttribute("errorMessage", "Could not generate shipping label: " + ex.getMessage());
+        }
+        return "redirect:/admin/shipments/list";
+    }
+
     private void populateFormOptions(Model model, Long includeOrderId) {
         model.addAttribute("carriers", carrierRepo.findAll());
         model.addAttribute("deliveryPersons", deliveryPersonRepo.findAll());
+        model.addAttribute("pickupAddresses", pickupAddressService.getAll());
         model.addAttribute("vendors", vendorprofileService.findAll());
         model.addAttribute("salesOrders", buildSalesOrderOptions(includeOrderId));
-        model.addAttribute("districts", Arrays.asList(District.values()));
     }
 
     private void populateEmptyFormOptions(Model model) {
         model.addAttribute("carriers", List.of());
         model.addAttribute("deliveryPersons", List.of());
+        model.addAttribute("pickupAddresses", List.of());
         model.addAttribute("vendors", List.of());
         model.addAttribute("salesOrders", List.of());
-        model.addAttribute("districts", List.of());
     }
 
     private List<Map<String, Object>> buildSalesOrderOptions(Long includeOrderId) {
@@ -211,6 +236,24 @@ public class AdminShippingController {
 
         shipmentService.syncCodFromOrder(shipment);
         return salesOrder;
+    }
+
+    private void validateShipmentHandler(Shipment shipment, BindingResult result) {
+        if (shipment.getCarrier() == null && shipment.getDeliveryPerson() == null) {
+            result.reject("error.shipment", "Select at least Carrier or Delivery Person");
+        }
+        if (shipment.getDeliveryPerson() != null
+                && shipment.getDeliveryPerson().getVendorId() != null
+                && shipment.getVendorId() != null
+                && !Objects.equals(shipment.getDeliveryPerson().getVendorId(), shipment.getVendorId())) {
+            result.rejectValue("deliveryPerson", "error.shipment", "Selected delivery person does not belong to the shipment vendor");
+        }
+        if (shipment.getPickupAddress() != null
+                && shipment.getPickupAddress().getVendorId() != null
+                && shipment.getVendorId() != null
+                && !Objects.equals(shipment.getPickupAddress().getVendorId(), shipment.getVendorId())) {
+            result.rejectValue("pickupAddress", "error.shipment", "Selected pickup address does not belong to the shipment vendor");
+        }
     }
 
     private String prefillShipmentFromOrder(Shipment shipment, Long orderId, boolean enforceEligibility) {

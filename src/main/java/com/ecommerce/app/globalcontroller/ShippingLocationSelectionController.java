@@ -4,8 +4,9 @@
  */
 package com.ecommerce.app.globalcontroller;
 
-import com.ecommerce.app.globalServices.District;
 import com.ecommerce.app.module.cart.model.CartItem;
+import com.ecommerce.app.module.shipping.model.ShippingLocation;
+import com.ecommerce.app.module.shipping.services.ShippingLocationService;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import org.springframework.stereotype.Controller;
@@ -22,25 +23,58 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 @RequestMapping("/district")
-public class DistrictController {
+public class ShippingLocationSelectionController {
+
+    private final ShippingLocationService locationService;
+
+    public ShippingLocationSelectionController(ShippingLocationService locationService) {
+        this.locationService = locationService;
+    }
 
     @GetMapping("/select-district")
     public String districtPage(Model model) {
 
-        model.addAttribute("districts", District.values());
+        model.addAttribute("districts", locationService.getActiveLocations());
         return "/district/select-district"; // Name of Thymeleaf HTML file
     }
 
     @PostMapping("/save-district")
     @ResponseBody
-    public String saveDistrict(@RequestParam String districtName, HttpSession session) {
-        try {
-            District district = District.valueOf(districtName);
-            session.setAttribute("shippingdistrict", district);
+    public String saveLocation(@RequestParam(name = "location") String location, HttpSession session) {
+        return saveLocationSelection(location, session);
+    }
+
+    @PostMapping("/select")
+    @ResponseBody
+    public String selectLocation(@RequestParam(name = "location") String location, HttpSession session) {
+        return saveLocationSelection(location, session);
+    }
+
+    private String saveLocationSelection(String locationValue, HttpSession session) {
+        ShippingLocation location = resolveLocation(locationValue);
+        if (location != null && location.isActive()) {
+            session.setAttribute("shippingLocation", location);
+            session.setAttribute("shippingLocationId", location.getId());
             clearShippingSelections(session);
             return "success";
-        } catch (IllegalArgumentException e) {
-            return "error";
+        }
+        return "error";
+    }
+
+    private ShippingLocation resolveLocation(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return locationService.getById(Long.valueOf(value.trim()));
+        } catch (NumberFormatException ignored) {
+            String normalized = value.trim();
+            return locationService.getActiveLocations().stream()
+                    .filter(location -> normalized.equalsIgnoreCase(location.getCode())
+                    || normalized.equalsIgnoreCase(location.getName())
+                    || normalized.equalsIgnoreCase(location.getDisplayLabel()))
+                    .findFirst()
+                    .orElse(null);
         }
     }
 

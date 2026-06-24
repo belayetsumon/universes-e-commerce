@@ -65,7 +65,11 @@
                                             <td th:text="${c.active}"></td>
                                             <td>
                                                 <a th:href="@{'/admin/carriers/edit/' + ${c.id}}" class="btn btn-sm btn-primary">Edit</a>
-                                                <a th:href="@{'/admin/carriers/delete/' + ${c.uuid}}" class="btn btn-sm btn-danger">Delete</a>
+                                                <form th:action="@{/admin/carriers/delete/{uuid}(uuid=${c.uuid})}" method="post" class="d-inline"
+                                                      onsubmit="return confirm('Delete this carrier?')">
+                                                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                                </form>
 
 
                                             </td>

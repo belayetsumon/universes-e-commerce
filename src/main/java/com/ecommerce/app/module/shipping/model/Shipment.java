@@ -54,17 +54,20 @@ public class Shipment {
     @NotNull(message = "Vendor ID is required")
     private Long vendorId;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "carrier_id", nullable = false)
-    @NotNull(message = "Carrier is required")
+    @ManyToOne
+    @JoinColumn(name = "carrier_id")
     private Carrier carrier;
 
     @ManyToOne
     @JoinColumn(name = "delivery_person_id")
     private DeliveryPerson deliveryPerson;
 
-    @NotBlank(message = "District is required")
-    @Size(min = 2, max = 100, message = "District name must be between 2 and 100 characters")
+    @ManyToOne
+    @JoinColumn(name = "pickup_address_id")
+    private PickupAddress pickupAddress;
+
+    @NotBlank(message = "Location is required")
+    @Size(min = 2, max = 100, message = "Location name must be between 2 and 100 characters")
     private String district;
 
     @Column(unique = true, length = 100)
@@ -113,6 +116,9 @@ public class Shipment {
 
     @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ShipmentItem> items;
+
+    @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ShipmentTrackingEvent> trackingEvents;
 
     // COD fields
     private boolean cod;
@@ -227,6 +233,14 @@ public class Shipment {
         this.deliveryPerson = deliveryPerson;
     }
 
+    public PickupAddress getPickupAddress() {
+        return pickupAddress;
+    }
+
+    public void setPickupAddress(PickupAddress pickupAddress) {
+        this.pickupAddress = pickupAddress;
+    }
+
     public String getDistrict() {
         return district;
     }
@@ -329,6 +343,14 @@ public class Shipment {
 
     public void setItems(List<ShipmentItem> items) {
         this.items = items;
+    }
+
+    public List<ShipmentTrackingEvent> getTrackingEvents() {
+        return trackingEvents;
+    }
+
+    public void setTrackingEvents(List<ShipmentTrackingEvent> trackingEvents) {
+        this.trackingEvents = trackingEvents;
     }
 
     public boolean isCod() {

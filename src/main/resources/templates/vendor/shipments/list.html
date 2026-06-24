@@ -6,9 +6,20 @@
                 <h4 class="mb-1">My Shipments</h4>
                 <p class="text-muted mb-0">Track vendor shipments, COD collection, and payable settlement snapshots.</p>
             </div>
-            <a th:href="@{/vendor/shipments/new}" class="btn btn-success btn-sm">
-                <i class="bi bi-plus-circle"></i> Create Shipment
-            </a>
+            <div class="d-flex gap-2 flex-wrap">
+                <a th:href="@{/vendor/shipping-documents/labels}" class="btn btn-outline-dark btn-sm">
+                    <i class="bi bi-upc-scan"></i> Labels
+                </a>
+                <a th:href="@{/vendor/shipping-documents/manifests}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-clipboard-check"></i> Manifests
+                </a>
+                <a th:href="@{/vendor/shipping-documents/invoices}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-receipt"></i> Invoices
+                </a>
+                <a th:href="@{/vendor/shipments/new}" class="btn btn-success btn-sm">
+                    <i class="bi bi-plus-circle"></i> Create Shipment
+                </a>
+            </div>
         </div>
 
         <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
@@ -35,18 +46,19 @@
                                 <th>COD</th>
                                 <th>Vendor Payable</th>
                                 <th>Marketplace Payable</th>
+                                <th>Label</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr th:if="${#lists.isEmpty(shipments)}">
-                                <td colspan="10" class="text-center text-muted">No shipments found.</td>
+                                <td colspan="11" class="text-center text-muted">No shipments found.</td>
                             </tr>
                             <tr th:each="s : ${shipments}">
                                 <td th:text="${s.id}">1</td>
                                 <td>
                                     <span class="fw-semibold" th:text="${s.salesOrderId}">0</span>
-                                    <small class="d-block text-muted" th:text="${s.district}">District</small>
+                                    <small class="d-block text-muted" th:text="${s.district}">Location</small>
                                 </td>
                                 <td>
                                     <span th:text="${s.carrier != null ? s.carrier.name : '-'}">Carrier</span>
@@ -74,15 +86,32 @@
                                 <td th:text="${s.vendorPayableAmount}">0</td>
                                 <td th:text="${s.marketplacePayableAmount}">0</td>
                                 <td>
+                                    <a th:if="${s.labelUrl != null and !#strings.isEmpty(s.labelUrl)}"
+                                       th:href="${s.labelUrl}"
+                                       target="_blank"
+                                       class="btn btn-sm btn-outline-dark">
+                                        <i class="bi bi-file-earmark-pdf"></i> Open
+                                    </a>
+                                    <span th:if="${s.labelUrl == null or #strings.isEmpty(s.labelUrl)}" class="text-muted">No label</span>
+                                </td>
+                                <td>
                                     <div class="d-flex gap-2 flex-wrap">
                                         <a th:href="@{/vendor/shipments/edit/{id}(id=${s.id})}" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-pencil"></i> Edit
                                         </a>
-                                        <a th:href="@{/vendor/shipments/delete/{id}(id=${s.id})}"
-                                           class="btn btn-sm btn-outline-danger"
-                                           onclick="return confirm('Delete this shipment?')">
-                                            <i class="bi bi-trash"></i> Delete
-                                        </a>
+                                        <form th:action="@{/vendor/shipments/{id}/generate-label(id=${s.id})}" method="post" class="d-inline">
+                                            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                            <button type="submit" class="btn btn-sm btn-outline-dark">
+                                                <i class="bi bi-file-earmark-pdf"></i> Make Label
+                                            </button>
+                                        </form>
+                                        <form th:action="@{/vendor/shipments/delete/{id}(id=${s.id})}" method="post" class="d-inline"
+                                              onsubmit="return confirm('Delete this shipment?')">
+                                            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </form>
                                     </div>
                                     <form th:if="${s.cod and s.codPending != null and s.codPending > 0}"
                                           th:action="@{/vendor/shipments/{id}/collect-cod(id=${s.id})}"

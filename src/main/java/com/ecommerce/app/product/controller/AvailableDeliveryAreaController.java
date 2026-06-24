@@ -4,7 +4,7 @@
  */
 package com.ecommerce.app.product.controller;
 
-import com.ecommerce.app.globalServices.District;
+import com.ecommerce.app.module.shipping.services.ShippingLocationService;
 import com.ecommerce.app.product.model.AvailableDeliveryArea;
 import com.ecommerce.app.product.model.AvailableDeliveryAreaMode;
 import com.ecommerce.app.product.model.Product;
@@ -35,6 +35,9 @@ public class AvailableDeliveryAreaController {
 
     @Autowired
     AvailableDeliveryAreaRepository availableDeliveryAreaRepository;
+
+    @Autowired
+    ShippingLocationService shippingLocationService;
 
     @RequestMapping("/index")
     public String index(Model model) {
@@ -133,7 +136,7 @@ public class AvailableDeliveryAreaController {
 
     private void populateFormModel(Model model, AvailableDeliveryArea availableDeliveryArea, String errorMessage) {
         model.addAttribute("deliveryAreaModes", AvailableDeliveryAreaMode.values());
-        model.addAttribute("districts", District.values());
+        model.addAttribute("districts", shippingLocationService.getActiveLocations());
         model.addAttribute("availableDeliveryArea", availableDeliveryArea);
         model.addAttribute("errorMessage", errorMessage);
     }

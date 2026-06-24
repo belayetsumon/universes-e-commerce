@@ -177,6 +177,40 @@ Use `/admin/carrier-rates/list` to review or edit rates.
 
 Use `/admin/shipping-profiles/list` for ongoing management.
 
+### 3.3.1 International Location Setup
+
+Use `/admin/shipping-locations/list` to manage scalable shipping geography.
+
+Recommended hierarchy:
+
+1. Country, for example `Bangladesh`, code `BD`, ISO2 `BD`, ISO3 `BGD`.
+2. Division or state, for example `Dhaka Division`, parent `Bangladesh`.
+3. District or city, for example `Dhaka`, parent `Dhaka Division`.
+4. Thana or upazila, for example `Dhanmondi`, parent `Dhaka`.
+
+Important migration note:
+
+- New shipping coverage should use `ShippingLocation` records.
+- The old Java `District` enum remains only for legacy checkout/session compatibility.
+- For Bangladesh district rows, set `Legacy District` to the matching old district while the storefront still selects only district.
+- Once checkout and customer addresses use location IDs, the enum can be removed safely.
+
+### 3.3.2 Shipping Zone Setup
+
+Use `/admin/shipping-zones/create`.
+
+1. Enter zone name and code.
+2. Select one or more coverage locations.
+3. Optionally select legacy districts only for old checkout compatibility.
+4. Save.
+
+Examples:
+
+- Country-wide zone: select `COUNTRY - Bangladesh`.
+- Division zone: select `DIVISION - Bangladesh / Dhaka Division`.
+- District zone: select `DISTRICT - Bangladesh / Dhaka Division / Dhaka`.
+- Thana zone: select `THANA - Bangladesh / Dhaka Division / Dhaka / Dhanmondi`.
+
 ### 3.4 Delivery Person Setup
 
 This project also supports delivery persons for vendor rider or internal delivery.
@@ -191,6 +225,53 @@ Important note:
 
 - The delivery person controller is a simple legacy module.
 - In some deployments the menu path may be clearer than the raw route, so verify the final screen from the UI.
+
+### 3.5 Pickup Addresses
+
+Use pickup addresses when vendors hand over parcels from a warehouse, shop, or branch.
+
+1. Open `/admin/pickup-addresses/create`.
+2. Select vendor.
+3. Enter contact person, phone, address, and district.
+4. Mark one address as default when needed.
+5. Save.
+
+Rules:
+
+- A vendor can have multiple pickup addresses.
+- Only one address is kept as default per vendor.
+- Shipment forms can reference the selected pickup address.
+
+### 3.6 Shipping Rules and Quote Engine
+
+Use `/admin/shipping-rules/create` for operational quote controls.
+
+Supported first-release actions:
+
+- `DISABLE_CARRIER`: hides a matching carrier from checkout quotes.
+- `DISABLE_COD`: keeps the carrier but marks COD unavailable.
+- `ADD_EXTRA_FEE`: adds a fee to matching quote prices.
+- `PRIORITIZE`: moves matching quotes earlier by priority.
+
+Rules can target vendor, district, carrier code, weight range, and order amount range. Cart screens use `ShippingQuoteService`, which wraps existing carrier-rate options and applies active rules.
+
+### 3.7 Labels, Manifests, and Shipment Invoices
+
+Use shipping documents for fulfillment handover and settlement audit.
+
+1. Labels: open `/admin/shipping-documents/labels`.
+2. Manifests: open `/admin/shipping-documents/manifests`.
+3. Shipment invoices: open `/admin/shipping-documents/invoices`.
+4. Vendor labels: open `/vendor/shipping-documents/labels`.
+5. Vendor manifests: open `/vendor/shipping-documents/manifests`.
+6. Vendor shipment invoices: open `/vendor/shipping-documents/invoices`.
+
+Notes:
+
+- Labels store label number, URL, and payload metadata.
+- Manifests group multiple shipments for carrier handover.
+- Shipment invoices snapshot shipping cost, COD fee, vendor payable, and marketplace payable from the shipment.
+- Vendor document screens are scoped to the active vendor and support the practical flow of creating/preparing shipments, printing package labels, creating a carrier handover manifest, and later checking settlement from shipment invoices.
 
 ## 4. Category, Attribute, and Product Setup
 

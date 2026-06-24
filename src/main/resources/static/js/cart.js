@@ -28,7 +28,7 @@ const formatCurrency = num => `৳ ${parseFloat(num || 0).toFixed(2)}`;
  *
  * What changed and why:
  * - Previously the shipping <select> used option.value = price (client-controlled).
- *   That is unsafe and also prevents correct server-side calculation by vendor/district/weight.
+ *   That is unsafe and also prevents correct server-side calculation by vendor/location/weight.
  * - Now we send:
  *   - shippingOptionCode (CarrierRate UUID) for shipping
  *   - packagingRateId (PackagingRate ID) for packaging
@@ -52,7 +52,14 @@ async function postForm(url, bodyObj) {
     });
     if (!res.ok) {
         const msg = await res.text();
-        throw new Error(msg || "Request failed");
+        let errorMessage = msg || "Request failed";
+        try {
+            const json = JSON.parse(msg);
+            errorMessage = json.message || errorMessage;
+        } catch (ignored) {
+            // Keep the plain server response when it is not JSON.
+        }
+        throw new Error(errorMessage);
     }
     return res.json();
 }
@@ -359,6 +366,9 @@ document.addEventListener("change", async (e) => {
     } catch (err) {
         // console.error(err);
         alert(err?.message || "Update failed");
+        if (qtyInput) {
+            await loadCart();
+        }
     } finally {
         vendorDiv?.classList.remove("vendor-loading");
     }

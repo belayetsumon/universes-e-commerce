@@ -9,27 +9,29 @@ import com.ecommerce.app.module.shipping.model.Shipment;
 import com.ecommerce.app.module.shipping.services.ShipmentService;
 import com.ecommerce.app.module.user.services.LoggedUserService;
 import com.ecommerce.app.order.model.OrderHistory;
+import com.ecommerce.app.order.model.OrderItemReturnStatus;
 import com.ecommerce.app.order.model.OrderStatus;
 import com.ecommerce.app.order.model.OrderStatusChangedBy;
+import com.ecommerce.app.order.dto.ReturnRefundReportDto;
 import com.ecommerce.app.order.model.SalesOrder;
 import com.ecommerce.app.order.repository.BillingAddressRepository;
 import com.ecommerce.app.order.repository.OrderHistoryRepository;
 import com.ecommerce.app.order.repository.SalesOrderRepository;
+import com.ecommerce.app.order.services.ReturnRefundReportService;
 import com.ecommerce.app.order.repository.ShippingAddressRepository;
 import com.ecommerce.app.order.services.OrderItemService;
+import com.ecommerce.app.order.services.SalesOrderPdfService;
 import com.ecommerce.app.order.services.SalesOrderService;
-import com.ecommerce.app.services.BarcodeService;
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import com.ecommerce.app.vendor.user.componant.VendorUserContext;
-import com.google.zxing.BarcodeFormat;
-import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -42,8 +44,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 
 /**
  *
@@ -76,11 +76,13 @@ public class VendorSalesOrderController {
     OrderItemService orderItemService;
 
     @Autowired
+    SalesOrderPdfService salesOrderPdfService;
+
+    @Autowired
+    ReturnRefundReportService returnRefundReportService;
+
+    @Autowired
     private VendorUserContext vendorUserContext;
-    @Autowired
-    BarcodeService barcodeService;
-    @Autowired
-    private SpringTemplateEngine templateEngine;
     @Autowired
     private ShipmentService shipmentService;
 
@@ -100,6 +102,55 @@ public class VendorSalesOrderController {
 
         //  model.addAttribute("orderlist", salesOrderRepository.findByVendorIdOrderByIdDesc(vendorprofile.getId()));
         return "vendor/sales/index";
+    }
+
+    @GetMapping("/returns")
+    public String returns(
+            @RequestParam(required = false) OrderItemReturnStatus status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        Vendorprofile activeVendor = vendorUserContext.getActiveVendor();
+        if (activeVendor == null || activeVendor.getId() == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Vendor context not found.");
+            return "redirect:/vendor-order/index";
+        }
+
+        try {
+            model.addAttribute("report", returnRefundReportService.buildVendorReturnReport(activeVendor.getId(), status, fromDate, toDate));
+        } catch (Exception ex) {
+            model.addAttribute("errorMessage", "Runtime error while loading vendor returns: " + ex.getMessage());
+            model.addAttribute("report", new ReturnRefundReportDto());
+        }
+        model.addAttribute("statuses", OrderItemReturnStatus.values());
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
+        return "vendor/sales/returns";
+    }
+
+    @GetMapping("/refunds")
+    public String refunds(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        Vendorprofile activeVendor = vendorUserContext.getActiveVendor();
+        if (activeVendor == null || activeVendor.getId() == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Vendor context not found.");
+            return "redirect:/vendor-order/index";
+        }
+
+        try {
+            model.addAttribute("report", returnRefundReportService.buildVendorRefundReport(activeVendor.getId(), fromDate, toDate));
+        } catch (Exception ex) {
+            model.addAttribute("errorMessage", "Runtime error while loading vendor refunds: " + ex.getMessage());
+            model.addAttribute("report", new ReturnRefundReportDto());
+        }
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
+        return "vendor/sales/refunds";
     }
 
 //    @PreAuthorize("""
@@ -247,42 +298,17 @@ public class VendorSalesOrderController {
 //            """)
     @GetMapping("/orders/{id}/pdf")
     public ResponseEntity<byte[]> orderPdf(@PathVariable Long id, SalesOrder salesOrder) throws Exception {
+        Vendorprofile activeVendor = vendorUserContext.getActiveVendor();
+        if (activeVendor == null || activeVendor.getId() == null) {
+            throw new IllegalArgumentException("Vendor context not found.");
+        }
 
-        salesOrder = salesOrderRepository.getReferenceById(id);
-
-        Context ctx = new Context();
-
-        ctx.setVariable("order", salesOrder);
-
-        ctx.setVariable("company", salesOrder.getVendorId());
-
-// Logo as Base64
-//        ctx.setVariable("companyLogoBase64", toBase64(salesOrder.getVendorId().getLogoPath()));
-// Barcode + QR
-        ctx.setVariable("barcodeBase64", barcodeService.generateBarcodeBase64(salesOrder.getOrderCode(), BarcodeFormat.CODE_128, 400, 60));
-
-        ctx.setVariable("qrBase64", barcodeService.generateBarcodeBase64("https://example.com/orders/" + salesOrder.getOrderCode(), BarcodeFormat.QR_CODE, 150, 150));
-
-        String html = templateEngine.process("sales-order-pdf", ctx);
-
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-
-        PdfRendererBuilder builder = new PdfRendererBuilder();
-
-        builder.withHtmlContent(html, "");
-
-        builder.toStream(os);
-
-        builder.run();
-
-        byte[] pdfBytes = os.toByteArray();
+        salesOrder = salesOrderService.getVendorOrderForVendor(id, activeVendor.getId());
+        byte[] pdfBytes = salesOrderPdfService.generateForVendor(salesOrder);
 
         HttpHeaders headers = new HttpHeaders();
-
         headers.setContentType(MediaType.APPLICATION_PDF);
-
-        headers.setContentDispositionFormData("attachment", salesOrder.getOrderCode() + ".pdf");
-
+        headers.setContentDispositionFormData("attachment", salesOrderPdfService.filename(salesOrder));
         headers.setContentLength(pdfBytes.length);
 
         return ResponseEntity.ok().headers(headers).body(pdfBytes);

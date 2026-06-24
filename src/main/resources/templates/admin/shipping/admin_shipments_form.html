@@ -79,19 +79,20 @@ and open the template in the editor.
                                     <option th:each="order : ${salesOrders}"
                                             th:value="${order['id']}"
                                             th:text="${order['orderCode'] + ' | ID: ' + order['id'] + ' | Vendor: ' + order['vendorId']}"
-                                            th:attr="data-vendor-id=${order['vendorId']},data-district=${order['district']},data-shipping-cost=${order['shippingCost']}"></option>
+                                            th:attr="data-vendor-id=${order['vendorId']},data-location=${order['district']},data-shipping-cost=${order['shippingCost']}"></option>
                                 </select>
-                                <div class="form-text">Orders are filtered by vendor and will auto-fill the shipping district.</div>
+                                <div class="form-text">Orders are filtered by vendor and will auto-fill the shipping location.</div>
                                 <div class="text-danger small" th:if="${#fields.hasErrors('salesOrderId')}" th:errors="*{salesOrderId}"></div>
                             </div>
 
                             <!-- Carrier -->
                             <div class="col-md-4">
                                 <label class="form-label">Carrier</label>
-                                <select th:field="*{carrier}" class="form-select" required>
+                                <select th:field="*{carrier}" class="form-select">
+                                    <option value="">Select carrier</option>
                                     <option th:each="c : ${carriers}" th:value="${c.id}" th:text="${c.name}"></option>
                                 </select>
-                                <div class="form-text">Select the courier or delivery company.</div>
+                                <div class="form-text">Select a courier, or assign a delivery person for local delivery.</div>
                                 <div class="text-danger small" th:if="${#fields.hasErrors('carrier')}" th:errors="*{carrier}"></div>
                             </div>
 
@@ -101,7 +102,7 @@ and open the template in the editor.
                                 <select th:field="*{deliveryPerson}" class="form-select" id="deliveryPersonSelect">
                                     <option value="">Select delivery person</option>
                                     <option th:each="d : ${deliveryPersons}"
-                                            th:value="${d}"
+                                            th:value="${d.id}"
                                             th:text="${d.name}"
                                             th:attr="data-vendor-id=${d.vendorId}"></option>
                                 </select>
@@ -109,10 +110,23 @@ and open the template in the editor.
                                 <div class="text-danger small" th:if="${#fields.hasErrors('deliveryPerson')}" th:errors="*{deliveryPerson}"></div>
                             </div>
 
-                            <!-- District -->
                             <div class="col-md-4">
-                                <label class="form-label">District</label>
-                                <input type="text" th:field="*{district}" id="districtInput" class="form-control" readonly required/>
+                                <label class="form-label">Pickup Address</label>
+                                <select th:field="*{pickupAddress}" class="form-select" id="pickupAddressSelect">
+                                    <option value="">Select pickup address</option>
+                                    <option th:each="p : ${pickupAddresses}"
+                                            th:value="${p.id}"
+                                            th:text="${p.name + ' | ' + p.district.displayLabel}"
+                                            th:attr="data-vendor-id=${p.vendorId}"></option>
+                                </select>
+                                <div class="form-text">Optional: vendor pickup point for carrier handover.</div>
+                                <div class="text-danger small" th:if="${#fields.hasErrors('pickupAddress')}" th:errors="*{pickupAddress}"></div>
+                            </div>
+
+                            <!-- Location -->
+                            <div class="col-md-4">
+                                <label class="form-label">Location</label>
+                                <input type="text" th:field="*{district}" id="locationInput" class="form-control" readonly required/>
                                 <div class="form-text">This is loaded from the selected sales order shipping address.</div>
                                 <div class="text-danger small" th:if="${#fields.hasErrors('district')}" th:errors="*{district}"></div>
                             </div>
@@ -263,7 +277,8 @@ and open the template in the editor.
                                 const vendorSelect = document.getElementById('vendorIdSelect');
                                 const salesOrderSelect = document.getElementById('salesOrderIdSelect');
                                 const deliveryPersonSelect = document.getElementById('deliveryPersonSelect');
-                                const districtInput = document.getElementById('districtInput');
+                                const pickupAddressSelect = document.getElementById('pickupAddressSelect');
+                                const locationInput = document.getElementById('locationInput');
                                 const shippingCostInput = document.getElementById('shippingCostInput');
 
                                 function filterOptions(select) {
@@ -287,14 +302,14 @@ and open the template in the editor.
                                     });
                                 }
 
-                                function syncDistrictFromOrder() {
-                                    if (!salesOrderSelect || !districtInput) {
+                                function syncLocationFromOrder() {
+                                    if (!salesOrderSelect || !locationInput) {
                                         return;
                                     }
 
                                     const selectedOption = salesOrderSelect.options[salesOrderSelect.selectedIndex];
-                                    const district = selectedOption ? (selectedOption.getAttribute('data-district') || '') : '';
-                                    districtInput.value = district;
+                                    const location = selectedOption ? (selectedOption.getAttribute('data-location') || '') : '';
+                                    locationInput.value = location;
                                 }
 
                                 function syncShippingCostFromOrder() {
@@ -310,7 +325,8 @@ and open the template in the editor.
                                 function syncVendorOptions() {
                                     filterOptions(salesOrderSelect);
                                     filterOptions(deliveryPersonSelect);
-                                    syncDistrictFromOrder();
+                                    filterOptions(pickupAddressSelect);
+                                    syncLocationFromOrder();
                                     syncShippingCostFromOrder();
                                 }
 
@@ -326,10 +342,11 @@ and open the template in the editor.
                                             if (orderVendorId && vendorSelect.value !== orderVendorId) {
                                                 vendorSelect.value = orderVendorId;
                                                 filterOptions(deliveryPersonSelect);
+                                                filterOptions(pickupAddressSelect);
                                                 filterOptions(salesOrderSelect);
                                             }
                                         }
-                                        syncDistrictFromOrder();
+                                        syncLocationFromOrder();
                                         syncShippingCostFromOrder();
                                     });
                                 }

@@ -90,12 +90,23 @@ public class CarrierService {
 
     public String generateShipmentLabel(Long carrierId, Shipment shipment) throws Exception {
         Carrier carrier = repo.findById(carrierId).orElseThrow();
+        if (carrier.getConfigJson() == null || carrier.getConfigJson().isBlank()) {
+            throw new IllegalStateException("Carrier API configuration is missing.");
+        }
 
         // Parse configJson
         Map<String, String> config = objectMapper.readValue(carrier.getConfigJson(), Map.class);
         String apiKey = config.get("apiKey");
         String endpoint = config.get("endpoint");
         String accountNumber = config.get("accountNumber");
+        String labelUrlTemplate = config.get("labelUrlTemplate");
+        if (labelUrlTemplate != null && !labelUrlTemplate.isBlank()) {
+            String trackingNumber = shipment.getTrackingNumber() != null ? shipment.getTrackingNumber() : "";
+            return labelUrlTemplate.replace("{trackingNumber}", trackingNumber);
+        }
+        if (endpoint == null || endpoint.isBlank() || apiKey == null || apiKey.isBlank()) {
+            throw new IllegalStateException("Carrier label API endpoint or API key is missing.");
+        }
 
         // Prepare request payload
         Map<String, Object> payload = new HashMap<>();
@@ -110,9 +121,7 @@ public class CarrierService {
         System.out.println("Calling " + endpoint + " with API Key: " + apiKey);
         System.out.println("Payload: " + payload);
 
-        // Simulate label URL returned by carrier
-        String labelUrl = "https://carrier.com/labels/" + shipment.getTrackingNumber() + ".pdf";
-        return labelUrl;
+        throw new IllegalStateException("Carrier label API call is not implemented for this carrier.");
     }
 
 }

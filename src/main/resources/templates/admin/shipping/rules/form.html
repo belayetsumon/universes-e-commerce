@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section class="mb-4 d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="bi bi-sliders me-2 text-primary"></i><span th:text="${rule.id != null ? 'Edit Shipping Rule' : 'Create Shipping Rule'}"></span></h4>
+            <a class="btn btn-danger btn-sm" th:href="@{/admin/shipping-rules/list}">Close</a>
+        </section>
+        <div class="card"><div class="card-body">
+            <form th:action="@{/admin/shipping-rules/save}" th:object="${rule}" method="post" class="row g-3">
+                <input type="hidden" th:field="*{id}" />
+                <div class="col-md-4"><label class="form-label">Name</label><input th:field="*{name}" class="form-control" required/><div class="text-danger small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div></div>
+                <div class="col-md-4"><label class="form-label">Action</label><select th:field="*{action}" class="form-select" required><option th:each="a : ${actions}" th:value="${a}" th:text="${#strings.replace(a.name(), '_', ' ')}"></option></select></div>
+                <div class="col-md-4"><label class="form-label">Vendor</label><select th:field="*{vendorId}" class="form-select"><option value="">All vendors</option><option th:each="v : ${vendors}" th:value="${v.id}" th:text="${v.vendorCode + ' - ' + v.companyName}"></option></select></div>
+                <div class="col-md-4"><label class="form-label">Carrier Code</label><input th:field="*{carrierCode}" class="form-control" placeholder="Leave blank for all carriers"/></div>
+                <div class="col-md-4"><label class="form-label">Location</label><select th:field="*{district}" class="form-select"><option value="">All locations</option><option th:each="d : ${districts}" th:value="${d.id}" th:text="${d.type + ' - ' + d.displayLabel}"></option></select></div>
+                <div class="col-md-2"><label class="form-label">Min Weight</label><input type="number" step="0.01" th:field="*{minWeight}" class="form-control"/></div>
+                <div class="col-md-2"><label class="form-label">Max Weight</label><input type="number" step="0.01" th:field="*{maxWeight}" class="form-control"/></div>
+                <div class="col-md-3"><label class="form-label">Min Order Amount</label><input type="number" step="0.01" th:field="*{minOrderAmount}" class="form-control"/></div>
+                <div class="col-md-3"><label class="form-label">Max Order Amount</label><input type="number" step="0.01" th:field="*{maxOrderAmount}" class="form-control"/></div>
+                <div class="col-md-3"><label class="form-label">Extra Fee</label><input type="number" step="0.01" th:field="*{extraFee}" class="form-control"/></div>
+                <div class="col-md-3"><label class="form-label">Priority</label><input type="number" th:field="*{priority}" class="form-control"/></div>
+                <div class="col-md-3 form-check mt-4"><input th:field="*{active}" class="form-check-input" type="checkbox" id="ruleActive"/><label for="ruleActive" class="form-check-label">Active</label></div>
+                <div class="col-12"><label class="form-label">Message</label><input th:field="*{message}" class="form-control"/></div>
+                <div class="col-12 text-end"><a th:href="@{/admin/shipping-rules/list}" class="btn btn-secondary">Cancel</a><button class="btn btn-primary" type="submit">Save</button></div>
+            </form>
+        </div></div>
+    </div>
+</div>

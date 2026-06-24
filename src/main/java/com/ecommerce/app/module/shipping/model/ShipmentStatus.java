@@ -10,9 +10,13 @@ package com.ecommerce.app.module.shipping.model;
  */
 public enum ShipmentStatus {
     PENDING,
+    PICKUP_REQUESTED,
+    PICKED_UP,
     SHIPPED,
+    IN_TRANSIT,
+    OUT_FOR_DELIVERY,
     DELIVERED,
+    FAILED,
     CANCELLED,
-    RETURNED,
-    IN_TRANSIT
+    RETURNED
 }

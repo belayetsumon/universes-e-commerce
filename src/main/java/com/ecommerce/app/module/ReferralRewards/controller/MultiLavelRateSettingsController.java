@@ -40,6 +40,7 @@ public class MultiLavelRateSettingsController {
 
     @GetMapping("/create")
     public String createForm(Model model, MultiLavelRateSettings lavelRateSettings) {
+        model.addAttribute("lavelRateSettings", lavelRateSettings);
         model.addAttribute("levels", LevelEnum.values());
         return "admin/referral_rewards/lavel_rate_settings_form";
     }
@@ -50,6 +51,7 @@ public class MultiLavelRateSettingsController {
             RedirectAttributes redirectAttributes,
             Model model) {
         if (result.hasErrors()) {
+            model.addAttribute("lavelRateSettings", lavelRateSettings);
             model.addAttribute("levels", LevelEnum.values());
             return "admin/referral_rewards/lavel_rate_settings_form";
         }

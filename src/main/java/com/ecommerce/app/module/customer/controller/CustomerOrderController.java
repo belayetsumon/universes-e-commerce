@@ -9,8 +9,10 @@ import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.user.services.LoggedUserService;
 import com.ecommerce.app.order.model.OrderHistory;
+import com.ecommerce.app.order.model.OrderItemReturnStatus;
 import com.ecommerce.app.order.model.OrderStatus;
 import com.ecommerce.app.order.model.OrderStatusChangedBy;
+import com.ecommerce.app.order.dto.ReturnRefundReportDto;
 import com.ecommerce.app.order.model.EmiPaymentPlan;
 import com.ecommerce.app.order.model.PaymentMethod;
 import com.ecommerce.app.order.model.SalesOrder;
@@ -23,14 +25,21 @@ import com.ecommerce.app.order.services.EmiPaymentPlanService;
 import com.ecommerce.app.order.services.OrderItemService;
 import com.ecommerce.app.order.services.PaymentService;
 import com.ecommerce.app.order.services.PaymentService.PaymentSummary;
+import com.ecommerce.app.order.services.ReturnRefundReportService;
+import com.ecommerce.app.order.services.SalesOrderPdfService;
 import com.ecommerce.app.order.services.SalesOrderService;
 import com.ecommerce.app.review.services.ProductReviewService;
 import com.ecommerce.app.ripository.ProfileRepository;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -84,10 +93,16 @@ public class CustomerOrderController {
     PaymentService paymentService;
 
     @Autowired
+    SalesOrderPdfService salesOrderPdfService;
+
+    @Autowired
     EmiPaymentPlanService emiPaymentPlanService;
 
     @Autowired
     ProductReviewService productReviewService;
+
+    @Autowired
+    ReturnRefundReportService returnRefundReportService;
 
     @RequestMapping(value = {"", "/", "/index"})
     public String index(Model model, SalesOrder order, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
@@ -114,6 +129,43 @@ public class CustomerOrderController {
         model.addAttribute("orderlist-panding", salesOrderRepository.findByCustomerAndStatusOrderByIdDesc(userId, OrderStatus.PENDING));
 
         return "customer/order/index";
+    }
+
+    @GetMapping("/returns")
+    public String returns(
+            @RequestParam(required = false) OrderItemReturnStatus status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            Model model) {
+        Long customerId = loggedUserService.activeUserid();
+        try {
+            model.addAttribute("report", returnRefundReportService.buildCustomerReturnReport(customerId, status, fromDate, toDate));
+        } catch (Exception ex) {
+            model.addAttribute("errorMessage", "Runtime error while loading your returns: " + ex.getMessage());
+            model.addAttribute("report", new ReturnRefundReportDto());
+        }
+        model.addAttribute("statuses", OrderItemReturnStatus.values());
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
+        return "customer/order/returns";
+    }
+
+    @GetMapping("/refunds")
+    public String refunds(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            Model model) {
+        Long customerId = loggedUserService.activeUserid();
+        try {
+            model.addAttribute("report", returnRefundReportService.buildCustomerRefundReport(customerId, fromDate, toDate));
+        } catch (Exception ex) {
+            model.addAttribute("errorMessage", "Runtime error while loading your refunds: " + ex.getMessage());
+            model.addAttribute("report", new ReturnRefundReportDto());
+        }
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
+        return "customer/order/refunds";
     }
 
     @GetMapping("/details/{oid}")
@@ -194,6 +246,18 @@ public class CustomerOrderController {
         }
 
         return "redirect:/customerorder/details/" + orderId;
+    }
+
+    @GetMapping("/orders/{id}/pdf")
+    public ResponseEntity<byte[]> orderPdf(@PathVariable Long id) {
+        SalesOrder order = salesOrderService.getCustomerOrderForUser(id, loggedUserService.activeUserid());
+        byte[] pdfBytes = salesOrderPdfService.generateForCustomer(order);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", salesOrderPdfService.filename(order));
+        headers.setContentLength(pdfBytes.length);
+        return ResponseEntity.ok().headers(headers).body(pdfBytes);
     }
 
     @RequestMapping(value = {"/payment/{orderid}"})

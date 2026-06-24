@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h4 class="mb-1"><i class="bi bi-layers me-2 text-primary"></i>Carrier Rate Slabs</h4>
+                    <div class="text-muted small">Define fixed prices for weight ranges under a carrier rate.</div>
+                </div>
+                <div class="btn-group">
+                    <a class="btn btn-success btn-sm"
+                       th:href="${selectedRate != null} ? @{/admin/carrier-rate-slabs/create(rateId=${selectedRate.id})} : @{/admin/carrier-rate-slabs/create}">
+                        <i class="bi bi-plus-circle"></i> Add Slab
+                    </a>
+                    <a th:href="@{/admin/carrier-rates/list}" type="button" class="btn btn-danger btn-sm">
+                        <i class="bi bi-x-circle"></i> Close
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <div class="card">
+            <div class="card-header">
+                <form th:action="@{/admin/carrier-rate-slabs/list}" method="get" class="row g-2 align-items-end">
+                    <div class="col-md-8">
+                        <label class="form-label">Carrier Rate</label>
+                        <select name="rateId" class="form-select">
+                            <option value="">Select rate</option>
+                            <option th:each="r : ${rates}"
+                                    th:value="${r.id}"
+                                    th:selected="${selectedRate != null and selectedRate.id == r.id}"
+                                    th:text="${(r.carrier != null ? r.carrier.name : 'Carrier') + ' - ' + (r.zone != null ? r.zone.name : 'Direct districts') + ' - ' + r.speed}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> View Slabs
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-body">
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div th:if="${selectedRate == null}" class="alert alert-info mb-0">
+                    Select a carrier rate to manage slabs.
+                </div>
+                <div th:if="${selectedRate != null and (slabs == null or #lists.isEmpty(slabs))}" class="alert alert-info mb-0">
+                    No slabs have been created for this carrier rate yet.
+                </div>
+
+                <div class="table-responsive" th:if="${selectedRate != null and slabs != null and !#lists.isEmpty(slabs)}">
+                    <table class="table table-striped table-bordered table-sm align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th class="text-end">Min Kg</th>
+                                <th class="text-end">Max Kg</th>
+                                <th class="text-end">Price</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th class="text-nowrap">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="s, stat : ${slabs}">
+                                <td th:text="${stat.count}"></td>
+                                <td class="text-end" th:text="${#numbers.formatDecimal(s.minWeight, 0, 'COMMA', 2, 'POINT')}"></td>
+                                <td class="text-end" th:text="${s.maxWeight != null ? #numbers.formatDecimal(s.maxWeight, 0, 'COMMA', 2, 'POINT') : 'Open'}"></td>
+                                <td class="text-end" th:text="${#numbers.formatDecimal(s.price, 0, 'COMMA', 2, 'POINT')}"></td>
+                                <td th:text="${s.priority}"></td>
+                                <td>
+                                    <span class="badge" th:classappend="${s.active} ? ' bg-success' : ' bg-secondary'"
+                                          th:text="${s.active ? 'Active' : 'Inactive'}">Active</span>
+                                </td>
+                                <td class="text-nowrap">
+                                    <a th:href="@{'/admin/carrier-rate-slabs/edit/' + ${s.id}}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </a>
+                                    <form th:action="@{/admin/carrier-rate-slabs/delete/{id}(id=${s.id})}" method="post" class="d-inline"
+                                          onsubmit="return confirm('Delete this carrier rate slab?')">
+                                        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

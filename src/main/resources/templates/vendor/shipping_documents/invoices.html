@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
+    <div layout:fragment="main_content">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+                <h4 class="mb-1">Shipment Invoices</h4>
+                <p class="text-muted mb-0">Verify shipping handover and settlement snapshots from shipment invoices.</p>
+            </div>
+            <a th:href="@{/vendor/shipping-documents/manifests}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-clipboard-check"></i> Manifests
+            </a>
+        </div>
+
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <form th:action="@{/vendor/shipping-documents/invoices/generate}" method="post" class="row g-2 align-items-end">
+                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <div class="col-md-8">
+                        <label class="form-label">Shipment</label>
+                        <select name="shipmentId" class="form-select" required>
+                            <option value="">Select shipment</option>
+                            <option th:each="s : ${shipments}" th:value="${s.id}" th:text="${'Shipment #' + s.id + ' / Order ' + s.salesOrderId + ' / Vendor payable ' + s.vendorPayableAmount}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-success w-100" type="submit">
+                            <i class="bi bi-receipt"></i> Generate Invoice
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body table-responsive">
+                <table class="table table-bordered table-hover table-striped align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Invoice</th>
+                            <th>Shipment</th>
+                            <th>Shipping</th>
+                            <th>COD Fee</th>
+                            <th>Vendor Payable</th>
+                            <th>Marketplace Payable</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(invoices)}">
+                            <td colspan="8" class="text-center text-muted">No shipment invoices generated yet.</td>
+                        </tr>
+                        <tr th:each="invoice, stat : ${invoices}">
+                            <td th:text="${stat.count}"></td>
+                            <td th:text="${invoice.invoiceNumber}"></td>
+                            <td>
+                                <span th:text="${invoice.shipment != null ? invoice.shipment.id : '-'}"></span>
+                                <small class="d-block text-muted" th:text="${invoice.shipment != null ? 'Order ' + invoice.shipment.salesOrderId : ''}"></small>
+                            </td>
+                            <td th:text="${invoice.shippingCost}"></td>
+                            <td th:text="${invoice.codFeeAmount}"></td>
+                            <td th:text="${invoice.vendorPayableAmount}"></td>
+                            <td th:text="${invoice.marketplacePayableAmount}"></td>
+                            <td th:text="${invoice.invoiceTime}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

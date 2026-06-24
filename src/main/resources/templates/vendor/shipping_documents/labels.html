@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
+    <div layout:fragment="main_content">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+                <h4 class="mb-1">Shipping Labels</h4>
+                <p class="text-muted mb-0">Generate and open package labels for your vendor shipments.</p>
+            </div>
+            <a th:href="@{/vendor/shipments}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-truck"></i> Shipments
+            </a>
+        </div>
+
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <form th:action="@{/vendor/shipping-documents/labels/generate}" method="post" class="row g-2 align-items-end">
+                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <div class="col-md-8">
+                        <label class="form-label">Shipment</label>
+                        <select name="shipmentId" class="form-select" required>
+                            <option value="">Select shipment</option>
+                            <option th:each="s : ${shipments}" th:value="${s.id}" th:text="${'Shipment #' + s.id + ' / Order ' + s.salesOrderId + ' / ' + s.status}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-success w-100" type="submit">
+                            <i class="bi bi-upc-scan"></i> Generate Label
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body table-responsive">
+                <table class="table table-bordered table-hover table-striped align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Shipment</th>
+                            <th>Label Number</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(labels)}">
+                            <td colspan="6" class="text-center text-muted">No labels generated yet.</td>
+                        </tr>
+                        <tr th:each="label, stat : ${labels}">
+                            <td th:text="${stat.count}"></td>
+                            <td>
+                                <span th:text="${label.shipment != null ? label.shipment.id : '-'}"></span>
+                                <small class="d-block text-muted" th:text="${label.shipment != null ? 'Order ' + label.shipment.salesOrderId : ''}"></small>
+                            </td>
+                            <td th:text="${label.labelNumber}"></td>
+                            <td>
+                                <span class="badge" th:classappend="${label.active} ? ' bg-success' : ' bg-secondary'" th:text="${label.active ? 'Active' : 'Inactive'}"></span>
+                            </td>
+                            <td th:text="${label.created}"></td>
+                            <td>
+                                <a th:if="${label.labelUrl != null and !#strings.isEmpty(label.labelUrl)}"
+                                   th:href="${label.labelUrl}"
+                                   target="_blank"
+                                   class="btn btn-sm btn-outline-dark">
+                                    <i class="bi bi-printer"></i> Open / Print
+                                </a>
+                                <span th:if="${label.labelUrl == null or #strings.isEmpty(label.labelUrl)}" class="text-muted">No file</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
