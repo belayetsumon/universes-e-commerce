@@ -114,7 +114,7 @@ public class Product implements Serializable {
 
     private BigDecimal vatRate = BigDecimal.ZERO;
 
-    private BigDecimal marketPlaceCommissionRate = BigDecimal.ZERO;
+    private BigDecimal marketPlaceCommissionRate = new BigDecimal("20.00");
 
     @NotNull(message = "Product Type")
     private ProductTypeEnum productType;
@@ -194,7 +194,7 @@ public class Product implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String metaKeywords;
 
-    /// Audit ///
+//     Audit
 //    @Version
 //    @Column(name = "version")
 //    private Long version;

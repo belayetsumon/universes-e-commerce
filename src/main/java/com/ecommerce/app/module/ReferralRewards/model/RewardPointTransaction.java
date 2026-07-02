@@ -4,6 +4,7 @@
  */
 package com.ecommerce.app.module.ReferralRewards.model;
 
+import com.ecommerce.app.module.ReferralRewards.enumvalue.RewardPointType;
 import com.ecommerce.app.module.user.model.Users;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

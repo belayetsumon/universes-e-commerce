@@ -1,7 +1,7 @@
 package com.ecommerce.app.module.ReferralRewards.services;
 
-import com.ecommerce.app.module.ReferralRewards.model.RedemptionStatus;
-import com.ecommerce.app.module.ReferralRewards.model.RedemptionType;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.RedemptionStatus;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.RedemptionType;
 import com.ecommerce.app.module.ReferralRewards.model.Redemptions;
 import com.ecommerce.app.module.ReferralRewards.model.RewardAccount;
 import com.ecommerce.app.module.ReferralRewards.model.RewardTransaction;

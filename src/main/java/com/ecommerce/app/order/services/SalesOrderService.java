@@ -94,30 +94,11 @@ public class SalesOrderService {
 
         Root<SalesOrder> salesOrder = cq.from(SalesOrder.class);
 
-        Subquery<BigDecimal> totalDiscountAmountSubquery = cq.subquery(BigDecimal.class);
-        Root<OrderItem> orderItem1 = totalDiscountAmountSubquery.from(OrderItem.class);
-        totalDiscountAmountSubquery.select(cb.sum(orderItem1.get("discountAmount")))
-                .where(cb.equal(orderItem1.get("salesOrder").get("id"), salesOrder.get("id")));
-
-        Subquery<BigDecimal> totalMarketPlaceCommissionSubquery = cq.subquery(BigDecimal.class);
-        Root<OrderItem> orderItem2 = totalMarketPlaceCommissionSubquery.from(OrderItem.class);
-        totalMarketPlaceCommissionSubquery.select(cb.sum(orderItem2.get("marketPlaceCommissionAmount")))
-                .where(cb.equal(orderItem2.get("salesOrder").get("id"), salesOrder.get("id")));
-
-        Subquery<BigDecimal> totalVatSubquery = cq.subquery(BigDecimal.class);
-        Root<OrderItem> orderItem3 = totalVatSubquery.from(OrderItem.class);
-        totalVatSubquery.select(cb.sum(orderItem3.get("vatAmount")))
-                .where(cb.equal(orderItem3.get("salesOrder").get("id"), salesOrder.get("id")));
-
-        Subquery<BigDecimal> totalVendorAmountSubquery = cq.subquery(BigDecimal.class);
-        Root<OrderItem> orderItem4 = totalVendorAmountSubquery.from(OrderItem.class);
-        totalVendorAmountSubquery.select(cb.sum(orderItem4.get("vendorAmount")))
-                .where(cb.equal(orderItem4.get("salesOrder").get("id"), salesOrder.get("id")));
-
-        Subquery<BigDecimal> totalItemAmountSubquery = cq.subquery(BigDecimal.class);
-        Root<OrderItem> orderItem5 = totalItemAmountSubquery.from(OrderItem.class);
-        totalItemAmountSubquery.select(cb.sum(orderItem5.get("itemTotal")))
-                .where(cb.equal(orderItem5.get("salesOrder").get("id"), salesOrder.get("id")));
+        Subquery<BigDecimal> totalDiscountAmountSubquery = sumActiveOrderItemAmount(cq, cb, salesOrder, "discountAmount");
+        Subquery<BigDecimal> totalMarketPlaceCommissionSubquery = sumActiveOrderItemAmount(cq, cb, salesOrder, "marketPlaceCommissionAmount");
+        Subquery<BigDecimal> totalVatSubquery = sumActiveOrderItemAmount(cq, cb, salesOrder, "vatAmount");
+        Subquery<BigDecimal> totalVendorAmountSubquery = sumActiveOrderItemAmount(cq, cb, salesOrder, "vendorAmount");
+        Subquery<BigDecimal> totalItemAmountSubquery = sumActiveOrderItemAmount(cq, cb, salesOrder, "itemTotal");
 
         Subquery<String> vendorNameSubquery = cq.subquery(String.class);
         Root<Vendorprofile> vendor = vendorNameSubquery.from(Vendorprofile.class);
@@ -135,15 +116,16 @@ public class SalesOrderService {
         cq.multiselect(
                 salesOrder.get("id").alias("orderId"),
                 salesOrder.get("uuid").alias("uuid"),
+                salesOrder.get("orderCode").alias("orderCode"),
                 salesOrder.get("customer").get("firstName").alias("firstName"),
                 salesOrder.get("customer").get("lastName").alias("lastName"),
                 salesOrder.get("customer").get("email").alias("email"),
                 salesOrder.get("customer").get("mobile").alias("mobile"),
-                salesOrder.get("totalDiscountAmount").alias("totalDiscountAmount"),
-                salesOrder.get("totalMarketPlaceCommissionAmount").alias("totalMarketPlaceCommissionAmount"),
-                salesOrder.get("totalVatAmount").alias("totalVatAmount"),
-                salesOrder.get("totalVendorAmount").alias("totalVendorAmount"),
-                salesOrder.get("itemtotal").alias("itemTotal"),
+                totalDiscountAmountSubquery.alias("totalDiscountAmount"),
+                totalMarketPlaceCommissionSubquery.alias("totalMarketPlaceCommissionAmount"),
+                totalVatSubquery.alias("totalVatAmount"),
+                totalVendorAmountSubquery.alias("totalVendorAmount"),
+                totalItemAmountSubquery.alias("itemTotal"),
                 salesOrder.get("packingCharge").alias("packingCharge"),
                 salesOrder.get("deliveryCharge").alias("deliveryCharge"),
                 salesOrder.get("grandTotal").alias("grandTotal"),
@@ -166,18 +148,19 @@ public class SalesOrderService {
             Map<String, Object> map = new HashMap<>();
             map.put("orderId", tuple.get("orderId"));
             map.put("uuid", tuple.get("uuid"));
+            map.put("orderCode", tuple.get("orderCode"));
             map.put("firstName", tuple.get("firstName"));
             map.put("lastName", tuple.get("lastName"));
             map.put("email", tuple.get("email"));
             map.put("mobile", tuple.get("mobile"));
-            map.put("totalDiscountAmount", tuple.get("totalDiscountAmount"));
-            map.put("totalMarketPlaceCommissionAmount", tuple.get("totalMarketPlaceCommissionAmount"));
-            map.put("totalVatAmount", tuple.get("totalVatAmount"));
-            map.put("totalVendorAmount", tuple.get("totalVendorAmount"));
-            map.put("itemTotal", tuple.get("itemTotal"));
-            map.put("deliveryCharge", tuple.get("deliveryCharge"));
-            map.put("packingCharge", tuple.get("packingCharge"));
-            map.put("grandTotal", tuple.get("grandTotal"));
+            map.put("totalDiscountAmount", defaultAmount(tuple.get("totalDiscountAmount")));
+            map.put("totalMarketPlaceCommissionAmount", defaultAmount(tuple.get("totalMarketPlaceCommissionAmount")));
+            map.put("totalVatAmount", defaultAmount(tuple.get("totalVatAmount")));
+            map.put("totalVendorAmount", defaultAmount(tuple.get("totalVendorAmount")));
+            map.put("itemTotal", defaultAmount(tuple.get("itemTotal")));
+            map.put("deliveryCharge", defaultAmount(tuple.get("deliveryCharge")));
+            map.put("packingCharge", defaultAmount(tuple.get("packingCharge")));
+            map.put("grandTotal", resolveListGrandTotal(map, tuple.get("grandTotal")));
             map.put("status", tuple.get("status"));
             map.put("createdBy", tuple.get("createdBy"));
             map.put("created", tuple.get("created"));
@@ -197,30 +180,11 @@ public class SalesOrderService {
 
         Root<SalesOrder> salesOrder = cq.from(SalesOrder.class);
 
-        Subquery<BigDecimal> totalDiscountAmountSubquery = cq.subquery(BigDecimal.class);
-        Root<OrderItem> orderItem1 = totalDiscountAmountSubquery.from(OrderItem.class);
-        totalDiscountAmountSubquery.select(cb.sum(orderItem1.get("discountAmount")))
-                .where(cb.equal(orderItem1.get("salesOrder").get("id"), salesOrder.get("id")));
-
-        Subquery<BigDecimal> totalMarketPlaceCommissionSubquery = cq.subquery(BigDecimal.class);
-        Root<OrderItem> orderItem2 = totalMarketPlaceCommissionSubquery.from(OrderItem.class);
-        totalMarketPlaceCommissionSubquery.select(cb.sum(orderItem2.get("marketPlaceCommissionAmount")))
-                .where(cb.equal(orderItem2.get("salesOrder").get("id"), salesOrder.get("id")));
-
-        Subquery<BigDecimal> totalVatSubquery = cq.subquery(BigDecimal.class);
-        Root<OrderItem> orderItem3 = totalVatSubquery.from(OrderItem.class);
-        totalVatSubquery.select(cb.sum(orderItem3.get("vatAmount")))
-                .where(cb.equal(orderItem3.get("salesOrder").get("id"), salesOrder.get("id")));
-
-        Subquery<BigDecimal> totalVendorAmountSubquery = cq.subquery(BigDecimal.class);
-        Root<OrderItem> orderItem4 = totalVendorAmountSubquery.from(OrderItem.class);
-        totalVendorAmountSubquery.select(cb.sum(orderItem4.get("vendorAmount")))
-                .where(cb.equal(orderItem4.get("salesOrder").get("id"), salesOrder.get("id")));
-
-        Subquery<BigDecimal> totalItemAmountSubquery = cq.subquery(BigDecimal.class);
-        Root<OrderItem> orderItem5 = totalItemAmountSubquery.from(OrderItem.class);
-        totalItemAmountSubquery.select(cb.sum(orderItem5.get("itemTotal")))
-                .where(cb.equal(orderItem5.get("salesOrder").get("id"), salesOrder.get("id")));
+        Subquery<BigDecimal> totalDiscountAmountSubquery = sumActiveOrderItemAmount(cq, cb, salesOrder, "discountAmount");
+        Subquery<BigDecimal> totalMarketPlaceCommissionSubquery = sumActiveOrderItemAmount(cq, cb, salesOrder, "marketPlaceCommissionAmount");
+        Subquery<BigDecimal> totalVatSubquery = sumActiveOrderItemAmount(cq, cb, salesOrder, "vatAmount");
+        Subquery<BigDecimal> totalVendorAmountSubquery = sumActiveOrderItemAmount(cq, cb, salesOrder, "vendorAmount");
+        Subquery<BigDecimal> totalItemAmountSubquery = sumActiveOrderItemAmount(cq, cb, salesOrder, "itemTotal");
 
         Subquery<String> vendorNameSubquery = cq.subquery(String.class);
         Root<Vendorprofile> vendor = vendorNameSubquery.from(Vendorprofile.class);
@@ -234,11 +198,11 @@ public class SalesOrderService {
                 salesOrder.get("customer").get("lastName").alias("lastName"),
                 salesOrder.get("customer").get("email").alias("email"),
                 salesOrder.get("customer").get("mobile").alias("mobile"),
-                salesOrder.get("totalDiscountAmount").alias("totalDiscountAmount"),
-                salesOrder.get("totalMarketPlaceCommissionAmount").alias("totalMarketPlaceCommissionAmount"),
-                salesOrder.get("totalVatAmount").alias("totalVatAmount"),
-                salesOrder.get("totalVendorAmount").alias("totalVendorAmount"),
-                salesOrder.get("itemtotal").alias("itemTotal"),
+                totalDiscountAmountSubquery.alias("totalDiscountAmount"),
+                totalMarketPlaceCommissionSubquery.alias("totalMarketPlaceCommissionAmount"),
+                totalVatSubquery.alias("totalVatAmount"),
+                totalVendorAmountSubquery.alias("totalVendorAmount"),
+                totalItemAmountSubquery.alias("itemTotal"),
                 salesOrder.get("status").alias("status"),
                 salesOrder.get("createdBy").alias("createdBy"),
                 salesOrder.get("created").alias("created"),
@@ -262,11 +226,11 @@ public class SalesOrderService {
             map.put("lastName", tuple.get("lastName"));
             map.put("email", tuple.get("email"));
             map.put("mobile", tuple.get("mobile"));
-            map.put("totalDiscountAmount", tuple.get("totalDiscountAmount"));
-            map.put("totalMarketPlaceCommissionAmount", tuple.get("totalMarketPlaceCommissionAmount"));
-            map.put("totalVatAmount", tuple.get("totalVatAmount"));
-            map.put("totalVendorAmount", tuple.get("totalVendorAmount"));
-            map.put("itemTotal", tuple.get("itemTotal"));
+            map.put("totalDiscountAmount", defaultAmount(tuple.get("totalDiscountAmount")));
+            map.put("totalMarketPlaceCommissionAmount", defaultAmount(tuple.get("totalMarketPlaceCommissionAmount")));
+            map.put("totalVatAmount", defaultAmount(tuple.get("totalVatAmount")));
+            map.put("totalVendorAmount", defaultAmount(tuple.get("totalVendorAmount")));
+            map.put("itemTotal", defaultAmount(tuple.get("itemTotal")));
             map.put("status", tuple.get("status"));
             map.put("createdBy", tuple.get("createdBy"));
             map.put("created", tuple.get("created"));
@@ -278,6 +242,50 @@ public class SalesOrderService {
         }
 
         return result;
+    }
+
+    private Subquery<BigDecimal> sumActiveOrderItemAmount(CriteriaQuery<?> query,
+            CriteriaBuilder cb,
+            Root<SalesOrder> salesOrder,
+            String amountField) {
+        Subquery<BigDecimal> subquery = query.subquery(BigDecimal.class);
+        Root<OrderItem> orderItem = subquery.from(OrderItem.class);
+        subquery.select(cb.<BigDecimal>coalesce()
+                .value(cb.sum(orderItem.<BigDecimal>get(amountField)))
+                .value(BigDecimal.ZERO));
+        subquery.where(
+                cb.equal(orderItem.get("salesOrder").get("id"), salesOrder.get("id")),
+                cb.or(
+                        cb.isNull(orderItem.get("returnStatus")),
+                        cb.notEqual(orderItem.get("returnStatus"), OrderItemReturnStatus.RETURNED)
+                )
+        );
+        return subquery;
+    }
+
+    private BigDecimal resolveListGrandTotal(Map<String, Object> row, Object storedGrandTotal) {
+        BigDecimal grandTotal = defaultAmount(storedGrandTotal);
+        if (grandTotal.compareTo(BigDecimal.ZERO) > 0) {
+            return grandTotal;
+        }
+
+        BigDecimal calculatedTotal = defaultAmount(row.get("itemTotal"))
+                .add(defaultAmount(row.get("totalVatAmount")))
+                .add(defaultAmount(row.get("deliveryCharge")))
+                .add(defaultAmount(row.get("packingCharge")))
+                .subtract(defaultAmount(row.get("totalDiscountAmount")));
+
+        return calculatedTotal.compareTo(BigDecimal.ZERO) > 0 ? calculatedTotal : grandTotal;
+    }
+
+    private BigDecimal defaultAmount(Object amount) {
+        if (amount instanceof BigDecimal value) {
+            return value;
+        }
+        if (amount instanceof Number value) {
+            return BigDecimal.valueOf(value.doubleValue());
+        }
+        return BigDecimal.ZERO;
     }
 
     @Transactional(readOnly = true)

@@ -1,69 +1,104 @@
-/*
- * Page: Admin global settings
- * Used by: templates/admin/settings/global-settings.html
- * Purpose: initialize Summernote, preserve the active settings tab,
- * and keep page-specific validation isolated from the shared admin bundle
- */
 (function ($) {
-    if (!$ || !$.fn || !$.fn.summernote) {
-        return;
+    var storageKey = 'activeGlobalSettingsTab';
+
+    function activateStoredTab() {
+        var activeTab = window.localStorage ? window.localStorage.getItem(storageKey) : null;
+        if (!activeTab) {
+            return;
+        }
+        var trigger = document.querySelector('[data-bs-target="' + activeTab + '"]');
+        if (trigger && window.bootstrap && window.bootstrap.Tab) {
+            window.bootstrap.Tab.getOrCreateInstance(trigger).show();
+        }
     }
 
-    $(function () {
-        $('.editor').summernote({
-            height: 250,
-            placeholder: 'Write content here...',
-            toolbar: [
-                ['style', ['bold', 'italic', 'underline', 'clear']],
-                ['font', ['strikethrough', 'superscript', 'subscript']],
-                ['para', ['ul', 'ol', 'paragraph']],
-                ['height', ['height']],
-                ['insert', ['link', 'picture', 'video']],
-                ['view', ['codeview', 'help']]
-            ],
-            callbacks: {
-                onInit: function () {
-                    console.log('Summernote initialized');
+    function bindTabs() {
+        document.querySelectorAll('.settings-nav [data-bs-toggle="tab"]').forEach(function (trigger) {
+            trigger.addEventListener('shown.bs.tab', function (event) {
+                document.querySelectorAll('.settings-nav button').forEach(function (button) {
+                    button.classList.remove('active');
+                });
+                event.target.classList.add('active');
+                if (window.localStorage) {
+                    window.localStorage.setItem(storageKey, event.target.getAttribute('data-bs-target'));
                 }
-            }
+            });
         });
+        activateStoredTab();
+    }
 
-        $('#settingsTabs button').on('shown.bs.tab', function () {
-            localStorage.setItem('activeSettingsTab', $(this).attr('data-bs-target'));
-        });
-
-        var activeTab = localStorage.getItem('activeSettingsTab');
-        if (activeTab) {
-            $('#settingsTabs button[data-bs-target="' + activeTab + '"]').tab('show');
+    function bindValidation() {
+        var form = document.getElementById('settingsForm');
+        if (!form) {
+            return;
         }
 
-        $('#settingsForm').on('submit', function (event) {
-            var isValid = true;
+        form.addEventListener('submit', function (event) {
+            var submitter = event.submitter;
+            if (submitter && submitter.hasAttribute('formnovalidate')) {
+                return;
+            }
 
-            $(this).find('[required]').each(function () {
-                if (!$(this).val()) {
-                    $(this).addClass('is-invalid');
-                    isValid = false;
-                } else {
-                    $(this).removeClass('is-invalid');
+            var firstInvalid = null;
+            form.querySelectorAll('[required]').forEach(function (field) {
+                var invalid = !field.value || !field.value.trim();
+                field.classList.toggle('is-invalid', invalid);
+                if (invalid && !firstInvalid) {
+                    firstInvalid = field;
                 }
             });
 
-            if (!isValid) {
+            if (firstInvalid) {
                 event.preventDefault();
-                alert('Please fill in all required fields.');
+                var tabPane = firstInvalid.closest('.tab-pane');
+                if (tabPane) {
+                    var tabTrigger = document.querySelector('[data-bs-target="#' + tabPane.id + '"]');
+                    if (tabTrigger && window.bootstrap && window.bootstrap.Tab) {
+                        window.bootstrap.Tab.getOrCreateInstance(tabTrigger).show();
+                    }
+                }
+                firstInvalid.focus({preventScroll: true});
+                firstInvalid.scrollIntoView({behavior: 'smooth', block: 'center'});
             }
         });
 
-        $('input, select, textarea').on('input', function () {
-            $(this).removeClass('is-invalid');
+        form.addEventListener('input', function (event) {
+            if (event.target.matches('input, select, textarea')) {
+                event.target.classList.remove('is-invalid');
+            }
         });
 
-        $('#settingsForm').on('click', '[data-confirm-message]', function (event) {
-            var message = $(this).attr('data-confirm-message');
+        form.addEventListener('click', function (event) {
+            var action = event.target.closest('[data-confirm-message]');
+            if (!action) {
+                return;
+            }
+            var message = action.getAttribute('data-confirm-message');
             if (message && !window.confirm(message)) {
                 event.preventDefault();
             }
         });
+    }
+
+    function initEditors() {
+        if (!$ || !$.fn || !$.fn.summernote) {
+            return;
+        }
+        $('.editor').summernote({
+            height: 220,
+            placeholder: 'Write content here...',
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['insert', ['link']],
+                ['view', ['codeview']]
+            ]
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        bindTabs();
+        bindValidation();
+        initEditors();
     });
 })(window.jQuery);

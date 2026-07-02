@@ -1,116 +1,191 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
-    <div layout:fragment = "main_content">
+    <div layout:fragment="main_content">
+        <style>
+            .shipment-console {
+                background: #f7f9fc;
+                border: 1px solid #e5eaf1;
+                border-radius: 8px;
+                padding: 18px;
+            }
+            .shipment-header {
+                background: #ffffff;
+                border: 1px solid #dde5ef;
+                border-left: 4px solid #0d6efd;
+                border-radius: 8px;
+                padding: 18px;
+                box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+            }
+            .shipment-kpi {
+                background: #ffffff;
+                border: 1px solid #e5eaf1;
+                border-radius: 8px;
+                min-height: 78px;
+                padding: 12px 14px;
+            }
+            .shipment-kpi span {
+                color: #667085;
+                display: block;
+                font-size: 12px;
+                font-weight: 700;
+                letter-spacing: 0;
+                text-transform: uppercase;
+            }
+            .shipment-kpi strong {
+                color: #111827;
+                display: block;
+                font-size: 18px;
+                margin-top: 4px;
+            }
+            .shipment-section {
+                border: 1px solid #dde5ef;
+                border-radius: 8px;
+                box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+            }
+            .shipment-section .card-header {
+                border-bottom: 1px solid #e5eaf1;
+                padding: 14px 18px;
+            }
+            .shipment-section .card-body {
+                padding: 18px;
+            }
+            .readonly-metric {
+                background: #f8fafc;
+                font-weight: 700;
+            }
+        </style>
 
-
-        <section class="mb-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <h4><i class="bi bi-person-badge-fill me-2 text-primary"></i>Shipment Management</h4>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="#" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Shipment Create</li>
-                    </ol>
-                </nav>
+        <div class="shipment-console">
+            <div class="shipment-header d-flex justify-content-between align-items-start mb-3 flex-wrap gap-3">
+                <div>
+                    <div class="text-primary fw-semibold small text-uppercase mb-1">Admin fulfillment control</div>
+                    <h4 class="mb-1">
+                        <i class="bi bi-truck me-2 text-primary"></i>
+                        <span th:text="${shipment.id != null ? 'Edit Shipment #' + shipment.id : 'Create Shipment'}">Create Shipment</span>
+                    </h4>
+                    <p class="text-muted mb-0">Create, assign, and audit shipment settlement snapshots from one controlled panel.</p>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a class="btn btn-success btn-sm" th:href="@{/admin/shipments/create}">
+                        <i class="bi bi-plus-circle"></i> Add New
+                    </a>
+                    <a th:href="@{/admin/shipments/list}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
             </div>
-        </section>
-        <div class="row">
-            <div class="col-sm-12">
 
-                <div class="card">
-                    <div class="card-header">
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <div class="shipment-kpi">
+                        <span>Request Token</span>
+                        <strong th:text="${shipment.uuid != null and #strings.length(shipment.uuid) >= 8 ? #strings.substring(shipment.uuid, 0, 8) : 'New'}">New</strong>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="shipment-kpi">
+                        <span>Order</span>
+                        <strong id="orderCodeKpi" th:text="${selectedOrderCode != null ? selectedOrderCode : 'Select order'}">Select order</strong>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="shipment-kpi">
+                        <span>Status</span>
+                        <strong th:text="${shipment.status != null ? #strings.replace(shipment.status.name(), '_', ' ') : 'Pending'}">Pending</strong>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="shipment-kpi">
+                        <span>Vendor</span>
+                        <strong th:text="${shipment.vendorId != null ? shipment.vendorId : 'Select vendor'}">Select vendor</strong>
+                    </div>
+                </div>
+            </div>
 
-                        <div class="row">
-                            <div class="col-sm-5 font-weight-bold "> </div>
+            <div th:if="${not #strings.isEmpty(successMessage)}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${not #strings.isEmpty(errorMessage)}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
 
-                            <div class="col-sm-7 text-end">
-                                <div class="btn-group ">
-                                    <a class="btn btn-success btn-sm " th:href="@{/admin/shipments/create}"> <i class="bi bi-plus-circle"></i> Add New </a>
-                                    <a th:href="@{/admin/shipments/list}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>
-                                </div>
-                            </div>
-
-                        </div>
+            <form th:action="@{/admin/shipments/save}" th:object="${shipment}" method="post" id="adminShipmentForm">
+                <div class="card shipment-section mb-3">
+                    <div class="card-header bg-white">
+                        <strong><i class="bi bi-box-seam"></i> Order And Assignment</strong>
                     </div>
                     <div class="card-body">
-                        <div th:if="${not #strings.isEmpty(successMessage)}" class="alert alert-success alert-dismissible fade show" role="alert">
-                            <span th:text="${successMessage}"></span>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                        <div th:if="${not #strings.isEmpty(errorMessage)}" class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <span th:text="${errorMessage}"></span>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                            <ul class="mb-0">
+                                <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                            </ul>
                         </div>
 
+                        <input type="hidden" th:field="*{id}" />
+                        <input type="hidden" th:field="*{uuid}" />
 
-                        <form th:action="@{/admin/shipments/save}" th:object="${shipment}" method="post" class="row g-3">
-
-
-                            <div th:if="${#fields.hasErrors('*')}"
-                                 style="color:red; margin-bottom:10px; display:flex; justify-content:center;">
-                                <ul>
-                                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"
-                                        style="list-style:none; text-align:center;"></li>
-                                </ul>
-                            </div>
-
-                            <input type="hidden" th:field="*{id}" />
-                            <input type="hidden" th:field="*{uuid}" />
-
-                            <!-- Carrier -->
-                            <div class="col-md-4">
-                                <label class="form-label">Vendor Id</label>
+                        <div class="row g-3">
+                            <div class="col-lg-4">
+                                <label class="form-label">Vendor</label>
                                 <select class="form-select" th:field="*{vendorId}" id="vendorIdSelect" required>
                                     <option value="">Select vendor</option>
                                     <option th:each="vendor : ${vendors}"
                                             th:value="${vendor.id}"
                                             th:text="${vendor.vendorCode + ' - ' + vendor.companyName}"></option>
                                 </select>
-                                <div class="form-text">Choose the vendor for this shipment.</div>
+                                <div class="form-text">The shipment vendor must match the selected sales order.</div>
                                 <div class="text-danger small" th:if="${#fields.hasErrors('vendorId')}" th:errors="*{vendorId}"></div>
-                                <label class="form-label">Sales Order Id</label>
+                            </div>
+
+                            <div class="col-lg-4">
+                                <label class="form-label">Sales Order</label>
                                 <select class="form-select" th:field="*{salesOrderId}" id="salesOrderIdSelect" required>
-                                    <option value="">Select sales order</option>
+                                    <option value="">Select shipment-ready order</option>
                                     <option th:each="order : ${salesOrders}"
                                             th:value="${order['id']}"
-                                            th:text="${order['orderCode'] + ' | ID: ' + order['id'] + ' | Vendor: ' + order['vendorId']}"
-                                            th:attr="data-vendor-id=${order['vendorId']},data-location=${order['district']},data-shipping-cost=${order['shippingCost']}"></option>
+                                            th:text="${order['orderCode']}"
+                                            th:attr="data-order-code=${order['orderCode']},data-vendor-id=${order['vendorId']},data-location=${order['district']},data-shipping-cost=${order['shippingCost']},data-grand-total=${order['grandTotal']}"></option>
                                 </select>
-                                <div class="form-text">Orders are filtered by vendor and will auto-fill the shipping location.</div>
+                                <div class="form-text">Eligible orders are packed, physical, and not already shipped.</div>
                                 <div class="text-danger small" th:if="${#fields.hasErrors('salesOrderId')}" th:errors="*{salesOrderId}"></div>
                             </div>
 
-                            <!-- Carrier -->
-                            <div class="col-md-4">
+                            <div class="col-lg-4">
+                                <label class="form-label">Location</label>
+                                <input type="text" th:field="*{district}" id="locationInput" class="form-control readonly-metric" readonly required />
+                                <div class="form-text">Loaded from the selected sales order shipping address.</div>
+                                <div class="text-danger small" th:if="${#fields.hasErrors('district')}" th:errors="*{district}"></div>
+                            </div>
+
+                            <div class="col-lg-4">
                                 <label class="form-label">Carrier</label>
-                                <select th:field="*{carrier}" class="form-select">
+                                <select th:field="*{carrier}" class="form-select" id="carrierSelect">
                                     <option value="">Select carrier</option>
-                                    <option th:each="c : ${carriers}" th:value="${c.id}" th:text="${c.name}"></option>
+                                    <option th:each="c : ${carriers}"
+                                            th:value="${c.id}"
+                                            th:text="${c.name}"
+                                            th:attr="data-settlement-mode=${c.settlementMode},data-shipping-owner=${c.shippingChargeOwner},data-cod-mode=${c.codCollectionMode},data-carrier-mode=${c.mode}"></option>
                                 </select>
-                                <div class="form-text">Select a courier, or assign a delivery person for local delivery.</div>
+                                <div class="form-text">Carrier selection can prefill settlement defaults.</div>
                                 <div class="text-danger small" th:if="${#fields.hasErrors('carrier')}" th:errors="*{carrier}"></div>
                             </div>
 
-                            <!-- Delivery Person -->
-                            <div class="col-md-4">
+                            <div class="col-lg-4">
                                 <label class="form-label">Delivery Person</label>
                                 <select th:field="*{deliveryPerson}" class="form-select" id="deliveryPersonSelect">
                                     <option value="">Select delivery person</option>
                                     <option th:each="d : ${deliveryPersons}"
                                             th:value="${d.id}"
-                                            th:text="${d.name}"
+                                            th:text="${d.name + ' | ' + d.phone}"
                                             th:attr="data-vendor-id=${d.vendorId}"></option>
                                 </select>
-                                <div class="form-text">Optional: Assign a delivery person.</div>
+                                <div class="form-text">Optional when the carrier handles delivery directly.</div>
                                 <div class="text-danger small" th:if="${#fields.hasErrors('deliveryPerson')}" th:errors="*{deliveryPerson}"></div>
                             </div>
 
-                            <div class="col-md-4">
+                            <div class="col-lg-4">
                                 <label class="form-label">Pickup Address</label>
                                 <select th:field="*{pickupAddress}" class="form-select" id="pickupAddressSelect">
                                     <option value="">Select pickup address</option>
@@ -119,246 +194,357 @@ and open the template in the editor.
                                             th:text="${p.name + ' | ' + p.district.displayLabel}"
                                             th:attr="data-vendor-id=${p.vendorId}"></option>
                                 </select>
-                                <div class="form-text">Optional: vendor pickup point for carrier handover.</div>
+                                <div class="form-text">Default vendor pickup is selected when available.</div>
                                 <div class="text-danger small" th:if="${#fields.hasErrors('pickupAddress')}" th:errors="*{pickupAddress}"></div>
                             </div>
 
-                            <!-- Location -->
-                            <div class="col-md-4">
-                                <label class="form-label">Location</label>
-                                <input type="text" th:field="*{district}" id="locationInput" class="form-control" readonly required/>
-                                <div class="form-text">This is loaded from the selected sales order shipping address.</div>
-                                <div class="text-danger small" th:if="${#fields.hasErrors('district')}" th:errors="*{district}"></div>
+                            <div class="col-lg-4">
+                                <label class="form-label">Tracking Number</label>
+                                <input type="text" th:field="*{trackingNumber}" class="form-control" maxlength="100" />
+                                <div class="form-text">Carrier tracking, rider reference, or blank until dispatch.</div>
+                                <div class="text-danger small" th:if="${#fields.hasErrors('trackingNumber')}" th:errors="*{trackingNumber}"></div>
                             </div>
 
-                            <!-- Tracking Number -->
-                            <!--                            <div class="col-md-4">
-                                                            <label class="form-label">Tracking Number</label>
-                                                            <input type="text" th:field="*{trackingNumber}" class="form-control"/>
-                                                            <div class="form-text">Unique shipment tracking number (optional).</div>
-                                                            <div class="text-danger small" th:if="${#fields.hasErrors('trackingNumber')}" th:errors="*{trackingNumber}"></div>
-                                                        </div>-->
+                            <div class="col-lg-3">
+                                <label class="form-label">Status</label>
+                                <select th:field="*{status}" class="form-select">
+                                    <option th:each="status : ${T(com.ecommerce.app.module.shipping.model.ShipmentStatus).values()}"
+                                            th:value="${status}"
+                                            th:text="${#strings.replace(status.name(), '_', ' ')}"></option>
+                                </select>
+                            </div>
 
-                            <!-- Shipping Cost -->
-                            <div class="col-md-4">
+                            <div class="col-lg-3">
+                                <label class="form-label">Delivery Type</label>
+                                <select th:field="*{deliveryType}" class="form-select">
+                                    <option th:each="type : ${T(com.ecommerce.app.module.shipping.model.DeliveryType).values()}"
+                                            th:value="${type}"
+                                            th:text="${#strings.replace(type.name(), '_', ' ')}"></option>
+                                </select>
+                            </div>
+
+                            <div class="col-lg-2">
+                                <label class="form-label">Delivery Speed</label>
+                                <select th:field="*{speed}" class="form-select">
+                                    <option th:each="speed : ${T(com.ecommerce.app.module.shipping.model.DeliverySpeed).values()}"
+                                            th:value="${speed}"
+                                            th:text="${#strings.replace(speed.name(), '_', ' ')}"></option>
+                                </select>
+                            </div>
+
+                            <div class="col-lg-4">
+                                <label class="form-label">Label URL</label>
+                                <input type="text" th:field="*{labelUrl}" class="form-control" maxlength="255" />
+                                <div class="text-danger small" th:if="${#fields.hasErrors('labelUrl')}" th:errors="*{labelUrl}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shipment-section mb-3">
+                    <div class="card-header bg-white">
+                        <strong><i class="bi bi-cash-coin"></i> COD And Settlement</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-lg-3">
                                 <label class="form-label">Shipping Cost</label>
-                                <input type="number" step="0.01" th:field="*{shippingCost}" id="shippingCostInput" class="form-control" readonly/>
-                                <div class="form-text">This is loaded from the selected sales order delivery charge.</div>
+                                <input type="number" step="0.01" th:field="*{shippingCost}" id="shippingCostInput" class="form-control readonly-metric" readonly />
+                                <div class="form-text">Delivery charge copied from the selected order; used in payable calculation based on charge owner.</div>
                                 <div class="text-danger small" th:if="${#fields.hasErrors('shippingCost')}" th:errors="*{shippingCost}"></div>
                             </div>
 
-                            <div class="col-md-4">
-                                <label class="form-label">Settlement Mode</label>
-                                <select th:field="*{settlementMode}" class="form-select">
-                                    <option th:each="mode : ${T(com.ecommerce.app.module.shipping.model.SettlementMode).values()}" th:value="${mode}" th:text="${#strings.replace(mode.name(), '_', ' ')}"></option>
-                                </select>
+                            <div class="col-lg-3">
+                                <label class="form-label">Total Order Amount</label>
+                                <input type="number" step="0.01" th:field="*{totalOrderAmount}" id="totalOrderAmountInput" class="form-control readonly-metric" readonly />
+                                <div class="form-text">Customer order total for this shipment, including product and delivery charges.</div>
                             </div>
 
-                            <div class="col-md-4">
-                                <label class="form-label">Shipping Charge Owner</label>
-                                <select th:field="*{shippingChargeOwner}" class="form-select">
-                                    <option th:each="owner : ${T(com.ecommerce.app.module.shipping.model.ShippingChargeOwner).values()}" th:value="${owner}" th:text="${#strings.replace(owner.name(), '_', ' ')}"></option>
-                                </select>
+                            <div class="col-lg-2">
+                                <label class="form-label d-block">COD Shipment</label>
+                                <div class="form-check mt-2">
+                                    <input type="checkbox" th:field="*{cod}" class="form-check-input" />
+                                    <label class="form-check-label">COD required</label>
+                                </div>
+                                <div class="form-text">Auto-detected from unpaid COD amount on the order; admin can review before save.</div>
                             </div>
 
-                            <div class="col-md-4">
-                                <label class="form-label">COD Collection Mode</label>
-                                <select th:field="*{codCollectionMode}" class="form-select">
-                                    <option th:each="mode : ${T(com.ecommerce.app.module.shipping.model.CodCollectionMode).values()}" th:value="${mode}" th:text="${#strings.replace(mode.name(), '_', ' ')}"></option>
-                                </select>
-                            </div>
-
-                            <!-- Speed -->
-                            <!--                            <div class="col-md-4">
-                                                            <label class="form-label">Speed</label>
-                                                            <select th:field="*{speed}" class="form-select">
-                                                                <option th:each="s : ${T(com.example.model.DeliverySpeed).values()}" th:value="${s}" th:text="${s}"></option>
-                                                            </select>
-                                                            <div class="form-text">Delivery speed (Standard / Express).</div>
-                                                        </div>-->
-
-                            <!-- Delivery Type -->
-                            <!--                            <div class="col-md-4">
-                                                            <label class="form-label">Delivery Type</label>
-                                                            <select th:field="*{deliveryType}" class="form-select">
-                                                                <option th:each="t : ${T(com.example.model.DeliveryType).values()}" th:value="${t}" th:text="${t}"></option>
-                                                            </select>
-                                                            <div class="form-text">Home delivery or office pickup.</div>
-                                                        </div>-->
-
-                            <!-- Status -->
-                            <!--                            <div class="col-md-4">
-                                                            <label class="form-label">Status</label>
-                                                            <select th:field="*{status}" class="form-select">
-                                                                <option th:each="st : ${T(com.example.model.ShipmentStatus).values()}" th:value="${st}" th:text="${st}"></option>
-                                                            </select>
-                                                            <div class="form-text">Current shipment status.</div>
-                                                        </div>-->
-
-                            <!-- COD -->
-                            <div class="col-md-2">
-                                <label class="form-label">COD</label>
-                                <input type="checkbox" th:field="*{cod}" class="form-check-input"/>
-                                <div class="form-text">Check if this is a Cash-on-Delivery shipment.</div>
-                            </div>
-
-                            <!-- Total / Collected / Pending -->
-                            <div class="col-md-2">
-                                <label class="form-label">Total Amount</label>
-                                <input type="number" step="0.01" th:field="*{totalOrderAmount}" class="form-control"/>
-                            </div>
-
-
-                            <!-- COD Collected / Pending -->
-                            <div class="col-md-2">
+                            <div class="col-lg-2">
                                 <label class="form-label">COD Collected</label>
-                                <input type="number" step="0.01" th:field="*{codCollected}" class="form-control"/>
+                                <input type="number" step="0.01" th:field="*{codCollected}" class="form-control readonly-metric" readonly />
+                                <div class="form-text">Amount already received against this order's COD balance.</div>
                             </div>
-                            <div class="col-md-2">
+
+                            <div class="col-lg-2">
                                 <label class="form-label">COD Pending</label>
-                                <input type="number" step="0.01" th:field="*{codPending}" class="form-control"/>
+                                <input type="number" step="0.01" th:field="*{codPending}" class="form-control readonly-metric" readonly />
+                                <div class="form-text">Remaining COD amount still to collect before delivery settlement is complete.</div>
                             </div>
 
-                            <div class="col-md-3">
+                            <div class="col-lg-4">
+                                <label class="form-label">Settlement Mode</label>
+                                <select th:field="*{settlementMode}" id="settlementModeSelect" class="form-select">
+                                    <option th:each="mode : ${T(com.ecommerce.app.module.shipping.model.SettlementMode).values()}"
+                                            th:value="${mode}"
+                                            th:text="${#strings.replace(mode.name(), '_', ' ')}"></option>
+                                </select>
+                                <div class="form-text">Defines who manages settlement between customer, carrier, vendor, and marketplace.</div>
+                            </div>
+
+                            <div class="col-lg-4">
+                                <label class="form-label">Shipping Charge Owner</label>
+                                <select th:field="*{shippingChargeOwner}" id="shippingChargeOwnerSelect" class="form-select">
+                                    <option th:each="owner : ${T(com.ecommerce.app.module.shipping.model.ShippingChargeOwner).values()}"
+                                            th:value="${owner}"
+                                            th:text="${#strings.replace(owner.name(), '_', ' ')}"></option>
+                                </select>
+                                <div class="form-text">Choose who finally owns the delivery charge: marketplace or vendor.</div>
+                            </div>
+
+                            <div class="col-lg-4">
+                                <label class="form-label">COD Collection Mode</label>
+                                <select th:field="*{codCollectionMode}" id="codCollectionModeSelect" class="form-select">
+                                    <option th:each="mode : ${T(com.ecommerce.app.module.shipping.model.CodCollectionMode).values()}"
+                                            th:value="${mode}"
+                                            th:text="${#strings.replace(mode.name(), '_', ' ')}"></option>
+                                </select>
+                                <div class="form-text">Shows who collects COD from the customer and where the money should be settled.</div>
+                            </div>
+
+                            <div class="col-lg-3">
                                 <label class="form-label">Product Net Amount</label>
-                                <input type="number" step="0.01" th:field="*{productNetAmount}" class="form-control"/>
+                                <input type="number" step="0.01" th:field="*{productNetAmount}" id="productNetAmountInput" class="form-control" />
+                                <div class="form-text">Product value payable before marketplace commission, COD fees, and delivery ownership adjustments.</div>
                             </div>
 
-                            <div class="col-md-3">
+                            <div class="col-lg-3">
                                 <label class="form-label">Marketplace Commission</label>
-                                <input type="number" step="0.01" th:field="*{marketplaceCommissionAmount}" class="form-control"/>
+                                <input type="number" step="0.01" th:field="*{marketplaceCommissionAmount}" id="marketplaceCommissionInput" class="form-control" />
+                                <div class="form-text">Marketplace earning deducted from vendor product value and added to marketplace payable.</div>
                             </div>
 
-                            <div class="col-md-3">
-                                <label class="form-label">COD Fee Amount</label>
-                                <input type="number" step="0.01" th:field="*{codFeeAmount}" class="form-control"/>
+                            <div class="col-lg-3">
+                                <label class="form-label">COD Fee</label>
+                                <input type="number" step="0.01" th:field="*{codFeeAmount}" id="codFeeInput" class="form-control" />
+                                <div class="form-text">Extra collection fee for COD handling; counted for marketplace when marketplace collects or receives COD.</div>
                             </div>
 
-                            <div class="col-md-3">
+                            <div class="col-lg-3">
                                 <label class="form-label d-block">Shipping Paid To Marketplace</label>
-                                <input type="checkbox" th:field="*{shippingPaidToMarketplace}" class="form-check-input"/>
+                                <div class="form-check mt-2">
+                                    <input type="checkbox" th:field="*{shippingPaidToMarketplace}" id="shippingPaidToMarketplaceInput" class="form-check-input" />
+                                    <label class="form-check-label">Paid to marketplace</label>
+                                </div>
+                                <div class="form-text">Enable when customer shipping money has reached marketplace but belongs to vendor.</div>
                             </div>
 
-                            <div class="col-md-3">
+                            <div class="col-lg-3">
                                 <label class="form-label">Vendor Payable</label>
-                                <input type="number" step="0.01" th:field="*{vendorPayableAmount}" class="form-control"/>
+                                <input type="number" step="0.01" th:field="*{vendorPayableAmount}" id="vendorPayableInput" class="form-control readonly-metric" readonly />
+                                <div class="form-text">Calculated vendor payout after commission and eligible vendor-owned shipping amount.</div>
                             </div>
 
-                            <div class="col-md-3">
+                            <div class="col-lg-3">
                                 <label class="form-label">Marketplace Payable</label>
-                                <input type="number" step="0.01" th:field="*{marketplacePayableAmount}" class="form-control"/>
+                                <input type="number" step="0.01" th:field="*{marketplacePayableAmount}" id="marketplacePayableInput" class="form-control readonly-metric" readonly />
+                                <div class="form-text">Calculated marketplace share from commission, marketplace-owned shipping, and eligible COD fees.</div>
                             </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <!-- Packaging -->
-                            <!--                            <div class="col-md-4">
-                                                            <label class="form-label">Packaging</label>
-                                                            <select th:field="*{packagingRate}" class="form-select">
-                                                                <option th:each="p : ${packagingRates}" th:value="${p}" th:text="${p.packagingType} + ' - ' + ${p.basePrice}"></option>
-                                                            </select>
-                                                            <div class="form-text">Select packaging type and cost.</div>
-                                                        </div>-->
-
-                            <!-- Metadata JSON -->
-                            <div class="col-12">
-                                <label class="form-label">Metadata JSON</label>
-                                <textarea th:field="*{metadataJson}" class="form-control" rows="3"></textarea>
-                                <div class="form-text">Optional: JSON metadata for this shipment.</div>
-                            </div>
-
-                            <!-- Buttons -->
-                            <div class="col-12">
-                                <button type="submit" class="btn btn-primary">Save</button>
-                                <a th:href="@{/admin/shipments/list}" class="btn btn-secondary">Cancel</a>
-                            </div>
-                        </form>
-
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function () {
-                                const vendorSelect = document.getElementById('vendorIdSelect');
-                                const salesOrderSelect = document.getElementById('salesOrderIdSelect');
-                                const deliveryPersonSelect = document.getElementById('deliveryPersonSelect');
-                                const pickupAddressSelect = document.getElementById('pickupAddressSelect');
-                                const locationInput = document.getElementById('locationInput');
-                                const shippingCostInput = document.getElementById('shippingCostInput');
-
-                                function filterOptions(select) {
-                                    if (!select) {
-                                        return;
-                                    }
-
-                                    const selectedVendorId = vendorSelect ? vendorSelect.value : '';
-                                    Array.from(select.options).forEach(function (option, index) {
-                                        if (index === 0) {
-                                            option.hidden = false;
-                                            return;
-                                        }
-
-                                        const optionVendorId = option.getAttribute('data-vendor-id');
-                                        option.hidden = selectedVendorId !== '' && optionVendorId !== selectedVendorId;
-
-                                        if (option.hidden && option.selected) {
-                                            select.value = '';
-                                        }
-                                    });
-                                }
-
-                                function syncLocationFromOrder() {
-                                    if (!salesOrderSelect || !locationInput) {
-                                        return;
-                                    }
-
-                                    const selectedOption = salesOrderSelect.options[salesOrderSelect.selectedIndex];
-                                    const location = selectedOption ? (selectedOption.getAttribute('data-location') || '') : '';
-                                    locationInput.value = location;
-                                }
-
-                                function syncShippingCostFromOrder() {
-                                    if (!salesOrderSelect || !shippingCostInput) {
-                                        return;
-                                    }
-
-                                    const selectedOption = salesOrderSelect.options[salesOrderSelect.selectedIndex];
-                                    const shippingCost = selectedOption ? (selectedOption.getAttribute('data-shipping-cost') || '') : '';
-                                    shippingCostInput.value = shippingCost;
-                                }
-
-                                function syncVendorOptions() {
-                                    filterOptions(salesOrderSelect);
-                                    filterOptions(deliveryPersonSelect);
-                                    filterOptions(pickupAddressSelect);
-                                    syncLocationFromOrder();
-                                    syncShippingCostFromOrder();
-                                }
-
-                                if (vendorSelect) {
-                                    vendorSelect.addEventListener('change', syncVendorOptions);
-                                }
-
-                                if (salesOrderSelect) {
-                                    salesOrderSelect.addEventListener('change', function () {
-                                        const selectedOption = salesOrderSelect.options[salesOrderSelect.selectedIndex];
-                                        if (selectedOption && vendorSelect) {
-                                            const orderVendorId = selectedOption.getAttribute('data-vendor-id') || '';
-                                            if (orderVendorId && vendorSelect.value !== orderVendorId) {
-                                                vendorSelect.value = orderVendorId;
-                                                filterOptions(deliveryPersonSelect);
-                                                filterOptions(pickupAddressSelect);
-                                                filterOptions(salesOrderSelect);
-                                            }
-                                        }
-                                        syncLocationFromOrder();
-                                        syncShippingCostFromOrder();
-                                    });
-                                }
-
-                                syncVendorOptions();
-                            });
-                        </script>
-
-
-                    </div><!--  Card body end-->
-                </div><!--  Card  end-->
-            </div><!--  Main Content  end-->
+                <div class="card shipment-section">
+                    <div class="card-header bg-white">
+                        <strong><i class="bi bi-braces"></i> Metadata</strong>
+                    </div>
+                    <div class="card-body">
+                        <label class="form-label">Metadata JSON</label>
+                        <textarea th:field="*{metadataJson}" class="form-control" rows="4" placeholder='{"note":"Fragile package"}'></textarea>
+                        <div class="form-text">Optional structured note for carrier, delivery person, settlement audit, or support review.</div>
+                    </div>
+                    <div class="card-footer bg-white d-flex justify-content-end gap-2 flex-wrap">
+                        <a th:href="@{/admin/shipments/list}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary" id="saveShipmentButton">
+                            <i class="bi bi-save"></i> <span>Save Shipment</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
         </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const vendorSelect = document.getElementById('vendorIdSelect');
+                const salesOrderSelect = document.getElementById('salesOrderIdSelect');
+                const orderCodeKpi = document.getElementById('orderCodeKpi');
+                const carrierSelect = document.getElementById('carrierSelect');
+                const deliveryPersonSelect = document.getElementById('deliveryPersonSelect');
+                const pickupAddressSelect = document.getElementById('pickupAddressSelect');
+                const locationInput = document.getElementById('locationInput');
+                const shippingCostInput = document.getElementById('shippingCostInput');
+                const totalOrderAmountInput = document.getElementById('totalOrderAmountInput');
+                const productNetAmountInput = document.getElementById('productNetAmountInput');
+                const marketplaceCommissionInput = document.getElementById('marketplaceCommissionInput');
+                const codFeeInput = document.getElementById('codFeeInput');
+                const shippingPaidInput = document.getElementById('shippingPaidToMarketplaceInput');
+                const vendorPayableInput = document.getElementById('vendorPayableInput');
+                const marketplacePayableInput = document.getElementById('marketplacePayableInput');
+                const settlementModeSelect = document.getElementById('settlementModeSelect');
+                const shippingChargeOwnerSelect = document.getElementById('shippingChargeOwnerSelect');
+                const codCollectionModeSelect = document.getElementById('codCollectionModeSelect');
+                const shipmentForm = document.getElementById('adminShipmentForm');
+                const saveShipmentButton = document.getElementById('saveShipmentButton');
+
+                function toNumber(input) {
+                    if (!input) {
+                        return 0;
+                    }
+                    const value = parseFloat(input.value || '0');
+                    return Number.isFinite(value) ? value : 0;
+                }
+
+                function setNumber(input, value) {
+                    if (input) {
+                        input.value = (Number.isFinite(value) ? value : 0).toFixed(2);
+                    }
+                }
+
+                function filterOptions(select) {
+                    if (!select) {
+                        return;
+                    }
+                    const selectedVendorId = vendorSelect ? vendorSelect.value : '';
+                    Array.from(select.options).forEach(function (option, index) {
+                        if (index === 0) {
+                            option.hidden = false;
+                            return;
+                        }
+                        const optionVendorId = option.getAttribute('data-vendor-id');
+                        option.hidden = selectedVendorId !== '' && optionVendorId !== selectedVendorId;
+                        if (option.hidden && option.selected) {
+                            select.value = '';
+                        }
+                    });
+                }
+
+                function syncOrderFields() {
+                    if (!salesOrderSelect) {
+                        return;
+                    }
+                    const selectedOption = salesOrderSelect.options[salesOrderSelect.selectedIndex];
+                    const orderCode = selectedOption ? (selectedOption.getAttribute('data-order-code') || selectedOption.text || '') : '';
+                    const location = selectedOption ? (selectedOption.getAttribute('data-location') || '') : '';
+                    const shippingCost = selectedOption ? (selectedOption.getAttribute('data-shipping-cost') || '') : '';
+                    const grandTotal = selectedOption ? (selectedOption.getAttribute('data-grand-total') || '') : '';
+
+                    if (orderCodeKpi) {
+                        orderCodeKpi.textContent = orderCode || 'Select order';
+                    }
+                    if (selectedOption && vendorSelect) {
+                        const orderVendorId = selectedOption.getAttribute('data-vendor-id') || '';
+                        if (orderVendorId && vendorSelect.value !== orderVendorId) {
+                            vendorSelect.value = orderVendorId;
+                            filterOptions(deliveryPersonSelect);
+                            filterOptions(pickupAddressSelect);
+                            filterOptions(salesOrderSelect);
+                        }
+                    }
+                    if (locationInput) {
+                        locationInput.value = location;
+                    }
+                    if (shippingCostInput && shippingCost !== '') {
+                        shippingCostInput.value = Number.parseFloat(shippingCost || '0').toFixed(2);
+                    }
+                    if (totalOrderAmountInput && grandTotal !== '') {
+                        totalOrderAmountInput.value = Number.parseFloat(grandTotal || '0').toFixed(2);
+                    }
+                    if (productNetAmountInput && (!productNetAmountInput.value || Number.parseFloat(productNetAmountInput.value) === 0) && grandTotal !== '') {
+                        productNetAmountInput.value = Number.parseFloat(grandTotal || '0').toFixed(2);
+                    }
+                    recalculateSettlement();
+                }
+
+                function syncCarrierDefaults() {
+                    if (!carrierSelect) {
+                        return;
+                    }
+                    const option = carrierSelect.options[carrierSelect.selectedIndex];
+                    if (!option) {
+                        return;
+                    }
+                    const settlementMode = option.getAttribute('data-settlement-mode');
+                    const shippingOwner = option.getAttribute('data-shipping-owner');
+                    const codMode = option.getAttribute('data-cod-mode');
+                    if (settlementMode && settlementModeSelect) {
+                        settlementModeSelect.value = settlementMode;
+                    }
+                    if (shippingOwner && shippingChargeOwnerSelect) {
+                        shippingChargeOwnerSelect.value = shippingOwner;
+                    }
+                    if (codMode && codCollectionModeSelect) {
+                        codCollectionModeSelect.value = codMode;
+                    }
+                    recalculateSettlement();
+                }
+
+                function syncVendorOptions() {
+                    filterOptions(salesOrderSelect);
+                    filterOptions(deliveryPersonSelect);
+                    filterOptions(pickupAddressSelect);
+                    syncOrderFields();
+                }
+
+                function recalculateSettlement() {
+                    const productNet = toNumber(productNetAmountInput);
+                    const commission = toNumber(marketplaceCommissionInput);
+                    const shipping = toNumber(shippingCostInput);
+                    const codFee = toNumber(codFeeInput);
+                    const shippingOwner = shippingChargeOwnerSelect ? shippingChargeOwnerSelect.value : 'MARKETPLACE';
+                    const codMode = codCollectionModeSelect ? codCollectionModeSelect.value : '';
+
+                    let vendorPayable = Math.max(productNet - commission, 0);
+                    if (shippingOwner === 'VENDOR' && shippingPaidInput && shippingPaidInput.checked) {
+                        vendorPayable += shipping;
+                    }
+
+                    let marketplacePayable = commission;
+                    if (shippingOwner === 'MARKETPLACE') {
+                        marketplacePayable += shipping;
+                    }
+                    if (codMode === 'MARKETPLACE_COLLECTS' || codMode === 'CARRIER_COLLECTS_FOR_MARKETPLACE') {
+                        marketplacePayable += codFee;
+                    }
+
+                    setNumber(vendorPayableInput, vendorPayable);
+                    setNumber(marketplacePayableInput, marketplacePayable);
+                }
+
+                if (vendorSelect) {
+                    vendorSelect.addEventListener('change', syncVendorOptions);
+                }
+                if (salesOrderSelect) {
+                    salesOrderSelect.addEventListener('change', syncOrderFields);
+                }
+                if (carrierSelect) {
+                    carrierSelect.addEventListener('change', syncCarrierDefaults);
+                }
+                [productNetAmountInput, marketplaceCommissionInput, codFeeInput, shippingPaidInput, shippingChargeOwnerSelect, codCollectionModeSelect]
+                        .filter(Boolean)
+                        .forEach(function (element) {
+                            element.addEventListener('change', recalculateSettlement);
+                            element.addEventListener('input', recalculateSettlement);
+                        });
+
+                syncVendorOptions();
+                recalculateSettlement();
+
+                if (shipmentForm && saveShipmentButton) {
+                    shipmentForm.addEventListener('submit', function () {
+                        saveShipmentButton.disabled = true;
+                        saveShipmentButton.querySelector('span').textContent = 'Saving...';
+                    });
+                }
+            });
+        </script>
     </div>
-</div>   <!--  Layout end-->
+</div>

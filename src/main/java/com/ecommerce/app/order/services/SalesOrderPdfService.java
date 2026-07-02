@@ -144,7 +144,7 @@ public class SalesOrderPdfService {
     }
 
     public String filename(SalesOrder order) {
-        String orderCode = order != null ? safeText(order.getOrderCode(), "sales-order-" + order.getId()) : "sales-order";
+        String orderCode = order != null ? safeText(order.getOrderCode(), "sales-order-" + order.getUuid()) : "sales-order";
         return orderCode.replaceAll("[^A-Za-z0-9._-]", "-") + ".pdf";
     }
 

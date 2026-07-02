@@ -3,6 +3,82 @@
  * Used by: templates/front-layout-home.html and templates/front-layout-inner-page.html
  * Purpose: storefront-wide tracking, tabs, filters, cart interactions, modal/offcanvas helpers
  */
+function initSiteLoadingProgress() {
+    const loader = document.querySelector('[data-site-loader]');
+    if (!loader) {
+        return;
+    }
+
+    const progressBar = loader.querySelector('[data-site-loader-bar]');
+    const percentText = loader.querySelector('[data-site-loader-percent]');
+    const timeText = loader.querySelector('[data-site-loader-time]');
+    const usePerformanceClock = window.performance && typeof window.performance.now === 'function';
+    const startedAt = usePerformanceClock ? 0 : Date.now();
+    let progress = 8;
+    let isComplete = false;
+
+    document.body.classList.add('site-is-loading');
+
+    const render = function () {
+        const safeProgress = Math.max(0, Math.min(100, Math.round(progress)));
+        if (progressBar) {
+            progressBar.style.width = safeProgress + '%';
+        }
+        if (percentText) {
+            percentText.textContent = safeProgress + '%';
+        }
+        if (timeText) {
+            const now = usePerformanceClock ? window.performance.now() : Date.now();
+            const elapsedSeconds = Math.max(0, (now - startedAt) / 1000);
+            timeText.textContent = elapsedSeconds.toFixed(1) + 's';
+        }
+    };
+
+    const finish = function () {
+        if (isComplete) {
+            return;
+        }
+        isComplete = true;
+        progress = 100;
+        render();
+        window.setTimeout(function () {
+            loader.classList.add('is-complete');
+            document.body.classList.remove('site-is-loading');
+        }, 240);
+    };
+
+    render();
+    const timer = window.setInterval(function () {
+        if (isComplete) {
+            window.clearInterval(timer);
+            return;
+        }
+        const remaining = 94 - progress;
+        progress += Math.max(0.4, remaining * 0.08);
+        render();
+    }, 120);
+
+    window.addEventListener('load', finish, {once: true});
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted) {
+            finish();
+        }
+    });
+    window.addEventListener('beforeunload', function () {
+        loader.classList.remove('is-complete');
+        document.body.classList.add('site-is-loading');
+        progress = 8;
+        isComplete = false;
+        render();
+    });
+
+    if (document.readyState === 'complete') {
+        window.setTimeout(finish, 180);
+    }
+}
+
+initSiteLoadingProgress();
+
 function initFacebookPixel() {
     if (window.fbq) {
         return;
@@ -299,6 +375,12 @@ const debounce = (fn, delay = 100) => {
     };
 };
 const formatCurrency = num => `৳ ${parseFloat(num || 0).toFixed(2)}`;
+const escapeHtml = value => String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
 
 /**
  * ============================================
@@ -367,9 +449,12 @@ async function loadCart() {
         // ---------- Empty cart ----------
         if (!data?.groupedCart || Object.keys(data.groupedCart).length === 0) {
             container.innerHTML = `
-                <div class="empty-cart text-center p-4">
-                    <p>Your cart is empty.</p>
-                    <a href="/public/product" class="btn btn-success btn-continue">
+                <div class="empty-cart text-center">
+                    <div class="cart-empty-icon"><i class="bi bi-bag"></i></div>
+                    <h2>Your cart is empty</h2>
+                    <p>Add products to begin checkout.</p>
+                    <a href="/public/product" class="btn btn-danger btn-continue">
+                        <i class="bi bi-grid"></i>
                         Continue Shopping
                     </a>
                 </div>
@@ -402,61 +487,68 @@ async function loadCart() {
             const selectedShippingOptionCode = data.selectedShippingOption?.[vendorUuid] || '';
             const selectedPackagingRateUuid = data.selectedPackagingRate?.[vendorUuid] || '';
             vendorDiv.innerHTML = `
-                <h4 class="mt-4 text-primary">${vendorName}</h4>
+                <div class="vendor-header">
+                    <div>
+                        <div class="vendor-label">Seller</div>
+                        <h3>${escapeHtml(vendorName)}</h3>
+                    </div>
+                    <span class="vendor-item-count">${items.length} item${items.length === 1 ? '' : 's'}</span>
+                </div>
 
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped align-middle">
+                <div class="cart-table-wrap">
+                    <table class="table cart-items-table align-middle">
                         <thead>
                             <tr>
-                                <th>#</th>
                                 <th>Product</th>
-
-                                <th>Photo</th>
-            <th>Description</th>
-                                <th>Price</th>
-                                <th>Quantity</th>
-                                <th>Unit</th>
-                                <th>Weight</th>
-                                <th>Discount %</th>
-                                <th>VAT %</th>
-                                <th>Item Total</th>
-                                <th>Remove</th>
+                                <th class="text-end">Price</th>
+                                <th class="text-center">Qty</th>
+                                <th class="text-end">Discount</th>
+                                <th class="text-end">VAT</th>
+                                <th class="text-end">Total</th>
+                                <th class="text-end">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${items.map((item, idx) => `
                                 <tr>
-                                    <td>${idx + 1}</td>
-                                    <td>${item.product?.title || ''}</td>
-
-                                    <td>
-                                        <img
-                                            src="${item.product?.imageUrl || '/images/no-image.png'}"
-                                            style="width:50px;height:auto"
-                                        />
+                                    <td data-label="Product">
+                                        <div class="cart-product-cell">
+                                            <img class="cart-product-image"
+                                                 src="${escapeHtml(item.product?.imageUrl || '/images/no-image.png')}"
+                                                 alt="${escapeHtml(item.product?.title || 'Product')}"/>
+                                            <div class="cart-product-meta">
+                                                <div class="cart-product-index">Item ${idx + 1}</div>
+                                                <a class="cart-product-title" href="/public/single-product/${encodeURIComponent(item.productUuid || '')}">
+                                                    ${escapeHtml(item.product?.title || 'Product')}
+                                                </a>
+                                                <div class="cart-product-variant">${escapeHtml(item.variantSummary || 'Standard')}</div>
+                                                <div class="cart-product-specs">
+                                                    <span>${escapeHtml(item.uom?.name || '-')}</span>
+                                                    <span>${Number(item.weight || 0).toFixed(2)} kg</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </td>
-             <td>${item.variantSummary || '-'}</td>
-                                    <td>${formatCurrency(item.salesPrice || 0)}</td>
-                                    <td>
+                                    <td class="text-end" data-label="Price">${formatCurrency(item.salesPrice || 0)}</td>
+                                    <td class="text-center" data-label="Qty">
                                         <input type="number"
                                                class="qty-input form-control form-control-sm"
-                                               data-product-uuid="${item.productUuid}"
-                                               data-catalog-variant-uuid="${item.catalogVariantUuid || ''}"
-                                               value="${item.quantity || 1}"
+                                               data-product-uuid="${escapeHtml(item.productUuid || '')}"
+                                               data-catalog-variant-uuid="${escapeHtml(item.catalogVariantUuid || '')}"
+                                               value="${escapeHtml(item.quantity || 1)}"
                                                min="1"/>
                                     </td>
-                                    <td>${item.uom?.name || '-'}</td>
-                                    <td>${Number(item.weight || 0).toFixed(2)}</td>
-                                    <td>${item.discountRate || 0}</td>
-                                    <td>${item.vatRate || 0}</td>
-                                    <td class="item-total">
+                                    <td class="text-end" data-label="Discount">${escapeHtml(item.discountRate || 0)}%</td>
+                                    <td class="text-end" data-label="VAT">${escapeHtml(item.vatRate || 0)}%</td>
+                                    <td class="item-total text-end" data-label="Total">
                                         ${formatCurrency(item.itemTotal || 0)}
                                     </td>
-                                    <td>
-                                        <button type="button" class="remove-btn btn btn-sm btn-danger"
-                                                data-product-uuid="${item.productUuid}"
-                                                data-catalog-variant-uuid="${item.catalogVariantUuid || ''}">
-                                            Delete
+                                    <td class="text-end" data-label="Action">
+                                        <button type="button" class="remove-btn btn btn-sm btn-outline-danger"
+                                                data-product-uuid="${escapeHtml(item.productUuid || '')}"
+                                                data-catalog-variant-uuid="${escapeHtml(item.catalogVariantUuid || '')}"
+                                                title="Remove item">
+                                            <i class="bi bi-trash"></i>
                                         </button>
                                     </td>
                                 </tr>
@@ -465,56 +557,60 @@ async function loadCart() {
                     </table>
                 </div>
 
-                <div class="d-flex gap-4 mt-3 justify-content-between align-items-start">
-                    <div class="d-flex flex-column gap-2">
-                        <label>Shipping:</label>
-                        <select class="shipping-select form-select form-select-sm"
-                                data-vendor-uuid="${vendorUuid}"
-                                ${vendorRequiresShipping ? '' : 'disabled'}
-                                onchange="window.cartOnShippingChange && window.cartOnShippingChange(this)">
-                            <option value="0" ${!selectedShippingOptionCode ? 'selected' : ''}>
-                                ${vendorRequiresShipping ? 'Select shipping company' : 'No shipping required'}
-                            </option>
-                            ${shippingOptions.length
+                <div class="vendor-controls">
+                    <div class="vendor-options">
+                        <div class="cart-field">
+                            <label>Shipping</label>
+                            <select class="shipping-select form-select"
+                                    data-vendor-uuid="${escapeHtml(vendorUuid)}"
+                                    ${vendorRequiresShipping ? '' : 'disabled'}
+                                    onchange="window.cartOnShippingChange && window.cartOnShippingChange(this)">
+                                <option value="0" ${!selectedShippingOptionCode ? 'selected' : ''}>
+                                    ${vendorRequiresShipping ? 'Select shipping company' : 'No shipping required'}
+                                </option>
+                                ${shippingOptions.length
                     ? shippingOptions.map(opt => `
-                                    <option value="${opt.code}"
+                                    <option value="${escapeHtml(opt.code)}"
                                         ${(opt.code && opt.code === selectedShippingOptionCode) ? 'selected' : ''}>
-                                        ${opt.title} - ${formatCurrency(opt.price)} (${opt.estimatedDelivery || ''})
+                                        ${escapeHtml(opt.title)} - ${formatCurrency(opt.price)} (${escapeHtml(opt.estimatedDelivery || '')})
                                     </option>
                                 `).join('')
                     : `<option value="0">No shipping</option>`
                     }
-                        </select>
+                            </select>
+                        </div>
 
-                        <label>Packaging:</label>
-                        <select class="packaging-select form-select form-select-sm"
-                                data-vendor-uuid="${vendorUuid}"
-                                ${vendorRequiresShipping ? '' : 'disabled'}
-                                onchange="window.cartOnPackagingChange && window.cartOnPackagingChange(this)">
-                            <option value="0" ${!selectedPackagingRateUuid ? 'selected' : ''}>
-                                ${vendorRequiresShipping ? 'Select packaging type' : 'No packaging required'}
-                            </option>
-                            ${packagingOptions.length
+                        <div class="cart-field">
+                            <label>Packaging</label>
+                            <select class="packaging-select form-select"
+                                    data-vendor-uuid="${escapeHtml(vendorUuid)}"
+                                    ${vendorRequiresShipping ? '' : 'disabled'}
+                                    onchange="window.cartOnPackagingChange && window.cartOnPackagingChange(this)">
+                                <option value="0" ${!selectedPackagingRateUuid ? 'selected' : ''}>
+                                    ${vendorRequiresShipping ? 'Select packaging type' : 'No packaging required'}
+                                </option>
+                                ${packagingOptions.length
                     ? packagingOptions.map(pack => {
                         const price = (pack.basePrice || 0) + (pack.additionalPrice || 0);
                         return `
-                                        <option value="${pack.uuid}"
-                                            ${(pack.uuid != null && String(pack.uuid) === String(selectedPackagingRateUuid)) ? 'selected' : ''}>
-                                            ${pack.packagingType} - ${formatCurrency(price)}
-                                        </option>`;
+                                    <option value="${escapeHtml(pack.uuid)}"
+                                        ${(pack.uuid != null && String(pack.uuid) === String(selectedPackagingRateUuid)) ? 'selected' : ''}>
+                                        ${escapeHtml(pack.packagingType)} - ${formatCurrency(price)}
+                                    </option>`;
                     }).join('')
                     : `<option value="0">No packaging</option>`
                     }
-                        </select>
-                        ${vendorRequiresShipping ? '' : '<div class="small text-muted">Virtual products do not require shipping or packaging.</div>'}
+                            </select>
+                        </div>
+                        ${vendorRequiresShipping ? '' : '<div class="cart-muted-note">Virtual products do not require shipping or packaging.</div>'}
                     </div>
 
-                    <div class="text-end vendor-summary">
-                        <div>Subtotal: ${formatCurrency(subtotal)}</div>
-                        <div>Shipping: ${formatCurrency(shippingCost)}</div>
-                        <div>Packaging: ${formatCurrency(packagingCost)}</div>
-                        <div class="fw-bold border-top mt-1 pt-1">
-                            Total: ${formatCurrency(subtotal + shippingCost + packagingCost)}
+                    <div class="vendor-summary">
+                        <div><span>Subtotal</span><strong>${formatCurrency(subtotal)}</strong></div>
+                        <div><span>Shipping</span><strong>${formatCurrency(shippingCost)}</strong></div>
+                        <div><span>Packaging</span><strong>${formatCurrency(packagingCost)}</strong></div>
+                        <div class="vendor-summary-total">
+                            <span>Total</span><strong>${formatCurrency(subtotal + shippingCost + packagingCost)}</strong>
                         </div>
                     </div>
                 </div>
@@ -524,8 +620,8 @@ async function loadCart() {
 
         const grandTotalEl = document.getElementById('grandTotal');
         if (grandTotalEl) {
-            grandTotalEl.textContent =
-                    `Grand Total: ${formatCurrency(data.grandTotal || 0)}`;
+            grandTotalEl.innerHTML =
+                    `<span>Grand total</span><strong>${formatCurrency(data.grandTotal || 0)}</strong>`;
         }
 
         /**

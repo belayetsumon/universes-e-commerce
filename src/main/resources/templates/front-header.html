@@ -1,25 +1,27 @@
 
-<section>
+<section class="storefront-topbar-shell">
     <div class="container py-1 storefront-topbar">
-        <div class="row align-items-center">
+        <div class="row align-items-center storefront-topbar-row">
 
             <!-- 🔹 Left: Welcome text -->
-            <div class="col-12 col-sm-6 text-start">
-                <span th:text="${session.globalSettings.siteTagline != null and !#strings.isEmpty(session.globalSettings.siteTagline) ? session.globalSettings.siteTagline : 'Welcome to ' + session.globalSettings.siteName + '!'}">
+            <div class="col-12 col-sm-6 text-start storefront-topbar-message">
+                <span class="storefront-topbar-text"
+                      th:text="${session.globalSettings.siteTagline != null and !#strings.isEmpty(session.globalSettings.siteTagline) ? session.globalSettings.siteTagline : 'Welcome to ' + session.globalSettings.siteName + '!'}">
                     Welcome to our store!
                 </span>
             </div>
 
             <!-- 🔹 Right: Menu items -->
-            <div class="col-12 col-sm-6 text-end">
-                <div class="d-flex justify-content-end flex-wrap gap-2">
+            <div class="col-12 col-sm-6 text-end storefront-topbar-utilities">
+                <div class="d-flex justify-content-end flex-wrap gap-2 storefront-topbar-links">
 
                     <!-- Language Dropdown -->
-                    <div class="dropdown">
+                    <div class="dropdown storefront-topbar-dropdown">
                         <a href="#" class="nav-link dropdown-toggle text-decoration-none"
                            data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-translate"></i>
-                            <span th:text="${currentShippingLocation != null ? currentShippingLocation.displayLabel : 'Select Shipping Location'}"></span>
+                            <span class="storefront-topbar-link-text"
+                                  th:text="${currentShippingLocation != null ? currentShippingLocation.displayLabel : 'Select Shipping Location'}"></span>
                         </a>
 
                         <ul class="dropdown-menu">
@@ -36,10 +38,11 @@
                     </div>
 
                     <!-- Currency Dropdown -->
-                    <div class="dropdown">
+                    <div class="dropdown storefront-topbar-dropdown">
                         <a href="#" class="nav-link dropdown-toggle text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-currency-exchange"></i>
-                            <span th:text="${session.globalSettings.defaultCurrency != null ? session.globalSettings.defaultCurrency : session.globalSettings.currency}">Currency</span>
+                            <span class="storefront-topbar-link-text"
+                                  th:text="${session.globalSettings.defaultCurrency != null ? session.globalSettings.defaultCurrency : session.globalSettings.currency}">Currency</span>
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="#">USD</a></li>
@@ -50,12 +53,14 @@
 
                     <!-- Track Order -->
                     <a href="#" class="nav-link text-decoration-none d-flex align-items-center">
-                        <i class="bi bi-binoculars me-1"></i> Track Your Order
+                        <i class="bi bi-binoculars"></i>
+                        <span class="storefront-topbar-link-text">Track Your Order</span>
                     </a>
 
                     <!-- Help -->
                     <a href="#" class="nav-link text-decoration-none d-flex align-items-center">
-                        <i class="bi bi-question-circle me-1"></i> Help?
+                        <i class="bi bi-question-circle"></i>
+                        <span class="storefront-topbar-link-text">Help?</span>
                     </a>
 
                 </div>
@@ -94,88 +99,133 @@
 
             <!-- 🔹 Center: Search -->
             <div class="flex-fill mx-3 storefront-header-search">
-                <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Search" aria-label="Search">
-                    <button class="btn btn-danger" type="submit">
+                <form class="input-group storefront-search-form" th:action="@{/public/product}" method="get" role="search">
+                    <input type="search"
+                           class="form-control storefront-search-input"
+                           name="q"
+                           th:value="${currentQuery}"
+                           placeholder="Search products, brands, categories"
+                           aria-label="Search products">
+                    <button class="btn storefront-search-btn" type="submit" aria-label="Submit product search">
                         <i class="bi bi-search"></i>
                     </button>
-                </div>
+                </form>
             </div>
 
             <!-- 🔹 Right: Icons & Login/Register -->
             <div class="d-flex align-items-center gap-3 storefront-header-actions">
 
                 <!-- Wishlist -->
-                <a class="nav-link d-flex align-items-center" th:href="@{/wishlist/index}">
-                    <i class="bi bi-suit-heart text-reds fs-4 me-1"></i>
-                    <span>Wishlist</span>
-                    <span class="badge bg-danger ms-1 text-white" th:text="${wishlistCount}">0</span>
+                <a class="nav-link d-flex align-items-center storefront-action-link" th:href="@{/wishlist/index}">
+                    <i class="bi bi-suit-heart"></i>
+                    <span class="storefront-action-text">Wishlist</span>
+                    <span class="storefront-action-badge" th:text="${wishlistCount}">0</span>
                 </a>
 
                 <!-- My Cart Dropdown -->
-                <div class="nav-item dropdown">
-                    <div class="nav-link d-flex align-items-center" href="#" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"
-                         hx-get="/cart/count" hx-trigger="every 2s" hx-target="#cart-count" hx-swap="outerHTML">
-                        <i class="bi bi-cart4 text-reds fs-4 me-1"></i>
-                        <span >My Cart</span>
-                        <span class="badge bg-danger ms-1 text-white cart-count" id="cart-count">0</span>
+                <div class="nav-item dropdown storefront-cart-menu">
+                    <button class="nav-link storefront-cart-trigger"
+                            id="cartDropdown"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            data-bs-auto-close="outside"
+                            aria-expanded="false"
+                            aria-label="Open shopping cart"
+                            hx-get="/cart/count"
+                            hx-trigger="every 2s"
+                            hx-target="#cart-count"
+                            hx-swap="outerHTML">
+                        <span class="storefront-cart-icon-wrap">
+                            <i class="bi bi-cart4"></i>
+                            <span class="cart-count" id="cart-count"
+                                  th:text="${session.sessioncart != null ? #lists.size(session.sessioncart) : 0}">0</span>
+                        </span>
+                        <span class="storefront-cart-trigger-copy">
+                            <span>My Cart</span>
+                            <small th:text="${session.sessioncart != null ? #lists.size(session.sessioncart) + ' item(s)' : 'No items'}">No items</small>
+                        </span>
+                    </button>
+
+                    <div class="dropdown-menu dropdown-menu-end storefront-cart-dropdown-menu" aria-labelledby="cartDropdown">
+                        <div class="cart-dropdown-header">
+                            <div>
+                                <div class="cart-dropdown-kicker">Shopping cart</div>
+                                <h6>Cart preview</h6>
+                            </div>
+                            <span class="cart-dropdown-count" th:text="${session.sessioncart != null ? #lists.size(session.sessioncart) + ' item(s)' : '0 items'}">0 items</span>
+                        </div>
+
+                        <div class="cart-dropdown-empty" th:if="${session.sessioncart == null or #lists.isEmpty(session.sessioncart)}">
+                            <div class="cart-dropdown-empty-icon"><i class="bi bi-bag"></i></div>
+                            <strong>Your cart is empty</strong>
+                            <span>Add products to start checkout.</span>
+                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/public/product}">
+                                <i class="bi bi-grid"></i>
+                                Browse products
+                            </a>
+                        </div>
+
+                        <div class="cart-dropdown-list" th:if="${session.sessioncart != null and !#lists.isEmpty(session.sessioncart)}">
+                            <div class="cart-dropdown-item" th:each="cart,status : ${session.sessioncart}">
+                                <div class="cart-dropdown-media">
+                                    <img th:if="${cart.product != null and !#strings.isEmpty(cart.product.imageName)}"
+                                         th:src="@{/files/}+${cart.product.imageName}"
+                                         th:alt="${cart.product.title}">
+                                    <i th:unless="${cart.product != null and !#strings.isEmpty(cart.product.imageName)}"
+                                       class="bi bi-box-seam"></i>
+                                </div>
+                                <div class="cart-dropdown-product">
+                                    <a th:href="@{/public/single-product/{prodid}(prodid=${cart.productUuid})}"
+                                       th:text="${cart.product != null ? cart.product.title : 'Product'}">Product</a>
+                                    <span>
+                                        Qty <strong th:text="${cart.quantity}">1</strong>
+                                        <span th:if="${cart.uom != null}" th:text="' · ' + ${cart.uom.name}"></span>
+                                    </span>
+                                </div>
+                                <div class="cart-dropdown-price">
+                                    <strong th:text="${#numbers.formatDecimal(cart.itemTotal, 0, 'COMMA', 2, 'POINT')}">0.00</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="cart-dropdown-footer" th:if="${session.sessioncart != null and !#lists.isEmpty(session.sessioncart)}">
+                            <div class="cart-dropdown-total">
+                                <span>Subtotal</span>
+                                <strong th:text="${#numbers.formatDecimal(@thymeleafUtils.sumItemTotals(session.sessioncart), 0, 'COMMA', 2, 'POINT')}">0.00</strong>
+                            </div>
+                            <div class="cart-dropdown-actions">
+                                <a class="btn btn-outline-secondary btn-sm" th:href="@{/cart/index}">
+                                    View cart
+                                </a>
+                                <a class="btn btn-danger btn-sm" th:href="@{/order/create}">
+                                    Checkout
+                                    <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
-
-                    <div class="dropdown-menu table-dropdown p-2 storefront-cart-dropdown-menu" aria-labelledby="cartDropdown">
-                        <table class="table table-sm  mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Product</th>
-                                    <th>Qty</th>
-                                    <th>Price</th>
-                                    <th>Total</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="cart,status : ${session.sessioncart}">
-                                    <td th:text="${status.count}">Otto</td>
-                                    <td th:text="${cart.product.title}">Otto</td>
-                                    <td th:text="${cart.quantity}"></td>
-                                    <td th:text="${cart.salesPrice}"></td>
-                                    <td th:text="${cart.itemTotal}">Otto</td>
-                                    <td><span class="text-danger ms-2">&times;</span></td>
-                                </tr>
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="2" class="text-end fw-bold"><a th:href="@{/cart/index}"> View Cart</a></td>
-                                    <td colspan="3" class="text-end fw-bold">Grand Total</td>
-                                    <td class="fw-bold">
-
-                                        <!--                                                                    <h1 th:text="${@thymeleafUtils.hello()}"></h1>
-
-                                                                                                                                                    <span th:text="${#lists.isEmpty(session.sessioncart) ? 0 : thymeleafUtils.sumItemTotals(session.sessioncart)}"></span>-->
-                                    </td>
-
-                                </tr>
-                            </tfoot>
-                        </table></div>
                 </div>
 
                 <!-- Login / Logout -->
                 <div sec:authorize="!isAuthenticated()">
-                    <a class="nav-link d-flex align-items-center" th:href="@{/public/member-login}">
-                        <i class="bi bi-person text-reds fs-5 me-1"></i> Login
+                    <a class="nav-link d-flex align-items-center storefront-action-link" th:href="@{/public/member-login}">
+                        <i class="bi bi-person"></i>
+                        <span class="storefront-action-text">Login</span>
                     </a>
                 </div>
 
                 <div sec:authorize="isAuthenticated()">
-                    <a class="nav-link d-flex align-items-center" th:href="@{/users/logout}">
-                        <i class="bi bi-box-arrow-right text-reds fs-5 me-1"></i> Logout
+                    <a class="nav-link d-flex align-items-center storefront-action-link" th:href="@{/users/logout}">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span class="storefront-action-text">Logout</span>
                     </a>
                 </div>
 
                 <!-- Register -->
                 <div sec:authorize="!isAuthenticated()" th:if="${session.globalSettings.registrationEnabled}">
-                    <a class="nav-link d-flex align-items-center" th:href="@{/public/front-registration}">
-                        <i class="bi bi-person-plus text-reds fs-5 me-1"></i> Register
+                    <a class="nav-link d-flex align-items-center storefront-action-link storefront-register-link" th:href="@{/public/front-registration}">
+                        <i class="bi bi-person-plus"></i>
+                        <span class="storefront-action-text">Register</span>
                     </a>
                 </div>
 
@@ -189,32 +239,13 @@
 </header>
 <section class="mb-3 storefront-main-nav">
     <div class="container">
-        <div class="row navbar-custom">
-            <!-- Left: Categories Dropdown (col-md-2) -->
-            <!--            <div class="col-12 col-xs-8 col-sm-3 col-md-3 text-start  mb-md-0 " id="dr-menu">
-                            <div class="dropdown w-100">
-                                <button class=" btn-block text-start w-100 dropdown-toggle" type="button" id="categoryDropdown"
-                                        aria-expanded="false">
-                                    <i class="bi bi-justify custom-icon"></i> CATEGORIES
-                                </button>
-                                <ul class=" main-category dropdown-menu " aria-labelledby="categoryDropdown">
-                                    <li th:each="menu : ${maincategory}">
-                                        <a class="dropdown-item "
-                                           th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${menu.uuid})}"
-                                           th:text="${menu.name}"></a>
-                                    </li>
-
-                                </ul>
-                            </div>
-                        </div>-->
-
-
+        <div class="row navbar-custom storefront-main-row">
             <!-- Categories Menu  drop down start-->
-            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3" id="dr-menu">
+            <div class="col-12 col-md-3 mb-2 mb-md-0" id="dr-menu">
 
                 <!-- Desktop/Tablet: Dropdown -->
                 <div class="dropdown d-none d-md-block w-100">
-                    <button class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-between dropdown-toggle"
+                    <button class="btn w-100 d-flex align-items-center justify-content-between dropdown-toggle storefront-category-toggle"
                             type="button"
                             id="categoryDropdown"
                             data-bs-toggle="dropdown"
@@ -222,7 +253,7 @@
                         <span><i class="bi bi-justify custom-icon me-2"></i> CATEGORIES</span>
                     </button>
 
-                    <ul class="dropdown-menu w-100" aria-labelledby="categoryDropdown">
+                    <ul class="dropdown-menu w-100 main-category storefront-category-menu" aria-labelledby="categoryDropdown">
                         <li th:each="menu : ${maincategory}">
                             <a class="dropdown-item"
                                th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${menu.uuid})}"
@@ -233,7 +264,7 @@
 
                 <!-- Mobile: Offcanvas -->
                 <div class="d-md-none">
-                    <button class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-between"
+                    <button class="btn w-100 d-flex align-items-center justify-content-between storefront-category-toggle"
                             type="button"
                             data-bs-toggle="offcanvas"
                             data-bs-target="#offcanvasCategories"
@@ -241,15 +272,22 @@
                         <span><i class="bi bi-justify custom-icon me-2"></i> CATEGORIES</span>
                     </button>
 
-                    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasCategories" aria-labelledby="offcanvasCategoriesLabel">
-                        <div class="offcanvas-header">
-                            <h5 class="offcanvas-title" id="offcanvasCategoriesLabel">Categories</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    <div class="offcanvas offcanvas-start storefront-category-offcanvas" tabindex="-1" id="offcanvasCategories" aria-labelledby="offcanvasCategoriesLabel">
+                        <div class="offcanvas-header storefront-category-offcanvas-header">
+                            <h5 class="offcanvas-title" id="offcanvasCategoriesLabel">
+                                <i class="bi bi-grid-3x3-gap me-2"></i>Categories
+                            </h5>
+                            <button type="button"
+                                    class="btn storefront-category-close"
+                                    data-bs-dismiss="offcanvas"
+                                    aria-label="Close categories">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
                         </div>
-                        <div class="offcanvas-body p-0">
-                            <ul class="list-group list-group-flush">
+                        <div class="offcanvas-body storefront-category-offcanvas-body">
+                            <ul class="list-group list-group-flush storefront-category-slide-list">
                                 <li th:each="menu : ${maincategory}" class="list-group-item">
-                                    <a class="text-decoration-none"
+                                    <a class="storefront-category-slide-link"
                                        th:href="@{/public/product-by-category/{prodcatid}(prodcatid=${menu.uuid})}"
                                        th:text="${menu.name}"></a>
                                 </li>
@@ -263,28 +301,37 @@
 
             <!-- Right: Menu Items (col-md-10) -->
             <div class="col-12 col-md-9">
-                <ul class="list-inline mb-0 d-flex flex-wrap justify-content-md-start align-items-center">
+                <ul class="list-inline mb-0 d-flex flex-wrap justify-content-md-start align-items-center storefront-primary-menu">
                     <li class="list-inline-item">
-                        <a class="nav-link active link-light" aria-current="page" href="/">Home</a>
+                        <a class="nav-link active link-light storefront-primary-link" aria-current="page" href="/">Home</a>
                     </li>
                     <li class="list-inline-item">
-                        <a class="nav-link link-light" th:href="@{/public/product}">Product</a>
-                    </li>
-
-
-                    <li class="list-inline-item">
-                        <a class="nav-link link-light" th:href="@{/public/product}">Latest Offers</a>
+                        <a class="nav-link link-light storefront-primary-link" th:href="@{/public/product}">Product</a>
                     </li>
 
+
                     <li class="list-inline-item">
-                        <a class="nav-link link-light" th:href="@{/admin/index}">Admin Panel</a>
+                        <a class="nav-link link-light storefront-primary-link" th:href="@{/public/product}">Latest Offers</a>
                     </li>
                     <li class="list-inline-item">
-                        <a class="nav-link link-light" th:href="@{/customer/index}">My Account</a>
+                        <a class="nav-link link-light storefront-primary-link" th:href="@{/public/product}">Brands</a>
                     </li>
                     <li class="list-inline-item">
-                        <a class="nav-link link-light" th:href="@{/customer/index}">Vendor</a>
+                        <a class="nav-link link-light storefront-primary-link" th:href="@{/public/product}">Vendors</a>
                     </li>
+
+                    <!--                    <li class="list-inline-item">
+                                            <a class="nav-link link-light storefront-primary-link" th:href="@{/admin/index}">Admin Panel</a>
+                                        </li>-->
+                    <li class="list-inline-item">
+                        <a class="nav-link link-light storefront-primary-link" th:href="@{/customer/index}">Account</a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a class="nav-link link-light storefront-primary-link" th:href="@{/public/contact-us}">Contact</a>
+                    </li>
+                    <!--                    <li class="list-inline-item">
+                                            <a class="nav-link link-light storefront-primary-link" th:href="@{/customer/index}">Vendor</a>
+                                        </li>-->
                 </ul>
             </div>
         </div>

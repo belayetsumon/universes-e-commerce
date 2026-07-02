@@ -4,6 +4,9 @@
  */
 package com.ecommerce.app.module.ReferralRewards.model;
 
+import com.ecommerce.app.module.ReferralRewards.enumvalue.CouponType;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.CouponStatus;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.CouponScope;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,6 +14,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  *
@@ -23,32 +27,72 @@ public class Coupon extends BaseEntityPromotions {
 
     private String title;
 
-    @Column(unique = true)
+    @Column(nullable = false, unique = true, length = 100)
     private String code;
 
+    @Column(length = 2000)
     private String description;
 
     @Enumerated(EnumType.STRING)
     private CouponType type; // FIXED or PERCENT
 
+    @Column(nullable = false, precision = 18, scale = 2)
     private BigDecimal value;
+    @Column(precision = 18, scale = 2)
     private BigDecimal maxDiscount;
+    // Conditions
+    @Column(precision = 18, scale = 2)
     private BigDecimal minimumOrder;
-    private LocalDateTime expiryDate;
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime startDate;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    private LocalDateTime expiryDate;
+
     private int usageLimit; // e.g., 100 uses
+
     private int perUserUsageLimit;
 
     private int timesUsed;
+
+    // Stacking
     private boolean stackable;
+
+    private Integer priority = 0;
+
+    private Boolean autoApply = false;
+
+    // Customer Rules
     private boolean newCustomerOnly;
+
     private boolean firstOrderOnly;
+
+    private Boolean guestAllowed = false;
+
     private String vendorScope;
+
     private String campaignScope;
+
+    // Scope
+    @Enumerated(EnumType.STRING)
+    private CouponScope scope = CouponScope.GLOBAL;
+
+    // Visibility
+    private Boolean publicCoupon = true;
+
+    private Boolean requiresCode = true;
 
     @Enumerated(EnumType.STRING)
     private CouponStatus status;
+
+    // Fraud
+    private Integer maxUsesPerIP;
+
+    private Integer maxUsesPerDevice;
+
+    // Soft Delete
+    private Boolean deleted = false;
 
     public Coupon() {
     }
@@ -207,6 +251,78 @@ public class Coupon extends BaseEntityPromotions {
 
     public void setStatus(CouponStatus status) {
         this.status = status;
+    }
+
+    public Integer getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Integer priority) {
+        this.priority = priority;
+    }
+
+    public Boolean getAutoApply() {
+        return autoApply;
+    }
+
+    public void setAutoApply(Boolean autoApply) {
+        this.autoApply = autoApply;
+    }
+
+    public Boolean getGuestAllowed() {
+        return guestAllowed;
+    }
+
+    public void setGuestAllowed(Boolean guestAllowed) {
+        this.guestAllowed = guestAllowed;
+    }
+
+    public CouponScope getScope() {
+        return scope;
+    }
+
+    public void setScope(CouponScope scope) {
+        this.scope = scope;
+    }
+
+    public Boolean getPublicCoupon() {
+        return publicCoupon;
+    }
+
+    public void setPublicCoupon(Boolean publicCoupon) {
+        this.publicCoupon = publicCoupon;
+    }
+
+    public Boolean getRequiresCode() {
+        return requiresCode;
+    }
+
+    public void setRequiresCode(Boolean requiresCode) {
+        this.requiresCode = requiresCode;
+    }
+
+    public Integer getMaxUsesPerIP() {
+        return maxUsesPerIP;
+    }
+
+    public void setMaxUsesPerIP(Integer maxUsesPerIP) {
+        this.maxUsesPerIP = maxUsesPerIP;
+    }
+
+    public Integer getMaxUsesPerDevice() {
+        return maxUsesPerDevice;
+    }
+
+    public void setMaxUsesPerDevice(Integer maxUsesPerDevice) {
+        this.maxUsesPerDevice = maxUsesPerDevice;
+    }
+
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
     }
 
 }

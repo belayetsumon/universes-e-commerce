@@ -1,11 +1,15 @@
 package com.ecommerce.app.vendor.controller;
 
+import com.ecommerce.app.product.dto.ProductStockReportRow;
+import com.ecommerce.app.product.dto.ProductStockReportSummary;
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.ProductVariant;
 import com.ecommerce.app.product.model.StockTransaction;
+import com.ecommerce.app.product.ripository.ProductcategoryRepository;
 import com.ecommerce.app.product.ripository.ProductRepository;
 import com.ecommerce.app.product.ripository.ProductVariantRepository;
 import com.ecommerce.app.product.ripository.StockTransactionRepository;
+import com.ecommerce.app.product.services.StockInventoryReportService;
 import com.ecommerce.app.product.services.StockLedgerService;
 import com.ecommerce.app.vendor.user.componant.VendorUserContext;
 import java.math.BigDecimal;
@@ -42,6 +46,12 @@ public class VendorStockController {
     @Autowired
     private VendorUserContext vendorUserContext;
 
+    @Autowired
+    private StockInventoryReportService stockInventoryReportService;
+
+    @Autowired
+    private ProductcategoryRepository productcategoryRepository;
+
 //    @PreAuthorize("""
 //            @vendorAccessAuthorityChecker.hasAuthority(authentication, 'vendor.stock.read')
 //            or @vendorAccessAuthorityChecker.hasAuthority(authentication, 'vendor.stock.manage')
@@ -49,6 +59,34 @@ public class VendorStockController {
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
 //            """)
+    @GetMapping("/current")
+    public String currentStock(
+            @RequestParam(value = "q", required = false) String q,
+            @RequestParam(value = "categoryId", required = false) Long categoryId,
+            @RequestParam(value = "stockFilter", required = false, defaultValue = "all") String stockFilter,
+            @RequestParam(value = "lowStockThreshold", required = false, defaultValue = "5") BigDecimal lowStockThreshold,
+            Model model
+    ) {
+        try {
+            Long vendorId = vendorUserContext.getActiveVendor().getId();
+            List<ProductStockReportRow> rows = stockInventoryReportService.findCurrentStock(
+                    vendorId, categoryId, q, stockFilter, lowStockThreshold);
+            ProductStockReportSummary summary = stockInventoryReportService.summarize(rows);
+            model.addAttribute("rows", rows);
+            model.addAttribute("summary", summary);
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Runtime error while loading current vendor stock: " + userFacingMessage(e));
+            model.addAttribute("rows", List.of());
+            model.addAttribute("summary", new ProductStockReportSummary());
+        }
+        model.addAttribute("q", q);
+        model.addAttribute("selectedCategoryId", categoryId);
+        model.addAttribute("stockFilter", stockFilter);
+        model.addAttribute("lowStockThreshold", lowStockThreshold);
+        model.addAttribute("categories", productcategoryRepository.findAll(Sort.by(Sort.Direction.ASC, "name", "id")));
+        return "vendor/stock/current";
+    }
+
     @GetMapping("/transactions")
     public String transactions(Model model) {
         try {

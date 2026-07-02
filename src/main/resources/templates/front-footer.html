@@ -1,106 +1,166 @@
-<div   th:fragment="footer" >
-    <section class="mt-5 d-sm-block storefront-footer-top">
-        <div class="container">
-            <div class="row" >
+<div th:fragment="footer">
+    <footer class="storefront-footer" aria-label="Store footer">
+        <section class="storefront-footer-trust" aria-label="Service commitments">
+            <div class="container">
+                <div class="storefront-footer-trust-grid">
+                    <div class="storefront-footer-trust-item">
+                        <span class="storefront-footer-trust-icon"><i class="bi bi-shield-check"></i></span>
+                        <span>
+                            <strong>Secure Shopping</strong>
+                            <small>Protected checkout and trusted payments</small>
+                        </span>
+                    </div>
+                    <div class="storefront-footer-trust-item">
+                        <span class="storefront-footer-trust-icon"><i class="bi bi-truck"></i></span>
+                        <span>
+                            <strong>Reliable Delivery</strong>
+                            <small>Clear policies for shipping and returns</small>
+                        </span>
+                    </div>
+                    <div class="storefront-footer-trust-item">
+                        <span class="storefront-footer-trust-icon"><i class="bi bi-headset"></i></span>
+                        <span>
+                            <strong>Customer Support</strong>
+                            <small>Help when you need order assistance</small>
+                        </span>
+                    </div>
+                    <div class="storefront-footer-trust-item">
+                        <span class="storefront-footer-trust-icon"><i class="bi bi-award"></i></span>
+                        <span>
+                            <strong>Marketplace Standard</strong>
+                            <small>Professional service for every customer</small>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-                <div class="col-sm-3 col-md-3 ">
-                    <!--                    <h6 class="text-center font-weight-bold text-uppercase"> Universes E-Commerce </h6>-->
+        <section class="storefront-footer-main">
+            <div class="container">
+                <div class="storefront-footer-grid">
+                    <div class="storefront-footer-brand">
+                        <a class="storefront-footer-logo" th:href="@{/public/index}" aria-label="Go to home page">
+                            <img th:if="${session.globalSettings.resolvedSiteLogoDesktop != null}"
+                                 th:src="@{${session.globalSettings.resolvedSiteLogoDesktop}}"
+                                 th:alt="${session.globalSettings.siteName}">
+                            <span th:if="${session.globalSettings.resolvedSiteLogoDesktop == null}"
+                                  th:text="${session.globalSettings.siteName}">Store Name</span>
+                        </a>
+                        <p class="storefront-footer-about"
+                           th:text="${session.globalSettings.siteTagline != null and !#strings.isEmpty(session.globalSettings.siteTagline) ? session.globalSettings.siteTagline : 'A trusted online marketplace built for convenient shopping, secure checkout, and dependable customer service.'}">
+                            A trusted online marketplace built for convenient shopping, secure checkout, and dependable customer service.
+                        </p>
 
-                    <div class="row">
-                        <div class="col-xs-4 col-sm-3">
-                            <i class="bi bi-headset storefront-footer-headset-icon"></i>
+                        <div class="storefront-footer-contact-list" aria-label="Contact information">
+                            <a class="storefront-footer-contact"
+                               th:href="${session.globalSettings.whatsappNumber != null and !#strings.isEmpty(session.globalSettings.whatsappNumber) ? 'https://api.whatsapp.com/send?phone=' + session.globalSettings.whatsappNumber : 'https://api.whatsapp.com/send?phone=8801840188888'}"
+                               target="_blank" rel="noopener">
+                                <i class="bi bi-whatsapp"></i>
+                                <span>
+                                    <small>WhatsApp API</small>
+                                    <strong th:text="${session.globalSettings.whatsappNumber != null and !#strings.isEmpty(session.globalSettings.whatsappNumber) ? session.globalSettings.whatsappNumber : '+880 1840 188888'}">+880 1840 188888</strong>
+                                </span>
+                            </a>
+                            <a class="storefront-footer-contact"
+                               th:href="${session.globalSettings.supportEmail != null and !#strings.isEmpty(session.globalSettings.supportEmail) ? 'mailto:' + session.globalSettings.supportEmail : 'mailto:support@universescommerce.com'}">
+                                <i class="bi bi-envelope"></i>
+                                <span>
+                                    <small>Email Support</small>
+                                    <strong th:text="${session.globalSettings.supportEmail != null and !#strings.isEmpty(session.globalSettings.supportEmail) ? session.globalSettings.supportEmail : 'support@universescommerce.com'}">support@universescommerce.com</strong>
+                                </span>
+                            </a>
+                            <a class="storefront-footer-contact"
+                               th:href="${session.globalSettings.supportPhone != null and !#strings.isEmpty(session.globalSettings.supportPhone) ? 'tel:' + session.globalSettings.supportPhone : 'tel:+8809600000000'}">
+                                <i class="bi bi-telephone"></i>
+                                <span>
+                                    <small>Support Mobile</small>
+                                    <strong th:text="${session.globalSettings.supportPhone != null and !#strings.isEmpty(session.globalSettings.supportPhone) ? session.globalSettings.supportPhone : '+880 9600 000 000'}">+880 9600 000 000</strong>
+                                </span>
+                            </a>
+                            <div class="storefront-footer-contact">
+                                <i class="bi bi-geo-alt"></i>
+                                <span>
+                                    <small>Office Address</small>
+                                    <strong th:text="${session.globalSettings.address != null and !#strings.isEmpty(session.globalSettings.address) ? session.globalSettings.address : 'Corporate Office: House 42, Road 7, Sector 4, Uttara, Dhaka 1230, Bangladesh'}">Corporate Office: House 42, Road 7, Sector 4, Uttara, Dhaka 1230, Bangladesh</strong>
+                                </span>
+                            </div>
                         </div>
-                        <div class="col-xs-8 col-sm-9">
-                            <p class="h6">  Got Questions ? Call us 24/7!</p>
-                            <p class="h5">Whats App</p>
-                            <p class="h5" th:text="${session.globalSettings.whatsappNumber != null ? session.globalSettings.whatsappNumber : session.globalSettings.supportPhone}">01840188888</p>
-                            <p class="" th:text="${session.globalSettings.address != null ? session.globalSettings.address : 'Address not set'}">Uttara, Dhaka, Bangladesh</p>
-                            <p class="" th:if="${session.globalSettings.supportEmail != null}" th:text="${session.globalSettings.supportEmail}">support@example.com</p>
-                            <p class=""> <i class="bi bi-geo-alt"></i> Find us on map </p>
+
+                        <div class="storefront-footer-social" aria-label="Social media links">
+                            <a th:if="${session.globalSettings.facebookUrl != null and !#strings.isEmpty(session.globalSettings.facebookUrl)}"
+                               th:href="${session.globalSettings.facebookUrl}" target="_blank" rel="noopener"
+                               aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                            <a th:if="${session.globalSettings.instagramUrl != null and !#strings.isEmpty(session.globalSettings.instagramUrl)}"
+                               th:href="${session.globalSettings.instagramUrl}" target="_blank" rel="noopener"
+                               aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                            <a th:if="${session.globalSettings.linkedinUrl != null and !#strings.isEmpty(session.globalSettings.linkedinUrl)}"
+                               th:href="${session.globalSettings.linkedinUrl}" target="_blank" rel="noopener"
+                               aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                            <a th:if="${session.globalSettings.youtubeUrl != null and !#strings.isEmpty(session.globalSettings.youtubeUrl)}"
+                               th:href="${session.globalSettings.youtubeUrl}" target="_blank" rel="noopener"
+                               aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                            <a th:if="${session.globalSettings.twitterUrl != null and !#strings.isEmpty(session.globalSettings.twitterUrl)}"
+                               th:href="${session.globalSettings.twitterUrl}" target="_blank" rel="noopener"
+                               aria-label="Twitter"><i class="bi bi-twitter"></i></a>
                         </div>
-
-
                     </div>
 
+                    <nav class="storefront-footer-links" aria-label="Company links">
+                        <h2>Company</h2>
+                        <ul>
+                            <li><a th:href="@{/public/about-us}">About Us</a></li>
+                            <li><a th:href="@{/public/contact-us}">Contact Us</a></li>
+                            <li><a th:href="@{/public/help}">Help Center</a></li>
+                            <li><a th:href="@{/public/privacy-policy}">Privacy Policy</a></li>
+                            <li><a th:href="@{/public/terms-of-use}">Terms of Use</a></li>
+                            <li><a th:href="@{/public/terms-and-conditions}">Terms and Conditions</a></li>
+                        </ul>
+                    </nav>
+
+                    <nav class="storefront-footer-links" aria-label="Customer service links">
+                        <h2>Customer Service</h2>
+                        <ul>
+                            <li><a th:href="@{/public/payment-methods}">Payment Methods</a></li>
+                            <li><a th:href="@{/public/shipping-rates-policies}">Shipping Rates &amp; Policies</a></li>
+                            <li><a th:href="@{/public/returns-replacements}">Returns &amp; Replacements</a></li>
+                            <li><a th:href="@{/public/refund-returns-policy}">Refund and Returns Policy</a></li>
+                            <li><a th:href="@{/public/help}">Support Center</a></li>
+                            <li><a th:href="@{/public/contact-us}">Report an Issue</a></li>
+                        </ul>
+                    </nav>
+
+                    <nav class="storefront-footer-links" aria-label="Account links">
+                        <h2>My Account</h2>
+                        <ul>
+                            <li><a th:href="@{/public/member-login}">Sign In</a></li>
+                            <li><a th:href="@{/public/front-registration}">Create Account</a></li>
+                            <li><a th:href="@{/cart/index}">View Cart</a></li>
+                            <li><a th:href="@{/public/help}">Track My Order</a></li>
+                            <li><a th:href="@{/public/product}">Shop Products</a></li>
+                            <li><a th:href="@{/public/contact-us}">Contact Support</a></li>
+                        </ul>
+
+                    </nav>
                 </div>
-
-                <div class="col-sm-3 col-md-3 ">
-                    <h6 class=" font-weight-bold text-uppercase">Company</h6>
-                    <ul class="list-unstyled ">
-                        <li><a class="nav-link px-0" th:href="@{/public/about-us}">About Us</a></li>
-                        <li><a class="nav-link px-0" th:href="@{/public/contact-us}">Contact Us</a></li>
-                        <li><a class="nav-link px-0" th:href="@{/public/help}">Help</a></li>
-                        <li><a class="nav-link px-0" th:href="@{/public/privacy-policy}">Privacy Policy</a></li>
-                        <li><a class="nav-link px-0" th:href="@{/public/terms-of-use}">Terms of Use</a></li>
-                        <li><a class="nav-link px-0" th:href="@{/public/terms-and-conditions}">Term and Conditions</a></li>
-                    </ul>
-                </div>
-
-                <div class="col-sm-3 col-md-3 ">
-                    <h6 class=" font-weight-bold text-uppercase">My Account</h6>
-                    <ul class="list-unstyled">
-                        <li>
-                            <a class="nav-link"
-                               th:href="@{/public/help}">Track My Order</a></li>
-                        <li>
-                            <a class="nav-link"
-                               th:href="@{/cart/index}">View Cart</a></li>
-                        <li>
-                            <a class="nav-link"
-                               th:href="@{/public/member-login}">Sign In</a></li>
-                        <li>
-                            <a class="nav-link"
-                               th:href="@{/public/front-registration}">Create Account</a></li>
-                        <li>
-                            <a class="nav-link"
-                               th:href="@{/public/help}">Help</a></li>
-                        <li>
-                            <a class="nav-link"
-                               th:href="@{/public/privacy-policy}">Privacy Policy</a></li>
-                        <li>
-                            <a class="nav-link"
-                               th:href="@{/public/contact-us}">Contact Us</a></li>
-                    </ul>
-                </div>
-
-                <div class="col-sm-3 col-md-3 ">
-                    <h6 class=" font-weight-bold text-uppercase">Customer Service</h6>
-
-
-                    <ul class="list-unstyled">
-                        <li><a class="nav-link px-0" th:href="@{/public/payment-methods}">Payment Methods</a></li>
-                        <li><a class="nav-link px-0" th:href="@{/public/returns-replacements}">Returns & Replacements</a></li>
-                        <li><a class="nav-link px-0" th:href="@{/public/refund-returns-policy}">Refund and Returns Policy</a></li>
-                        <li><a class="nav-link px-0" th:href="@{/public/help}">Support Center</a></li>
-                        <li><a class="nav-link px-0" th:href="@{/public/shipping-rates-policies}">Shipping Rates & Policies</a></li>
-                        <li><a class="nav-link px-0" th:href="@{/public/terms-and-conditions}">Term and Conditions</a></li>
-                    </ul>
-                </div>
-
-
-                <div class="col-sm-12 col-md-12  ">
-
-                    <h4 class="text-center">We Accept Payment By:</h4>
-                    <img  class="img-fluid  " th:src="@{/img/pay.png}"  />
-
-
-                </div>
-
             </div>
-        </div>
-    </section> <!--  End Footer Top-->
-    <section class="d-none d-sm-block storefront-footer-bottom">
-        <div class="container">
-            <div  class="row justify-content-center ">
-                <span class="align-middle">Powered By :
-                    <a class="link-underline-light" th:href="${session.globalSettings.siteUrl != null ? session.globalSettings.siteUrl : '#'}" target="_blank" th:text="${session.globalSettings.siteName}">Musapir</a>.
-                    <a class="link-underline-light ms-2" th:href="@{/public/privacy-policy}">Privacy Policy</a> |
-                    <a class="link-underline-light" th:href="@{/public/terms-of-use}">Terms of Use</a> |
-                    <a class="link-underline-light" th:href="@{/public/help}">Support</a>
-                </span>
-                <!--                  <span class="align-middle">   Powered By : <a  class="textOrange"href="#" target="_blank" > Universes E-Commerce </a> .&nbsp;  Privacy Policy | Terms of Use | License | Support
-                                </span>-->
+        </section>
+
+        <section class="storefront-footer-bottom">
+            <div class="container">
+                <div class="storefront-footer-bottom-row">
+                    <p>
+                        <span>Powered by</span>
+                        <a th:href="${session.globalSettings.siteUrl != null ? session.globalSettings.siteUrl : '#'}"
+                           target="_blank" rel="noopener"
+                           th:text="${session.globalSettings.siteName}">Universes E-Commerce</a>
+                    </p>
+                    <div class="storefront-footer-legal" aria-label="Legal links">
+                        <a th:href="@{/public/privacy-policy}">Privacy</a>
+                        <a th:href="@{/public/terms-of-use}">Terms</a>
+                        <a th:href="@{/public/help}">Support</a>
+                    </div>
+                </div>
             </div>
-        </div>
-    </section>  <!--  End Footer bottom-->
+        </section>
+    </footer>
 </div>

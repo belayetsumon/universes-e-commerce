@@ -4,13 +4,15 @@
  */
 package com.ecommerce.app.module.ReferralRewards.model;
 
-import com.ecommerce.app.module.user.model.Users;
-import com.ecommerce.app.order.model.SalesOrder;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.GiftCardTransactionType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 /**
  *
@@ -21,31 +23,39 @@ import java.time.LocalDateTime;
 @Table(name = "promotions_gift_card_transaction")
 public class GiftCardTransaction extends BaseEntityPromotions {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private GiftCard giftCard;
 
-    @ManyToOne
-    private SalesOrder order;
+    @Enumerated(EnumType.STRING)
+    private GiftCardTransactionType type;
+    // ISSUE, ACTIVATE, REDEEM, REFUND, EXPIRE, ADJUSTMENT
 
-    private LocalDateTime usedAt;
+    @Column(nullable = false, precision = 19, scale = 4)
+    private BigDecimal amount;
 
-    @ManyToOne
-    private Users user;
+    @Column(nullable = false, precision = 19, scale = 4)
+    private BigDecimal balanceAfter;
 
-    private BigDecimal amountUsed;
+    private String currency;
 
-    private BigDecimal remainingBalance;
+    private String orderId;
+    private String refundId;
+
+    @Column(nullable = false, unique = true)
+    private String idempotencyKey;
 
     public GiftCardTransaction() {
     }
 
-    public GiftCardTransaction(GiftCard giftCard, SalesOrder order, LocalDateTime usedAt, Users user, BigDecimal amountUsed, BigDecimal remainingBalance) {
+    public GiftCardTransaction(GiftCard giftCard, GiftCardTransactionType type, BigDecimal amount, BigDecimal balanceAfter, String currency, String orderId, String refundId, String idempotencyKey) {
         this.giftCard = giftCard;
-        this.order = order;
-        this.usedAt = usedAt;
-        this.user = user;
-        this.amountUsed = amountUsed;
-        this.remainingBalance = remainingBalance;
+        this.type = type;
+        this.amount = amount;
+        this.balanceAfter = balanceAfter;
+        this.currency = currency;
+        this.orderId = orderId;
+        this.refundId = refundId;
+        this.idempotencyKey = idempotencyKey;
     }
 
     public GiftCard getGiftCard() {
@@ -56,44 +66,60 @@ public class GiftCardTransaction extends BaseEntityPromotions {
         this.giftCard = giftCard;
     }
 
-    public SalesOrder getOrder() {
-        return order;
+    public GiftCardTransactionType getType() {
+        return type;
     }
 
-    public void setOrder(SalesOrder order) {
-        this.order = order;
+    public void setType(GiftCardTransactionType type) {
+        this.type = type;
     }
 
-    public LocalDateTime getUsedAt() {
-        return usedAt;
+    public BigDecimal getAmount() {
+        return amount;
     }
 
-    public void setUsedAt(LocalDateTime usedAt) {
-        this.usedAt = usedAt;
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
     }
 
-    public Users getUser() {
-        return user;
+    public BigDecimal getBalanceAfter() {
+        return balanceAfter;
     }
 
-    public void setUser(Users user) {
-        this.user = user;
+    public void setBalanceAfter(BigDecimal balanceAfter) {
+        this.balanceAfter = balanceAfter;
     }
 
-    public BigDecimal getAmountUsed() {
-        return amountUsed;
+    public String getCurrency() {
+        return currency;
     }
 
-    public void setAmountUsed(BigDecimal amountUsed) {
-        this.amountUsed = amountUsed;
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 
-    public BigDecimal getRemainingBalance() {
-        return remainingBalance;
+    public String getOrderId() {
+        return orderId;
     }
 
-    public void setRemainingBalance(BigDecimal remainingBalance) {
-        this.remainingBalance = remainingBalance;
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
+
+    public String getRefundId() {
+        return refundId;
+    }
+
+    public void setRefundId(String refundId) {
+        this.refundId = refundId;
+    }
+
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
     }
 
 }

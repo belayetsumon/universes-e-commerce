@@ -34,15 +34,28 @@ public class ForgotPasswordController {
     }
 
     @RequestMapping("/showemail")
-    public String showemail(@RequestParam(required = false, name = "email") String email, Model model) {
+    public String showemail(@RequestParam(required = false, name = "email") String email,
+            @RequestParam(required = false, name = "source") String source,
+            Model model) {
 
-        Users user = usersRepository.findByEmail("email").orElse(null);
+        boolean publicRequest = "public".equalsIgnoreCase(source);
+        if (email == null || email.isBlank()) {
+            model.addAttribute("emailNotFound", "Please provide your registered email address.");
+            return publicRequest ? "frontview/forgot-password" : "user/forgotpassword";
+        }
+
+        Users user = usersRepository.findByEmail(email.trim()).orElse(null);
 
         if (user == null) {
 
             model.addAttribute("emailNotFound", "This email is not exist.");
 
-            return "user/forgotpassword";
+            return publicRequest ? "frontview/forgot-password" : "user/forgotpassword";
+        }
+
+        if (publicRequest) {
+            model.addAttribute("success", "If this email is registered, recovery instructions will be shared through the configured account channel.");
+            return "frontview/forgot-password";
         }
 
         model.addAttribute("user", "Hello Mr " + user.getFirstName() + " " + user.getLastName() + "Your password has been sent successfully! Please check your email. <br>");

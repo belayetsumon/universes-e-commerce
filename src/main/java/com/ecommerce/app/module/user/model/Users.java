@@ -1,16 +1,9 @@
 package com.ecommerce.app.module.user.model;
 
-import com.ecommerce.app.model.*;
-import com.ecommerce.app.module.ReferralRewards.model.Referral;
-import com.ecommerce.app.module.ReferralRewards.model.Wallet;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
 import jakarta.persistence.*;
-import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -35,12 +28,18 @@ public class Users implements Serializable {
     @Column(name = "firstName")
     @NotBlank(message = "*Please provide your first name")
     @Size(min = 3, max = 50, message = "First name must be 3-50 characters")
-    @Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "First name can only contain letters, numbers, underscores, or hyphens")
+    @Pattern(
+            regexp = "^[a-zA-Z0-9_-]+(?: [a-zA-Z0-9_-]+)*$",
+            message = "First name can only contain letters, numbers, single spaces, underscores, or hyphens, and cannot start or end with a space"
+    )
     private String firstName;
 
     @Column(name = "lastName")
-    @Size(min = 3, max = 50, message = "Last name must be 3-50 characters")
-    @Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "Last name can only contain letters, numbers, underscores, or hyphens")
+    @Size(max = 50, message = "Last name must be at most 50 characters")
+    @Pattern(
+            regexp = "^[a-zA-Z0-9_-]+(?: [a-zA-Z0-9_-]+)*$",
+            message = "Last name can only contain letters, numbers, single spaces, underscores, or hyphens"
+    )
     private String lastName;
 
     @Column(name = "email", unique = true)

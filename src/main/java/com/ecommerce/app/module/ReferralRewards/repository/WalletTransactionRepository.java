@@ -1,6 +1,7 @@
 package com.ecommerce.app.module.ReferralRewards.repository;
 
-import com.ecommerce.app.module.ReferralRewards.model.TransactionType;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.WalletTransactionStatus;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.WalletTransactionType;
 import com.ecommerce.app.module.ReferralRewards.model.Wallet;
 import com.ecommerce.app.module.ReferralRewards.model.WalletTransaction;
 import com.ecommerce.app.module.user.model.Users;
@@ -8,8 +9,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,114 +19,123 @@ public interface WalletTransactionRepository extends JpaRepository<WalletTransac
             SELECT wt
             FROM WalletTransaction wt
             JOIN FETCH wt.wallet w
-            JOIN FETCH w.users
-            JOIN FETCH wt.users
-            ORDER BY wt.createdAt DESC, wt.id DESC
+            JOIN FETCH w.user
+            ORDER BY wt.created DESC, wt.id DESC
             """)
     List<WalletTransaction> findAllForAdminList();
 
-    // 1. Expired & unredeemed REWARD transactions
-    @Query("SELECT t FROM WalletTransaction t "
-            + "WHERE t.type = 'REWARD' AND t.redeemed = false AND t.expired = false AND t.expiryDate IS NOT NULL AND t.expiryDate <= :now")
-    List<WalletTransaction> findExpiredUnredeemed(@Param("now") LocalDateTime now);
-
-    // 2. Sum of active, unredeemed rewards in a wallet
-    @Query("SELECT SUM(wt.amount) FROM WalletTransaction wt "
-            + "WHERE wt.wallet = :wallet AND wt.expiryDate > :now AND wt.redeemed = false")
-    Optional<BigDecimal> sumAmountByWalletAndExpiryDateAfterAndRedeemedFalse(
+    @Query("""
+            SELECT COALESCE(SUM(wt.amount), 0)
+            FROM WalletTransaction wt
+            WHERE wt.wallet = :wallet
+              AND wt.type = :type
+              AND wt.status = :status
+            """)
+    BigDecimal sumByWalletAndTypeAndStatus(
             @Param("wallet") Wallet wallet,
-            @Param("now") LocalDateTime now
+            @Param("type") WalletTransactionType type,
+            @Param("status") WalletTransactionStatus status
     );
 
-    // 3. Sum of rewards for user not expired and not redeemed
-    @Query("SELECT SUM(wt.amount) FROM WalletTransaction wt "
-            + "WHERE wt.wallet.users = :user AND wt.expiryDate > :now AND wt.redeemed = false")
-    Optional<BigDecimal> sumAvailableByUser(@Param("user") Users user, @Param("now") LocalDateTime now);
+    @Query("""
+            SELECT COALESCE(SUM(wt.amount), 0)
+            FROM WalletTransaction wt
+            WHERE wt.wallet.user = :user
+              AND wt.type = :type
+              AND wt.status = :status
+            """)
+    BigDecimal sumByUserAndTypeAndStatus(
+            @Param("user") Users user,
+            @Param("type") WalletTransactionType type,
+            @Param("status") WalletTransactionStatus status
+    );
 
-    // 4. Sum of credited amounts for a user
-    @Query("SELECT SUM(wt.amount) FROM WalletTransaction wt "
-            + "WHERE wt.wallet.users = :user AND wt.type = 'CREDIT'")
-    Optional<BigDecimal> sumCreditsByUser(@Param("user") Users user);
-
-    // 5. Sum of debited amounts for a user
-    @Query("SELECT SUM(wt.amount) FROM WalletTransaction wt "
-            + "WHERE wt.wallet.users = :user AND wt.amount < :amount")
-    Optional<BigDecimal> sumDebitsByUser(@Param("user") Users user, @Param("amount") BigDecimal amount);
-
-    // 6. Sum by type and user since a date
-    @Query("SELECT SUM(wt.amount) FROM WalletTransaction wt "
-            + "WHERE wt.wallet.users = :user AND wt.type = :type AND wt.createdAt >= :date")
+    @Query("""
+            SELECT COALESCE(SUM(wt.amount), 0)
+            FROM WalletTransaction wt
+            WHERE wt.wallet.user = :user
+              AND wt.type = :type
+              AND wt.created >= :date
+            """)
     Optional<BigDecimal> sumByUserTypeSince(
             @Param("user") Users user,
-            @Param("type") TransactionType type,
+            @Param("type") WalletTransactionType type,
             @Param("date") LocalDateTime date
     );
 
-    // 7. Expired, unredeemed transactions of a specific type
-    List<WalletTransaction> findByExpiryDateBeforeAndRedeemedFalseAndType(LocalDateTime now, TransactionType type);
-
-    // 8. Expired transactions not yet marked as expired
-    List<WalletTransaction> findAllByExpiryDateBeforeAndExpiredFalse(LocalDateTime now);
-
-    // 9. Sum by wallet, type, and time
-    @Query("SELECT SUM(wt.amount) FROM WalletTransaction wt "
-            + "WHERE wt.wallet = :wallet AND wt.type = :type AND wt.createdAt > :after")
-    Optional<BigDecimal> sumByWalletTypeSince(
-            @Param("wallet") Wallet wallet,
-            @Param("type") TransactionType type,
-            @Param("after") LocalDateTime after
-    );
-
-    // 10. Same as above, defaulting to 0
-    @Query("SELECT COALESCE(SUM(wt.amount), 0) FROM WalletTransaction wt "
-            + "WHERE wt.wallet = :wallet AND wt.type = :type AND wt.createdAt > :after")
+    @Query("""
+            SELECT COALESCE(SUM(wt.amount), 0)
+            FROM WalletTransaction wt
+            WHERE wt.wallet = :wallet
+              AND wt.type = :type
+              AND wt.created > :after
+            """)
     BigDecimal sumAmountByWalletAndTypeAndCreatedAtAfter(
             @Param("wallet") Wallet wallet,
-            @Param("type") TransactionType type,
+            @Param("type") WalletTransactionType type,
             @Param("after") LocalDateTime after
     );
 
-    // 11. Sum of non-redeemed user amounts that haven't expired
-    @Query("SELECT COALESCE(SUM(wt.amount), 0) FROM WalletTransaction wt "
-            + "WHERE wt.wallet.users = :user AND wt.expiryDate > :expiryDate AND wt.redeemed = false")
-    Optional<BigDecimal> sumAmountByUserAndExpiryDateAfterAndRedeemedFalse(
-            @Param("user") Users user,
-            @Param("expiryDate") LocalDateTime expiryDate
-    );
+    default Optional<BigDecimal> sumCreditsByUser(Users user) {
+        BigDecimal total = zeroIfNull(sumByUserAndTypeAndStatus(user, WalletTransactionType.CREDIT, WalletTransactionStatus.SUCCESS))
+                .add(zeroIfNull(sumByUserAndTypeAndStatus(user, WalletTransactionType.CASHBACK, WalletTransactionStatus.SUCCESS)))
+                .add(zeroIfNull(sumByUserAndTypeAndStatus(user, WalletTransactionType.REFUND, WalletTransactionStatus.SUCCESS)));
+        return Optional.of(total);
+    }
 
-    // 12. Sum of user's credited transactions (amount >= X)
-    @Query("SELECT COALESCE(SUM(wt.amount), 0) FROM WalletTransaction wt "
-            + "WHERE wt.wallet.users = :user AND wt.amount >= :amount")
+    default Optional<BigDecimal> sumDebitsByUser(Users user) {
+        return Optional.of(zeroIfNull(sumByUserAndTypeAndStatus(user, WalletTransactionType.DEBIT, WalletTransactionStatus.SUCCESS)));
+    }
+
+    @Query("""
+            SELECT COALESCE(SUM(wt.amount), 0)
+            FROM WalletTransaction wt
+            WHERE wt.wallet.user = :user
+              AND wt.amount >= :amount
+            """)
     Optional<BigDecimal> sumAmountByUserAndAmountGreaterThanEqual(
             @Param("user") Users user,
             @Param("amount") BigDecimal amount
     );
 
-    // 13. Sum of user's debited transactions (amount < X)
-    @Query("SELECT COALESCE(SUM(wt.amount), 0) FROM WalletTransaction wt "
-            + "WHERE wt.wallet.users = :user AND wt.amount < :amount")
+    @Query("""
+            SELECT COALESCE(SUM(wt.amount), 0)
+            FROM WalletTransaction wt
+            WHERE wt.wallet.user = :user
+              AND wt.amount < :amount
+            """)
     Optional<BigDecimal> sumAmountByUserAndAmountLessThan(
             @Param("user") Users user,
             @Param("amount") BigDecimal amount
     );
 
-    // 14. Paginated list of user's transactions
-    Page<WalletTransaction> findByWallet_UsersAndTypeInAndCreatedAtBetween(
-            Users users,
-            List<TransactionType> types,
-            LocalDateTime start,
-            LocalDateTime end,
-            Pageable pageable
-    );
+    @Query("""
+            SELECT wt
+            FROM WalletTransaction wt
+            JOIN FETCH wt.wallet w
+            JOIN FETCH w.user
+            WHERE w.user = :user
+            ORDER BY wt.created DESC, wt.id DESC
+            """)
+    List<WalletTransaction> findByWallet_UsersOrderByCreatedAtDesc(@Param("user") Users user);
 
-    // 15. List by wallet
+    @Query("""
+            SELECT wt
+            FROM WalletTransaction wt
+            JOIN FETCH wt.wallet w
+            JOIN FETCH w.user u
+            WHERE u.id = :userId
+            ORDER BY wt.created DESC, wt.id DESC
+            """)
+    List<WalletTransaction> findByWallet_Users_Id(@Param("userId") Long userId);
+
     List<WalletTransaction> findByWallet(Wallet wallet);
 
     boolean existsByWallet(Wallet wallet);
 
-    // 16. List user's transactions sorted newest first
-    List<WalletTransaction> findByWallet_UsersOrderByCreatedAtDesc(Users user);
+    Optional<WalletTransaction> findByIdempotencyKey(String idempotencyKey);
 
-    // 17. List by user ID
-    List<WalletTransaction> findByWallet_Users_Id(Long userId);
+    private BigDecimal zeroIfNull(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
+    }
 }

@@ -1,6 +1,6 @@
 package com.ecommerce.app.module.ReferralRewards.services;
 
-import com.ecommerce.app.module.ReferralRewards.model.CashbackStatus;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.CashbackStatus;
 import com.ecommerce.app.module.ReferralRewards.model.CashbackTransaction;
 import com.ecommerce.app.module.ReferralRewards.model.GiftCard;
 import com.ecommerce.app.module.ReferralRewards.model.RewardAccount;

@@ -15,7 +15,9 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,20 +70,112 @@ public class ShipmentService {
         return orderId != null && repo.existsBySalesOrderId(orderId);
     }
 
+    @Transactional
     public Shipment save(Shipment shipment) {
+        if (shipment == null) {
+            throw new IllegalArgumentException("Shipment is required.");
+        }
+
+        if (shipment.getId() == null) {
+            Shipment repeatedShipment = resolveRepeatedCreate(shipment);
+            if (repeatedShipment != null) {
+                return repeatedShipment;
+            }
+            enforceSingleShipmentPerOrder(shipment);
+        }
+
         ShipmentStatus previousStatus = null;
-        if (shipment != null && shipment.getId() != null) {
+        if (shipment.getId() != null) {
             previousStatus = repo.findById(shipment.getId())
                     .map(Shipment::getStatus)
                     .orElse(null);
         }
         Shipment preparedShipment = syncCodFromOrder(shipment);
         if (preparedShipment != null) {
+            normalizeShipmentReferences(preparedShipment);
+            enforceUniqueTrackingNumber(preparedShipment);
+            applyCarrierDefaults(preparedShipment);
             preparedShipment.recalculateSettlementAmounts();
         }
-        Shipment savedShipment = repo.save(preparedShipment);
+        Shipment savedShipment = repo.saveAndFlush(preparedShipment);
         shipmentTrackingService.recordStatusChange(savedShipment, previousStatus, savedShipment.getStatus(), "shipment form");
         return savedShipment;
+    }
+
+    private Shipment resolveRepeatedCreate(Shipment shipment) {
+        if (shipment == null || shipment.getId() != null) {
+            return null;
+        }
+
+        String uuid = normalizeUuid(shipment.getUuid());
+        shipment.setUuid(uuid);
+        Shipment existingByUuid = repo.findByUuid(uuid).orElse(null);
+        if (existingByUuid == null) {
+            return null;
+        }
+
+        if (sameBusinessShipment(existingByUuid, shipment)) {
+            return existingByUuid;
+        }
+
+        throw new IllegalArgumentException("Shipment request token was already used for another order.");
+    }
+
+    private void enforceSingleShipmentPerOrder(Shipment shipment) {
+        if (shipment == null || shipment.getSalesOrderId() == null) {
+            return;
+        }
+        Shipment existingByOrder = getLatestByOrderId(shipment.getSalesOrderId());
+        if (existingByOrder != null) {
+            throw new IllegalArgumentException("A shipment already exists for the selected sales order.");
+        }
+    }
+
+    private boolean sameBusinessShipment(Shipment existingShipment, Shipment requestedShipment) {
+        return existingShipment != null
+                && requestedShipment != null
+                && Objects.equals(existingShipment.getSalesOrderId(), requestedShipment.getSalesOrderId())
+                && Objects.equals(existingShipment.getVendorId(), requestedShipment.getVendorId());
+    }
+
+    private String normalizeUuid(String uuid) {
+        if (uuid == null || uuid.isBlank()) {
+            return UUID.randomUUID().toString();
+        }
+        return uuid.trim();
+    }
+
+    private void normalizeShipmentReferences(Shipment shipment) {
+        if (shipment == null) {
+            return;
+        }
+        shipment.setTrackingNumber(normalizeOptionalText(shipment.getTrackingNumber()));
+        shipment.setLabelUrl(normalizeOptionalText(shipment.getLabelUrl()));
+        shipment.setMetadataJson(normalizeOptionalText(shipment.getMetadataJson()));
+    }
+
+    private void enforceUniqueTrackingNumber(Shipment shipment) {
+        if (shipment == null || shipment.getTrackingNumber() == null) {
+            return;
+        }
+        Shipment shipmentWithTracking = repo.findByTrackingNumber(shipment.getTrackingNumber()).orElse(null);
+        if (shipmentWithTracking != null && !Objects.equals(shipmentWithTracking.getId(), shipment.getId())) {
+            throw new IllegalArgumentException("Tracking number already exists on shipment #" + shipmentWithTracking.getId() + ".");
+        }
+    }
+
+    private String normalizeOptionalText(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim();
+    }
+
+    private void applyCarrierDefaults(Shipment shipment) {
+        if (shipment == null || shipment.getCarrier() == null) {
+            return;
+        }
+        shipment.setCarrierModeSnapshot(shipment.getCarrier().getMode());
     }
 
     public void delete(Long id) {

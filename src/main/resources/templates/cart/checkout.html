@@ -192,7 +192,9 @@
                                        type="text"
                                        name="couponCode"
                                        th:value="${selectedCouponCode}"
+                                       data-checkout-coupon-code
                                        placeholder="Enter coupon code">
+                                <div class="form-text" data-checkout-coupon-message></div>
                             </div>
 
                             <div class="mt-3">
@@ -204,6 +206,7 @@
                                        min="0"
                                        step="0.01"
                                        th:attr="max=${rewardBalance}"
+                                       data-checkout-reward-points
                                        th:value="${selectedRewardPointsToUse}">
                             </div>
 
@@ -214,7 +217,9 @@
                                        type="text"
                                        name="giftCardCode"
                                        th:value="${selectedGiftCardCode}"
+                                       data-checkout-gift-card-code
                                        placeholder="Enter gift card code">
+                                <div class="form-text" data-checkout-gift-card-message></div>
                             </div>
 
                             <div class="mt-3">
@@ -226,6 +231,7 @@
                                        min="0"
                                        step="0.01"
                                        th:attr="max=${grandTotal}"
+                                       data-checkout-gift-card-amount
                                        th:value="${selectedGiftCardAmount}">
                                 <div class="form-text">
                                     Leave zero to use as much of the valid gift card balance as possible.
@@ -269,6 +275,7 @@
                                 Full COD keeps the whole order for delivery collection. Full online collects the whole amount now.
                                 Advance + COD keeps only the entered advance payable now and stores the rest as COD.
                             </div>
+                            <div class="small mt-3" data-checkout-incentive-summary></div>
                         </div>
                     </div>
 
@@ -278,5 +285,96 @@
                 </form>
             </div>
         </div>
+        <script>
+            (function () {
+                const form = document.querySelector('form[action$="/order/savebyvendorupdate"]');
+                if (!form) {
+                    return;
+                }
+
+                const couponInput = form.querySelector('[data-checkout-coupon-code]');
+                const giftCardInput = form.querySelector('[data-checkout-gift-card-code]');
+                const giftCardAmountInput = form.querySelector('[data-checkout-gift-card-amount]');
+                const rewardPointsInput = form.querySelector('[data-checkout-reward-points]');
+                const couponMessage = form.querySelector('[data-checkout-coupon-message]');
+                const giftCardMessage = form.querySelector('[data-checkout-gift-card-message]');
+                const summaryMessage = form.querySelector('[data-checkout-incentive-summary]');
+                let validationTimer;
+
+                function setMessage(target, input, valid, message) {
+                    if (!target || !input) {
+                        return;
+                    }
+                    target.textContent = message || '';
+                    target.classList.toggle('text-success', valid === true);
+                    target.classList.toggle('text-danger', valid === false);
+                    input.classList.toggle('is-valid', valid === true);
+                    input.classList.toggle('is-invalid', valid === false);
+                    if (valid === null || valid === undefined) {
+                        input.classList.remove('is-valid', 'is-invalid');
+                    }
+                }
+
+                function csrfParams(params) {
+                    const csrf = form.querySelector('input[type="hidden"][name^="_csrf"], input[type="hidden"][name="_csrf"]');
+                    if (csrf && csrf.name && csrf.value) {
+                        params.set(csrf.name, csrf.value);
+                    }
+                    return params;
+                }
+
+                async function validateCodes() {
+                    const params = csrfParams(new URLSearchParams());
+                    params.set('couponCode', couponInput ? couponInput.value.trim() : '');
+                    params.set('giftCardCode', giftCardInput ? giftCardInput.value.trim() : '');
+                    params.set('giftCardAmount', giftCardAmountInput && giftCardAmountInput.value ? giftCardAmountInput.value : '0');
+                    params.set('rewardPointsToUse', rewardPointsInput && rewardPointsInput.value ? rewardPointsInput.value : '0');
+
+                    if (!params.get('couponCode') && !params.get('giftCardCode') && Number(params.get('rewardPointsToUse') || 0) <= 0) {
+                        setMessage(couponMessage, couponInput, null, '');
+                        setMessage(giftCardMessage, giftCardInput, null, '');
+                        if (summaryMessage) {
+                            summaryMessage.textContent = '';
+                            summaryMessage.className = 'small mt-3';
+                        }
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/cart/checkout/incentives/preview', {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                            body: params.toString()
+                        });
+                        const data = await response.json();
+                        setMessage(couponMessage, couponInput, data.couponValid, data.couponMessage);
+                        setMessage(giftCardMessage, giftCardInput, data.giftCardValid, data.giftCardMessage);
+                        if (summaryMessage) {
+                            summaryMessage.textContent = data.summaryMessage || data.message || '';
+                            summaryMessage.className = 'small mt-3 ' + (data.valid === false ? 'text-danger' : 'text-muted');
+                        }
+                    } catch (error) {
+                        if (summaryMessage) {
+                            summaryMessage.textContent = 'Could not validate code right now. Please try again.';
+                            summaryMessage.className = 'small mt-3 text-danger';
+                        }
+                    }
+                }
+
+                function scheduleValidation() {
+                    window.clearTimeout(validationTimer);
+                    validationTimer = window.setTimeout(validateCodes, 450);
+                }
+
+                [couponInput, giftCardInput, giftCardAmountInput, rewardPointsInput]
+                        .filter(Boolean)
+                        .forEach(input => input.addEventListener('input', scheduleValidation));
+
+                if ((couponInput && couponInput.value.trim()) || (giftCardInput && giftCardInput.value.trim())) {
+                    scheduleValidation();
+                }
+            }());
+        </script>
     </div>
 </div>

@@ -1,82 +1,501 @@
 <!DOCTYPE html>
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <style>
+            .cashback-policy-shell {
+                display: grid;
+                gap: 1rem;
+            }
+
+            .cashback-policy-hero {
+                border: 1px solid rgba(20, 34, 58, 0.09);
+                border-radius: 8px;
+                background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+                box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+                padding: 1rem 1.125rem;
+            }
+
+            .cashback-policy-kpi {
+                display: inline-flex;
+                align-items: center;
+                gap: .45rem;
+                border: 1px solid #cbd5e1;
+                border-radius: 999px;
+                background: #ffffff;
+                color: #334155;
+                font-weight: 700;
+                padding: .3rem .78rem;
+            }
+
+            .cashback-policy-kpi .count {
+                color: #0f172a;
+                font-size: 1.02rem;
+                font-weight: 800;
+            }
+
+            .cashback-policy-card {
+                border: 1px solid #d9e2ec;
+                border-radius: 8px;
+                box-shadow: 0 12px 34px rgba(15, 23, 42, 0.07);
+                overflow: hidden;
+            }
+
+            .cashback-policy-card .card-header {
+                background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+                border: 0;
+                border-bottom: 1px solid #dbe4ee;
+                box-shadow: inset 4px 0 0 #123a63;
+                color: #0f172a;
+                padding: .9rem 1.1rem;
+            }
+
+            .cashback-policy-card .card-header strong {
+                color: #0f172a;
+            }
+
+            .cashback-policy-card .card-header small {
+                color: #64748b;
+            }
+
+            .cashback-policy-card .card-body {
+                padding: 1rem 1.2rem 1.2rem;
+            }
+
+            .cashback-policy-alert .alert-heading {
+                font-size: .95rem;
+                margin-bottom: .25rem;
+            }
+
+            .cashback-policy-filter {
+                border: 1px solid rgba(148, 163, 184, 0.34);
+                border-radius: 8px;
+                background: #f8fafc;
+                margin-bottom: .9rem;
+                padding: .85rem;
+            }
+
+            .cashback-policy-filter .form-label {
+                color: #334155;
+                font-size: .78rem;
+                font-weight: 700;
+                letter-spacing: .03em;
+                margin-bottom: .35rem;
+                text-transform: uppercase;
+            }
+
+            .cashback-policy-table {
+                margin-bottom: 0;
+            }
+
+            .cashback-policy-table thead th {
+                background: #f8fafc;
+                border-bottom-width: 1px;
+                color: #475569;
+                font-size: .76rem;
+                font-weight: 700;
+                letter-spacing: .04em;
+                text-transform: uppercase;
+                white-space: nowrap;
+            }
+
+            .cashback-policy-table tbody td,
+            .cashback-policy-table tbody th {
+                vertical-align: middle;
+            }
+
+            .cashback-policy-table .policy-name {
+                color: #0f172a;
+                font-weight: 800;
+            }
+
+            .cashback-policy-table .amount-primary {
+                color: #0f172a;
+                font-weight: 800;
+            }
+
+            .cashback-policy-table .percent-chip {
+                border: 1px solid rgba(18, 58, 99, 0.24);
+                border-radius: 999px;
+                background: rgba(18, 58, 99, 0.08);
+                color: #102d4d;
+                display: inline-flex;
+                font-size: .78rem;
+                font-weight: 800;
+                padding: .26rem .6rem;
+            }
+
+            .cashback-policy-table .status-pill {
+                border-radius: 999px;
+                display: inline-flex;
+                font-size: .72rem;
+                font-weight: 800;
+                letter-spacing: .03em;
+                padding: .3rem .62rem;
+                text-transform: uppercase;
+            }
+
+            .cashback-policy-table .status-active {
+                background: rgba(16, 185, 129, 0.13);
+                border: 1px solid rgba(5, 150, 105, 0.24);
+                color: #065f46;
+            }
+
+            .cashback-policy-table .status-draft,
+            .cashback-policy-table .status-paused {
+                background: rgba(245, 158, 11, 0.14);
+                border: 1px solid rgba(217, 119, 6, 0.22);
+                color: #92400e;
+            }
+
+            .cashback-policy-table .status-expired,
+            .cashback-policy-table .status-archived {
+                background: rgba(100, 116, 139, 0.12);
+                border: 1px solid rgba(100, 116, 139, 0.22);
+                color: #334155;
+            }
+
+            .cashback-policy-shell #example_filter {
+                display: none;
+            }
+
+            .cashback-policy-empty {
+                color: #64748b;
+                font-size: .95rem;
+                padding: 2rem 1rem;
+                text-align: center;
+            }
+
+            @media (max-width: 767px) {
+                .cashback-policy-card .card-header,
+                .cashback-policy-card .card-body,
+                .cashback-policy-hero {
+                    padding-left: .85rem;
+                    padding-right: .85rem;
+                }
+            }
+        </style>
+    </th:block>
+
     <div layout:fragment="main_content">
-        <section>
-            <div class="row">
-                <div class="col-sm-3"><h4> Cashback Engine </h4></div>
-                <div class="col-sm-5">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Promotions</li>
-                            <li class="breadcrumb-item active" aria-current="page">Cashback</li>
-                        </ol>
-                    </nav>
-                </div>
-            </div>
-        </section>
-        <hr/>
-
-        <div class="card">
-            <div class="card-header">
-                <div class="row">
-                    <div class="col-sm-6 font-weight-bold">
-                        <strong><i class="bi bi-percent"></i> Cashback Policy List</strong>
+        <div class="cashback-policy-shell">
+            <section class="cashback-policy-hero">
+                <div class="row align-items-center g-3">
+                    <div class="col-lg-7">
+                        <h4 class="mb-1 text-dark fw-semibold">Cashback Engine</h4>
+                        <p class="mb-0 text-secondary">Manage cashback rules, caps, category scope, status, and validity windows for checkout incentives.</p>
                     </div>
-                    <div class="col-sm-6 text-end">
-                        <a class="btn btn-success btn-sm" th:href="@{/cashback-policy/create}">
-                            <i class="bi bi-plus-circle"></i> Create Policy
-                        </a>
+                    <div class="col-lg-5 text-lg-end">
+                        <span class="cashback-policy-kpi me-2 mb-2 mb-lg-0">
+                            <i class="bi bi-percent"></i>
+                            Total
+                            <span class="count" th:text="${policies != null ? #lists.size(policies) : 0}">0</span>
+                        </span>
+                        <span class="cashback-policy-kpi mb-2 mb-lg-0">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Active
+                            <span class="count" th:text="${policies != null ? #lists.size(policies.?[status != null and status.name() == 'ACTIVE']) : 0}">0</span>
+                        </span>
                     </div>
                 </div>
-            </div>
+                <nav class="mt-3" aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="text-decoration-none">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Promotions</li>
+                        <li class="breadcrumb-item active" aria-current="page">Cashback Policies</li>
+                    </ol>
+                </nav>
+            </section>
 
-            <div class="card-body table-responsive">
-                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-                    <span th:text="${successMessage}"></span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <span th:text="${errorMessage}"></span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <div class="card cashback-policy-card">
+                <div class="card-header">
+                    <div class="row align-items-center g-2">
+                        <div class="col-sm-7">
+                            <strong><i class="bi bi-list-task"></i> Cashback Policy List</strong>
+                            <small class="d-block">Filter by status, currency, scope, or search policy names and category targets.</small>
+                        </div>
+                        <div class="col-sm-5 text-sm-end">
+                            <a class="btn btn-success btn-sm" th:href="@{/cashback-policy/create}">
+                                <i class="bi bi-plus-circle"></i> Create Policy
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
-                <table id="example" class="table table-bordered table-hover table-striped">
-                    <thead class="thead-light">
-                        <tr>
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Percentage</th>
-                            <th>Max Cashback</th>
-                            <th>Min Order</th>
-                            <th>Start</th>
-                            <th>End</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="p,status:${policies}">
-                            <th th:text="${status.count}">1</th>
-                            <td th:text="${p.name}">Name</td>
-                            <td th:text="${p.percentage}">0</td>
-                            <td th:text="${p.maxCashback}">0</td>
-                            <td th:text="${p.minOrderValue}">0</td>
-                            <td th:text="${p.startDate}">-</td>
-                            <td th:text="${p.endDate}">-</td>
-                            <td th:text="${p.status}">ACTIVE</td>
-                            <td>
-                                <a class="btn btn-sm btn-primary" th:href="@{/cashback-policy/edit/{id}(id=${p.id})}">Edit</a>
-                                <form th:action="@{/cashback-policy/delete/{id}(id=${p.id})}" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-danger"
-                                            onclick="return confirm('Delete this policy?')">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="card-body">
+                    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show cashback-policy-alert" role="alert">
+                        <h6 class="alert-heading">Action Completed</h6>
+                        <div th:text="${successMessage}">Cashback policy saved successfully.</div>
+                        <small class="d-block mt-1">Hint: Verify status, category scope, and date range before the campaign goes live.</small>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show cashback-policy-alert" role="alert">
+                        <h6 class="alert-heading">Action Blocked</h6>
+                        <div th:text="${errorMessage}">Cashback policy action failed.</div>
+                        <small class="d-block mt-1">Hint: Check policy validation, linked cashback transactions, and category mappings before retrying.</small>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+
+                    <div class="cashback-policy-filter">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-xl-4 col-lg-4">
+                                <label for="cashbackPolicyQuickSearch" class="form-label">Quick Search</label>
+                                <input id="cashbackPolicyQuickSearch" type="search" class="form-control form-control-sm"
+                                       placeholder="Search name, category, currency, or amount"/>
+                            </div>
+                            <div class="col-xl-2 col-lg-2 col-md-4">
+                                <label for="cashbackPolicyStatusFilter" class="form-label">Status</label>
+                                <select id="cashbackPolicyStatusFilter" class="form-select form-select-sm">
+                                    <option value="">All</option>
+                                </select>
+                            </div>
+                            <div class="col-xl-2 col-lg-2 col-md-4">
+                                <label for="cashbackPolicyCurrencyFilter" class="form-label">Currency</label>
+                                <select id="cashbackPolicyCurrencyFilter" class="form-select form-select-sm">
+                                    <option value="">All</option>
+                                </select>
+                            </div>
+                            <div class="col-xl-2 col-lg-2 col-md-4">
+                                <label for="cashbackPolicyScopeFilter" class="form-label">Scope</label>
+                                <select id="cashbackPolicyScopeFilter" class="form-select form-select-sm">
+                                    <option value="">All</option>
+                                    <option value="GLOBAL">Global</option>
+                                    <option value="CATEGORY">Category</option>
+                                </select>
+                            </div>
+                            <div class="col-xl-2 col-lg-2 col-md-12 d-grid">
+                                <button id="cashbackPolicyFilterReset" type="button" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-arrow-clockwise"></i> Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mb-2">
+                        <small id="cashbackPolicyVisibleCount" class="text-muted">Showing 0 of 0 policies</small>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="example" class="table table-bordered table-hover table-striped cashback-policy-table">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th>Percentage</th>
+                                    <th>Max Cashback</th>
+                                    <th>Min Order</th>
+                                    <th>Currency</th>
+                                    <th>Categories</th>
+                                    <th>Start</th>
+                                    <th>End</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="p,status:${policies}"
+                                    th:attr="data-status=${p.status != null ? p.status.name() : 'DRAFT'},data-currency=${p.currency != null and !#strings.isEmpty(p.currency) ? p.currency : 'N/A'},data-scope=${p.categoryIds == null or p.categoryIds.isEmpty() ? 'GLOBAL' : 'CATEGORY'}">
+                                    <th th:text="${status.count}" class="text-muted fw-semibold">1</th>
+                                    <td>
+                                        <div class="policy-name" th:text="${p.name}">Name</div>
+                                        <small class="text-muted" th:text="${p.categoryIds == null or p.categoryIds.isEmpty() ? 'Global cashback policy' : 'Category scoped policy'}">Scope</small>
+                                    </td>
+                                    <td><span class="percent-chip" th:text="|${p.percentage}%|">0%</span></td>
+                                    <td><span class="amount-primary" th:text="${p.maxCashback}">0</span></td>
+                                    <td><span class="amount-primary" th:text="${p.minOrderValue}">0</span></td>
+                                    <td><span class="badge bg-light text-dark border" th:text="${p.currency}">BDT</span></td>
+                                    <td>
+                                        <span class="badge bg-secondary" th:if="${p.categoryIds == null || p.categoryIds.isEmpty()}">Global</span>
+                                        <span class="badge bg-light text-dark border me-1 mb-1"
+                                              th:each="categoryId : ${p.categoryIds}"
+                                              th:text="${cashbackCategoryNamesById[categoryId] != null ? cashbackCategoryNamesById[categoryId] : '#' + categoryId}">Category</span>
+                                    </td>
+                                    <td>
+                                        <span th:text="${p.startDate != null ? #temporals.format(p.startDate, 'dd MMM yyyy, HH:mm') : '-'}">-</span>
+                                    </td>
+                                    <td>
+                                        <span th:text="${p.endDate != null ? #temporals.format(p.endDate, 'dd MMM yyyy, HH:mm') : '-'}">-</span>
+                                    </td>
+                                    <td>
+                                        <span class="status-pill"
+                                              th:classappend="${p.status != null ? ' status-' + #strings.toLowerCase(p.status.name()) : ' status-draft'}"
+                                              th:text="${p.status != null ? p.status : 'DRAFT'}">ACTIVE</span>
+                                    </td>
+                                    <td>
+                                        <a class="btn btn-sm btn-primary" th:href="@{/cashback-policy/edit/{id}(id=${p.id})}">
+                                            <i class="bi bi-pencil-square"></i> Edit
+                                        </a>
+                                        <form th:action="@{/cashback-policy/delete/{id}(id=${p.id})}" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-danger"
+                                                    onclick="return confirm('Delete this policy?')">
+                                                <i class="bi bi-trash3"></i> Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <tr th:if="${policies == null or #lists.isEmpty(policies)}">
+                                    <td class="cashback-policy-empty">
+                                        <i class="bi bi-inboxes"></i> No cashback policies found. Create a policy to start cashback configuration.
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
+    <th:block layout:fragment="page_js">
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const initializeCashbackPolicyFilters = function () {
+                    if (!window.jQuery || !jQuery.fn || !jQuery.fn.DataTable) {
+                        window.setTimeout(initializeCashbackPolicyFilters, 180);
+                        return;
+                    }
+
+                    const tableElement = document.getElementById('example');
+                    if (!tableElement || !jQuery.fn.DataTable.isDataTable(tableElement)) {
+                        window.setTimeout(initializeCashbackPolicyFilters, 180);
+                        return;
+                    }
+
+                    if (tableElement.dataset.cashbackPolicyFiltersInitialized === 'true') {
+                        return;
+                    }
+                    tableElement.dataset.cashbackPolicyFiltersInitialized = 'true';
+
+                    const table = jQuery(tableElement).DataTable();
+                    const quickSearchInput = document.getElementById('cashbackPolicyQuickSearch');
+                    const statusFilter = document.getElementById('cashbackPolicyStatusFilter');
+                    const currencyFilter = document.getElementById('cashbackPolicyCurrencyFilter');
+                    const scopeFilter = document.getElementById('cashbackPolicyScopeFilter');
+                    const resetButton = document.getElementById('cashbackPolicyFilterReset');
+                    const countLabel = document.getElementById('cashbackPolicyVisibleCount');
+
+                    const dataRows = function (rowSet) {
+                        return Array.from(rowSet.nodes()).filter(function (row) {
+                            return row.hasAttribute('data-status');
+                        });
+                    };
+
+                    const uniqueOptions = function (values) {
+                        return Array.from(new Set(values
+                                .map(function (value) {
+                                    return (value || '').trim();
+                                })
+                                .filter(function (value) {
+                                    return value.length > 0;
+                                })))
+                                .sort();
+                    };
+
+                    const appendSelectOptions = function (element, values) {
+                        if (!element) {
+                            return;
+                        }
+                        values.forEach(function (value) {
+                            const option = document.createElement('option');
+                            option.value = value;
+                            option.textContent = value;
+                            element.appendChild(option);
+                        });
+                    };
+
+                    const rowData = dataRows(table.rows());
+                    appendSelectOptions(statusFilter, uniqueOptions(rowData.map(function (row) {
+                        return row.getAttribute('data-status');
+                    })));
+                    appendSelectOptions(currencyFilter, uniqueOptions(rowData.map(function (row) {
+                        return row.getAttribute('data-currency');
+                    })));
+
+                    const customFilter = function (settings, data, dataIndex) {
+                        if (settings.nTable !== tableElement) {
+                            return true;
+                        }
+
+                        const rowNode = table.row(dataIndex).node();
+                        if (!rowNode) {
+                            return true;
+                        }
+
+                        const rowStatus = (rowNode.getAttribute('data-status') || '').trim();
+                        const rowCurrency = (rowNode.getAttribute('data-currency') || '').trim();
+                        const rowScope = (rowNode.getAttribute('data-scope') || '').trim();
+
+                        if (statusFilter && statusFilter.value && rowStatus !== statusFilter.value) {
+                            return false;
+                        }
+                        if (currencyFilter && currencyFilter.value && rowCurrency !== currencyFilter.value) {
+                            return false;
+                        }
+                        if (scopeFilter && scopeFilter.value && rowScope !== scopeFilter.value) {
+                            return false;
+                        }
+                        return true;
+                    };
+
+                    jQuery.fn.dataTable.ext.search.push(customFilter);
+
+                    const refreshCount = function () {
+                        if (!countLabel) {
+                            return;
+                        }
+                        const filteredCount = dataRows(table.rows({search: 'applied'})).length;
+                        const totalCount = dataRows(table.rows()).length;
+                        countLabel.textContent = 'Showing ' + filteredCount + ' of ' + totalCount + ' policies';
+                    };
+
+                    if (quickSearchInput) {
+                        quickSearchInput.addEventListener('input', function () {
+                            table.search(quickSearchInput.value || '').draw();
+                        });
+                    }
+
+                    [statusFilter, currencyFilter, scopeFilter].forEach(function (select) {
+                        if (!select) {
+                            return;
+                        }
+                        select.addEventListener('change', function () {
+                            table.draw();
+                        });
+                    });
+
+                    if (resetButton) {
+                        resetButton.addEventListener('click', function () {
+                            if (quickSearchInput) {
+                                quickSearchInput.value = '';
+                            }
+                            if (statusFilter) {
+                                statusFilter.value = '';
+                            }
+                            if (currencyFilter) {
+                                currencyFilter.value = '';
+                            }
+                            if (scopeFilter) {
+                                scopeFilter.value = '';
+                            }
+                            table.search('').draw();
+                        });
+                    }
+
+                    table.on('draw', refreshCount);
+                    refreshCount();
+                };
+
+                initializeCashbackPolicyFilters();
+            });
+        </script>
+    </th:block>
+</div>

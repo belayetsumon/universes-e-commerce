@@ -17,11 +17,55 @@
         </section>
         <hr/>
 
-        <div class="card">
-            <div class="card-header">
-                <div class="row">
-                    <div class="col-sm-6 font-weight-bold">
-                        <strong><i class="bi bi-receipt"></i> Cashback Transaction List</strong>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small text-uppercase fw-semibold">Pending Cashback</div>
+                        <div class="fs-4 fw-bold" th:text="${pendingCashbackTotal}">0.00</div>
+                        <div class="small text-muted">
+                            Count:
+                            <span th:text="${pendingCashbackCount}">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small text-uppercase fw-semibold">Credited Cashback</div>
+                        <div class="fs-4 fw-bold text-success" th:text="${creditedCashbackTotal}">0.00</div>
+                        <div class="small text-muted">
+                            Count:
+                            <span th:text="${creditedCashbackCount}">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small text-uppercase fw-semibold">Cancelled / Failed</div>
+                        <div class="fs-4 fw-bold text-danger" th:text="${cancelledCashbackTotal}">0.00</div>
+                        <div class="small text-muted">
+                            Cancelled:
+                            <span th:text="${cancelledCashbackCount}">0</span>
+                            Failed:
+                            <span th:text="${failedCashbackCount}">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-2">
+                    <div class="font-weight-bold">
+                        <strong><i class="bi bi-receipt"></i> Cashback Transaction Report</strong>
+                    </div>
+                    <div class="small text-muted">
+                        Showing policy, payout state, destination, and ledger trace fields.
                     </div>
                 </div>
             </div>
@@ -36,15 +80,23 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
 
-                <table id="example" class="table table-bordered table-hover table-striped">
+                <table id="example" class="table table-bordered table-hover table-striped align-middle">
                     <thead class="thead-light">
                         <tr>
                             <th>#</th>
                             <th>User</th>
                             <th>Order</th>
+                            <th>Policy</th>
                             <th>Amount</th>
+                            <th>Currency</th>
                             <th>Status</th>
-                            <th>Credited To</th>
+                            <th>Destination</th>
+                            <th>Available</th>
+                            <th>Credited</th>
+                            <th>Cancelled</th>
+                            <th>Idempotency Key</th>
+                            <th>Remarks</th>
+                            <th>Created</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -52,9 +104,27 @@
                             <th th:text="${status.count}">1</th>
                             <td th:text="${cb.user != null ? cb.user.email : '-'}">user</td>
                             <td th:text="${cb.orderId}">0</td>
-                            <td th:text="${cb.amount}">0</td>
-                            <td th:text="${cb.status}">PENDING</td>
+                            <td th:text="${cb.policy != null ? cb.policy.name : '-'}">Policy</td>
+                            <td class="fw-semibold" th:text="${cb.amount}">0</td>
+                            <td th:text="${cb.currency}">BDT</td>
+                            <td>
+                                <span class="badge bg-warning text-dark" th:if="${cb.status != null && cb.status.name() == 'PENDING'}" th:text="${cb.status}">PENDING</span>
+                                <span class="badge bg-info text-dark" th:if="${cb.status != null && cb.status.name() == 'APPROVED'}" th:text="${cb.status}">APPROVED</span>
+                                <span class="badge bg-success" th:if="${cb.status != null && cb.status.name() == 'CREDITED'}" th:text="${cb.status}">CREDITED</span>
+                                <span class="badge bg-danger" th:if="${cb.status != null && (cb.status.name() == 'CANCELLED' || cb.status.name() == 'FAILED')}" th:text="${cb.status}">FAILED</span>
+                                <span class="badge bg-secondary" th:if="${cb.status != null && cb.status.name() == 'EXPIRED'}" th:text="${cb.status}">EXPIRED</span>
+                                <span class="badge bg-light text-dark border" th:if="${cb.status == null}">-</span>
+                            </td>
                             <td th:text="${cb.creditedTo}">WALLET</td>
+                            <td th:text="${cb.availableAt != null ? cb.availableAt : '-'}">-</td>
+                            <td th:text="${cb.creditedAt != null ? cb.creditedAt : '-'}">-</td>
+                            <td th:text="${cb.cancelledAt != null ? cb.cancelledAt : '-'}">-</td>
+                            <td><code th:text="${cb.idempotencyKey != null ? cb.idempotencyKey : '-'}">-</code></td>
+                            <td th:text="${cb.remarks != null ? cb.remarks : '-'}">-</td>
+                            <td th:text="${cb.created != null ? cb.created : '-'}">-</td>
+                        </tr>
+                        <tr th:if="${cashbacks == null || cashbacks.isEmpty()}">
+                            <td colspan="14" class="text-center text-muted py-4">No cashback transactions found.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -62,4 +132,3 @@
         </div>
     </div>
 </div>
-

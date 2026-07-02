@@ -528,7 +528,7 @@
                     </div>
                 </div>
 
-                <div class="row g-4">
+                <div class="row g-4 d-flex align-items-start">
                     <div th:each="stat : ${dashboard.heroStats}" class="col-12 col-md-6 col-xl-3">
                         <div class="stat-card" th:classappend="${stat.tone}">
                             <div class="stat-top">
@@ -554,7 +554,7 @@
                             <p class="section-copy">Quick performance snapshots for sales, orders, customer growth, and vendor onboarding.</p>
                         </div>
                     </div>
-                    <div class="row g-4">
+                    <div class="row g-4 d-flex align-items-start">
                         <div th:each="period : ${dashboard.periodPerformance}" class="col-12 col-xl-4">
                             <div class="period-card">
                                 <div class="section-heading-group">
@@ -574,7 +574,7 @@
                     </div>
                 </div>
 
-                <div class="row g-4">
+                <div class="row g-4 d-flex align-items-start">
                     <div class="col-12 col-xl-8">
                         <div class="surface-card h-100">
                             <div class="card-body">
@@ -620,7 +620,7 @@
                             <p class="section-copy">Core financial signals across orders, commission, vendor earnings, and payout movement.</p>
                         </div>
                     </div>
-                    <div class="row g-4">
+                    <div class="row g-4 d-flex align-items-start">
                         <div th:each="stat : ${dashboard.financialStats}" class="col-12 col-md-6 col-xl-3">
                             <div class="stat-card" th:classappend="${stat.tone}">
                                 <div class="stat-top">
@@ -644,7 +644,7 @@
                             <p class="section-copy">Focus on settlement responsiveness, average basket size, and customer-to-buyer conversion.</p>
                         </div>
                     </div>
-                    <div class="row g-4">
+                    <div class="row g-4 d-flex align-items-start">
                         <div th:each="stat : ${dashboard.operationsStats}" class="col-12 col-md-6 col-xl-3">
                             <div class="stat-card" th:classappend="${stat.tone}">
                                 <div class="stat-top">
@@ -671,7 +671,7 @@
                             <p class="section-copy">Monitor refund pressure, approval queue, support inbox, and unresolved customer complaints.</p>
                         </div>
                     </div>
-                    <div class="row g-4">
+                    <div class="row g-4 d-flex align-items-start">
                         <div th:each="stat : ${dashboard.riskStats}" class="col-12 col-md-6 col-xl-4">
                             <div class="stat-card" th:classappend="${stat.tone}">
                                 <div class="stat-top">
@@ -690,7 +690,7 @@
                     </div>
                 </div>
 
-                <div class="row g-4">
+                <div class="row g-4 d-flex align-items-start">
                     <div class="col-12 col-xl-5">
                         <div class="surface-card h-100">
                             <div class="card-body">
@@ -764,7 +764,7 @@
                     </div>
                 </div>
 
-                <div class="row g-4">
+                <div class="row g-4 d-flex align-items-start">
                     <div class="col-12 col-xl-7">
                         <div class="surface-card h-100">
                             <div class="card-body">
@@ -894,20 +894,20 @@
                     return {
                         labels: [fallbackLabel],
                         datasets: [{
-                            data: [1],
-                            backgroundColor: ['#d0d7e2'],
-                            borderWidth: 0
-                        }]
+                                data: [1],
+                                backgroundColor: ['#d0d7e2'],
+                                borderWidth: 0
+                            }]
                     };
                 }
 
                 return {
                     labels: labels,
                     datasets: [{
-                        data: values,
-                        backgroundColor: colors,
-                        borderWidth: 0
-                    }]
+                            data: values,
+                            backgroundColor: colors,
+                            borderWidth: 0
+                        }]
                 };
             }
 
@@ -1021,11 +1021,11 @@
                     new Chart(orderStatusCanvas, {
                         type: 'doughnut',
                         data: buildDoughnutData(
-                            orderStatusLabels,
-                            orderStatusCounts,
-                            ['#123a63', '#0f766e', '#f59e0b', '#ef4444', '#64748b', '#16a34a', '#0ea5e9', '#8b5cf6'],
-                            'No recent order activity'
-                        ),
+                                orderStatusLabels,
+                                orderStatusCounts,
+                                ['#123a63', '#0f766e', '#f59e0b', '#ef4444', '#64748b', '#16a34a', '#0ea5e9', '#8b5cf6'],
+                                'No recent order activity'
+                                ),
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
@@ -1046,26 +1046,26 @@
                 const productHealthCanvas = document.getElementById('productHealthChart');
                 if (productHealthCanvas) {
                     const healthData = hasPositiveValues(productHealthCounts)
-                        ? {
-                            labels: productHealthLabels,
-                            datasets: [{
-                                label: 'Products',
-                                data: productHealthCounts,
-                                backgroundColor: ['#123a63', '#f59e0b', '#ef4444', '#64748b'],
-                                borderRadius: 10,
-                                maxBarThickness: 22
-                            }]
-                        }
-                        : {
-                            labels: ['No products yet'],
-                            datasets: [{
+                            ? {
+                                labels: productHealthLabels,
+                                datasets: [{
+                                        label: 'Products',
+                                        data: productHealthCounts,
+                                        backgroundColor: ['#123a63', '#f59e0b', '#ef4444', '#64748b'],
+                                        borderRadius: 10,
+                                        maxBarThickness: 22
+                                    }]
+                            }
+                    : {
+                        labels: ['No products yet'],
+                        datasets: [{
                                 label: 'Products',
                                 data: [0],
                                 backgroundColor: ['#d0d7e2'],
                                 borderRadius: 10,
                                 maxBarThickness: 22
                             }]
-                        };
+                    };
 
                     new Chart(productHealthCanvas, {
                         type: 'bar',

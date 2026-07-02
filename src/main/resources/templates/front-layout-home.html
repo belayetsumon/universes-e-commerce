@@ -43,6 +43,21 @@
     <title th:text="${pageTitle != null ? pageTitle : (session.globalSettings.siteTitle != null ? session.globalSettings.siteTitle : session.globalSettings.siteName)}">Musapir</title>
 </head>
 <body class="front-app front-site-layout">
+    <div class="site-loading-overlay" data-site-loader role="status" aria-live="polite" aria-label="Loading page">
+        <div class="site-loading-panel">
+            <div class="site-loading-brand">
+                <span class="site-loading-mark"><i class="bi bi-bag-check"></i></span>
+                <span th:text="${session.globalSettings.siteName != null ? session.globalSettings.siteName : 'Universes Ecommerce'}">Universes Ecommerce</span>
+            </div>
+            <div class="site-loading-progress" aria-hidden="true">
+                <span data-site-loader-bar></span>
+            </div>
+            <div class="site-loading-meta">
+                <strong data-site-loader-percent>0%</strong>
+                <span data-site-loader-time>0.0s</span>
+            </div>
+        </div>
+    </div>
     <header>
         <!-- Site wrapper -->
         <div th:replace="~{front-header}">

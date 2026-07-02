@@ -4,22 +4,24 @@
  */
 package com.ecommerce.app.module.ReferralRewards.model;
 
-import com.ecommerce.app.module.user.model.Users;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.WalletTransactionStatus;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.WalletTransactionType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 /**
@@ -29,74 +31,46 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 // import javax.persistence.*;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "promotions_wallet_transaction")
-public class WalletTransaction {
+@Table(name = "promotions_wallet_transaction", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_wallet_tx_idempotency", columnNames = "idempotency_key")
+})
+public class WalletTransaction extends BaseEntityPromotions {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @NotNull(message = "Wallet is required.")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "wallet_id", nullable = false)
     private Wallet wallet;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
-    private Users users;
-
-    @Column(nullable = false, precision = 12, scale = 2)
+    @NotNull(message = "Transaction amount is required.")
+    @DecimalMin(value = "0.01", message = "Transaction amount must be greater than zero.")
+    @Digits(integer = 15, fraction = 4, message = "Transaction amount must have maximum 15 digits and 4 decimal places.")
+    @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal amount;
 
-    private String description;
-
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    private LocalDateTime expiryDate;
-
+    @NotNull(message = "Transaction type is required.")
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private TransactionType type; // CREDIT / DEBIT
+    @Column(nullable = false, length = 30)
+    private WalletTransactionType type;
 
-    private String sourceType;
+    @NotNull(message = "Transaction status is required.")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private WalletTransactionStatus status;
 
-    private String sourceReference;
-
-    private Integer levelNumber;
-
-    private boolean redeemed = false;
-
-    private boolean expired = false;
-
-    @PrePersist
-    protected void onCreate() {
-        if (this.createdAt == null) {
-            this.createdAt = LocalDateTime.now();
-        }
-        if (this.users == null && this.wallet != null) {
-            this.users = this.wallet.getUsers();
-        }
-    }
+    @NotBlank(message = "Idempotency key is required.")
+    @Size(max = 100, message = "Idempotency key must not exceed 100 characters.")
+    @Column(name = "idempotency_key", nullable = false, length = 100)
+    private String idempotencyKey;
 
     public WalletTransaction() {
     }
 
-    public WalletTransaction(Long id, Wallet wallet, Users users, BigDecimal amount, String description, LocalDateTime expiryDate, TransactionType type) {
-        this.id = id;
+    public WalletTransaction(Wallet wallet, BigDecimal amount, WalletTransactionType type, WalletTransactionStatus status, String idempotencyKey) {
         this.wallet = wallet;
-        this.users = users;
         this.amount = amount;
-        this.description = description;
-        this.expiryDate = expiryDate;
         this.type = type;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+        this.status = status;
+        this.idempotencyKey = idempotencyKey;
     }
 
     public Wallet getWallet() {
@@ -107,14 +81,6 @@ public class WalletTransaction {
         this.wallet = wallet;
     }
 
-    public Users getUsers() {
-        return users;
-    }
-
-    public void setUsers(Users users) {
-        this.users = users;
-    }
-
     public BigDecimal getAmount() {
         return amount;
     }
@@ -123,76 +89,28 @@ public class WalletTransaction {
         this.amount = amount;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getExpiryDate() {
-        return expiryDate;
-    }
-
-    public void setExpiryDate(LocalDateTime expiryDate) {
-        this.expiryDate = expiryDate;
-    }
-
-    public TransactionType getType() {
+    public WalletTransactionType getType() {
         return type;
     }
 
-    public void setType(TransactionType type) {
+    public void setType(WalletTransactionType type) {
         this.type = type;
     }
 
-    public String getSourceType() {
-        return sourceType;
+    public WalletTransactionStatus getStatus() {
+        return status;
     }
 
-    public void setSourceType(String sourceType) {
-        this.sourceType = sourceType;
+    public void setStatus(WalletTransactionStatus status) {
+        this.status = status;
     }
 
-    public String getSourceReference() {
-        return sourceReference;
+    public String getIdempotencyKey() {
+        return idempotencyKey;
     }
 
-    public void setSourceReference(String sourceReference) {
-        this.sourceReference = sourceReference;
-    }
-
-    public Integer getLevelNumber() {
-        return levelNumber;
-    }
-
-    public void setLevelNumber(Integer levelNumber) {
-        this.levelNumber = levelNumber;
-    }
-
-    public boolean isRedeemed() {
-        return redeemed;
-    }
-
-    public void setRedeemed(boolean redeemed) {
-        this.redeemed = redeemed;
-    }
-
-    public boolean isExpired() {
-        return expired;
-    }
-
-    public void setExpired(boolean expired) {
-        this.expired = expired;
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
     }
 
 }

@@ -4,6 +4,7 @@
  */
 package com.ecommerce.app.module.ReferralRewards.model;
 
+import com.ecommerce.app.module.ReferralRewards.enumvalue.ReferralStatus;
 import com.ecommerce.app.module.user.model.*;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -1,102 +1,258 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
-    <div layout:fragment = "main_content">
-        <section>
-            <div class="d-flex justify-content-start align-items-center mb-4">
-                <h2 class="mb-0 me-3">Sales</h2>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a  class="nav-link"href="#">Home</a></li>
-                        <li class="breadcrumb-item"><a  class="nav-link"href="#">Sales</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Sales Order List</li>
-                    </ol>
-                </nav>
+    <div layout:fragment="main_content">
+        <style>
+            .orders-workspace {
+                background: #f7f9fc;
+                border: 1px solid #e5eaf1;
+                border-radius: 8px;
+                padding: 18px;
+            }
+            .orders-header,
+            .orders-panel,
+            .orders-metric {
+                background: #ffffff;
+                border: 1px solid #dde5ef;
+                border-radius: 8px;
+                box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+            }
+            .orders-header {
+                border-left: 4px solid #0d6efd;
+                padding: 18px;
+            }
+            .orders-panel {
+                padding: 16px;
+            }
+            .orders-metric {
+                min-height: 86px;
+                padding: 14px;
+            }
+            .orders-metric span {
+                color: #667085;
+                display: block;
+                font-size: 12px;
+                font-weight: 700;
+                letter-spacing: 0;
+                text-transform: uppercase;
+            }
+            .orders-metric strong {
+                color: #111827;
+                display: block;
+                font-size: 20px;
+                margin-top: 4px;
+            }
+            .order-code {
+                color: #111827;
+                font-weight: 700;
+                text-decoration: none;
+            }
+            .order-code:hover {
+                color: #0d6efd;
+                text-decoration: underline;
+            }
+            .orders-table {
+                min-width: 1280px;
+            }
+            .orders-table th {
+                color: #475467;
+                font-size: 12px;
+                text-transform: uppercase;
+                white-space: nowrap;
+            }
+            .orders-table td {
+                vertical-align: middle;
+            }
+            .compact-meta {
+                color: #667085;
+                display: block;
+                font-size: 12px;
+            }
+        </style>
+
+        <div class="orders-workspace">
+            <div class="orders-header d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+                <div>
+                    <div class="text-primary fw-semibold small text-uppercase mb-1">Marketplace operations</div>
+                    <h4 class="mb-1"><i class="bi bi-receipt-cutoff me-2 text-primary"></i>Sales Orders</h4>
+                    <p class="text-muted mb-0">Filter orders, review customer/vendor totals, and create shipment only when the order is eligible.</p>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-light text-dark border">Filtered <span th:text="${filteredOrderCount}">0</span></span>
+                    <span class="badge bg-light text-dark border">All <span th:text="${allOrderCount}">0</span></span>
+                </div>
             </div>
-        </section>
-        <div class="row">
-            <div class="col-sm-12">
 
-                <div class="card">
-                    <div class="card-header">
-                        <div class="row">  <div class="col-sm-5 font-weight-bold "><i class="fas fa-list"></i> <span class="fs-5 fw-bold">  <i class="bi bi-justify"></i> Order List Total : [[${orderlist.size()}]] </span></div>
+            <div class="alert alert-info py-2 mb-3">
+                <strong>Shipment instruction:</strong>
+                create shipment appears only for packed physical orders with vendor and shipping district ready; use the order code for review and UUID-backed links for shipment creation.
+            </div>
 
-                        </div>
-
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <div class="orders-metric">
+                        <span>Total value</span>
+                        <strong th:text="${#numbers.formatDecimal(filteredGrandTotal, 0, 'COMMA', 2, 'POINT')}">0.00</strong>
                     </div>
-                    <div class="card-body">
+                </div>
+                <div class="col-md-3">
+                    <div class="orders-metric">
+                        <span>Shipment ready</span>
+                        <strong th:text="${shipmentReadyCount}">0</strong>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="orders-metric">
+                        <span>Shipment created</span>
+                        <strong th:text="${shipmentCreatedCount}">0</strong>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="orders-metric">
+                        <span>Not ready</span>
+                        <strong th:text="${shipmentBlockedCount}">0</strong>
+                    </div>
+                </div>
+            </div>
 
-                        <span th:if="${ not #strings.isEmpty(message)}">
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <span th:text="${message}" > </span>
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                        </span>
+            <form class="orders-panel mb-3" method="get" th:action="@{/admin-customer/orderlist}">
+                <div class="row g-3 align-items-end">
+                    <div class="col-lg-3">
+                        <label class="form-label">Search</label>
+                        <input type="search" class="form-control" name="q" th:value="${selectedQ}"
+                               placeholder="Order code, customer, vendor, email, mobile" />
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label">Order Status</label>
+                        <select class="form-select" name="status">
+                            <option value="">All status</option>
+                            <option th:each="s : ${statuses}"
+                                    th:value="${s}"
+                                    th:selected="${selectedStatus == s}"
+                                    th:text="${#strings.replace(s.name(), '_', ' ')}"></option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label">Shipment</label>
+                        <select class="form-select" name="shipment">
+                            <option value="">All shipment</option>
+                            <option value="READY" th:selected="${selectedShipment == 'READY'}">Ready to create</option>
+                            <option value="CREATED" th:selected="${selectedShipment == 'CREATED'}">Created</option>
+                            <option value="BLOCKED" th:selected="${selectedShipment == 'BLOCKED'}">Not ready</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label">From</label>
+                        <input type="date" class="form-control" name="fromDate" th:value="${selectedFromDate}" />
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label">To</label>
+                        <input type="date" class="form-control" name="toDate" th:value="${selectedToDate}" />
+                    </div>
+                    <div class="col-lg-1 d-grid">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-funnel"></i>
+                        </button>
+                    </div>
+                    <div class="col-12 d-flex justify-content-end">
+                        <a class="btn btn-sm btn-outline-secondary" th:href="@{/admin-customer/orderlist}">
+                            <i class="bi bi-x-circle"></i> Clear filters
+                        </a>
+                    </div>
+                </div>
+            </form>
 
-                        <div class="table-responsive">
-                            <table class="table table-bordered" th:if="${ not #lists.isEmpty(orderlist)}">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th scope="col">#</th>
-                                        <th scope="col">Customer</th>
-                                        <th scope="col"> Vendor Name</th>
-                                        <th scope="col">C.Mobile</th>
-                                        <th scope="col">C.Email</th>
-                                        <th scope="col"> Status </th>
-                                        <th scope="col"> Discount Amount </th>
-                                        <th scope="col">Market Place Commission Amount</th>
-                                        <th scope="col">Vendor Amount</th>
-                                        <th scope="col"> Vat Amount </th>
-                                        <th scope="col"> Item Total</th>
-                                        <th scope="col"> Shipping Charge </th>
-                                        <th scope="col"> Packaging Costs</th>
-                                        <th scope="col"> Grand Total </th>
-                                        <th scope="col"> Date Added </th>
-                                        <th scope="col"> Date Modified </th>
+            <div th:if="${not #strings.isEmpty(message)}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${message}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
 
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="orderlists,status:${orderlist}">
-                                        <th th:text="${status.count}">1</th>
-                                        <td>
-                                            <a class="nav-link bg-warning" th:href="@{/admin-customer/order-details/{oid}(oid=${orderlists.orderId})}" > [[${orderlists.firstName}]] [[${orderlists.lastName}]]   </a>
-                                            <a class="btn btn-sm btn-outline-danger mt-1" th:href="@{/admin-customer/orders/{id}/pdf(id=${orderlists.orderId})}">
-                                                <i class="bi bi-file-earmark-pdf"></i> PDF
-                                            </a>
-                                        </td>
-                                        <td th:text="${orderlists.vendorName}">Otto</td>
-                                        <td th:text="${orderlists.mobile}">Otto</td>
-                                        <td th:text="${orderlists.email}">Otto</td>
-                                        <td th:text="${orderlists.status}">Otto</td>
-                                        <td th:text="${orderlists.totalDiscountAmount}">Otto</td>
-                                        <td th:text="${orderlists.totalMarketPlaceCommissionAmount}">Otto</td>
-                                        <td th:text="${orderlists.totalVendorAmount}">Otto</td>
-                                        <td th:text="${orderlists.totalVatAmount}">Otto</td>
-                                        <td th:text="${orderlists.itemTotal}">Otto</td>
-                                        <td scope="col">[[${orderlists.deliveryCharge}]] </td>
-                                        <td scope="col">[[${orderlists.packingCharge}]]</td>
-                                        <td scope="col">[[${orderlists.grandTotal}]] </td>
-                                        <td th:text="${orderlists.created}">Otto</td>
-                                        <td th:text="${orderlists.modified}">@mdo</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <table class="table table-bordered" th:if="${ #lists.isEmpty(orderlist)}">
+            <div class="orders-panel">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle orders-table" th:if="${not #lists.isEmpty(orderlist)}">
+                        <thead class="table-light">
                             <tr>
-                                <td> Sorry no order found ! </td>
+                                <th>Order</th>
+                                <th>Customer</th>
+                                <th>Vendor</th>
+                                <th>Status</th>
+                                <th>Shipment</th>
+                                <th class="text-end">Item Total</th>
+                                <th class="text-end">Shipping</th>
+                                <th class="text-end">Packing</th>
+                                <th class="text-end">Discount</th>
+                                <th class="text-end">Commission</th>
+                                <th class="text-end">Vendor Amount</th>
+                                <th class="text-end">VAT</th>
+                                <th class="text-end">Grand Total</th>
+                                <th>Dates</th>
+                                <th>Actions</th>
                             </tr>
-                        </table>
-                    </div><!--  Card body end-->
-                </div><!--  Card  end-->
-            </div><!--  Main Content  end-->
+                        </thead>
+                        <tbody>
+                            <tr th:each="orderlists : ${orderlist}">
+                                <td>
+                                    <a class="order-code"
+                                       th:href="@{/admin-customer/order-details/{oid}(oid=${orderlists.orderId})}"
+                                       th:text="${orderlists.orderCode}">ORD</a>
+                                    <span class="compact-meta" th:text="${orderlists.uuid}">uuid</span>
+                                </td>
+                                <td>
+                                    <span class="fw-semibold" th:text="${orderlists.firstName + ' ' + orderlists.lastName}">Customer</span>
+                                    <span class="compact-meta" th:text="${orderlists.mobile}">Mobile</span>
+                                    <span class="compact-meta" th:text="${orderlists.email}">Email</span>
+                                </td>
+                                <td th:text="${orderlists.vendorName}">Vendor</td>
+                                <td>
+                                    <span class="badge bg-secondary" th:text="${#strings.replace(orderlists.status, '_', ' ')}">STATUS</span>
+                                </td>
+                                <td>
+                                    <a class="btn btn-sm btn-primary"
+                                       th:if="${orderlists.shipmentEligible}"
+                                       th:href="@{/admin/shipments/create(orderUuid=${orderlists.uuid})}">
+                                        <i class="bi bi-truck"></i> Create
+                                    </a>
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       th:if="${orderlists.hasShipment and orderlists.existingShipmentId != null}"
+                                       th:href="@{/admin/shipments/edit/{id}(id=${orderlists.existingShipmentId})}">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </a>
+                                    <span class="badge bg-light text-dark border"
+                                          th:if="${!orderlists.shipmentEligible and !orderlists.hasShipment}">
+                                        Not ready
+                                    </span>
+                                </td>
+                                <td class="text-end" th:text="${#numbers.formatDecimal(orderlists.itemTotal, 0, 'COMMA', 2, 'POINT')}">0.00</td>
+                                <td class="text-end" th:text="${#numbers.formatDecimal(orderlists.deliveryCharge, 0, 'COMMA', 2, 'POINT')}">0.00</td>
+                                <td class="text-end" th:text="${#numbers.formatDecimal(orderlists.packingCharge, 0, 'COMMA', 2, 'POINT')}">0.00</td>
+                                <td class="text-end" th:text="${#numbers.formatDecimal(orderlists.totalDiscountAmount, 0, 'COMMA', 2, 'POINT')}">0.00</td>
+                                <td class="text-end" th:text="${#numbers.formatDecimal(orderlists.totalMarketPlaceCommissionAmount, 0, 'COMMA', 2, 'POINT')}">0.00</td>
+                                <td class="text-end" th:text="${#numbers.formatDecimal(orderlists.totalVendorAmount, 0, 'COMMA', 2, 'POINT')}">0.00</td>
+                                <td class="text-end" th:text="${#numbers.formatDecimal(orderlists.totalVatAmount, 0, 'COMMA', 2, 'POINT')}">0.00</td>
+                                <td class="text-end fw-semibold" th:text="${#numbers.formatDecimal(orderlists.grandTotal, 0, 'COMMA', 2, 'POINT')}">0.00</td>
+                                <td>
+                                    <span class="compact-meta">Added <span th:text="${orderlists.created}">date</span></span>
+                                    <span class="compact-meta">Modified <span th:text="${orderlists.modified}">date</span></span>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <a class="btn btn-sm btn-outline-dark"
+                                           th:href="@{/admin-customer/order-details/{oid}(oid=${orderlists.orderId})}">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a class="btn btn-sm btn-outline-danger"
+                                           th:href="@{/admin-customer/orders/{id}/pdf(id=${orderlists.orderId})}">
+                                            <i class="bi bi-file-earmark-pdf"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="text-center text-muted py-5" th:if="${#lists.isEmpty(orderlist)}">
+                        No orders matched the selected filters.
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>   <!--  Layout end-->
+</div>

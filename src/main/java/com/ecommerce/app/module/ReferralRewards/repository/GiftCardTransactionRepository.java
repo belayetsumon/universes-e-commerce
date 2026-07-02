@@ -6,6 +6,7 @@ import com.ecommerce.app.module.user.model.Users;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface GiftCardTransactionRepository extends JpaRepository<GiftCardTransaction, Long> {
 
@@ -13,14 +14,19 @@ public interface GiftCardTransactionRepository extends JpaRepository<GiftCardTra
             SELECT gct
             FROM GiftCardTransaction gct
             JOIN FETCH gct.giftCard gc
-            LEFT JOIN FETCH gct.order o
-            LEFT JOIN FETCH gct.user u
+            LEFT JOIN FETCH gc.issuedTo u
             ORDER BY gct.id DESC
             """)
     List<GiftCardTransaction> findAllForAdminList();
 
-    List<GiftCardTransaction> findByUserOrderByIdDesc(Users user);
+    @Query("""
+            SELECT gct
+            FROM GiftCardTransaction gct
+            JOIN FETCH gct.giftCard gc
+            WHERE gc.issuedTo = :user
+            ORDER BY gct.id DESC
+            """)
+    List<GiftCardTransaction> findByUserOrderByIdDesc(@Param("user") Users user);
 
-    boolean existsByGiftCardAndOrder_Id(GiftCard giftCard, Long orderId);
+    boolean existsByGiftCardAndOrderId(GiftCard giftCard, String orderId);
 }
-

@@ -22,7 +22,7 @@ and open the template in the editor.
                         <div>
                             <a class="btn btn-primary btn-sm"
                                th:if="${shipmentEligible}"
-                               th:href="@{/vendor/shipments/new(orderId=${orderdetails.id})}">
+                               th:href="@{/vendor/shipments/new(orderUuid=${orderdetails.uuid})}">
                                 Create Shipment
                             </a>
                             <a class="btn btn-outline-primary btn-sm"

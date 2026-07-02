@@ -6,8 +6,8 @@ import com.ecommerce.app.module.ReferralRewards.model.CouponRedemption;
 import com.ecommerce.app.module.ReferralRewards.model.GiftCard;
 import com.ecommerce.app.module.ReferralRewards.model.GiftCardTransaction;
 import com.ecommerce.app.module.ReferralRewards.model.OrderIncentiveUsage;
-import com.ecommerce.app.module.ReferralRewards.model.RedemptionStatus;
-import com.ecommerce.app.module.ReferralRewards.model.RedemptionType;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.RedemptionStatus;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.RedemptionType;
 import com.ecommerce.app.module.ReferralRewards.model.RewardTransaction;
 import com.ecommerce.app.module.ReferralRewards.repository.OrderIncentiveUsageRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.RewardAccountRepository;
@@ -49,7 +49,7 @@ public class CheckoutIncentiveService {
     @Autowired
     private RewardTransactionRepository rewardTransactionRepository;
 
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, noRollbackFor = {IllegalArgumentException.class, IllegalStateException.class})
     public CheckoutIncentiveQuote prepareQuote(Users user, List<CartItem> cartItems, BigDecimal grossPayable,
             String couponCode, BigDecimal rewardPointsToUse, String giftCardCode, BigDecimal giftCardAmount) {
         CheckoutIncentiveQuote quote = new CheckoutIncentiveQuote();
@@ -60,18 +60,14 @@ public class CheckoutIncentiveService {
         quote.setCouponCode(trimToNull(couponCode));
         quote.setGiftCardCode(trimToNull(giftCardCode));
 
-        BigDecimal orderSubtotal = cartItems == null
-                ? BigDecimal.ZERO
-                : cartItems.stream()
-                        .map(item -> item.getItemTotal() != null ? item.getItemTotal() : BigDecimal.ZERO)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add);
-
         String normalizedCouponCode = trimToNull(couponCode);
         if (normalizedCouponCode != null) {
             Coupon coupon = couponService.findValidCouponByCode(normalizedCouponCode, LocalDateTime.now())
                     .orElseThrow(() -> new IllegalArgumentException("Coupon code is invalid or unavailable."));
-            couponService.validateCheckoutCoupon(coupon, user, orderSubtotal);
-            BigDecimal couponDiscount = safeMoney(couponService.computeDiscount(coupon, orderSubtotal))
+            couponService.validateCouponScope(coupon, user, cartItems);
+            BigDecimal eligibleCouponSubtotal = couponService.computeEligibleSubtotal(coupon, cartItems);
+            couponService.validateCheckoutCoupon(coupon, user, eligibleCouponSubtotal);
+            BigDecimal couponDiscount = safeMoney(couponService.computeDiscount(coupon, eligibleCouponSubtotal))
                     .min(normalizedGross);
             quote.setCoupon(coupon);
             quote.setCouponDiscount(couponDiscount);
@@ -210,7 +206,7 @@ public class CheckoutIncentiveService {
                 GiftCardTransaction giftCardTransaction = giftCardService.applyToOrderWithTransaction(quote.getGiftCard(), user, order, requested);
                 BigDecimal applied = giftCardTransaction == null
                         ? BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP)
-                        : giftCardTransaction.getAmountUsed();
+                        : giftCardTransaction.getAmount();
                 if (applied.compareTo(requested) != 0) {
                     throw new IllegalStateException("Gift card amount changed during checkout. Please try again.");
                 }

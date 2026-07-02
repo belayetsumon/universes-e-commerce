@@ -30,7 +30,7 @@
             <input type="hidden" th:field="*{uuid}">
             <input type="hidden" th:field="*{userId}">
             <input type="hidden" th:field="*{slug}">
-            <input type="hidden" th:field="*{vendorprofile}">
+            <input type="hidden" th:field="*{vendorprofile}" id="vendorprofileId">
             <input type="hidden" th:field="*{imageName}">
 
             <div class="alert alert-danger" th:if="${#fields.hasErrors('*')}">
@@ -234,19 +234,20 @@
                                     <div class="invalid-feedback" th:if="${#fields.hasErrors('marketPlaceDiscount')}" th:errors="*{marketPlaceDiscount}">Marketplace discount error</div>
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="marketPlaceCommissionRate" class="form-label">Marketplace Commission <span class="text-danger">*</span></label>
+                                    <label for="marketPlaceCommissionRate" class="form-label">Marketplace Commission</label>
                                     <div class="input-group">
                                         <input id="marketPlaceCommissionRate"
                                                type="number"
                                                min="0"
                                                step="0.01"
-                                               class="form-control"
+                                               class="form-control bg-light"
                                                th:field="*{marketPlaceCommissionRate}"
                                                th:errorclass="is-invalid"
                                                placeholder="0.00"
-                                               required>
+                                               readonly>
                                         <span class="input-group-text">%</span>
                                     </div>
+                                    <div class="form-text">Auto-filled from marketplace commission settings. You do not need to enter this manually.</div>
                                     <div class="invalid-feedback" th:if="${#fields.hasErrors('marketPlaceCommissionRate')}" th:errors="*{marketPlaceCommissionRate}">Commission error</div>
                                 </div>
 
@@ -662,6 +663,47 @@
                         imageEmpty.classList.add('d-none');
                     }
                 }
+
+                const commissionInput = document.getElementById('marketPlaceCommissionRate');
+                const categorySelect = document.getElementById('productcategory');
+                const vendorIdInput = document.getElementById('vendorprofileId');
+                const productIdInput = document.querySelector('input[name="id"]');
+
+                async function refreshMarketplaceCommission() {
+                    if (!commissionInput) {
+                        return;
+                    }
+
+                    const params = new URLSearchParams();
+                    const productId = productIdInput && productIdInput.value ? productIdInput.value : null;
+                    const vendorId = vendorIdInput && vendorIdInput.value ? vendorIdInput.value : null;
+                    const categoryId = categorySelect && categorySelect.value ? categorySelect.value : null;
+
+                    if (productId) {
+                        params.append('productId', productId);
+                    }
+                    if (vendorId) {
+                        params.append('vendorId', vendorId);
+                    }
+                    if (categoryId) {
+                        params.append('categoryId', categoryId);
+                    }
+
+                    try {
+                        const response = await fetch('/api/commission/applicable-rate?' + params.toString());
+                        const data = await response.json();
+                        if (data.success && data.commissionRate != null) {
+                            commissionInput.value = data.commissionRate;
+                        }
+                    } catch (error) {
+                        console.warn('Unable to refresh marketplace commission', error);
+                    }
+                }
+
+                if (categorySelect) {
+                    categorySelect.addEventListener('change', refreshMarketplaceCommission);
+                }
+                refreshMarketplaceCommission();
             });
         </script>
     </th:block>

@@ -42,29 +42,23 @@
                             <thead class="thead-light">
                                 <tr>
                                     <th>#</th>
-                                    <th>Reward Owner</th>
-                                    <th>Transaction User</th>
+                                    <th>Wallet Owner</th>
                                     <th>Amount</th>
-                                    <th>Description</th>
                                     <th>Transaction Type</th>
+                                    <th>Status</th>
+                                    <th>Idempotency Key</th>
                                     <th>Created At</th>
-                                    <th>Expiry Date</th>
-                                    <th>Redeemed</th>
-                                    <th>Expired</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr th:each="txn, status : ${list}">
                                     <th th:text="${status.count}">1</th>
-                                    <td th:text="${txn.wallet.users.firstName + (txn.wallet.users.lastName != null and !#strings.isEmpty(txn.wallet.users.lastName) ? ' ' + txn.wallet.users.lastName : '')}">Wallet Owner</td>
-                                    <td th:text="${txn.users.firstName + (txn.users.lastName != null and !#strings.isEmpty(txn.users.lastName) ? ' ' + txn.users.lastName : '')}">Transaction User</td>
+                                    <td th:text="${txn.wallet != null and txn.wallet.user != null ? txn.wallet.user.firstName + (txn.wallet.user.lastName != null and !#strings.isEmpty(txn.wallet.user.lastName) ? ' ' + txn.wallet.user.lastName : '') : '-'}">Wallet Owner</td>
                                     <td th:text="${txn.amount}">0.00</td>
-                                    <td th:text="${txn.description}">Description</td>
                                     <td th:text="${txn.type}">CREDIT</td>
-                                    <td th:text="${txn.createdAt != null ? #temporals.format(txn.createdAt, 'dd-MM-yyyy HH:mm') : '-'}">01-01-2026 10:00</td>
-                                    <td th:text="${txn.expiryDate != null ? #temporals.format(txn.expiryDate, 'dd-MM-yyyy HH:mm') : '-'}">01-02-2026 10:00</td>
-                                    <td th:text="${txn.redeemed}">false</td>
-                                    <td th:text="${txn.expired}">false</td>
+                                    <td th:text="${txn.status}">SUCCESS</td>
+                                    <td th:text="${txn.idempotencyKey}">WALLET</td>
+                                    <td th:text="${txn.created != null ? #temporals.format(txn.created, 'dd-MM-yyyy HH:mm') : '-'}">01-01-2026 10:00</td>
                                 </tr>
                             </tbody>
                         </table>

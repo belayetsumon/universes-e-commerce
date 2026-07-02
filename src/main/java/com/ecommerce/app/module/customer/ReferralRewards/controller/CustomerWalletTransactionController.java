@@ -4,10 +4,10 @@
  */
 package com.ecommerce.app.module.customer.ReferralRewards.controller;
 
-import com.ecommerce.app.module.ReferralRewards.model.RewardAccount;
-import com.ecommerce.app.module.ReferralRewards.model.RewardTransaction;
-import com.ecommerce.app.module.ReferralRewards.repository.RewardAccountRepository;
-import com.ecommerce.app.module.ReferralRewards.repository.RewardTransactionRepository;
+import com.ecommerce.app.module.ReferralRewards.model.Wallet;
+import com.ecommerce.app.module.ReferralRewards.model.WalletTransaction;
+import com.ecommerce.app.module.ReferralRewards.repository.WalletRepository;
+import com.ecommerce.app.module.ReferralRewards.repository.WalletTransactionRepository;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import java.security.Principal;
@@ -27,10 +27,12 @@ public class CustomerWalletTransactionController {
 
     @Autowired
     private UsersRepository usersRepository;
+
     @Autowired
-    private RewardAccountRepository rewardAccountRepository;
+    private WalletRepository walletRepository;
+
     @Autowired
-    RewardTransactionRepository rewardTransactionRepository;
+    WalletTransactionRepository walletTransactionRepository;
 
     @RequestMapping("/list")
     public String list(Model model, Principal principal) {
@@ -41,12 +43,10 @@ public class CustomerWalletTransactionController {
             return "redirect:/login";
         }
 
-        // Fetch wallet by user
-        RewardAccount wallet = rewardAccountRepository.findByUsers(user).orElse(null);
+        Wallet wallet = walletRepository.findByUsers(user).orElse(null);
 
-        // Fetch transactions if wallet exists, else empty list
-        List<RewardTransaction> txns = (wallet != null)
-                ? rewardTransactionRepository.findByRewardAccount(wallet)
+        List<WalletTransaction> txns = (wallet != null)
+                ? walletTransactionRepository.findByWallet_UsersOrderByCreatedAtDesc(user)
                 : List.of();
 
         model.addAttribute("wallet", wallet);

@@ -1,0 +1,318 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <link rel="stylesheet" th:href="@{/assets/admin/pages/global-settings/global-settings.css}">
+        <style>
+            .main-content > section.system-endpoints-page:first-child {
+                background: transparent;
+                border: 0;
+                box-shadow: none;
+                padding: 0;
+            }
+
+            .system-hero-card {
+                color: #ffffff;
+                background: #113459;
+                border-color: rgba(17, 52, 89, .32);
+            }
+
+            .system-hero-card .card-header {
+                background: rgba(255, 255, 255, .08);
+                border-bottom: 1px solid rgba(255, 255, 255, .12);
+            }
+
+            .system-hero-card .card-body {
+                background: #113459;
+            }
+
+            .system-hero-main {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 1.5rem;
+            }
+
+            .system-hero-title {
+                display: flex;
+                align-items: flex-start;
+                gap: .85rem;
+                min-width: 0;
+            }
+
+            .system-hero-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                flex: 0 0 48px;
+                width: 48px;
+                height: 48px;
+                color: #113459;
+                background: #ffffff;
+                border-radius: 50%;
+            }
+
+            .system-hero-card .settings-kicker {
+                color: #9fd8ff;
+            }
+
+            .system-hero-card h1 {
+                margin: 0;
+                color: #ffffff;
+                font-size: 1.6rem;
+                font-weight: 700;
+                letter-spacing: 0;
+            }
+
+            .system-hero-card .settings-subtitle {
+                color: rgba(255, 255, 255, .76);
+            }
+
+            .system-gradient-btn {
+                color: #ffffff;
+                background: linear-gradient(135deg, #0d6efd 0%, #00a6c8 100%);
+                border: 0;
+                box-shadow: 0 .55rem 1rem rgba(0, 166, 200, .25);
+            }
+
+            .system-gradient-btn:hover,
+            .system-gradient-btn:focus {
+                color: #ffffff;
+                background: linear-gradient(135deg, #0b5ed7 0%, #0089a8 100%);
+                box-shadow: 0 .65rem 1.15rem rgba(13, 110, 253, .28);
+            }
+
+            .endpoint-toolbar {
+                display: grid;
+                grid-template-columns: minmax(220px, 1fr) 180px;
+                gap: .75rem;
+            }
+
+            .endpoint-method-badge {
+                min-width: 64px;
+                text-align: center;
+            }
+
+            .endpoint-path {
+                color: #0f5132;
+                background: #edf7f1;
+                border: 1px solid #c7ead3;
+                border-radius: 999px;
+                padding: .35rem .6rem;
+                text-decoration: none;
+                white-space: nowrap;
+            }
+
+            .endpoint-path:hover {
+                color: #0b3d25;
+                background: #e0f2e8;
+            }
+
+            @media (max-width: 767.98px) {
+                .system-hero-main {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .endpoint-toolbar {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </th:block>
+
+    <div layout:fragment="main_content">
+        <section class="py-4 settings-workspace system-endpoints-page">
+            <header class="card shadow-sm mb-4 system-hero-card">
+                <div class="card-header d-flex justify-content-between align-items-center border-0 py-3">
+                    <div class="h5 mb-0 text-white">
+                        <i class="bi bi-star-fill me-2 text-warning"></i>
+                        System inventory
+                    </div>
+                    <span class="badge text-bg-light border border-white border-opacity-25"
+                          th:text="${#lists.size(endpoints)} + ' endpoints'">0 endpoints</span>
+                </div>
+                <div class="card-body py-4">
+                    <div class="system-hero-main">
+                        <div class="system-hero-title">
+                            <span class="system-hero-icon"><i class="bi bi-diagram-3 fs-4"></i></span>
+                            <div>
+                                <p class="settings-kicker">Endpoint registry</p>
+                                <h1>Application Endpoints</h1>
+                                <p class="settings-subtitle">Review registered Spring MVC controllers, handler methods, HTTP verbs, and route mappings.</p>
+                            </div>
+                        </div>
+                        <div class="settings-header-actions">
+                            <a th:href="@{/admin/index}" class="btn btn-light">
+                                <i class="bi bi-arrow-left"></i>
+                                <span>Dashboard</span>
+                            </a>
+                            <a th:href="@{/admin/system/endpoints}" class="btn system-gradient-btn">
+                                <i class="bi bi-arrow-clockwise"></i>
+                                <span>Refresh</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex flex-column flex-xl-row justify-content-between align-items-start align-items-xl-center gap-3">
+                        <div>
+                            <h2 class="h5 mb-1">Registered Routes</h2>
+                            <p class="text-muted small mb-0">Use search and method filters to inspect the live application mapping table.</p>
+                        </div>
+                        <div class="endpoint-toolbar">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input id="endpointSearch" type="search" class="form-control" placeholder="Search controller, method, package, or path">
+                            </div>
+                            <select id="endpointMethodFilter" class="form-select form-select-sm">
+                                <option value="">All HTTP methods</option>
+                                <option value="GET">GET</option>
+                                <option value="POST">POST</option>
+                                <option value="PUT">PUT</option>
+                                <option value="PATCH">PATCH</option>
+                                <option value="DELETE">DELETE</option>
+                                <option value="ALL">ALL</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table id="endpointTable" class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">#</th>
+                                    <th>Controller</th>
+                                    <th>Handler Method</th>
+                                    <th>HTTP</th>
+                                    <th class="pe-3">Path</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="ep, stat : ${endpoints}"
+                                    th:data-method="${ep.httpMethod}">
+                                    <td class="ps-3 text-muted" th:text="${stat.count}">1</td>
+                                    <td>
+                                        <div class="fw-semibold" th:text="${ep.controller}">Controller</div>
+                                        <div class="text-muted small text-break" th:text="${ep.packageName}">package</div>
+                                    </td>
+                                    <td>
+                                        <code class="text-dark" th:text="${ep.method}">method</code>
+                                    </td>
+                                    <td>
+                                        <span class="badge endpoint-method-badge"
+                                              th:classappend="${ep.httpMethod == 'GET'} ? ' text-bg-success' : (${ep.httpMethod == 'POST'} ? ' text-bg-primary' : (${ep.httpMethod == 'DELETE'} ? ' text-bg-danger' : (${ep.httpMethod == 'PUT' or ep.httpMethod == 'PATCH'} ? ' text-bg-warning' : ' text-bg-secondary')))"
+                                              th:text="${ep.httpMethod}">GET</span>
+                                    </td>
+                                    <td class="pe-3">
+                                        <a class="endpoint-path d-inline-flex align-items-center gap-2"
+                                           th:href="${ep.path}"
+                                           target="_blank"
+                                           rel="noopener">
+                                            <i class="bi bi-box-arrow-up-right"></i>
+                                            <code th:text="${ep.path}">/path</code>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-white d-flex justify-content-between align-items-center gap-3">
+                    <div class="text-muted small">
+                        Showing <strong id="visibleEndpointCount" th:text="${#lists.size(endpoints)}">0</strong>
+                        of <strong th:text="${#lists.size(endpoints)}">0</strong> endpoints
+                    </div>
+                    <div id="endpointExportButtons" class="d-flex flex-wrap justify-content-end gap-2"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <th:block layout:fragment="page_js">
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const initializeEndpointDataTable = function () {
+                    if (!window.jQuery || !jQuery.fn || !jQuery.fn.DataTable) {
+                        window.setTimeout(initializeEndpointDataTable, 180);
+                        return;
+                    }
+
+                    const tableElement = document.getElementById('endpointTable');
+                    if (!tableElement || tableElement.dataset.endpointDataTableInitialized === 'true') {
+                        return;
+                    }
+                    tableElement.dataset.endpointDataTableInitialized = 'true';
+
+                    const searchInput = document.getElementById('endpointSearch');
+                    const methodFilter = document.getElementById('endpointMethodFilter');
+                    const visibleCount = document.getElementById('visibleEndpointCount');
+
+                    const table = jQuery(tableElement).DataTable({
+                        ordering: true,
+                        order: [[1, 'asc'], [4, 'asc']],
+                        pageLength: 25,
+                        lengthMenu: [
+                            [10, 25, 50, 100, -1],
+                            [10, 25, 50, 100, 'All']
+                        ],
+                        autoWidth: false,
+                        scrollX: true,
+                        buttons: ['copy', 'csv', 'excel', 'print'],
+                        layout: {
+                            topStart: null,
+                            topEnd: null,
+                            bottomStart: 'info',
+                            bottomEnd: 'paging'
+                        },
+                        columnDefs: [
+                            {targets: 0, width: '56px'},
+                            {targets: 3, width: '92px'},
+                            {targets: 4, orderable: true}
+                        ],
+                        language: {
+                            zeroRecords: 'No endpoints match the current filters.',
+                            emptyTable: 'No endpoints were discovered.',
+                            info: '_START_ to _END_ of _TOTAL_ endpoints',
+                            infoEmpty: '0 endpoints',
+                            lengthMenu: 'Rows _MENU_'
+                        }
+                    });
+
+                    if (table && typeof table.buttons === 'function') {
+                        table.buttons().container().appendTo('#endpointExportButtons');
+                    }
+
+                    const updateVisibleCount = function () {
+                        if (visibleCount && table && typeof table.page === 'function') {
+                            visibleCount.textContent = table.page.info().recordsDisplay;
+                        }
+                    };
+
+                    if (searchInput) {
+                        searchInput.addEventListener('input', function () {
+                            table.search(searchInput.value || '').draw();
+                        });
+                    }
+
+                    if (methodFilter) {
+                        methodFilter.addEventListener('change', function () {
+                            const method = methodFilter.value || '';
+                            table.column(3).search(method ? '^' + method + '$' : '', true, false).draw();
+                        });
+                    }
+
+                    table.on('draw', updateVisibleCount);
+                    updateVisibleCount();
+                };
+
+                initializeEndpointDataTable();
+            });
+        </script>
+    </th:block>
+</div>

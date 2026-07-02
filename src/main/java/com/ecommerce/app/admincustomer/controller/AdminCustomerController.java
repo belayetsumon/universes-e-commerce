@@ -21,9 +21,14 @@ import com.ecommerce.app.order.repository.ShippingAddressRepository;
 import com.ecommerce.app.order.services.OrderItemService;
 import com.ecommerce.app.order.services.SalesOrderPdfService;
 import com.ecommerce.app.order.services.SalesOrderService;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -86,9 +91,28 @@ public class AdminCustomerController {
     }
 
     @RequestMapping("/orderlist")
-    public String orderlist(Model model) {
+    public String orderlist(Model model,
+            @RequestParam(name = "q", required = false) String q,
+            @RequestParam(name = "status", required = false) OrderStatus status,
+            @RequestParam(name = "shipment", required = false) String shipment,
+            @RequestParam(name = "fromDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(name = "toDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
         List<Map<String, Object>> orderRows = salesOrderService.admin_all_Sales_order_list(null, null);
-        model.addAttribute("orderlist", shipmentService.enrichOrderRowsWithShipmentData(orderRows));
+        List<Map<String, Object>> enrichedRows = shipmentService.enrichOrderRowsWithShipmentData(orderRows);
+        List<Map<String, Object>> filteredRows = filterOrderRows(enrichedRows, q, status, shipment, fromDate, toDate);
+        model.addAttribute("orderlist", filteredRows);
+        model.addAttribute("allOrderCount", enrichedRows.size());
+        model.addAttribute("filteredOrderCount", filteredRows.size());
+        model.addAttribute("shipmentReadyCount", countShipmentState(enrichedRows, "READY"));
+        model.addAttribute("shipmentCreatedCount", countShipmentState(enrichedRows, "CREATED"));
+        model.addAttribute("shipmentBlockedCount", countShipmentState(enrichedRows, "BLOCKED"));
+        model.addAttribute("filteredGrandTotal", sumGrandTotal(filteredRows));
+        model.addAttribute("statuses", OrderStatus.values());
+        model.addAttribute("selectedQ", q);
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("selectedShipment", shipment);
+        model.addAttribute("selectedFromDate", fromDate);
+        model.addAttribute("selectedToDate", toDate);
         // model.addAttribute("orderlist", salesOrderRepository.findAllByOrderByIdDesc());
         return "admin/sales/orderlist";
     }
@@ -181,6 +205,81 @@ public class AdminCustomerController {
         headers.setContentLength(pdfBytes.length);
 
         return ResponseEntity.ok().headers(headers).body(pdfBytes);
+    }
+
+    private List<Map<String, Object>> filterOrderRows(List<Map<String, Object>> rows,
+            String q,
+            OrderStatus status,
+            String shipment,
+            LocalDate fromDate,
+            LocalDate toDate) {
+        String normalizedQuery = q != null ? q.trim().toLowerCase(Locale.ROOT) : "";
+        String normalizedShipment = shipment != null ? shipment.trim().toUpperCase(Locale.ROOT) : "";
+        return rows.stream()
+                .filter(row -> normalizedQuery.isBlank() || rowMatchesQuery(row, normalizedQuery))
+                .filter(row -> status == null || status.equals(row.get("status")))
+                .filter(row -> normalizedShipment.isBlank() || rowMatchesShipmentState(row, normalizedShipment))
+                .filter(row -> fromDate == null || !asLocalDate(row.get("created")).isBefore(fromDate))
+                .filter(row -> toDate == null || !asLocalDate(row.get("created")).isAfter(toDate))
+                .toList();
+    }
+
+    private boolean rowMatchesQuery(Map<String, Object> row, String query) {
+        String searchable = String.join(" ",
+                value(row.get("orderCode")),
+                value(row.get("firstName")),
+                value(row.get("lastName")),
+                value(row.get("vendorName")),
+                value(row.get("mobile")),
+                value(row.get("email")),
+                value(row.get("status"))
+        ).toLowerCase(Locale.ROOT);
+        return searchable.contains(query);
+    }
+
+    private long countShipmentState(List<Map<String, Object>> rows, String shipmentState) {
+        return rows.stream().filter(row -> rowMatchesShipmentState(row, shipmentState)).count();
+    }
+
+    private boolean rowMatchesShipmentState(Map<String, Object> row, String shipmentState) {
+        boolean hasShipment = Boolean.TRUE.equals(row.get("hasShipment"));
+        boolean shipmentEligible = Boolean.TRUE.equals(row.get("shipmentEligible"));
+        return switch (shipmentState) {
+            case "READY" -> shipmentEligible;
+            case "CREATED" -> hasShipment;
+            case "BLOCKED" -> !shipmentEligible && !hasShipment;
+            default -> true;
+        };
+    }
+
+    private BigDecimal sumGrandTotal(List<Map<String, Object>> rows) {
+        return rows.stream()
+                .map(row -> asBigDecimal(row.get("grandTotal")))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal asBigDecimal(Object value) {
+        if (value instanceof BigDecimal amount) {
+            return amount;
+        }
+        if (value instanceof Number number) {
+            return BigDecimal.valueOf(number.doubleValue());
+        }
+        return BigDecimal.ZERO;
+    }
+
+    private LocalDate asLocalDate(Object value) {
+        if (value instanceof LocalDateTime dateTime) {
+            return dateTime.toLocalDate();
+        }
+        if (value instanceof LocalDate date) {
+            return date;
+        }
+        return LocalDate.now();
+    }
+
+    private String value(Object value) {
+        return value != null ? String.valueOf(value) : "";
     }
 
 }

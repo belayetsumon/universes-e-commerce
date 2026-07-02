@@ -5,7 +5,7 @@
 package com.ecommerce.app.module.ReferralRewards.controller;
 
 import com.ecommerce.app.module.ReferralRewards.model.MultiLavelRateSettings;
-import com.ecommerce.app.module.ReferralRewards.model.LevelEnum;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.LevelEnum;
 import com.ecommerce.app.module.ReferralRewards.repository.LavelRateSettingsRepository;
 import jakarta.validation.Valid;
 import java.util.Optional;

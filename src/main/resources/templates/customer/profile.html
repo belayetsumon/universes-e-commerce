@@ -196,6 +196,32 @@
                                         <span th:text="${customerBillingAddress.district}">District</span>
                                     </span>
                                 </div>
+                                <div class="customer-profile-summary-item">
+                                    <span class="customer-profile-summary-label">Referral code</span>
+                                    <strong th:if="${referralCode != null and !#strings.isEmpty(referralCode)}" th:text="${referralCode}">ABCD1234</strong>
+                                    <strong th:if="${referralCode == null or #strings.isEmpty(referralCode)}">Not generated yet</strong>
+                                    <div class="d-flex flex-wrap gap-2 mt-2" th:if="${referralCode != null and !#strings.isEmpty(referralCode)}">
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-primary"
+                                                data-copy-referral-link
+                                                th:attr="data-copy-text=${referralRegistrationUrl}">
+                                            Copy Invite Link
+                                        </button>
+                                        <a class="btn btn-sm btn-outline-success" th:href="${referralWhatsAppUrl}" target="_blank" rel="noopener">
+                                            Share on WhatsApp
+                                        </a>
+                                        <a class="btn btn-sm btn-outline-info" th:href="${referralFacebookUrl}" target="_blank" rel="noopener">
+                                            Share on Facebook
+                                        </a>
+                                        <a class="btn btn-sm btn-outline-secondary" th:href="${referralRegistrationUrl}" target="_blank" rel="noopener">
+                                            Open Invite Link
+                                        </a>
+                                    </div>
+                                    <div class="mt-3" th:if="${referralQrBase64 != null}">
+                                        <div class="small text-muted mb-2">Scan this QR code to open the invite link:</div>
+                                        <img th:src="${referralQrBase64}" alt="Referral QR code" style="width:160px;height:160px;border:1px solid rgba(15,23,42,.08);border-radius:12px;padding:8px;background:#fff;"/>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -247,4 +273,22 @@
             </div>
         </section>
     </div>
+    <th:block layout:fragment="page_js">
+        <script>
+            document.querySelectorAll('[data-copy-referral-link]').forEach(function (button) {
+                button.addEventListener('click', async function () {
+                    const text = button.getAttribute('data-copy-text') || '';
+                    try {
+                        await navigator.clipboard.writeText(text);
+                        button.textContent = 'Copied';
+                        setTimeout(function () {
+                            button.textContent = 'Copy Invite Link';
+                        }, 1500);
+                    } catch (error) {
+                        window.prompt('Copy your invite link', text);
+                    }
+                });
+            });
+        </script>
+    </th:block>
 </div>

@@ -5,6 +5,7 @@
  */
 package com.ecommerce.app.product.controller;
 
+import com.ecommerce.app.commission.service.ProductCommissionApplierService;
 import com.ecommerce.app.globalComponant.SlagGenerator;
 import com.ecommerce.app.globalComponant.UnixTimeComponent;
 import com.ecommerce.app.module.user.model.Users;
@@ -116,6 +117,10 @@ public class ProductController {
 
     @Autowired
     CatalogProductAttributeService catalogProductAttributeService;
+
+    @Autowired
+    ProductCommissionApplierService productCommissionApplierService;
+
     private static final Logger log = LoggerFactory.getLogger(ProductController.class);
 
     @RequestMapping(value = {"", "/", "/index"})
@@ -278,6 +283,7 @@ public class ProductController {
         Users userss = new Users();
         userss.setId(loggedUserService.activeUserid());
         product.setUserId(userss);
+        productCommissionApplierService.prefillCommissionForForm(product);
         loadProductFormData(model);
 
         return "product/add";
@@ -360,14 +366,16 @@ public class ProductController {
                 product.setImageName(filename);
             }
 
+            productCommissionApplierService.applyCommissionBeforeSave(product);
             Product savedProduct = productRepository.save(product);
             redirectAttributes.addFlashAttribute("message", "Basic product information saved. Now add product specifications.");
             return "redirect:/product/details/" + savedProduct.getId() + "?tab=specifications";
 
         } catch (Exception e) {
+            loadProductFormData(model);
             log.error("❌ Save failed: {}", e.getMessage(), e);
-            redirectAttributes.addFlashAttribute("message", "Save failed: " + e.getMessage());
-            return "redirect:/product/index";
+            model.addAttribute("error", "❌ Save failed: " + e.getMessage());
+            return "product/add";
         }
     }
 

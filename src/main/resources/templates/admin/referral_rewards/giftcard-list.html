@@ -1,80 +1,482 @@
 <!DOCTYPE html>
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <style>
+            .giftcard-shell {
+                display: grid;
+                gap: 1rem;
+            }
+
+            .giftcard-hero {
+                border: 1px solid rgba(20, 34, 58, 0.09);
+                border-radius: 8px;
+                background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+                box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+                padding: 1rem 1.125rem;
+            }
+
+            .giftcard-kpi {
+                display: inline-flex;
+                align-items: center;
+                gap: .45rem;
+                border: 1px solid #cbd5e1;
+                border-radius: 999px;
+                background: #ffffff;
+                color: #334155;
+                font-weight: 700;
+                padding: .3rem .78rem;
+            }
+
+            .giftcard-kpi .count {
+                color: #0f172a;
+                font-size: 1.02rem;
+                font-weight: 800;
+            }
+
+            .giftcard-card {
+                border: 1px solid #d9e2ec;
+                border-radius: 8px;
+                box-shadow: 0 12px 34px rgba(15, 23, 42, 0.07);
+                overflow: hidden;
+            }
+
+            .giftcard-card .card-header {
+                background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+                border: 0;
+                border-bottom: 1px solid #dbe4ee;
+                box-shadow: inset 4px 0 0 #123a63;
+                color: #0f172a;
+                padding: .9rem 1.1rem;
+            }
+
+            .giftcard-card .card-header strong {
+                color: #0f172a;
+            }
+
+            .giftcard-card .card-header small {
+                color: #64748b;
+            }
+
+            .giftcard-card .card-body {
+                padding: 1rem 1.2rem 1.2rem;
+            }
+
+            .giftcard-alert .alert-heading {
+                font-size: .95rem;
+                margin-bottom: .25rem;
+            }
+
+            .giftcard-filter-panel {
+                border: 1px solid rgba(148, 163, 184, 0.34);
+                border-radius: 8px;
+                background: #f8fafc;
+                margin-bottom: .9rem;
+                padding: .85rem;
+            }
+
+            .giftcard-filter-panel .form-label {
+                color: #334155;
+                font-size: .78rem;
+                font-weight: 700;
+                letter-spacing: .03em;
+                margin-bottom: .35rem;
+                text-transform: uppercase;
+            }
+
+            .giftcard-table {
+                margin-bottom: 0;
+            }
+
+            .giftcard-table thead th {
+                background: #f8fafc;
+                border-bottom-width: 1px;
+                color: #475569;
+                font-size: .76rem;
+                font-weight: 700;
+                letter-spacing: .04em;
+                text-transform: uppercase;
+                white-space: nowrap;
+            }
+
+            .giftcard-table tbody td,
+            .giftcard-table tbody th {
+                vertical-align: middle;
+            }
+
+            .giftcard-table .code-chip {
+                border: 1px solid rgba(18, 58, 99, 0.28);
+                border-radius: 999px;
+                background: rgba(18, 58, 99, 0.08);
+                color: #102d4d;
+                display: inline-block;
+                font-family: "Courier New", monospace;
+                font-size: .78rem;
+                font-weight: 700;
+                letter-spacing: .08em;
+                padding: .2rem .55rem;
+                text-transform: uppercase;
+            }
+
+            .giftcard-table .amount-primary {
+                color: #0f172a;
+                font-weight: 800;
+            }
+
+            .giftcard-table .status-pill {
+                border-radius: 999px;
+                display: inline-flex;
+                font-size: .72rem;
+                font-weight: 800;
+                letter-spacing: .03em;
+                padding: .3rem .62rem;
+                text-transform: uppercase;
+            }
+
+            .giftcard-table .status-active {
+                background: rgba(16, 185, 129, 0.13);
+                border: 1px solid rgba(5, 150, 105, 0.24);
+                color: #065f46;
+            }
+
+            .giftcard-table .status-warning {
+                background: rgba(245, 158, 11, 0.14);
+                border: 1px solid rgba(217, 119, 6, 0.22);
+                color: #92400e;
+            }
+
+            .giftcard-table .status-muted {
+                background: rgba(100, 116, 139, 0.12);
+                border: 1px solid rgba(100, 116, 139, 0.22);
+                color: #334155;
+            }
+
+            .giftcard-shell #example_filter {
+                display: none;
+            }
+
+            .giftcard-empty {
+                color: #64748b;
+                font-size: .95rem;
+                padding: 2rem 1rem;
+                text-align: center;
+            }
+
+            @media (max-width: 767px) {
+                .giftcard-card .card-header,
+                .giftcard-card .card-body,
+                .giftcard-hero {
+                    padding-left: .85rem;
+                    padding-right: .85rem;
+                }
+            }
+        </style>
+    </th:block>
+
     <div layout:fragment="main_content">
-        <section>
-            <div class="row">
-                <div class="col-sm-3"><h4> Gift Card System </h4></div>
-                <div class="col-sm-5">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Promotions</li>
-                            <li class="breadcrumb-item active" aria-current="page">Gift Cards</li>
-                        </ol>
-                    </nav>
-                </div>
-            </div>
-        </section>
-        <hr/>
-
-        <div class="card">
-            <div class="card-header">
-                <div class="row">
-                    <div class="col-sm-6 font-weight-bold">
-                        <strong><i class="bi bi-gift"></i> Gift Card List</strong>
+        <div class="giftcard-shell">
+            <section class="giftcard-hero">
+                <div class="row align-items-center g-3">
+                    <div class="col-lg-7">
+                        <h4 class="mb-1 text-dark fw-semibold">Gift Card System</h4>
+                        <p class="mb-0 text-secondary">Monitor issued value, remaining balance, redemption status, and customer assignment from one operational list.</p>
                     </div>
-                    <div class="col-sm-6 text-end">
-                        <a class="btn btn-success btn-sm" th:href="@{/giftcard/create}">
-                            <i class="bi bi-plus-circle"></i> Create Gift Card
-                        </a>
+                    <div class="col-lg-5 text-lg-end">
+                        <span class="giftcard-kpi me-2 mb-2 mb-lg-0">
+                            <i class="bi bi-gift-fill"></i>
+                            Total
+                            <span class="count" th:text="${giftCards != null ? #lists.size(giftCards) : 0}">0</span>
+                        </span>
+                        <span class="giftcard-kpi mb-2 mb-lg-0">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Active
+                            <span class="count" th:text="${giftCards != null ? #lists.size(giftCards.?[status != null and status.name() == 'ACTIVE']) : 0}">0</span>
+                        </span>
                     </div>
                 </div>
-            </div>
+                <nav class="mt-3" aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="text-decoration-none">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Promotions</li>
+                        <li class="breadcrumb-item active" aria-current="page">Gift Card List</li>
+                    </ol>
+                </nav>
+            </section>
 
-            <div class="card-body table-responsive">
-                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-                    <span th:text="${successMessage}"></span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <span th:text="${errorMessage}"></span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <div class="card giftcard-card">
+                <div class="card-header">
+                    <div class="row align-items-center g-2">
+                        <div class="col-sm-6">
+                            <strong><i class="bi bi-list-task"></i> Gift Card List</strong>
+                            <small class="d-block">Filter by status, redemption state, assignment, or customer/code search.</small>
+                        </div>
+                        <div class="col-sm-6 text-sm-end">
+                            <a class="btn btn-success btn-sm" th:href="@{/giftcard/create}">
+                                <i class="bi bi-plus-circle"></i> Create Gift Card
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
-                <table id="example" class="table table-bordered table-hover table-striped">
-                    <thead class="thead-light">
-                        <tr>
-                            <th>#</th>
-                            <th>Code</th>
-                            <th>Initial</th>
-                            <th>Balance</th>
-                            <th>Status</th>
-                            <th>Issued To</th>
-                            <th>Redeemed</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="gc,status:${giftCards}">
-                            <th th:text="${status.count}">1</th>
-                            <td><span class="badge bg-primary" th:text="${gc.code}">CODE</span></td>
-                            <td th:text="${gc.initialValue}">0</td>
-                            <td th:text="${gc.balance}">0</td>
-                            <td th:text="${gc.status}">ACTIVE</td>
-                            <td th:text="${gc.issuedTo != null ? gc.issuedTo.email : '-'}">-</td>
-                            <td th:text="${gc.redeemed}">false</td>
-                            <td>
-                                <a class="btn btn-sm btn-primary" th:href="@{/giftcard/edit/{id}(id=${gc.id})}">Edit</a>
-                                <form th:action="@{/giftcard/delete/{id}(id=${gc.id})}" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-danger"
-                                            onclick="return confirm('Delete this gift card?')">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="card-body">
+                    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show giftcard-alert" role="alert">
+                        <h6 class="alert-heading">Action Completed</h6>
+                        <div th:text="${successMessage}">Gift card saved successfully.</div>
+                        <small class="d-block mt-1">Hint: Use the filters below to confirm status, assignment, and available balance.</small>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show giftcard-alert" role="alert">
+                        <h6 class="alert-heading">Action Blocked</h6>
+                        <div th:text="${errorMessage}">Gift card action failed.</div>
+                        <small class="d-block mt-1">Hint: Duplicate codes and linked transactions are common reasons for save/delete failure.</small>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+
+                    <div class="giftcard-filter-panel">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-xl-4 col-lg-4">
+                                <label for="giftCardQuickSearch" class="form-label">Quick Search</label>
+                                <input id="giftCardQuickSearch" type="search" class="form-control form-control-sm"
+                                       placeholder="Search code, customer, status, or amount"/>
+                            </div>
+                            <div class="col-xl-2 col-lg-2 col-md-4">
+                                <label for="giftCardStatusFilter" class="form-label">Status</label>
+                                <select id="giftCardStatusFilter" class="form-select form-select-sm">
+                                    <option value="">All</option>
+                                </select>
+                            </div>
+                            <div class="col-xl-2 col-lg-2 col-md-4">
+                                <label for="giftCardRedeemedFilter" class="form-label">Redeemed</label>
+                                <select id="giftCardRedeemedFilter" class="form-select form-select-sm">
+                                    <option value="">All</option>
+                                    <option value="YES">Yes</option>
+                                    <option value="NO">No</option>
+                                </select>
+                            </div>
+                            <div class="col-xl-2 col-lg-2 col-md-4">
+                                <label for="giftCardAssignedFilter" class="form-label">Assigned</label>
+                                <select id="giftCardAssignedFilter" class="form-select form-select-sm">
+                                    <option value="">All</option>
+                                    <option value="ASSIGNED">Assigned</option>
+                                    <option value="UNASSIGNED">Unassigned</option>
+                                </select>
+                            </div>
+                            <div class="col-xl-2 col-lg-2 col-md-12 d-grid">
+                                <button id="giftCardFilterReset" type="button" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-arrow-clockwise"></i> Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mb-2">
+                        <small id="giftCardVisibleCount" class="text-muted">Showing 0 of 0 gift cards</small>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="example" class="table table-bordered table-hover table-striped giftcard-table">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Code</th>
+                                    <th>Initial</th>
+                                    <th>Balance</th>
+                                    <th>Status</th>
+                                    <th>Issued To</th>
+                                    <th>Redeemed</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="gc,status:${giftCards}"
+                                    th:attr="data-status=${gc.status != null ? gc.status.name() : 'DRAFT'},data-redeemed=${gc.redeemed ? 'YES' : 'NO'},data-assigned=${gc.issuedTo != null ? 'ASSIGNED' : 'UNASSIGNED'}">
+                                    <th th:text="${status.count}" class="text-muted fw-semibold">1</th>
+                                    <td><span class="code-chip" th:text="${gc.code}">CODE</span></td>
+                                    <td><span class="amount-primary" th:text="${gc.initialValue}">0</span></td>
+                                    <td><span class="amount-primary" th:text="${gc.balance}">0</span></td>
+                                    <td>
+                                        <span class="status-pill"
+                                              th:classappend="${gc.status != null and gc.status.name() == 'ACTIVE'} ? ' status-active' : (${gc.status != null and (gc.status.name() == 'PARTIALLY_REDEEMED' or gc.status.name() == 'DRAFT')} ? ' status-warning' : ' status-muted')"
+                                              th:text="${gc.status != null ? gc.status : 'DRAFT'}">ACTIVE</span>
+                                    </td>
+                                    <td>
+                                        <span th:text="${gc.issuedTo != null ? gc.issuedTo.email : '-'}">-</span>
+                                        <small class="d-block text-muted" th:if="${gc.issuedTo == null}">Not assigned</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge"
+                                              th:classappend="${gc.redeemed} ? ' bg-secondary' : ' bg-success'"
+                                              th:text="${gc.redeemed} ? 'Yes' : 'No'">No</span>
+                                    </td>
+                                    <td>
+                                        <a class="btn btn-sm btn-primary" th:href="@{/giftcard/edit/{id}(id=${gc.id})}">
+                                            <i class="bi bi-pencil-square"></i> Edit
+                                        </a>
+                                        <form th:action="@{/giftcard/delete/{id}(id=${gc.id})}" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-danger"
+                                                    onclick="return confirm('Delete this gift card?')">
+                                                <i class="bi bi-trash3"></i> Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <tr th:if="${giftCards == null or #lists.isEmpty(giftCards)}">
+                                    <td class="giftcard-empty">
+                                        <i class="bi bi-inboxes"></i> No gift cards found. Create a gift card to issue customer balance.
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
+    <th:block layout:fragment="page_js">
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const initializeGiftCardFilters = function () {
+                    if (!window.jQuery || !jQuery.fn || !jQuery.fn.DataTable) {
+                        window.setTimeout(initializeGiftCardFilters, 180);
+                        return;
+                    }
+
+                    const tableElement = document.getElementById('example');
+                    if (!tableElement || !jQuery.fn.DataTable.isDataTable(tableElement)) {
+                        window.setTimeout(initializeGiftCardFilters, 180);
+                        return;
+                    }
+
+                    if (tableElement.dataset.giftCardFiltersInitialized === 'true') {
+                        return;
+                    }
+                    tableElement.dataset.giftCardFiltersInitialized = 'true';
+
+                    const table = jQuery(tableElement).DataTable();
+                    const quickSearchInput = document.getElementById('giftCardQuickSearch');
+                    const statusFilter = document.getElementById('giftCardStatusFilter');
+                    const redeemedFilter = document.getElementById('giftCardRedeemedFilter');
+                    const assignedFilter = document.getElementById('giftCardAssignedFilter');
+                    const resetButton = document.getElementById('giftCardFilterReset');
+                    const countLabel = document.getElementById('giftCardVisibleCount');
+
+                    const uniqueOptions = function (values) {
+                        return Array.from(new Set(values
+                                .map(function (value) {
+                                    return (value || '').trim();
+                                })
+                                .filter(function (value) {
+                                    return value.length > 0;
+                                })))
+                                .sort();
+                    };
+
+                    const appendSelectOptions = function (element, values) {
+                        if (!element) {
+                            return;
+                        }
+                        values.forEach(function (value) {
+                            const option = document.createElement('option');
+                            option.value = value;
+                            option.textContent = value;
+                            element.appendChild(option);
+                        });
+                    };
+
+                    const dataRows = function (rowSet) {
+                        return Array.from(rowSet.nodes()).filter(function (row) {
+                            return row.hasAttribute('data-status');
+                        });
+                    };
+
+                    const rowData = dataRows(table.rows());
+                    appendSelectOptions(statusFilter, uniqueOptions(rowData.map(function (row) {
+                        return row.getAttribute('data-status');
+                    })));
+
+                    const customFilter = function (settings, data, dataIndex) {
+                        if (settings.nTable !== tableElement) {
+                            return true;
+                        }
+
+                        const rowNode = table.row(dataIndex).node();
+                        if (!rowNode) {
+                            return true;
+                        }
+
+                        const rowStatus = (rowNode.getAttribute('data-status') || '').trim();
+                        const rowRedeemed = (rowNode.getAttribute('data-redeemed') || '').trim();
+                        const rowAssigned = (rowNode.getAttribute('data-assigned') || '').trim();
+
+                        if (statusFilter && statusFilter.value && rowStatus !== statusFilter.value) {
+                            return false;
+                        }
+                        if (redeemedFilter && redeemedFilter.value && rowRedeemed !== redeemedFilter.value) {
+                            return false;
+                        }
+                        if (assignedFilter && assignedFilter.value && rowAssigned !== assignedFilter.value) {
+                            return false;
+                        }
+                        return true;
+                    };
+
+                    jQuery.fn.dataTable.ext.search.push(customFilter);
+
+                    const refreshCount = function () {
+                        if (!countLabel) {
+                            return;
+                        }
+                        const filteredCount = dataRows(table.rows({search: 'applied'})).length;
+                        const totalCount = dataRows(table.rows()).length;
+                        countLabel.textContent = 'Showing ' + filteredCount + ' of ' + totalCount + ' gift cards';
+                    };
+
+                    if (quickSearchInput) {
+                        quickSearchInput.addEventListener('input', function () {
+                            table.search(quickSearchInput.value || '').draw();
+                        });
+                    }
+
+                    [statusFilter, redeemedFilter, assignedFilter].forEach(function (select) {
+                        if (!select) {
+                            return;
+                        }
+                        select.addEventListener('change', function () {
+                            table.draw();
+                        });
+                    });
+
+                    if (resetButton) {
+                        resetButton.addEventListener('click', function () {
+                            if (quickSearchInput) {
+                                quickSearchInput.value = '';
+                            }
+                            if (statusFilter) {
+                                statusFilter.value = '';
+                            }
+                            if (redeemedFilter) {
+                                redeemedFilter.value = '';
+                            }
+                            if (assignedFilter) {
+                                assignedFilter.value = '';
+                            }
+                            table.search('').draw();
+                        });
+                    }
+
+                    table.on('draw', refreshCount);
+                    refreshCount();
+                };
+
+                initializeGiftCardFilters();
+            });
+        </script>
+    </th:block>
+</div>

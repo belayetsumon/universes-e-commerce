@@ -5,7 +5,7 @@
 package com.ecommerce.app.module.ReferralRewards.repository;
 
 import com.ecommerce.app.module.ReferralRewards.model.Redemptions;
-import com.ecommerce.app.module.ReferralRewards.model.RedemptionType;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.RedemptionType;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 

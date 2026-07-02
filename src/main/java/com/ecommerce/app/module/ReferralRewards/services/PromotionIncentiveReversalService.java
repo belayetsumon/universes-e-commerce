@@ -2,7 +2,7 @@ package com.ecommerce.app.module.ReferralRewards.services;
 
 import com.ecommerce.app.module.ReferralRewards.model.Coupon;
 import com.ecommerce.app.module.ReferralRewards.model.GiftCard;
-import com.ecommerce.app.module.ReferralRewards.model.GiftCardStatus;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.GiftCardStatus;
 import com.ecommerce.app.module.ReferralRewards.model.GiftCardTransaction;
 import com.ecommerce.app.module.ReferralRewards.model.OrderIncentiveUsage;
 import com.ecommerce.app.module.ReferralRewards.model.TransactionType;
@@ -106,9 +106,14 @@ public class PromotionIncentiveReversalService {
             }
             GiftCard locked = giftCardRepository.findById(giftCard.getId()).orElse(giftCard);
             BigDecimal currentBalance = safeAmount(locked.getBalance());
-            locked.setBalance(currentBalance.add(safeAmount(transaction.getAmountUsed())));
+            BigDecimal reversedAmount = safeAmount(transaction.getAmount());
+            BigDecimal nextBalance = currentBalance.add(reversedAmount);
+            locked.setBalance(nextBalance);
             locked.setRedeemed(false);
-            locked.setStatus(GiftCardStatus.ACTIVE);
+            locked.setStatus(nextBalance.compareTo(BigDecimal.ZERO) > 0
+                    && nextBalance.compareTo(safeAmount(locked.getInitialValue())) < 0
+                    ? GiftCardStatus.PARTIALLY_REDEEMED
+                    : GiftCardStatus.ACTIVE);
             giftCardRepository.save(locked);
         });
     }

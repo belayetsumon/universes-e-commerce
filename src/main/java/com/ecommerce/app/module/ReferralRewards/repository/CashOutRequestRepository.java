@@ -4,7 +4,7 @@
  */
 package com.ecommerce.app.module.ReferralRewards.repository;
 
-import com.ecommerce.app.module.ReferralRewards.model.CashOutStatus;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.CashOutStatus;
 import com.ecommerce.app.module.ReferralRewards.model.CashOutRequest;
 import com.ecommerce.app.module.user.model.Users;
 import java.util.List;

@@ -5,7 +5,7 @@
 package com.ecommerce.app.module.ReferralRewards.repository;
 
 import com.ecommerce.app.module.ReferralRewards.model.GiftCard;
-import com.ecommerce.app.module.ReferralRewards.model.GiftCardStatus;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.GiftCardStatus;
 import com.ecommerce.app.module.user.model.Users;
 import java.util.List;
 import java.util.Optional;

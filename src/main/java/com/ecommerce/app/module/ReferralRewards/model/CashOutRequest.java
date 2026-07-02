@@ -4,6 +4,7 @@
  */
 package com.ecommerce.app.module.ReferralRewards.model;
 
+import com.ecommerce.app.module.ReferralRewards.enumvalue.CashOutStatus;
 import com.ecommerce.app.module.user.model.Users;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

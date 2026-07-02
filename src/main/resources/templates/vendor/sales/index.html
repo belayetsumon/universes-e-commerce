@@ -59,7 +59,10 @@ and open the template in the editor.
                                         <tr th:each="orderlists,status:${orderlist}">
                                             <th th:text="${status.count}">1</th>
                                             <td>
-                                                <a th:href="@{/vendor-order/details/{oid}(oid=${orderlists.orderId})}">  [[${orderlists.firstName}]] [[${orderlists.lastName}]]  </a>
+                                                <a class="fw-semibold d-block"
+                                                   th:href="@{/vendor-order/details/{oid}(oid=${orderlists.orderId})}"
+                                                   th:text="${orderlists.orderCode}">ORD</a>
+                                                <span class="small text-muted">[[${orderlists.firstName}]] [[${orderlists.lastName}]]</span>
                                                 <a class="btn btn-sm btn-outline-danger mt-1"
                                                    th:href="@{/vendor-order/orders/{id}/pdf(id=${orderlists.orderId})}">
                                                     <i class="bi bi-file-earmark-pdf"></i> PDF
@@ -72,7 +75,7 @@ and open the template in the editor.
                                             <td>
                                                 <a class="btn btn-sm btn-primary"
                                                    th:if="${orderlists.shipmentEligible}"
-                                                   th:href="@{/vendor/shipments/new(orderId=${orderlists.orderId})}">
+                                                   th:href="@{/vendor/shipments/new(orderUuid=${orderlists.uuid})}">
                                                     Create Shipment
                                                 </a>
                                                 <a class="btn btn-sm btn-outline-primary"

@@ -1,0 +1,395 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <link rel="stylesheet" th:href="@{/assets/admin/pages/global-settings/global-settings.css}">
+        <style>
+            .main-content > section.settings-workspace:first-child {
+                background: transparent;
+                border: 0;
+                box-shadow: none;
+                padding: 0;
+            }
+
+            .commission-header-card {
+                color: #ffffff;
+                background: #113459;
+                border-color: rgba(17, 52, 89, .32);
+            }
+
+            .commission-header-card .card-header {
+                background: rgba(255, 255, 255, .08);
+                border-bottom: 1px solid rgba(255, 255, 255, .12);
+            }
+
+            .commission-header-card .card-body {
+                background: #113459;
+            }
+
+            .commission-header-main {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 1.5rem;
+            }
+
+            .commission-header-title {
+                display: flex;
+                align-items: flex-start;
+                gap: .85rem;
+                min-width: 0;
+            }
+
+            .commission-header-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                flex: 0 0 48px;
+                width: 48px;
+                height: 48px;
+                color: #113459;
+                background: #ffffff;
+                border-radius: 50%;
+            }
+
+            .commission-header-card .settings-kicker {
+                color: #9fd8ff;
+            }
+
+            .commission-header-card h1 {
+                margin: 0;
+                color: #ffffff;
+                font-size: 1.6rem;
+                font-weight: 700;
+                letter-spacing: 0;
+            }
+
+            .commission-header-card .settings-subtitle {
+                color: rgba(255, 255, 255, .76);
+            }
+
+            .commission-header-actions .btn-light {
+                color: #113459;
+                background: #ffffff;
+                border-color: rgba(255, 255, 255, .7);
+            }
+
+            .commission-gradient-btn {
+                color: #ffffff;
+                background: linear-gradient(135deg, #0d6efd 0%, #00a6c8 100%);
+                border: 0;
+                box-shadow: 0 .55rem 1rem rgba(0, 166, 200, .25);
+            }
+
+            .commission-gradient-btn:hover,
+            .commission-gradient-btn:focus {
+                color: #ffffff;
+                background: linear-gradient(135deg, #0b5ed7 0%, #0089a8 100%);
+                box-shadow: 0 .65rem 1.15rem rgba(13, 110, 253, .28);
+            }
+
+            .commission-form-card .form-label {
+                margin-bottom: .45rem;
+                color: #344054;
+                font-size: .86rem;
+                font-weight: 700;
+            }
+
+            .commission-form-card .form-control,
+            .commission-form-card .form-select,
+            .commission-form-card .input-group-text {
+                min-height: 44px;
+                border-color: #cfd8e3;
+                border-radius: .45rem;
+            }
+
+            .commission-form-card textarea.form-control {
+                min-height: 108px;
+                resize: vertical;
+            }
+
+            .commission-form-card .input-group .form-control {
+                border-top-right-radius: 0;
+                border-bottom-right-radius: 0;
+            }
+
+            .commission-form-card .input-group .input-group-text {
+                min-width: 48px;
+                justify-content: center;
+                border-top-left-radius: 0;
+                border-bottom-left-radius: 0;
+                font-weight: 700;
+            }
+
+            .commission-form-card .form-text {
+                min-height: 38px;
+                margin-top: .45rem;
+                color: #667085;
+                font-size: .8rem;
+                line-height: 1.45;
+            }
+
+            .commission-main-field {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .commission-main-field .form-select,
+            .commission-main-field .input-group {
+                width: 100%;
+            }
+
+            .commission-main-field .form-select,
+            .commission-main-field .input-group > .form-control,
+            .commission-main-field .input-group > .input-group-text {
+                height: 44px;
+            }
+
+            .commission-main-field .input-group > .form-control {
+                min-width: 0;
+            }
+
+            .commission-form-section {
+                padding-bottom: 1rem;
+                margin-bottom: 1.25rem;
+                border-bottom: 1px solid #e5edf5;
+            }
+
+            .commission-form-section h2 {
+                color: #0f172a;
+                font-weight: 700;
+            }
+
+            .commission-target:not(.d-none) {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+
+            @media (max-width: 767.98px) {
+                .commission-header-main {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .commission-header-actions {
+                    flex-wrap: wrap;
+                }
+
+                .commission-target:not(.d-none) {
+                    flex: 0 0 100%;
+                    max-width: 100%;
+                }
+            }
+        </style>
+    </th:block>
+
+    <div layout:fragment="main_content">
+        <section class="py-4 settings-workspace">
+            <header class="card shadow-sm mb-4 commission-header-card">
+                <div class="card-header d-flex justify-content-between align-items-center border-0 py-3">
+                    <div class="h5 mb-0 text-white">
+                        <i class="bi bi-star-fill me-2 text-warning"></i>
+                        Marketplace finance
+                    </div>
+                    <span class="badge text-bg-light border border-white border-opacity-25"
+                          th:text="${commissionSetting.id == null ? 'Create rule' : 'Edit rule'}">Create rule</span>
+                </div>
+                <div class="card-body py-4">
+                    <div class="commission-header-main">
+                        <div class="commission-header-title">
+                            <span class="commission-header-icon"><i class="bi bi-cash-stack fs-4"></i></span>
+                            <div>
+                                <p class="settings-kicker">Rule management</p>
+                                <h1 th:text="${commissionSetting.id == null ? 'New Commission Setting' : 'Edit Commission Setting'}">Commission Setting</h1>
+                                <p class="settings-subtitle">Use one scope per rule. Product rules override Vendor, Vendor overrides Category, and Category overrides Default.</p>
+                            </div>
+                        </div>
+                        <div class="settings-header-actions commission-header-actions">
+                            <a th:href="@{/admin/commission-settings/list}" class="btn btn-light">
+                                <i class="bi bi-arrow-left"></i>
+                                <span>Back to list</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <form th:object="${commissionSetting}"
+                  th:action="${commissionSetting.id == null} ? @{/admin/commission-settings/create} : @{/admin/commission-settings/edit/{id}(id=${commissionSetting.id})}"
+                  method="post"
+                  class="card border-0 shadow-sm commission-form-card">
+                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <div class="card-body p-4">
+                    <div class="alert alert-danger" th:if="${#fields.hasErrors('*')}">
+                        <strong>Review the highlighted fields.</strong>
+                        <ul class="mb-0 mt-2">
+                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Error</li>
+                        </ul>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-lg-8">
+                            <div class="commission-form-section">
+                                <h2 class="h5 mb-1">Rule Definition</h2>
+                                <p class="text-muted mb-0">Choose the rule type first; the correct target selector will appear automatically.</p>
+                            </div>
+
+                            <div class="row g-3 item d-flex align-items-start">
+                                <div class="col-md-6 commission-main-field">
+                                    <label for="commissionType" class="form-label">Commission Type <span class="text-danger">*</span></label>
+                                    <select th:field="*{commissionType}" id="commissionType" class="form-select" th:errorclass="is-invalid" required>
+                                        <option th:each="type : ${commissionTypes}" th:value="${type}" th:text="${type.label}">Default</option>
+                                    </select>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('commissionType')}" th:errors="*{commissionType}">Type error</div>
+                                </div>
+
+                                <div class="col-md-6 commission-main-field">
+                                    <label for="commissionRate" class="form-label">Commission Rate <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input type="number" th:field="*{commissionRate}" id="commissionRate"
+                                               class="form-control" th:errorclass="is-invalid" step="0.01" min="0" max="100" required>
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <div class="form-text">Accepted range: 0.00 to 100.00.</div>
+                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('commissionRate')}" th:errors="*{commissionRate}">Rate error</div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mt-1">
+                                <div class="col-md-6 commission-target" data-target-type="CATEGORY">
+                                    <label for="categoryId" class="form-label">Category</label>
+                                    <select th:field="*{categoryId}" id="categoryId" class="form-select">
+                                        <option value="">Select category</option>
+                                        <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}">Category</option>
+                                    </select>
+                                    <div class="form-text">Applies to all products under the selected category unless a more specific rule exists.</div>
+                                </div>
+
+                                <div class="col-md-6 commission-target" data-target-type="VENDOR">
+                                    <label for="vendorId" class="form-label">Vendor</label>
+                                    <select th:field="*{vendorId}" id="vendorId" class="form-select">
+                                        <option value="">Select vendor</option>
+                                        <option th:each="vendor : ${vendors}" th:value="${vendor.id}" th:text="${vendor.companyName}">Vendor</option>
+                                    </select>
+                                    <div class="form-text">Applies to products owned by the selected vendor.</div>
+                                </div>
+
+                                <div class="col-md-6 commission-target" data-target-type="PRODUCT">
+                                    <label for="productId" class="form-label">Product</label>
+                                    <select th:field="*{productId}" id="productId" class="form-select">
+                                        <option value="">Select product</option>
+                                        <option th:each="product : ${products}" th:value="${product.id}" th:text="${product.title}">Product</option>
+                                    </select>
+                                    <div class="form-text">Most specific rule. This overrides vendor, category, and default rules.</div>
+                                </div>
+                            </div>
+
+                            <div class="commission-form-section mt-4">
+                                <h2 class="h5 mb-1">Operational Notes</h2>
+                                <p class="text-muted mb-0">Keep notes short and useful for finance and catalog teams.</p>
+                            </div>
+
+                            <div class="row g-3 mt-1">
+                                <div class="col-md-12">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea th:field="*{description}" id="description" class="form-control" rows="3"
+                                              placeholder="Example: Preferred commission for verified electronics vendors"></textarea>
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="notes" class="form-label">Admin Notes</label>
+                                    <textarea th:field="*{notes}" id="notes" class="form-control" rows="3"
+                                              placeholder="Internal handling notes"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <aside class="col-lg-4">
+                            <div class="border rounded p-3 bg-light h-100">
+                                <h2 class="h6 text-uppercase text-muted mb-3">Status & Audit</h2>
+
+                                <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                                <select th:field="*{status}" id="status" class="form-select mb-3" th:errorclass="is-invalid" required>
+                                    <option th:each="status : ${commissionStatuses}" th:value="${status}" th:text="${status.label}">Active</option>
+                                </select>
+                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('status')}" th:errors="*{status}">Status error</div>
+
+                                <div class="small text-muted mb-3">
+                                    Active rules are used immediately by product save, product form preview, and cart commission calculation.
+                                </div>
+
+                                <div class="border-top pt-3 mt-3 small text-muted">
+                                    <div class="d-flex justify-content-between gap-3 mb-2">
+                                        <span>Fallback rate</span>
+                                        <strong class="text-dark">20.00%</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between gap-3 mb-2">
+                                        <span>Priority</span>
+                                        <strong class="text-dark">Product &gt; Vendor &gt; Category &gt; Default</strong>
+                                    </div>
+                                    <div th:if="${commissionSetting.id != null}" class="border-top pt-3 mt-3">
+                                        <div class="d-flex justify-content-between gap-3 mb-2">
+                                            <span>ID</span>
+                                            <strong class="text-dark" th:text="${commissionSetting.id}">0</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between gap-3 mb-2" th:if="${commissionSetting.createdAt != null}">
+                                            <span>Created</span>
+                                            <strong class="text-dark" th:text="${#temporals.format(commissionSetting.createdAt, 'dd MMM yyyy HH:mm')}">Date</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between gap-3" th:if="${commissionSetting.updatedAt != null}">
+                                            <span>Updated</span>
+                                            <strong class="text-dark" th:text="${#temporals.format(commissionSetting.updatedAt, 'dd MMM yyyy HH:mm')}">Date</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white d-flex flex-column flex-sm-row justify-content-between gap-2 p-3">
+                    <a th:href="@{/admin/commission-settings/list}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn commission-gradient-btn">
+                        <i class="bi bi-save"></i>
+                        <span th:text="${commissionSetting.id == null ? 'Create Setting' : 'Update Setting'}">Save</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <th:block layout:fragment="page_js">
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const typeSelect = document.getElementById('commissionType');
+                const targets = document.querySelectorAll('.commission-target');
+
+                function syncTargets() {
+                    const selectedType = typeSelect ? typeSelect.value : 'DEFAULT';
+                    targets.forEach(function (target) {
+                        const visible = target.dataset.targetType === selectedType;
+                        target.classList.toggle('d-none', !visible);
+                        target.querySelectorAll('select').forEach(function (select) {
+                            select.disabled = !visible;
+                            if (!visible) {
+                                select.value = '';
+                            }
+                        });
+                    });
+                }
+
+                if (typeSelect) {
+                    typeSelect.addEventListener('change', syncTargets);
+                    syncTargets();
+                }
+            });
+        </script>
+    </th:block>
+</div>

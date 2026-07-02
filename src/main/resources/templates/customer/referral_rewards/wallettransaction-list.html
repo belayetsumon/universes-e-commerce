@@ -47,14 +47,11 @@ and open the template in the editor.
                             <thead class="thead-light">
                                 <tr>
                                     <th>#</th>
-                                    <th>Reward Owner</th>
+                                    <th>Wallet Owner</th>
                                     <th>Amount </th>
-                                    <th>Description </th>
                                     <th>Transactions Type </th>
+                                    <th>Status </th>
                                     <th>Created At </th>
-                                    <th>Expiry Date </th>
-                                    <th>Redeemed </th>
-                                    <th>Expired </th>
 
 
 
@@ -65,21 +62,16 @@ and open the template in the editor.
 
                                     <th th:text="${status.count}">1</th>
 
-                                    <td th:text="${lists.wallet.users.firstName}">Otto</td>
+                                    <td th:text="${lists.wallet != null and lists.wallet.user != null ? lists.wallet.user.firstName : '-'}">Otto</td>
 
 
                                     <td th:text="${lists.amount}">  </td>
-                                    <td th:text="${lists.description}">  </td>
-
-                                    <td th:text="${lists.createdAt}">  </td>
-
-                                    <td th:text="${lists.expiryDate}">  </td>
 
                                     <td th:text="${lists.type}">  </td>
 
-                                    <td th:text="${lists.redeemed}">  </td>
+                                    <td th:text="${lists.status}">  </td>
 
-                                    <td th:text="${lists.expired}">  </td>
+                                    <td th:text="${lists.created != null ? #temporals.format(lists.created, 'dd-MM-yyyy HH:mm') : '-'}">  </td>
 
                                 </tr>
                             </tbody>

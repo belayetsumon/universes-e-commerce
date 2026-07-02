@@ -1,0 +1,179 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
+    <div layout:fragment="main_content">
+        <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center alert alert-secondary">
+                <div>
+                    <h4 class="mb-1">Current Product Stock</h4>
+                    <div class="small">Your live stock snapshot by product and variant.</div>
+                </div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Current Stock</li>
+                    </ol>
+                </nav>
+            </div>
+        </section>
+
+        <div th:if="${not #strings.isEmpty(errorMessage)}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-2">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Rows</div>
+                        <div class="fs-4 fw-bold" th:text="${summary.rowCount}">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Available</div>
+                        <div class="fs-4 fw-bold text-success" th:text="${summary.availableQuantity}">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Reserved</div>
+                        <div class="fs-4 fw-bold text-warning" th:text="${summary.reservedQuantity}">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Sold</div>
+                        <div class="fs-4 fw-bold text-primary" th:text="${summary.soldQuantity}">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Low Stock</div>
+                        <div class="fs-4 fw-bold text-danger" th:text="${summary.lowStockCount}">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Out of Stock</div>
+                        <div class="fs-4 fw-bold text-danger" th:text="${summary.outOfStockCount}">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong><i class="bi bi-funnel me-2"></i>Filter Stock</strong>
+                <div class="d-flex gap-2">
+                    <a class="btn btn-sm btn-outline-secondary" th:href="@{/vendor/stock/transactions}">Transactions</a>
+                    <a class="btn btn-sm btn-outline-success" th:href="@{/vendor/stock/receive}">Receive</a>
+                    <a class="btn btn-sm btn-outline-warning" th:href="@{/vendor/stock/adjust}">Adjust</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="get" th:action="@{/vendor/stock/current}" class="row g-3 align-items-end">
+                    <div class="col-lg-4">
+                        <label class="form-label">Search</label>
+                        <input class="form-control" type="search" name="q" th:value="${q}" placeholder="Product or SKU">
+                    </div>
+                    <div class="col-lg-3">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" name="categoryId">
+                            <option value="">All categories</option>
+                            <option th:each="category : ${categories}"
+                                    th:value="${category.id}"
+                                    th:selected="${selectedCategoryId != null and selectedCategoryId.equals(category.id)}"
+                                    th:text="${category.name}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2">
+                        <label class="form-label">Stock</label>
+                        <select class="form-select" name="stockFilter">
+                            <option value="all" th:selected="${stockFilter == 'all'}">All stock</option>
+                            <option value="in_stock" th:selected="${stockFilter == 'in_stock'}">In stock</option>
+                            <option value="low_stock" th:selected="${stockFilter == 'low_stock'}">Low stock</option>
+                            <option value="out_of_stock" th:selected="${stockFilter == 'out_of_stock'}">Out of stock</option>
+                            <option value="reserved" th:selected="${stockFilter == 'reserved'}">Has reserved</option>
+                            <option value="sold" th:selected="${stockFilter == 'sold'}">Has sold</option>
+                            <option value="product" th:selected="${stockFilter == 'product'}">Product rows</option>
+                            <option value="variant" th:selected="${stockFilter == 'variant'}">Variant rows</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-1">
+                        <label class="form-label">Low</label>
+                        <input class="form-control" type="number" step="0.001" min="0" name="lowStockThreshold" th:value="${lowStockThreshold}">
+                    </div>
+                    <div class="col-lg-2 d-flex gap-2">
+                        <button class="btn btn-primary w-100" type="submit">Apply</button>
+                        <a class="btn btn-outline-secondary" th:href="@{/vendor/stock/current}">Reset</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Your Current Stock</strong>
+                <span class="badge bg-secondary" th:text="${#lists.size(rows)} + ' rows'">0 rows</span>
+            </div>
+            <div class="card-body table-responsive">
+                <table class="table table-bordered table-striped table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Row</th>
+                            <th>Variant SKU</th>
+                            <th>Available</th>
+                            <th>Reserved</th>
+                            <th>On Hand</th>
+                            <th>Sold</th>
+                            <th>Status</th>
+                            <th>Manage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(rows)}">
+                            <td colspan="11" class="text-center text-muted py-4">No stock rows match this filter.</td>
+                        </tr>
+                        <tr th:each="row, status : ${rows}">
+                            <td th:text="${status.count}">1</td>
+                            <td>
+                                <div class="fw-semibold" th:text="${row.productTitle}">Product</div>
+                                <div class="small text-muted">SKU: <span th:text="${row.productSku}">0</span></div>
+                            </td>
+                            <td th:text="${row.categoryName != null ? row.categoryName : '-'}">Category</td>
+                            <td><span class="badge bg-dark" th:text="${row.rowType}">Product</span></td>
+                            <td th:text="${row.variantSku != null ? row.variantSku : '-'}">-</td>
+                            <td class="fw-bold text-success" th:text="${row.availableQuantity}">0</td>
+                            <td class="text-warning fw-semibold" th:text="${row.reservedQuantity}">0</td>
+                            <td th:text="${row.totalOnHand}">0</td>
+                            <td th:text="${row.soldQuantity}">0</td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${row.stockStatus == 'In stock' ? ' bg-success' : (row.stockStatus == 'Low stock' ? ' bg-warning text-dark' : ' bg-danger')}"
+                                      th:text="${row.stockStatus}">In stock</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border" th:text="${row.manageStock == true ? 'Stock on' : 'Stock off'}">Stock on</span>
+                                <span class="badge bg-light text-dark border" th:text="${row.manageProductVariants == true ? 'Variants' : 'Product'}">Product</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

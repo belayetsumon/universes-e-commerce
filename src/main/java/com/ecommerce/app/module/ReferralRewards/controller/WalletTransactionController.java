@@ -4,7 +4,7 @@
  */
 package com.ecommerce.app.module.ReferralRewards.controller;
 
-import com.ecommerce.app.module.ReferralRewards.repository.RewardTransactionRepository;
+import com.ecommerce.app.module.ReferralRewards.repository.WalletTransactionRepository;
 import java.util.Collections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -21,12 +21,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class WalletTransactionController {
 
     @Autowired
-    RewardTransactionRepository rewardTransactionRepository;
+    WalletTransactionRepository walletTransactionRepository;
 
     @GetMapping("/list")
     public String list(Model model) {
         try {
-            model.addAttribute("list", rewardTransactionRepository.findAllForAdminList());
+            model.addAttribute("list", walletTransactionRepository.findAllForAdminList());
         } catch (RuntimeException ex) {
             model.addAttribute("list", Collections.emptyList());
             model.addAttribute("errorMessage", "Runtime error while loading wallet transactions: " + ex.getMessage());

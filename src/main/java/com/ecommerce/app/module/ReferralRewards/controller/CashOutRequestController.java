@@ -5,7 +5,7 @@
 package com.ecommerce.app.module.ReferralRewards.controller;
 
 import com.ecommerce.app.module.ReferralRewards.model.CashOutRequest;
-import com.ecommerce.app.module.ReferralRewards.model.CashOutStatus;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.CashOutStatus;
 import com.ecommerce.app.module.ReferralRewards.model.TransactionType;
 import com.ecommerce.app.module.ReferralRewards.repository.CashOutRequestRepository;
 import com.ecommerce.app.module.ReferralRewards.services.PromotionNotificationService;

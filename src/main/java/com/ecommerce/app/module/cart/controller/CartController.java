@@ -5,10 +5,12 @@
  */
 package com.ecommerce.app.module.cart.controller;
 
+import com.ecommerce.app.module.ReferralRewards.dto.CheckoutIncentiveQuote;
 import com.ecommerce.app.module.ReferralRewards.model.RewardAccount;
 import com.ecommerce.app.module.ReferralRewards.model.Wallet;
 import com.ecommerce.app.module.ReferralRewards.repository.RewardAccountRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.WalletRepository;
+import com.ecommerce.app.module.ReferralRewards.services.CheckoutIncentiveService;
 import com.ecommerce.app.module.cart.model.CartItem;
 import com.ecommerce.app.module.cart.services.CartService;
 import com.ecommerce.app.module.shipping.dto.ShippingOption;
@@ -17,6 +19,7 @@ import com.ecommerce.app.module.shipping.model.PackagingRate;
 import com.ecommerce.app.module.shipping.services.PackagingRateService;
 import com.ecommerce.app.module.shipping.services.ShippingQuoteService;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
+import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.services.LoggedUserService;
 import com.ecommerce.app.product.model.AvailableDeliveryArea;
 import com.ecommerce.app.product.model.Product;
@@ -82,6 +85,9 @@ public class CartController {
 
     @Autowired
     RewardAccountRepository rewardAccountRepository;
+
+    @Autowired
+    CheckoutIncentiveService checkoutIncentiveService;
 
     private static final Logger log = LoggerFactory.getLogger(CartService.class);
 
@@ -303,6 +309,105 @@ public class CartController {
         return "cart/checkout";
     }
 
+    @PostMapping("/checkout/incentives/preview")
+    @ResponseBody
+    public Map<String, Object> previewCheckoutIncentives(
+            @RequestParam(name = "couponCode", required = false) String couponCode,
+            @RequestParam(name = "giftCardCode", required = false) String giftCardCode,
+            @RequestParam(name = "giftCardAmount", required = false) BigDecimal giftCardAmount,
+            @RequestParam(name = "rewardPointsToUse", required = false) BigDecimal rewardPointsToUse,
+            HttpSession session) {
+
+        Map<String, Object> response = new HashMap<>();
+        List<CartItem> cart = cartService.getCartFromSession(session);
+        if (cart == null || cart.isEmpty()) {
+            response.put("valid", false);
+            response.put("message", "Cart is empty.");
+            return response;
+        }
+
+        Users customer = currentCustomer();
+        if (customer == null) {
+            response.put("valid", false);
+            response.put("message", "Please login before using coupon or gift card codes.");
+            return response;
+        }
+
+        BigDecimal grossPayable = calculateCheckoutGrandTotal(cart, session);
+        response.put("valid", true);
+        response.put("grossPayable", formatMoney(grossPayable));
+
+        boolean hasCoupon = hasText(couponCode);
+        boolean hasGiftCard = hasText(giftCardCode);
+
+        if (hasCoupon) {
+            try {
+                CheckoutIncentiveQuote couponQuote = checkoutIncentiveService.prepareQuote(
+                        customer,
+                        cart,
+                        grossPayable,
+                        couponCode,
+                        BigDecimal.ZERO,
+                        null,
+                        BigDecimal.ZERO
+                );
+                response.put("couponValid", true);
+                response.put("couponMessage", "Coupon is valid. Discount: BDT " + formatMoney(couponQuote.getCouponDiscount()) + ".");
+            } catch (IllegalArgumentException | IllegalStateException ex) {
+                response.put("couponValid", false);
+                response.put("couponMessage", ex.getMessage());
+            }
+        } else {
+            response.put("couponValid", null);
+            response.put("couponMessage", "");
+        }
+
+        if (hasGiftCard) {
+            try {
+                CheckoutIncentiveQuote giftCardQuote = checkoutIncentiveService.prepareQuote(
+                        customer,
+                        cart,
+                        grossPayable,
+                        null,
+                        BigDecimal.ZERO,
+                        giftCardCode,
+                        giftCardAmount
+                );
+                response.put("giftCardValid", true);
+                response.put("giftCardMessage", "Gift card is valid. Usable now: BDT " + formatMoney(giftCardQuote.getGiftCardUsed()) + ".");
+            } catch (IllegalArgumentException | IllegalStateException ex) {
+                response.put("giftCardValid", false);
+                response.put("giftCardMessage", ex.getMessage());
+            }
+        } else {
+            response.put("giftCardValid", null);
+            response.put("giftCardMessage", "");
+        }
+
+        if (hasCoupon || hasGiftCard || safeMoney(rewardPointsToUse).compareTo(BigDecimal.ZERO) > 0) {
+            try {
+                CheckoutIncentiveQuote combinedQuote = checkoutIncentiveService.prepareQuote(
+                        customer,
+                        cart,
+                        grossPayable,
+                        couponCode,
+                        rewardPointsToUse,
+                        giftCardCode,
+                        giftCardAmount
+                );
+                response.put("netPayable", formatMoney(combinedQuote.getNetPayable()));
+                response.put("summaryMessage", "Estimated payable after incentives: BDT " + formatMoney(combinedQuote.getNetPayable()) + ".");
+            } catch (IllegalArgumentException | IllegalStateException ex) {
+                response.put("summaryMessage", ex.getMessage());
+            }
+        } else {
+            response.put("netPayable", formatMoney(grossPayable));
+            response.put("summaryMessage", "");
+        }
+
+        return response;
+    }
+
     private BigDecimal resolveWalletBalance() {
         try {
             Long userId = loggedUserService.activeUserid();
@@ -347,6 +452,73 @@ public class CartController {
         }
 
         return subtotal;
+    }
+
+    private Users currentCustomer() {
+        try {
+            Long userId = loggedUserService.activeUserid();
+            if (userId == null) {
+                return null;
+            }
+            return usersRepository.findById(userId).orElse(null);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private BigDecimal calculateCheckoutGrandTotal(List<CartItem> cartItems, HttpSession session) {
+        if (cartItems == null || cartItems.isEmpty()) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+
+        Map<Long, List<CartItem>> grouped = new HashMap<>();
+        for (CartItem item : cartItems) {
+            if (item == null || item.getProduct() == null || item.getProduct().getVendorprofile() == null
+                    || item.getProduct().getVendorprofile().getId() == null) {
+                continue;
+            }
+            grouped.computeIfAbsent(item.getProduct().getVendorprofile().getId(), ignored -> new ArrayList<>()).add(item);
+        }
+
+        BigDecimal total = BigDecimal.ZERO;
+        for (Map.Entry<Long, List<CartItem>> entry : grouped.entrySet()) {
+            Long vendorId = entry.getKey();
+            List<CartItem> items = entry.getValue();
+            BigDecimal vendorSubtotal = items.stream()
+                    .map(item -> item.getItemTotal() != null ? item.getItemTotal() : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            total = total.add(vendorSubtotal);
+
+            if (cartService.vendorCartRequiresShipping(items)) {
+                String vendorUuid = items.stream()
+                        .map(CartItem::getVendorUuid)
+                        .filter(uuid -> uuid != null && !uuid.isBlank())
+                        .findFirst()
+                        .orElse(null);
+                total = total
+                        .add(getSessionMoney(session, vendorUuid == null ? "shippingCost_" + vendorId : "shippingCost_" + vendorUuid))
+                        .add(getSessionMoney(session, vendorUuid == null ? "packagingCost_" + vendorId : "packagingCost_" + vendorUuid));
+            }
+        }
+
+        return safeMoney(total);
+    }
+
+    private BigDecimal getSessionMoney(HttpSession session, String attributeName) {
+        Object value = session.getAttribute(attributeName);
+        return value instanceof BigDecimal ? (BigDecimal) value : BigDecimal.ZERO;
+    }
+
+    private BigDecimal safeMoney(BigDecimal amount) {
+        return amount == null ? BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP) : amount.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private String formatMoney(BigDecimal amount) {
+        return safeMoney(amount).toPlainString();
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 
     @PostMapping("/add")
@@ -467,7 +639,7 @@ public class CartController {
         List<CartItem> cart = cartService.getCartFromSession(session);
 
         int count = (cart != null) ? cart.size() : 0;
-        return "<span class=\"badge bg-danger ms-1 text-white cart-count\" id=\"cart-count\">" + count + "</span>";
+        return "<span class=\"cart-count\" id=\"cart-count\">" + count + "</span>";
     }
 
     @PostMapping("/updateshipping/{vendorId}")

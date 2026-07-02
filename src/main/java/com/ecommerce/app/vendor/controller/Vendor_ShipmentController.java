@@ -17,12 +17,14 @@ import com.ecommerce.app.order.repository.SalesOrderRepository;
 import com.ecommerce.app.order.services.SalesOrderService;
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import com.ecommerce.app.vendor.user.componant.VendorUserContext;
+import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -100,6 +102,7 @@ public class Vendor_ShipmentController {
     // Create form
     @GetMapping("/new")
     public String createForm(@RequestParam(name = "orderId", required = false) Long orderId,
+            @RequestParam(name = "orderUuid", required = false) String orderUuid,
             Model model,
             RedirectAttributes redirectAttributes) {
         Vendorprofile activeVendor = vendorUserContext.getActiveVendor();
@@ -114,6 +117,7 @@ public class Vendor_ShipmentController {
         shipment.setShippingCost(BigDecimal.ZERO);
         shipment.setPickupAddress(pickupAddressService.getDefaultForVendor(activeVendor.getId()));
 
+        orderId = resolveOrderId(orderId, orderUuid);
         if (orderId != null) {
             String prefillError = prefillShipmentFromVendorOrder(shipment, activeVendor.getId(), orderId, true);
             if (prefillError != null) {
@@ -129,7 +133,7 @@ public class Vendor_ShipmentController {
 
     // Save shipment
     @PostMapping
-    public String save(@ModelAttribute Shipment shipment,
+    public String save(@Valid @ModelAttribute Shipment shipment,
             BindingResult result,
             Model model,
             RedirectAttributes redirectAttributes) {
@@ -141,7 +145,7 @@ public class Vendor_ShipmentController {
 
         shipment.setVendorId(activeVendor.getId());
         Shipment existingShipment = shipment.getId() != null ? shipmentService.getById(shipment.getId()) : null;
-        SalesOrder salesOrder = validateVendorOrder(shipment, activeVendor.getId(), existingShipment, result);
+        validateVendorOrder(shipment, activeVendor.getId(), existingShipment, result);
 
         if (shipment.getCarrier() == null && shipment.getDeliveryPerson() == null) {
             result.reject("error.shipment", "Select at least Carrier or Delivery Person");
@@ -165,13 +169,18 @@ public class Vendor_ShipmentController {
         }
 
         try {
-            shipmentService.save(shipment);
-            redirectAttributes.addFlashAttribute("successMessage", "Shipment saved successfully.");
+            Shipment savedShipment = shipmentService.save(shipment);
+            String successMessage = savedShipment != null && savedShipment.getId() != null
+                    ? "Shipment #" + savedShipment.getId() + " saved successfully."
+                    : "Shipment saved successfully.";
+            redirectAttributes.addFlashAttribute("successMessage", successMessage);
             return "redirect:/vendor/shipments";
         } catch (IllegalArgumentException ex) {
             model.addAttribute("errorMessage", ex.getMessage());
+        } catch (DataIntegrityViolationException ex) {
+            model.addAttribute("errorMessage", "Shipment could not be saved because the order or tracking reference is already used.");
         } catch (Exception ex) {
-            model.addAttribute("errorMessage", "Runtime error while saving shipment: " + ex.getMessage());
+            model.addAttribute("errorMessage", resolveShipmentSaveError(ex));
         }
 
         populateFormOptions(model, activeVendor.getId(), shipment.getSalesOrderId());
@@ -267,6 +276,7 @@ public class Vendor_ShipmentController {
         model.addAttribute("pickupAddresses", pickupAddressService.getByVendor(vendorId));
         model.addAttribute("salesOrders", buildSalesOrderOptions(vendorId, includeOrderId));
         model.addAttribute("activeVendor", vendorUserContext.getActiveVendor());
+        model.addAttribute("selectedOrderCode", resolveOrderCode(includeOrderId));
     }
 
     private List<Map<String, Object>> buildSalesOrderOptions(Long vendorId, Long includeOrderId) {
@@ -364,6 +374,34 @@ public class Vendor_ShipmentController {
             return BigDecimal.ZERO;
         }
         return order.getDeliveryCharge();
+    }
+
+    private String resolveOrderCode(Long orderId) {
+        if (orderId == null) {
+            return null;
+        }
+        return salesOrderRepository.findById(orderId)
+                .map(SalesOrder::getOrderCode)
+                .orElse(null);
+    }
+
+    private Long resolveOrderId(Long orderId, String orderUuid) {
+        if (orderId != null || orderUuid == null || orderUuid.isBlank()) {
+            return orderId;
+        }
+        SalesOrder order = salesOrderRepository.findByUuid(orderUuid.trim());
+        return order != null ? order.getId() : null;
+    }
+
+    private String resolveShipmentSaveError(Exception ex) {
+        String message = ex != null && ex.getMessage() != null ? ex.getMessage() : "";
+        String normalizedMessage = message.toLowerCase();
+        if (normalizedMessage.contains("constraint")
+                || normalizedMessage.contains("duplicate")
+                || normalizedMessage.contains("could not execute statement")) {
+            return "Shipment could not be saved because the order or tracking reference is already used.";
+        }
+        return "Runtime error while saving shipment: " + message;
     }
 
 }

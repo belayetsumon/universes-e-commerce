@@ -4,7 +4,7 @@
      layout:decorate="front-layout-inner-page">
     <div layout:fragment="main_content">
 
-        <section  class="breadcrumb_section">
+        <section class="breadcrumb_section">
             <div class="container">
                 <nav aria-label="breadcrumb" class="pt-3 pb-1">
                     <ol class="breadcrumb">
@@ -14,18 +14,36 @@
                 </nav>
             </div>
         </section>
-        <section>
-            <div class="container pt-5 pb-5">
-                <div class="row ">
-                    <div class="col-sm-8">
+        <section class="cart-page">
+            <div class="container py-4 py-lg-5">
+                <div class="cart-page-header">
+                    <div>
+                        <div class="cart-eyebrow">Shopping cart</div>
+                        <h1 class="cart-page-title">Review your order</h1>
+                        <p class="cart-page-subtitle">Confirm items, delivery choices, packaging, and totals before checkout.</p>
+                    </div>
+                    <a class="btn btn-outline-secondary cart-continue-link" th:href="@{/public/product}">
+                        <i class="bi bi-arrow-left"></i>
+                        Continue shopping
+                    </a>
+                </div>
 
-                        <div class="card row" >
-                            <div class="card-header">
-                                <i class="fas fa-shopping-cart text-warning"></i>  Your cart
-                                <!--                                <span th:text="${session.sessioncart.size()}"></span>-->
+                <div class="row g-4 align-items-start">
+                    <div class="col-lg-8">
+
+                        <div class="cart-surface">
+                            <div class="cart-section-header">
+                                <div>
+                                    <div class="cart-section-kicker">Items</div>
+                                    <h2 class="cart-section-title">Your cart</h2>
+                                </div>
+                                <span class="cart-status-pill">
+                                    <i class="bi bi-shield-check"></i>
+                                    Secure checkout
+                                </span>
                             </div>
 
-                            <div class="card-body">
+                            <div class="cart-section-body">
                                 <div th:if="${not #strings.isEmpty(successMessage)}" class="alert alert-success alert-dismissible fade show" role="alert">
                                     <span th:text="${successMessage}"></span>
                                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -57,50 +75,58 @@
                                     </div>
                                 </div>
 
-                                <div class="" th:if="${session.sessioncart==null}" >
-                                    <h1>  Your Cart is Currently Empty</h1>
-                                    Before proceed to checkout you must add some products to your shopping cart.
-                                    You will find a lot of interesting products on our "PRODUCT" page.
+                                <div class="cart-empty-shell" th:if="${session.sessioncart==null}" >
+                                    <div class="cart-empty-icon"><i class="bi bi-bag"></i></div>
+                                    <h2>Your cart is currently empty</h2>
+                                    <p>Add products to start an order.</p>
+                                    <a class="btn btn-danger" th:href="@{/public/product}">
+                                        <i class="bi bi-grid"></i>
+                                        Browse products
+                                    </a>
                                 </div>
 
                                 <div id="cartContainer"></div>
 
-
-                                <div id="grandTotal" class="fw-bold mt-3"></div>
+                                <div id="grandTotal" class="cart-grand-total"></div>
 
                             </div>
                         </div>
                     </div>
-                    <div class="col-sm-4">
+                    <div class="col-lg-4">
 
-                        <div class="card">
-                            <div class="card-header">
-                                <i class="fas fa-money-check text-warning"></i>  Order   Summary
+                        <aside class="order-summary-panel">
+                            <div class="order-summary-header">
+                                <div>
+                                    <div class="cart-section-kicker">Payment</div>
+                                    <h2 class="cart-section-title">Order summary</h2>
+                                </div>
+                                <i class="bi bi-receipt"></i>
                             </div>
-                            <ul class="list-group list-group-flush">
+                            <div class="order-summary-lines">
                                 <!--
                                   Date: 2026-05-25
                                   These summary fields are updated by `assets/front/js/front-site.js`
                                   after the UUID-based cart API recalculates vendor totals.
                                 -->
-                                <li class="list-group-item">
-                                    Sub Total:
-                                    <span id="orderSubTotal" th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">10.00</span> /-
-                                </li>
+                                <div class="summary-line">
+                                    <span>Subtotal</span>
+                                    <strong><span id="orderSubTotal" th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">10.00</span> /-</strong>
+                                </div>
 
-                                <li class="list-group-item">
-                                    Order Total:
-                                    <span id="orderTotal" th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">10.00</span>/-
-                                </li>
-                                <!--                                <li class="list-group-item">
-                                                                    <a type="button" class="btn btn-block btn-sm btn-warning">Update Shopping  Cart</a>
-                                                                </li>-->
-                                <li class="list-group-item">
-                                    <a type="button" class="btn btn-block btn-sm btn-warning" th:href="@{/order/create}">Proceed To Checkout</a>
-                                    <!--                                    <a type="button" class="btn btn-block btn-sm btn-warning" th:href="@{/cart/checkout}">Checkout</a>-->
-                                </li>
-                            </ul>
-                        </div>
+                                <div class="summary-line summary-line-total">
+                                    <span>Order total</span>
+                                    <strong><span id="orderTotal" th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">10.00</span> /-</strong>
+                                </div>
+                            </div>
+                            <a type="button" class="btn btn-danger order-checkout-btn" th:href="@{/order/create}">
+                                Proceed to checkout
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                            <div class="order-summary-note">
+                                <i class="bi bi-lock"></i>
+                                Shipping and packaging totals update after your selections.
+                            </div>
+                        </aside>
                     </div>
                 </div>
             </div>

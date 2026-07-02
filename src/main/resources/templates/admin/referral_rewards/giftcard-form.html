@@ -1,75 +1,280 @@
 <!DOCTYPE html>
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <style>
+            .giftcard-form-shell {
+                display: grid;
+                gap: 1rem;
+            }
+
+            .giftcard-form-hero {
+                border: 1px solid rgba(20, 34, 58, 0.09);
+                border-radius: 8px;
+                background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+                box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+                padding: 1rem 1.125rem;
+            }
+
+            .giftcard-form-card {
+                border: 1px solid #d9e2ec;
+                border-radius: 8px;
+                box-shadow: 0 12px 34px rgba(15, 23, 42, 0.07);
+                overflow: hidden;
+            }
+
+            .giftcard-form-card .card-header {
+                background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+                border: 0;
+                border-bottom: 1px solid #dbe4ee;
+                box-shadow: inset 4px 0 0 #123a63;
+                color: #0f172a;
+                padding: .9rem 1.1rem;
+            }
+
+            .giftcard-form-card .card-header strong {
+                color: #0f172a;
+            }
+
+            .giftcard-form-card .card-header small {
+                color: #64748b;
+            }
+
+            .giftcard-form-card .card-body {
+                padding: 1rem 1.2rem 1.25rem;
+            }
+
+            .giftcard-section-title {
+                border-bottom: 1px dashed rgba(100, 116, 139, 0.3);
+                color: #1e293b;
+                font-size: .86rem;
+                font-weight: 700;
+                letter-spacing: .04em;
+                margin: .4rem 0 .15rem;
+                padding-bottom: .42rem;
+                text-transform: uppercase;
+            }
+
+            .giftcard-form-card .form-label {
+                color: #334155;
+                font-size: .83rem;
+                font-weight: 600;
+            }
+
+            .giftcard-form-card .form-text {
+                color: #64748b;
+                font-size: .78rem;
+            }
+
+            .giftcard-inline-tip {
+                align-items: flex-start;
+                background: rgba(18, 58, 99, 0.06);
+                border: 1px solid rgba(18, 58, 99, 0.18);
+                border-radius: 8px;
+                color: #123a63;
+                display: flex;
+                gap: .5rem;
+                padding: .7rem .8rem;
+            }
+
+            .giftcard-alert .alert-heading {
+                font-size: .95rem;
+                margin-bottom: .25rem;
+            }
+
+            .giftcard-form-actions {
+                border-top: 1px solid rgba(148, 163, 184, 0.25);
+                margin-top: 1rem;
+                padding-top: 1rem;
+            }
+
+            @media (max-width: 767px) {
+                .giftcard-form-card .card-header,
+                .giftcard-form-card .card-body,
+                .giftcard-form-hero {
+                    padding-left: .85rem;
+                    padding-right: .85rem;
+                }
+            }
+        </style>
+    </th:block>
+
     <div layout:fragment="main_content">
-        <section>
-            <div class="row">
-                <div class="col-sm-3"><h4> Gift Card System </h4></div>
-                <div class="col-sm-5">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Promotions</li>
-                            <li class="breadcrumb-item active" aria-current="page">Gift Cards</li>
-                        </ol>
-                    </nav>
-                </div>
-            </div>
-        </section>
-        <hr/>
-
-        <div class="card">
-            <div class="card-header">
-                <div class="row">
-                    <div class="col-sm-6 font-weight-bold">
-                        <strong><i class="bi bi-gift"></i> Gift Card Form</strong>
+        <div class="giftcard-form-shell">
+            <section class="giftcard-form-hero">
+                <div class="row align-items-center g-3">
+                    <div class="col-lg-8">
+                        <h4 class="mb-1 text-dark fw-semibold">Gift Card Configuration</h4>
+                        <p class="mb-0 text-secondary">Create or maintain stored-value cards with clear balance, status, and redemption controls.</p>
                     </div>
-                    <div class="col-sm-6 text-end">
-                        <a class="btn btn-secondary btn-sm" th:href="@{/giftcard/list}">
-                            <i class="bi bi-arrow-left"></i> Back
-                        </a>
+                    <div class="col-lg-4 text-lg-end">
+                        <span class="badge text-bg-light border px-3 py-2">
+                            <i class="bi bi-shield-check"></i> Finance-sensitive setup
+                        </span>
                     </div>
                 </div>
-            </div>
+                <nav class="mt-3" aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="text-decoration-none">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Promotions</li>
+                        <li class="breadcrumb-item active" aria-current="page">Gift Card Form</li>
+                    </ol>
+                </nav>
+            </section>
 
-            <div class="card-body">
-                <form th:action="@{/giftcard/save}" method="post" th:object="${giftCard}">
-                    <input type="hidden" th:field="*{id}"/>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Code</label>
-                            <input type="text" class="form-control" th:field="*{code}" required/>
+            <div class="card giftcard-form-card">
+                <div class="card-header">
+                    <div class="row align-items-center g-2">
+                        <div class="col-sm-7">
+                            <strong><i class="bi bi-gift"></i> Gift Card Form</strong>
+                            <small class="d-block">Use clear code, value, balance, and redemption settings before saving.</small>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Initial Value</label>
-                            <input type="number" step="0.01" class="form-control" th:field="*{initialValue}" required/>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Balance</label>
-                            <input type="number" step="0.01" class="form-control" th:field="*{balance}" required/>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Status</label>
-                            <select class="form-select" th:field="*{status}">
-                                <option th:each="s:${giftCardStatuses}" th:value="${s}" th:text="${s}"></option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Redeemed</label>
-                            <select class="form-select" th:field="*{redeemed}">
-                                <option th:value="false">false</option>
-                                <option th:value="true">true</option>
-                            </select>
+                        <div class="col-sm-5 text-sm-end">
+                            <a class="btn btn-secondary btn-sm" th:href="@{/giftcard/list}">
+                                <i class="bi bi-arrow-left"></i> Back To List
+                            </a>
                         </div>
                     </div>
+                </div>
 
-                    <div class="mt-3">
-                        <button class="btn btn-primary" type="submit">
-                            <i class="bi bi-save"></i> Save
-                        </button>
+                <div class="card-body">
+                    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show giftcard-alert" role="alert">
+                        <h6 class="alert-heading">Saved Successfully</h6>
+                        <div th:text="${successMessage}">Gift card saved successfully.</div>
+                        <small class="d-block mt-1">Hint: Confirm available balance and redeemed flag before sharing the code with a customer.</small>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-                </form>
+                    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show giftcard-alert" role="alert">
+                        <h6 class="alert-heading">Unable To Save</h6>
+                        <div th:text="${errorMessage}">Gift card could not be saved.</div>
+                        <small class="d-block mt-1">Hint: Gift card code must be unique. Check duplicate code, missing amount, and linked transaction constraints.</small>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+
+                    <form th:action="@{/giftcard/save}" method="post" th:object="${giftCard}" class="giftcard-main-form">
+                        <input type="hidden" th:field="*{id}"/>
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <h6 class="giftcard-section-title">Core Gift Card Details</h6>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label" for="giftCardCodeInput">Code</label>
+                                <input id="giftCardCodeInput" type="text" class="form-control text-uppercase"
+                                       maxlength="64" th:field="*{code}" required/>
+                                <div class="form-text">Unique customer-facing code. Spaces are removed automatically and letters are saved uppercase.</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Initial Value</label>
+                                <input id="giftCardInitialValue" type="number" step="0.01" min="0"
+                                       class="form-control" th:field="*{initialValue}" required/>
+                                <div class="form-text">Original value issued on this gift card.</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Balance</label>
+                                <input id="giftCardBalance" type="number" step="0.01" min="0"
+                                       class="form-control" th:field="*{balance}" required/>
+                                <div class="form-text">Remaining spendable balance. Keep it at or below initial value.</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Status</label>
+                                <select id="giftCardStatusSelect" class="form-select" th:field="*{status}">
+                                    <option th:each="s:${giftCardStatuses}" th:value="${s}" th:text="${s}"></option>
+                                </select>
+                                <div class="form-text">Use ACTIVE for usable cards. BLOCKED/CANCELLED stops further use.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Redeemed</label>
+                                <select id="giftCardRedeemedSelect" class="form-select" th:field="*{redeemed}">
+                                    <option th:value="false">false</option>
+                                    <option th:value="true">true</option>
+                                </select>
+                                <div class="form-text">Mark true only when the card is fully consumed or intentionally closed.</div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="giftcard-inline-tip">
+                                    <i class="bi bi-info-circle mt-1"></i>
+                                    <div>
+                                        Finance hint: for a new card, keep balance equal to initial value. For a redeemed card, balance should normally be zero and status should match the lifecycle state.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="giftcard-form-actions d-flex flex-wrap gap-2">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-save"></i> Save Gift Card
+                            </button>
+                            <a class="btn btn-outline-secondary" th:href="@{/giftcard/list}">
+                                <i class="bi bi-list-ul"></i> Back To List
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
+    <th:block layout:fragment="page_js">
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const codeInput = document.getElementById('giftCardCodeInput');
+                const initialValueInput = document.getElementById('giftCardInitialValue');
+                const balanceInput = document.getElementById('giftCardBalance');
+                const redeemedSelect = document.getElementById('giftCardRedeemedSelect');
+                const statusSelect = document.getElementById('giftCardStatusSelect');
+                const form = document.querySelector('.giftcard-main-form');
+
+                if (codeInput) {
+                    codeInput.addEventListener('input', function () {
+                        const normalizedValue = codeInput.value.replace(/\s+/g, '').toUpperCase();
+                        if (codeInput.value !== normalizedValue) {
+                            codeInput.value = normalizedValue;
+                        }
+                    });
+                }
+
+                const validateGiftCardState = function () {
+                    if (!initialValueInput || !balanceInput) {
+                        return;
+                    }
+                    const initialValue = Number(initialValueInput.value || 0);
+                    const balanceValue = Number(balanceInput.value || 0);
+                    if (initialValue >= 0) {
+                        balanceInput.max = String(initialValue);
+                    }
+                    if (initialValue > 0 && balanceValue > initialValue) {
+                        balanceInput.setCustomValidity('Balance should not be greater than initial value.');
+                    } else if (redeemedSelect && redeemedSelect.value === 'true' && balanceValue > 0) {
+                        balanceInput.setCustomValidity('A redeemed gift card should normally have zero balance.');
+                    } else {
+                        balanceInput.setCustomValidity('');
+                    }
+                };
+
+                if (initialValueInput) {
+                    initialValueInput.addEventListener('input', validateGiftCardState);
+                }
+                if (balanceInput) {
+                    balanceInput.addEventListener('input', validateGiftCardState);
+                }
+                validateGiftCardState();
+
+                if (redeemedSelect && balanceInput && statusSelect) {
+                    redeemedSelect.addEventListener('change', validateGiftCardState);
+                }
+
+                if (form) {
+                    form.addEventListener('submit', function () {
+                        if (codeInput) {
+                            codeInput.value = codeInput.value.replace(/\s+/g, '').toUpperCase();
+                        }
+                        validateGiftCardState();
+                    });
+                }
+            });
+        </script>
+    </th:block>
+</div>

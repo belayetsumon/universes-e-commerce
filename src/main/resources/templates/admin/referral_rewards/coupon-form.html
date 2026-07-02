@@ -1,134 +1,695 @@
 <!DOCTYPE html>
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <style>
+            .coupon-form-shell {
+                display: grid;
+                gap: 1rem;
+            }
+
+            .coupon-form-hero {
+                border: 1px solid rgba(20, 34, 58, 0.08);
+                border-radius: 1rem;
+                background: linear-gradient(120deg, #ffffff 0%, #eef4ff 100%);
+                box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+                padding: 1rem 1.2rem;
+            }
+
+            .coupon-form-card {
+                border: 1px solid #d9e2ec;
+                border-radius: 8px;
+                box-shadow: 0 12px 34px rgba(15, 23, 42, 0.07);
+                overflow: hidden;
+            }
+
+            .coupon-form-card .card-header {
+                background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+                border: 0;
+                border-bottom: 1px solid #dbe4ee;
+                box-shadow: inset 4px 0 0 #123a63;
+                color: #0f172a;
+                padding: .9rem 1.1rem;
+            }
+
+            .coupon-form-card .card-header strong {
+                color: #0f172a;
+            }
+
+            .coupon-form-card .card-header small {
+                color: #64748b;
+            }
+
+            .coupon-form-card .card-body {
+                padding: 1rem 1.2rem 1.25rem;
+            }
+
+            .coupon-section-title {
+                border-bottom: 1px dashed rgba(100, 116, 139, 0.3);
+                color: #1e293b;
+                font-size: .86rem;
+                font-weight: 700;
+                letter-spacing: .04em;
+                margin: .4rem 0 .15rem;
+                padding-bottom: .42rem;
+                text-transform: uppercase;
+            }
+
+            .coupon-form-card .form-label {
+                color: #334155;
+                font-size: .83rem;
+                font-weight: 600;
+            }
+
+            .coupon-form-card .form-text {
+                color: #64748b;
+                font-size: .78rem;
+            }
+
+            .coupon-inline-tip {
+                align-items: flex-start;
+                background: rgba(14, 116, 144, 0.08);
+                border: 1px solid rgba(14, 116, 144, 0.25);
+                border-radius: .7rem;
+                color: #0c4a6e;
+                display: flex;
+                gap: .5rem;
+                padding: .65rem .75rem;
+            }
+
+            .coupon-alert .alert-heading {
+                font-size: .95rem;
+                margin-bottom: .25rem;
+            }
+
+            .coupon-form-actions {
+                border-top: 1px solid rgba(148, 163, 184, 0.25);
+                margin-top: 1rem;
+                padding-top: 1rem;
+            }
+
+            @media (max-width: 767px) {
+                .coupon-form-card .card-header,
+                .coupon-form-card .card-body,
+                .coupon-form-hero {
+                    padding-left: .85rem;
+                    padding-right: .85rem;
+                }
+            }
+        </style>
+    </th:block>
+
     <div layout:fragment="main_content">
-        <section>
-            <div class="row">
-                <div class="col-sm-3"><h4> Promotion Engine </h4></div>
-                <div class="col-sm-5">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Promotions</li>
-                            <li class="breadcrumb-item active" aria-current="page">Coupons</li>
-                        </ol>
-                    </nav>
-                </div>
-            </div>
-        </section>
-        <hr/>
-
-        <div class="card">
-            <div class="card-header">
-                <div class="row">
-                    <div class="col-sm-6 font-weight-bold">
-                        <strong><i class="bi bi-ticket-perforated"></i> Coupon Form</strong>
+        <div class="coupon-form-shell">
+            <section class="coupon-form-hero">
+                <div class="row align-items-center g-3">
+                    <div class="col-lg-8">
+                        <h4 class="mb-1 text-dark fw-semibold">Coupon Configuration</h4>
+                        <p class="mb-0 text-secondary">Create and maintain production-ready coupon rules with explicit eligibility scope, usage controls, and validity windows.</p>
                     </div>
-                    <div class="col-sm-6 text-end">
-                        <a class="btn btn-secondary btn-sm" th:href="@{/coupon/list}">
-                            <i class="bi bi-arrow-left"></i> Back
-                        </a>
+                    <div class="col-lg-4 text-lg-end">
+                        <span class="badge text-bg-light border px-3 py-2">
+                            <i class="bi bi-shield-check"></i> Validation-aware form
+                        </span>
                     </div>
                 </div>
-            </div>
+                <nav class="mt-3" aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="#" class="text-decoration-none">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Promotions</li>
+                        <li class="breadcrumb-item active" aria-current="page">Coupon Form</li>
+                    </ol>
+                </nav>
+            </section>
 
-            <div class="card-body">
-                <form th:action="@{/coupon/save}" method="post" th:object="${coupon}">
-                    <input type="hidden" th:field="*{id}"/>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Title</label>
-                            <input type="text" class="form-control" th:field="*{title}" required/>
+            <div class="card coupon-form-card">
+                <div class="card-header">
+                    <div class="row align-items-center g-2">
+                        <div class="col-sm-7">
+                            <strong><i class="bi bi-ticket-detailed"></i> Coupon Form</strong>
+                            <small class="d-block text-light-emphasis">Complete core details, scope, and policy controls before saving.</small>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Code</label>
-                            <input type="text" class="form-control" th:field="*{code}" required/>
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Description</label>
-                            <input type="text" class="form-control" th:field="*{description}"/>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Type</label>
-                            <select class="form-select" th:field="*{type}">
-                                <option th:each="t:${couponTypes}" th:value="${t}" th:text="${t}"></option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Value</label>
-                            <input type="number" step="0.01" class="form-control" th:field="*{value}" required/>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Maximum Discount</label>
-                            <input type="number" step="0.01" class="form-control" th:field="*{maxDiscount}"/>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Minimum Order</label>
-                            <input type="number" step="0.01" class="form-control" th:field="*{minimumOrder}"/>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Usage Limit (0 = unlimited)</label>
-                            <input type="number" class="form-control" th:field="*{usageLimit}"/>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Per User Limit</label>
-                            <input type="number" class="form-control" th:field="*{perUserUsageLimit}"/>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Times Used</label>
-                            <input type="number" class="form-control" th:field="*{timesUsed}" readonly/>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Start Date</label>
-                            <input type="datetime-local" class="form-control" th:field="*{startDate}"/>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Expiry Date</label>
-                            <input type="datetime-local" class="form-control" th:field="*{expiryDate}"/>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Status</label>
-                            <select class="form-select" th:field="*{status}">
-                                <option th:each="s:${couponStatuses}" th:value="${s}" th:text="${s}"></option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Campaign Scope</label>
-                            <input type="text" class="form-control" th:field="*{campaignScope}"/>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Vendor Scope</label>
-                            <input type="text" class="form-control" th:field="*{vendorScope}"/>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Stackable</label>
-                            <select class="form-select" th:field="*{stackable}">
-                                <option th:value="false">false</option>
-                                <option th:value="true">true</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">New Customer Only</label>
-                            <select class="form-select" th:field="*{newCustomerOnly}">
-                                <option th:value="false">false</option>
-                                <option th:value="true">true</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">First Order Only</label>
-                            <select class="form-select" th:field="*{firstOrderOnly}">
-                                <option th:value="false">false</option>
-                                <option th:value="true">true</option>
-                            </select>
+                        <div class="col-sm-5 text-sm-end">
+                            <a class="btn btn-secondary btn-sm" th:href="@{/coupon/list}">
+                                <i class="bi bi-arrow-left"></i> Back To List
+                            </a>
                         </div>
                     </div>
+                </div>
 
-                    <div class="mt-3">
-                        <button class="btn btn-primary" type="submit">
-                            <i class="bi bi-save"></i> Save
-                        </button>
+                <div class="card-body">
+                    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show coupon-alert" role="alert">
+                        <h6 class="alert-heading">Saved Successfully</h6>
+                        <div th:text="${successMessage}">Coupon saved successfully.</div>
+                        <small class="d-block mt-1">Hint: Recheck validity window and scope targeting to avoid accidental broad discounts.</small>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-                </form>
+                    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show coupon-alert" role="alert">
+                        <h6 class="alert-heading">Unable To Save</h6>
+                        <div th:text="${errorMessage}">Coupon could not be saved.</div>
+                        <small class="d-block mt-1">Hint: Resolve highlighted fields, especially code uniqueness, scope target, and date range order.</small>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+
+                    <form th:action="@{/coupon/save}" method="post" th:object="${coupon}" class="coupon-main-form">
+                        <input type="hidden" th:field="*{id}"/>
+                        <input type="hidden" th:field="*{deleted}"/>
+
+                        <div class="alert alert-danger" th:if="${#fields.hasErrors('*')}">
+                            <div class="fw-semibold mb-2">Please resolve the following issues before saving:</div>
+                            <ul class="mb-2 ps-3">
+                                <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Coupon field error</li>
+                            </ul>
+                            <small class="d-block">Hint: Start with required fields (Title, Code, Value), then fix scope/date validation in sequence.</small>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <h6 class="coupon-section-title">Core Details</h6>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Title</label>
+                                <input type="text" class="form-control" th:field="*{title}" th:errorclass="is-invalid" required/>
+                                <div class="form-text">Internal admin name to quickly identify this campaign.</div>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">Title error</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Code</label>
+                                <input id="couponCodeInput" type="text" class="form-control text-uppercase" maxlength="100" th:field="*{code}" th:errorclass="is-invalid" required/>
+                                <div class="form-text">Use uppercase and unique values, for example `FLASH10`.</div>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('code')}" th:errors="*{code}">Code error</div>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Description</label>
+                                <input type="text" class="form-control" th:field="*{description}"/>
+                                <div class="form-text">Optional short note for operations and campaign tracking.</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Type</label>
+                                <select class="form-select" th:field="*{type}" th:errorclass="is-invalid">
+                                    <option th:each="t:${couponTypes}" th:value="${t}" th:text="${t}"></option>
+                                </select>
+                                <div class="form-text">Choose fixed amount or percentage style discount type.</div>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('type')}" th:errors="*{type}">Type error</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Value</label>
+                                <input type="number" step="0.01" class="form-control" th:field="*{value}" th:errorclass="is-invalid" required/>
+                                <div class="form-text">Discount value applied based on selected coupon type.</div>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('value')}" th:errors="*{value}">Value error</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Maximum Discount</label>
+                                <input type="number" step="0.01" class="form-control" th:field="*{maxDiscount}"/>
+                                <div class="form-text">Cap discount amount for percentage-based coupons.</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Minimum Order</label>
+                                <input type="number" step="0.01" class="form-control" th:field="*{minimumOrder}"/>
+                                <div class="form-text">Set cart subtotal threshold required to apply coupon.</div>
+                            </div>
+
+                            <div class="col-12">
+                                <h6 class="coupon-section-title">Validity And Usage</h6>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Usage Limit (0 = unlimited)</label>
+                                <input type="number" class="form-control" th:field="*{usageLimit}"/>
+                                <div class="form-text">Global cap for all redemptions.</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Per User Limit</label>
+                                <input type="number" class="form-control" th:field="*{perUserUsageLimit}"/>
+                                <div class="form-text">Limit redemptions per customer account.</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Times Used</label>
+                                <input type="number" class="form-control" th:field="*{timesUsed}" readonly/>
+                                <div class="form-text">Read-only usage counter maintained by the system.</div>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <div class="coupon-inline-tip w-100">
+                                    <i class="bi bi-info-circle mt-1"></i>
+                                    <div>Set realistic limits to prevent over-redemption on high-volume campaigns.</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label" for="startDate">Start Date &amp; Time</label>
+                                <input type="hidden" id="startDate" th:field="*{startDate}" th:errorclass="is-invalid"/>
+                                <div class="input-group" data-coupon-datetime-group="startDate">
+                                    <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+                                    <input type="date"
+                                           id="startDateDate"
+                                           class="form-control"
+                                           data-coupon-date-field="startDate"/>
+                                    <input type="time"
+                                           id="startDateTime"
+                                           class="form-control"
+                                           data-coupon-time-field="startDate"
+                                           step="60"
+                                           required/>
+                                </div>
+                                <div class="form-text">Hint: Start cannot be before today.</div>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}">Start date error</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="expiryDate">End Date &amp; Time</label>
+                                <input type="hidden" id="expiryDate" th:field="*{expiryDate}" th:errorclass="is-invalid"/>
+                                <div class="input-group" data-coupon-datetime-group="expiryDate">
+                                    <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+                                    <input type="date"
+                                           id="expiryDateDate"
+                                           class="form-control"
+                                           data-coupon-date-field="expiryDate"/>
+                                    <input type="time"
+                                           id="expiryDateTime"
+                                           class="form-control"
+                                           data-coupon-time-field="expiryDate"
+                                           step="60"
+                                           required/>
+                                </div>
+                                <div class="form-text">Hint: End must be after start date and time.</div>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('expiryDate')}" th:errors="*{expiryDate}">End date error</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" th:field="*{status}" th:errorclass="is-invalid">
+                                    <option th:each="s:${couponStatuses}" th:value="${s}" th:text="${s}"></option>
+                                </select>
+                                <div class="form-text">Use `ACTIVE` for live campaigns and `DISABLED` for archived ones.</div>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('status')}" th:errors="*{status}">Status error</div>
+                            </div>
+
+                            <div class="col-12">
+                                <h6 class="coupon-section-title">Eligibility Scope</h6>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Scope</label>
+                                <select class="form-select" th:field="*{scope}" data-coupon-scope-select>
+                                    <option th:each="scope:${couponScopes}" th:value="${scope}" th:text="${scope}"></option>
+                                </select>
+                                <div class="form-text">Select where this coupon can be applied: global, vendor, product, and others.</div>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Scope Target / Campaign Trace</label>
+                                <input type="hidden" th:field="*{campaignScope}" data-coupon-target-value="campaignScope" th:errorclass="is-invalid"/>
+                                <input type="hidden" th:field="*{vendorScope}" data-coupon-target-value="vendorScope" th:errorclass="is-invalid"/>
+
+                                <select class="form-select d-none" data-coupon-target-select="PRODUCT" multiple size="6">
+                                    <option th:each="product:${couponProducts}"
+                                            th:value="${product.id}"
+                                            th:text="${product.title + ' (#' + product.id + ')'}">Product</option>
+                                </select>
+                                <select class="form-select d-none" data-coupon-target-select="CATEGORY" multiple size="6">
+                                    <option th:each="category:${couponCategories}"
+                                            th:value="${category.id}"
+                                            th:text="${category.name + ' (#' + category.id + ')'}">Category</option>
+                                </select>
+                                <select class="form-select d-none" data-coupon-target-select="BRAND" multiple size="6">
+                                    <option th:each="brand:${couponBrands}"
+                                            th:value="${brand.id}"
+                                            th:text="${brand.name + ' (#' + brand.id + ')'}">Brand</option>
+                                </select>
+                                <select class="form-select d-none" data-coupon-target-select="CUSTOMER" multiple size="6">
+                                    <option th:each="customer:${couponCustomers}"
+                                            th:value="${customer.id}"
+                                            th:text="${(customer.email != null ? customer.email : customer.mobile) + ' (#' + customer.id + ')'}">Customer</option>
+                                </select>
+                                <select class="form-select d-none" data-coupon-target-select="CAMPAIGN" multiple size="6">
+                                    <option th:each="campaignKey:${couponCampaignKeys}"
+                                            th:value="${campaignKey}"
+                                            th:text="${campaignKey}">Campaign</option>
+                                </select>
+                                <select class="form-select d-none" data-coupon-target-select="VENDOR" multiple size="6">
+                                    <option th:each="vendor:${couponVendors}"
+                                            th:value="${vendor.id}"
+                                            th:text="${(vendor.companyName != null ? vendor.companyName : vendor.email) + ' (#' + vendor.id + ')'}">Vendor</option>
+                                </select>
+
+                                <div class="form-text" data-coupon-target-help>
+                                    Select a scope first. Use multi-select to assign several targets at once.
+                                </div>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('campaignScope')}" th:errors="*{campaignScope}">Scope target error</div>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('vendorScope')}" th:errors="*{vendorScope}">Vendor scope error</div>
+                            </div>
+
+                            <div class="col-12">
+                                <h6 class="coupon-section-title">Policy Controls</h6>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Priority</label>
+                                <input type="number" class="form-control" th:field="*{priority}"/>
+                                <div class="form-text">Higher priority coupons can be evaluated first by rule engines.</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Stackable</label>
+                                <select class="form-select" th:field="*{stackable}">
+                                    <option th:value="false">false</option>
+                                    <option th:value="true">true</option>
+                                </select>
+                                <div class="form-text">Allow this coupon to combine with other coupon discounts.</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Auto Apply</label>
+                                <select class="form-select" th:field="*{autoApply}">
+                                    <option th:value="false">false</option>
+                                    <option th:value="true">true</option>
+                                </select>
+                                <div class="form-text">Automatically apply when eligibility conditions are met.</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Public Coupon</label>
+                                <select class="form-select" th:field="*{publicCoupon}">
+                                    <option th:value="true">true</option>
+                                    <option th:value="false">false</option>
+                                </select>
+                                <div class="form-text">Public coupons are visible to broader audiences.</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Requires Code</label>
+                                <select class="form-select" th:field="*{requiresCode}">
+                                    <option th:value="true">true</option>
+                                    <option th:value="false">false</option>
+                                </select>
+                                <div class="form-text">Disable only for auto-applied promotions.</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">New Customer Only</label>
+                                <select class="form-select" th:field="*{newCustomerOnly}">
+                                    <option th:value="false">false</option>
+                                    <option th:value="true">true</option>
+                                </select>
+                                <div class="form-text">Restrict coupon usage to first-time customer profiles.</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">First Order Only</label>
+                                <select class="form-select" th:field="*{firstOrderOnly}">
+                                    <option th:value="false">false</option>
+                                    <option th:value="true">true</option>
+                                </select>
+                                <div class="form-text">Allow coupon only on a customer's first order.</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Guest Allowed</label>
+                                <select class="form-select" th:field="*{guestAllowed}">
+                                    <option th:value="false">false</option>
+                                    <option th:value="true">true</option>
+                                </select>
+                                <div class="form-text">Enable if non-logged-in users can redeem this offer.</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Max Uses Per IP</label>
+                                <input type="number" class="form-control" th:field="*{maxUsesPerIP}"/>
+                                <div class="form-text">Optional anti-abuse threshold by IP address.</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Max Uses Per Device</label>
+                                <input type="number" class="form-control" th:field="*{maxUsesPerDevice}"/>
+                                <div class="form-text">Optional anti-abuse threshold by device footprint.</div>
+                            </div>
+                        </div>
+
+                        <div class="coupon-form-actions d-flex flex-wrap gap-2">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-save"></i> Save Coupon
+                            </button>
+                            <a class="btn btn-outline-secondary" th:href="@{/coupon/list}">
+                                <i class="bi bi-list-ul"></i> Back To List
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
+    <th:block layout:fragment="page_js">
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const groups = document.querySelectorAll('[data-coupon-datetime-group]');
+                const formatDateForInput = function (date) {
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return date.getFullYear() + '-' + month + '-' + day;
+                };
+                const today = formatDateForInput(new Date());
+
+                const normalizeDateTimeValue = function (value) {
+                    if (!value) {
+                        return {date: '', time: ''};
+                    }
+
+                    const normalized = value.trim().replace(' ', 'T');
+                    const parts = normalized.split('T');
+                    return {
+                        date: parts[0] || '',
+                        time: (parts[1] || '').slice(0, 5)
+                    };
+                };
+
+                const composeDateTimeValue = function (dateInput, timeInput) {
+                    if (!dateInput || !timeInput || !dateInput.value) {
+                        return '';
+                    }
+
+                    const timeValue = timeInput.value || '00:00';
+                    return dateInput.value + 'T' + timeValue;
+                };
+
+                groups.forEach(function (group) {
+                    const fieldName = group.getAttribute('data-coupon-datetime-group');
+                    const hiddenInput = document.getElementById(fieldName);
+                    const dateInput = group.querySelector('[data-coupon-date-field="' + fieldName + '"]');
+                    const timeInput = group.querySelector('[data-coupon-time-field="' + fieldName + '"]');
+
+                    if (!hiddenInput || !dateInput || !timeInput) {
+                        return;
+                    }
+
+                    const initialValue = normalizeDateTimeValue(hiddenInput.value);
+                    dateInput.value = initialValue.date;
+                    timeInput.value = initialValue.time || '00:00';
+                    dateInput.min = today;
+
+                    const syncHiddenValue = function () {
+                        hiddenInput.value = composeDateTimeValue(dateInput, timeInput);
+                    };
+
+                    dateInput.addEventListener('change', syncHiddenValue);
+                    timeInput.addEventListener('change', syncHiddenValue);
+                    syncHiddenValue();
+                });
+
+                const startDateInput = document.querySelector('[data-coupon-date-field="startDate"]');
+                const startTimeInput = document.querySelector('[data-coupon-time-field="startDate"]');
+                const endDateInput = document.querySelector('[data-coupon-date-field="expiryDate"]');
+                const endTimeInput = document.querySelector('[data-coupon-time-field="expiryDate"]');
+                const syncEndDateMinimum = function () {
+                    if (!startDateInput || !endDateInput || !endTimeInput) {
+                        return;
+                    }
+
+                    const nextMin = startDateInput.value || today;
+                    endDateInput.min = nextMin;
+                    if (endDateInput.value && endDateInput.value < nextMin) {
+                        endDateInput.value = nextMin;
+                    }
+
+                    if (startTimeInput && endDateInput.value === startDateInput.value) {
+                        endTimeInput.min = startTimeInput.value || '00:00';
+                        if (endTimeInput.value && endTimeInput.value < endTimeInput.min) {
+                            endTimeInput.value = endTimeInput.min;
+                        }
+                    } else {
+                        endTimeInput.removeAttribute('min');
+                    }
+                };
+
+                if (startDateInput) {
+                    startDateInput.addEventListener('change', syncEndDateMinimum);
+                    if (startTimeInput) {
+                        startTimeInput.addEventListener('change', syncEndDateMinimum);
+                    }
+                    if (endDateInput) {
+                        endDateInput.addEventListener('change', syncEndDateMinimum);
+                    }
+                    syncEndDateMinimum();
+                }
+
+                const scopeSelect = document.querySelector('[data-coupon-scope-select]');
+                const campaignScopeInput = document.querySelector('[data-coupon-target-value="campaignScope"]');
+                const vendorScopeInput = document.querySelector('[data-coupon-target-value="vendorScope"]');
+                const targetSelects = document.querySelectorAll('[data-coupon-target-select]');
+                const targetHelp = document.querySelector('[data-coupon-target-help]');
+                const targetHelpText = {
+                    GLOBAL: 'Global coupons apply to the full eligible cart and do not need a target.',
+                    VENDOR: 'Select one or more vendors whose cart items can receive this coupon.',
+                    PRODUCT: 'Select one or more products that can receive this coupon.',
+                    CATEGORY: 'Select one or more categories that can receive this coupon.',
+                    BRAND: 'Select one or more brands/manufacturers that can receive this coupon.',
+                    CUSTOMER: 'Select one or more customers who can use this coupon.',
+                    CAMPAIGN: 'Select one or more campaign keys for coupon tracing.'
+                };
+
+                const splitTargetValues = function (value) {
+                    if (!value) {
+                        return [];
+                    }
+
+                    return value.split(/[,;|\n\r\t]+/)
+                            .map(function (part) {
+                                return part.trim();
+                            })
+                            .filter(function (part) {
+                                return part.length > 0;
+                            });
+                };
+
+                const ensureCurrentOptions = function (select, values) {
+                    if (!select || !values || !values.length) {
+                        return;
+                    }
+
+                    values.forEach(function (value) {
+                        const matchingOption = Array.from(select.options).some(function (option) {
+                            return option.value === value;
+                        });
+                        if (!matchingOption) {
+                            const option = new Option('Current saved value: ' + value, value);
+                            select.add(option);
+                        }
+                    });
+                };
+
+                const setSelectValues = function (select, values) {
+                    if (!select) {
+                        return;
+                    }
+
+                    const valueSet = new Set(values);
+                    Array.from(select.options).forEach(function (option) {
+                        option.selected = valueSet.has(option.value);
+                    });
+                };
+
+                const syncTargetInputs = function () {
+                    const scope = scopeSelect ? scopeSelect.value : 'GLOBAL';
+                    const activeSelect = scopeSelect
+                            ? document.querySelector('[data-coupon-target-select="' + scopeSelect.value + '"]')
+                            : null;
+                    const values = activeSelect
+                            ? Array.from(activeSelect.selectedOptions).map(function (option) {
+                        return option.value;
+                    }).filter(function (value) {
+                        return value && value.trim().length > 0;
+                    })
+                            : [];
+
+                    if (!campaignScopeInput || !vendorScopeInput) {
+                        return;
+                    }
+
+                    if (scope === 'VENDOR') {
+                        vendorScopeInput.value = values.join(', ');
+                        campaignScopeInput.value = '';
+                    } else if (scope === 'GLOBAL') {
+                        campaignScopeInput.value = '';
+                        vendorScopeInput.value = '';
+                    } else {
+                        campaignScopeInput.value = values.join(', ');
+                        vendorScopeInput.value = '';
+                    }
+                };
+
+                const syncScopeTargetSelects = function (resetValue) {
+                    if (!scopeSelect) {
+                        return;
+                    }
+
+                    const scope = scopeSelect.value;
+                    const selectedValue = scope === 'VENDOR'
+                            ? (vendorScopeInput ? vendorScopeInput.value : '')
+                            : (campaignScopeInput ? campaignScopeInput.value : '');
+                    const selectedValues = splitTargetValues(selectedValue);
+
+                    targetSelects.forEach(function (select) {
+                        const isActive = select.getAttribute('data-coupon-target-select') === scope;
+                        select.classList.toggle('d-none', !isActive);
+                        select.disabled = !isActive;
+                        if (isActive) {
+                            if (resetValue) {
+                                setSelectValues(select, []);
+                            } else {
+                                ensureCurrentOptions(select, selectedValues);
+                                setSelectValues(select, selectedValues);
+                            }
+                        } else if (resetValue) {
+                            setSelectValues(select, []);
+                        }
+                    });
+
+                    if (targetHelp) {
+                        targetHelp.textContent = targetHelpText[scope] || 'Select a target for this coupon scope.';
+                    }
+                    syncTargetInputs();
+                };
+
+                if (scopeSelect) {
+                    scopeSelect.addEventListener('change', function () {
+                        if (campaignScopeInput) {
+                            campaignScopeInput.value = '';
+                        }
+                        if (vendorScopeInput) {
+                            vendorScopeInput.value = '';
+                        }
+                        targetSelects.forEach(function (select) {
+                            setSelectValues(select, []);
+                        });
+                        syncScopeTargetSelects(true);
+                    });
+                    targetSelects.forEach(function (select) {
+                        select.addEventListener('change', syncTargetInputs);
+                    });
+                    syncScopeTargetSelects(false);
+                }
+
+                const couponForm = document.querySelector('form[action$="/coupon/save"]');
+                if (couponForm) {
+                    const firstInvalidField = couponForm.querySelector('.is-invalid');
+                    if (firstInvalidField) {
+                        firstInvalidField.scrollIntoView({behavior: 'smooth', block: 'center'});
+                        firstInvalidField.focus();
+                    }
+
+                    couponForm.addEventListener('submit', function () {
+                        groups.forEach(function (group) {
+                            const fieldName = group.getAttribute('data-coupon-datetime-group');
+                            const hiddenInput = document.getElementById(fieldName);
+                            const dateInput = group.querySelector('[data-coupon-date-field="' + fieldName + '"]');
+                            const timeInput = group.querySelector('[data-coupon-time-field="' + fieldName + '"]');
+
+                            if (hiddenInput && dateInput && timeInput) {
+                                hiddenInput.value = composeDateTimeValue(dateInput, timeInput);
+                            }
+                        });
+                        syncTargetInputs();
+                    });
+                }
+
+                const couponCodeInput = document.getElementById('couponCodeInput');
+                if (couponCodeInput) {
+                    couponCodeInput.addEventListener('input', function () {
+                        const normalizedValue = couponCodeInput.value.replace(/\s+/g, '').toUpperCase();
+                        if (couponCodeInput.value !== normalizedValue) {
+                            couponCodeInput.value = normalizedValue;
+                        }
+                    });
+                }
+            });
+        </script>
+    </th:block>
 </div>

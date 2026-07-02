@@ -5,6 +5,7 @@
  */
 package com.ecommerce.app.vendor.controller;
 
+import com.ecommerce.app.commission.service.ProductCommissionApplierService;
 import com.ecommerce.app.globalComponant.SlagGenerator;
 import com.ecommerce.app.globalComponant.UnixTimeComponent;
 import com.ecommerce.app.module.user.model.Users;
@@ -117,6 +118,9 @@ public class VendorProductController {
 
     @Autowired
     CatalogProductAttributeService catalogProductAttributeService;
+
+    @Autowired
+    ProductCommissionApplierService productCommissionApplierService;
 
 //    @PreAuthorize("""
 //            @vendorAccessAuthorityChecker.hasAuthority(authentication, 'vendor.product.read')
@@ -291,6 +295,7 @@ public class VendorProductController {
         loadProductFormData(model);
         Vendorprofile vendorprofile = vendorUserContext.getActiveVendor();
         product.setVendorprofile(vendorprofile);
+        productCommissionApplierService.prefillCommissionForForm(product);
         return "vendor/product/add";
     }
 
@@ -324,6 +329,7 @@ public class VendorProductController {
         Users userss = new Users();
         userss.setId(loggedUserService.activeUserid());
         product.setUserId(userss);
+        productCommissionApplierService.applyCommissionBeforeSave(product);
 
         if (product.getId() != null) {
             Product oldProduct = productRepository.findById(product.getId()).orElse(null);

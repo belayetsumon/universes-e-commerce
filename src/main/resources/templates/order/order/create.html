@@ -2,622 +2,814 @@
      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
      layout:decorate="front-layout-inner-page">
 
+    <th:block layout:fragment="page_css">
+        <style>
+            .checkout-page {
+                background: #f5f7fa;
+                padding: 28px 0 52px;
+            }
+
+            .checkout-wrap {
+                max-width: 1240px;
+            }
+
+            .checkout-topbar {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-end;
+                gap: 18px;
+                margin-bottom: 20px;
+            }
+
+            .checkout-title {
+                margin: 0;
+                font-size: 1.65rem;
+                font-weight: 700;
+                color: #172033;
+                letter-spacing: 0;
+            }
+
+            .checkout-subtitle {
+                margin: 6px 0 0;
+                color: #657084;
+                font-size: 0.95rem;
+            }
+
+            .checkout-crumb {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                color: #657084;
+                text-decoration: none;
+                font-size: 0.92rem;
+            }
+
+            .checkout-grid {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 390px;
+                gap: 22px;
+                align-items: start;
+            }
+
+            .checkout-stack {
+                display: grid;
+                gap: 18px;
+            }
+
+            .checkout-panel {
+                background: #fff;
+                border: 1px solid #dfe5ee;
+                border-radius: 8px;
+                box-shadow: 0 10px 28px rgba(23, 32, 51, 0.06);
+                overflow: hidden;
+            }
+
+            .checkout-panel-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                padding: 16px 18px;
+                border-bottom: 1px solid #e7ecf3;
+                background: #fbfcfe;
+            }
+
+            .checkout-panel-title {
+                display: flex;
+                align-items: center;
+                gap: 9px;
+                margin: 0;
+                font-size: 1rem;
+                font-weight: 700;
+                color: #1f2a3d;
+                letter-spacing: 0;
+            }
+
+            .checkout-panel-title .bi {
+                color: #1f7a5c;
+            }
+
+            .checkout-panel-body {
+                padding: 18px;
+            }
+
+            .checkout-table {
+                margin: 0;
+                vertical-align: middle;
+            }
+
+            .checkout-table thead th {
+                background: #f7f9fc;
+                color: #657084;
+                font-size: 0.76rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                border-bottom: 1px solid #dfe5ee;
+                white-space: nowrap;
+            }
+
+            .checkout-product {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                min-width: 260px;
+            }
+
+            .checkout-product-img {
+                width: 58px;
+                height: 58px;
+                border: 1px solid #e1e7ef;
+                border-radius: 8px;
+                object-fit: cover;
+                background: #f1f4f8;
+                flex: 0 0 58px;
+            }
+
+            .checkout-product-name {
+                color: #172033;
+                font-weight: 700;
+                text-decoration: none;
+                line-height: 1.25;
+            }
+
+            .checkout-product-name:hover {
+                color: #1f7a5c;
+            }
+
+            .checkout-muted {
+                color: #657084;
+                font-size: 0.86rem;
+            }
+
+            .checkout-total-row {
+                display: flex;
+                justify-content: space-between;
+                gap: 16px;
+                padding: 14px 0;
+                border-bottom: 1px solid #e7ecf3;
+                color: #344054;
+            }
+
+            .checkout-total-row:last-child {
+                border-bottom: 0;
+            }
+
+            .checkout-total-row strong {
+                color: #172033;
+                font-size: 1.15rem;
+            }
+
+            .checkout-form-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 14px 16px;
+            }
+
+            .checkout-form-grid .full {
+                grid-column: 1 / -1;
+            }
+
+            .checkout-page .form-label {
+                margin-bottom: 6px;
+                color: #344054;
+                font-size: 0.86rem;
+                font-weight: 700;
+            }
+
+            .checkout-page .form-control,
+            .checkout-page .form-select {
+                border-color: #ccd5e1;
+                border-radius: 7px;
+                min-height: 42px;
+                font-size: 0.94rem;
+            }
+
+            .checkout-page .form-control:focus,
+            .checkout-page .form-select:focus {
+                border-color: #1f7a5c;
+                box-shadow: 0 0 0 0.18rem rgba(31, 122, 92, 0.15);
+            }
+
+            .checkout-actions {
+                display: flex;
+                justify-content: flex-end;
+                margin-top: 16px;
+            }
+
+            .checkout-sidebar {
+                position: sticky;
+                top: 18px;
+                display: grid;
+                gap: 16px;
+            }
+
+            .checkout-radio-grid {
+                display: grid;
+                gap: 10px;
+            }
+
+            .checkout-choice {
+                display: flex;
+                align-items: flex-start;
+                gap: 10px;
+                padding: 11px 12px;
+                border: 1px solid #dfe5ee;
+                border-radius: 8px;
+                background: #fff;
+            }
+
+            .checkout-choice label {
+                display: block;
+                margin: 0;
+                font-weight: 700;
+                color: #243044;
+            }
+
+            .checkout-choice span {
+                display: block;
+                margin-top: 2px;
+                color: #657084;
+                font-size: 0.82rem;
+                line-height: 1.35;
+            }
+
+            .checkout-balance-strip {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                margin: 14px 0;
+            }
+
+            .checkout-balance {
+                border: 1px solid #dfe5ee;
+                border-radius: 8px;
+                padding: 10px;
+                background: #f8fafc;
+            }
+
+            .checkout-balance span {
+                display: block;
+                color: #657084;
+                font-size: 0.78rem;
+                font-weight: 700;
+                text-transform: uppercase;
+            }
+
+            .checkout-balance strong {
+                display: block;
+                margin-top: 3px;
+                color: #172033;
+                font-size: 0.98rem;
+            }
+
+            .checkout-submit {
+                width: 100%;
+                min-height: 48px;
+                border-radius: 8px;
+                font-weight: 700;
+            }
+
+            .checkout-alert {
+                border-radius: 8px;
+                border: 1px solid transparent;
+            }
+
+            @media (max-width: 991.98px) {
+                .checkout-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .checkout-sidebar {
+                    position: static;
+                }
+            }
+
+            @media (max-width: 575.98px) {
+                .checkout-topbar {
+                    align-items: flex-start;
+                    flex-direction: column;
+                }
+
+                .checkout-form-grid,
+                .checkout-balance-strip {
+                    grid-template-columns: 1fr;
+                }
+
+                .checkout-panel-header {
+                    align-items: flex-start;
+                    flex-direction: column;
+                }
+            }
+        </style>
+    </th:block>
+
     <div layout:fragment="main_content">
+        <section class="checkout-page">
+            <div class="container checkout-wrap">
+                <div class="checkout-topbar">
+                    <div>
+                        <a href="/" class="checkout-crumb">
+                            <i class="bi bi-house"></i>
+                            Home
+                        </a>
+                        <h1 class="checkout-title">Checkout</h1>
+                        <p class="checkout-subtitle">Review products, confirm addresses, and choose payment before placing the order.</p>
+                    </div>
+                    <a class="btn btn-outline-secondary btn-sm" th:href="@{/cart/index}">
+                        <i class="bi bi-arrow-left"></i>
+                        Back to cart
+                    </a>
+                </div>
 
-        <section  class="breadcrumb_section">
-            <div class="container">
-                <nav aria-label="breadcrumb" class="pt-3 pb-1">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/" class="nav-link">  <i class="bi bi-house"></i> Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Product List</li>
-                    </ol>
-                </nav>
-            </div>
-        </section>
+                <div th:if="${errorMessage}" class="alert alert-danger checkout-alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <span th:text="${errorMessage}"></span>
+                </div>
 
-        <section>
-            <div class="container pt-5 pb-5">
-                <div class="row ">
-                    <div class="col-sm-8">
-
-                        <div th:if="${errorMessage}" class="alert alert-danger">
-                            <p th:text="${errorMessage}"></p>
-                        </div>
-
-                        <nav>
-                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                                <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Order Summary </button>
-                                <!--                                <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Address</button>
-                                                                <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Contact</button>
-                                                                <button class="nav-link" id="nav-disabled-tab" data-bs-toggle="tab" data-bs-target="#nav-disabled" type="button" role="tab" aria-controls="nav-disabled" aria-selected="false" disabled>Disabled</button>-->
+                <div class="checkout-grid">
+                    <div class="checkout-stack">
+                        <div class="checkout-panel">
+                            <div class="checkout-panel-header">
+                                <h2 class="checkout-panel-title">
+                                    <i class="bi bi-bag-check"></i>
+                                    Order items
+                                </h2>
+                                <span class="checkout-muted" th:if="${session.sessioncart != null}">
+                                    [[${#lists.size(session.sessioncart)}]] item(s)
+                                </span>
                             </div>
-                        </nav>
-                        <div class="tab-content" id="nav-tabContent">
-                            <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab" tabindex="0">
-
-                                <div class="table-responsive" th:if="${session.sessioncart!=null}" >
-                                    <table class="table table-bordered  table-striped t">
+                            <div class="checkout-panel-body p-0">
+                                <div class="table-responsive" th:if="${session.sessioncart != null}">
+                                    <table class="table checkout-table">
                                         <thead>
                                             <tr>
-                                                <th scope="col">#</th>
-                                                <th scope="col">Product</th>
-                                                <th scope="col">Photo</th>
-                                                <!--                                                <th scope="col">vendor Id</th>-->
-                                                <th scope="col"> sales price</th>
-                                                <th scope="col">Quantity</th>
-                                                <th scope="col">Discount Rate % </th>
-                                                <th scope="col"> Discount Amount</th>
-                                                <th scope="col">Vat Rate % </th>
-                                                <th scope="col"> Vat Amount </th>
-                                                <th scope="col"> Item Total</th>
+                                                <th>Product</th>
+                                                <th class="text-end">Price</th>
+                                                <th class="text-center">Qty</th>
+                                                <th class="text-end">Discount</th>
+                                                <th class="text-end">VAT</th>
+                                                <th class="text-end">Total</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr th:each="cart,status : ${session.sessioncart}">
-                                                <th> [[${status.count}]]</th>
                                                 <td>
-                                                    <a class="nav-link" th:href="@{/public/single-product/{prodid}(prodid=${cart.productUuid})}">
-                                                        <span th:text="${cart.product.title}"></span>
-                                                    </a>
-                                                    <div th:if="${cart.preorder}" class="small text-warning fw-bold">
-                                                        Preorder
-                                                        <span th:if="${cart.preorderAvailableFrom != null}"
-                                                              th:text="'(Available from ' + ${cart.preorderAvailableFrom} + ')'"></span>
+                                                    <div class="checkout-product">
+                                                        <img th:if="${cart.product != null and not #strings.isEmpty(cart.product.imageName)}"
+                                                             class="checkout-product-img"
+                                                             th:src="@{/files/}+${cart.product.imageName}"
+                                                             alt="Product image">
+                                                        <div th:if="${cart.product == null or #strings.isEmpty(cart.product.imageName)}"
+                                                             class="checkout-product-img d-flex align-items-center justify-content-center">
+                                                            <i class="bi bi-image text-secondary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <a class="checkout-product-name"
+                                                               th:href="@{/public/single-product/{prodid}(prodid=${cart.productUuid})}">
+                                                                <span th:text="${cart.product != null ? cart.product.title : 'Product'}">Product</span>
+                                                            </a>
+                                                            <div class="checkout-muted" th:if="${cart.preorder}">
+                                                                Preorder
+                                                                <span th:if="${cart.preorderAvailableFrom != null}"
+                                                                      th:text="'available from ' + ${cart.preorderAvailableFrom}"></span>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </td>
-
-                                                <td> <span th:if="${ not #strings.isEmpty(cart.product.imageName)}" class="badge bg-green pull-right">
-                                                        <img  class="img-responsive" th:src="@{/files/}+${cart.product.imageName}" width="100px"  height="100px"/>
-                                                    </span>
-                                                    <span th:if="${#strings.isEmpty(cart.product.imageName)}" > Image Not Found </span></td>
-                                                <!--                                                <td th:text="${cart.vendorId}">Otto</td>-->
-                                                <td th:text="${cart.salesPrice}">Otto</td>
-                                                <td th:text="${cart.quantity}">Otto</td>
-                                                <td th:text="${cart.discountRate}">Otto</td>
-                                                <td th:text="${cart.discountAmount}">Otto</td>
-                                                <td th:text="${cart.vatRate}">Otto</td>
-                                                <td th:text="${cart.vatAmount}">Otto</td>
-                                                <td th:text="${cart.itemTotal}">Otto</td>
+                                                <td class="text-end" th:text="${#numbers.formatDecimal(cart.salesPrice, 0, 'COMMA', 2, 'POINT')}">0.00</td>
+                                                <td class="text-center" th:text="${cart.quantity}">1</td>
+                                                <td class="text-end">
+                                                    <span th:text="${#numbers.formatDecimal(cart.discountAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span>
+                                                    <div class="checkout-muted" th:text="${cart.discountRate + '%'}">0%</div>
+                                                </td>
+                                                <td class="text-end">
+                                                    <span th:text="${#numbers.formatDecimal(cart.vatAmount, 0, 'COMMA', 2, 'POINT')}">0.00</span>
+                                                    <div class="checkout-muted" th:text="${cart.vatRate + '%'}">0%</div>
+                                                </td>
+                                                <td class="text-end fw-bold" th:text="${#numbers.formatDecimal(cart.itemTotal, 0, 'COMMA', 2, 'POINT')}">0.00</td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
-                                <div class="container mt-5">
-                                    <h2>Billing Address</h2>
-                                    <form th:action="@{/cart_address/add_billing_address}" th:object="${billingAddress}" method="post" class="row g-3">
-
-                                        <input type="hidden" th:field="*{id}">
-
-                                        <div class="col-md-6">
-                                            <label class="form-label">First Name</label>
-                                            <input type="text" class="form-control" th:field="*{firstName}" required>
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label class="form-label">Last Name</label>
-                                            <input type="text" class="form-control" th:field="*{lastName}" required>
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label class="form-label">Email</label>
-                                            <input type="email" class="form-control" th:field="*{email}" required>
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label class="form-label">Mobile</label>
-                                            <input type="text" class="form-control" th:field="*{mobile}" required>
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label class="form-label">Company</label>
-                                            <input type="text" class="form-control" th:field="*{company}">
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label class="form-label">Country</label>
-                                            <input type="text" class="form-control" th:field="*{country}" required>
-                                        </div>
-
-                                        <div class="col-md-4">
-                                            <label class="form-label">District</label>
-                                            <input type="text" class="form-control" th:field="*{district}" required>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">City</label>
-                                            <input type="text" class="form-control" th:field="*{city}" required>
-                                        </div>
-                                        <div class="col-md-12">
-                                            <label class="form-label">Address Line 1</label>
-                                            <input type="text" class="form-control" th:field="*{addressLineOne}" required>
-                                        </div>
-
-                                        <div class="col-md-12">
-                                            <label class="form-label">Address Line 2</label>
-                                            <input type="text" class="form-control" th:field="*{addressLinetwo}">
-                                        </div>
-
-
-
-                                        <div class="col-md-4">
-                                            <label class="form-label">Post Code</label>
-                                            <input type="text" class="form-control" th:field="*{postCode}" required>
-                                        </div>
-
-
-                                        <div class="form-check form-check-inline">
-
-                                            <input class="form-check-input" type="checkbox"  name="sameAddress" >
-                                            <label class="form-check-label" for="inlineCheckbox2">Shipping address is same as billing address</label>
-                                        </div>
-
-                                        <div class="col-md-12">
-                                            <button type="submit" class="btn btn-primary">Submit</button>
-                                        </div>
-                                    </form>
-
+                                <div class="p-4 text-center checkout-muted" th:if="${session.sessioncart == null}">
+                                    No cart items found.
                                 </div>
-
-                                <div class="container mt-5" th:if="${requiresShipping}">
-                                    <h2>Shipping Address</h2>
-                                    <form th:action="@{/cart_address/add_shipping_address}" th:object="${shippingAddress}" method="post" class="row g-3">
-
-                                        <input type="hidden" th:field="*{id}">
-
-                                        <div class="col-md-6">
-                                            <label class="form-label">First Name</label>
-                                            <input type="text" class="form-control" th:field="*{firstName}" required>
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label class="form-label">Last Name</label>
-                                            <input type="text" class="form-control" th:field="*{lastName}" required>
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label class="form-label">Email</label>
-                                            <input type="email" class="form-control" th:field="*{email}" required>
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label class="form-label">Mobile</label>
-                                            <input type="text" class="form-control" th:field="*{mobile}" required>
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label class="form-label">Company</label>
-                                            <input type="text" class="form-control" th:field="*{company}">
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label class="form-label">Country</label>
-                                            <input type="text" class="form-control" th:field="*{country}" required>
-                                        </div>
-
-                                        <div class="col-md-4">
-                                            <label class="form-label">District</label>
-                                            <input type="text" class="form-control" th:field="*{district}" required>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">City</label>
-                                            <input type="text" class="form-control" th:field="*{city}" required>
-                                        </div>
-
-                                        <div class="col-md-12">
-                                            <label class="form-label">Address Line 1</label>
-                                            <input type="text" class="form-control" th:field="*{addressLineOne}" required>
-                                        </div>
-
-                                        <div class="col-md-12">
-                                            <label class="form-label">Address Line 2</label>
-                                            <input type="text" class="form-control" th:field="*{addressLinetwo}">
-                                        </div>
-
-
-
-                                        <div class="col-md-4">
-                                            <label class="form-label">Post Code</label>
-                                            <input type="text" class="form-control" th:field="*{postCode}" required>
-                                        </div>
-
-
-                                        <div class="col-md-12">
-                                            <button type="submit" class="btn btn-primary">Submit</button>
-                                        </div>
-                                    </form>
-                                </div>
-
-                                <div class="container mt-5" th:if="${!requiresShipping}">
-                                    <div class="alert alert-info mb-0">
-                                        This order contains only virtual products, so no shipping address is required.
-                                    </div>
-                                </div>
-
                             </div>
-
-                            <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
-
-
-                                <!--                                <div class="container mt-5">
-                                                                    <h2>Billing Address</h2>
-                                                                    <form th:action="@{/cart_address/add_billing_address}" th:object="${billingAddress}" method="post" class="row g-3">
-
-                                                                        <input type="hidden" th:field="*{id}">
-
-                                                                        <div class="col-md-6">
-                                                                            <label class="form-label">First Name</label>
-                                                                            <input type="text" class="form-control" th:field="*{firstName}" required>
-                                                                        </div>
-
-                                                                        <div class="col-md-6">
-                                                                            <label class="form-label">Last Name</label>
-                                                                            <input type="text" class="form-control" th:field="*{lastName}" required>
-                                                                        </div>
-
-                                                                        <div class="col-md-6">
-                                                                            <label class="form-label">Email</label>
-                                                                            <input type="email" class="form-control" th:field="*{email}" required>
-                                                                        </div>
-
-                                                                        <div class="col-md-6">
-                                                                            <label class="form-label">Mobile</label>
-                                                                            <input type="text" class="form-control" th:field="*{mobile}" required>
-                                                                        </div>
-
-                                                                        <div class="col-md-6">
-                                                                            <label class="form-label">Company</label>
-                                                                            <input type="text" class="form-control" th:field="*{company}">
-                                                                        </div>
-
-                                                                        <div class="col-md-6">
-                                                                            <label class="form-label">Country</label>
-                                                                            <input type="text" class="form-control" th:field="*{country}" required>
-                                                                        </div>
-
-                                                                        <div class="col-md-4">
-                                                                            <label class="form-label">District</label>
-                                                                            <input type="text" class="form-control" th:field="*{district}" required>
-                                                                        </div>
-                                                                        <div class="col-md-4">
-                                                                            <label class="form-label">City</label>
-                                                                            <input type="text" class="form-control" th:field="*{city}" required>
-                                                                        </div>
-                                                                        <div class="col-md-12">
-                                                                            <label class="form-label">Address Line 1</label>
-                                                                            <input type="text" class="form-control" th:field="*{addressLineOne}" required>
-                                                                        </div>
-
-                                                                        <div class="col-md-12">
-                                                                            <label class="form-label">Address Line 2</label>
-                                                                            <input type="text" class="form-control" th:field="*{addressLinetwo}">
-                                                                        </div>
-
-
-
-                                                                        <div class="col-md-4">
-                                                                            <label class="form-label">Post Code</label>
-                                                                            <input type="text" class="form-control" th:field="*{postCode}" required>
-                                                                        </div>
-
-
-                                                                        <div class="form-check form-check-inline">
-
-                                                                            <input class="form-check-input" type="checkbox"  name="sameAddress" >
-                                                                            <label class="form-check-label" for="inlineCheckbox2">Shipping address is same as billing address</label>
-                                                                        </div>
-
-                                                                        <div class="col-md-12">
-                                                                            <button type="submit" class="btn btn-primary">Submit</button>
-                                                                        </div>
-                                                                    </form>
-
-                                                                </div>
-
-                                                                <div class="container mt-5">
-                                                                    <h2>Shipping Address</h2>
-                                                                    <form th:action="@{/cart_address/add_shipping_address}" th:object="${shippingAddress}" method="post" class="row g-3">
-
-                                                                        <input type="hidden" th:field="*{id}">
-
-                                                                        <div class="col-md-6">
-                                                                            <label class="form-label">First Name</label>
-                                                                            <input type="text" class="form-control" th:field="*{firstName}" required>
-                                                                        </div>
-
-                                                                        <div class="col-md-6">
-                                                                            <label class="form-label">Last Name</label>
-                                                                            <input type="text" class="form-control" th:field="*{lastName}" required>
-                                                                        </div>
-
-                                                                        <div class="col-md-6">
-                                                                            <label class="form-label">Email</label>
-                                                                            <input type="email" class="form-control" th:field="*{email}" required>
-                                                                        </div>
-
-                                                                        <div class="col-md-6">
-                                                                            <label class="form-label">Mobile</label>
-                                                                            <input type="text" class="form-control" th:field="*{mobile}" required>
-                                                                        </div>
-
-                                                                        <div class="col-md-6">
-                                                                            <label class="form-label">Company</label>
-                                                                            <input type="text" class="form-control" th:field="*{company}">
-                                                                        </div>
-
-                                                                        <div class="col-md-6">
-                                                                            <label class="form-label">Country</label>
-                                                                            <input type="text" class="form-control" th:field="*{country}" required>
-                                                                        </div>
-
-                                                                        <div class="col-md-4">
-                                                                            <label class="form-label">District</label>
-                                                                            <input type="text" class="form-control" th:field="*{district}" required>
-                                                                        </div>
-                                                                        <div class="col-md-4">
-                                                                            <label class="form-label">City</label>
-                                                                            <input type="text" class="form-control" th:field="*{city}" required>
-                                                                        </div>
-
-                                                                        <div class="col-md-12">
-                                                                            <label class="form-label">Address Line 1</label>
-                                                                            <input type="text" class="form-control" th:field="*{addressLineOne}" required>
-                                                                        </div>
-
-                                                                        <div class="col-md-12">
-                                                                            <label class="form-label">Address Line 2</label>
-                                                                            <input type="text" class="form-control" th:field="*{addressLinetwo}">
-                                                                        </div>
-
-
-
-                                                                        <div class="col-md-4">
-                                                                            <label class="form-label">Post Code</label>
-                                                                            <input type="text" class="form-control" th:field="*{postCode}" required>
-                                                                        </div>
-
-
-                                                                        <div class="col-md-12">
-                                                                            <button type="submit" class="btn btn-primary">Submit</button>
-                                                                        </div>
-                                                                    </form>
-                                                                </div>-->
-
-                            </div>
-                            <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab" tabindex="0">...</div>
-                            <div class="tab-pane fade" id="nav-disabled" role="tabpanel" aria-labelledby="nav-disabled-tab" tabindex="0">...</div>
                         </div>
 
-
-
-                        <!--                        <div class="accordion" id="accordionExample">
-                                                    <div class="card">
-                                                        <div class="card-header" id="headingOne">
-                                                            <h2 class="mb-0">
-                                                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                                                    Checkout Options : Order Summary
-                                                                </button>
-                                                            </h2>
-                                                        </div>
-
-                                                        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
-                                                            <div class="card-body">
-                                                                <div class="row">
-
-
-                                                                </div>
-                                                            </div>
-
-                                                        </div>
-                                                    </div>
-                                                </div>-->
-
-                    </div>
-                    <div class="col-sm-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <i class="fas fa-money-check text-warning"></i>  Order   Summary
+                        <div class="checkout-panel">
+                            <div class="checkout-panel-header">
+                                <h2 class="checkout-panel-title">
+                                    <i class="bi bi-receipt"></i>
+                                    Billing address
+                                </h2>
                             </div>
-                            <ul class="list-group list-group-flush">
-
-                                <li class="list-group-item">
-                                    Order Total:
-                                    <span th:text="'BDT ' + ${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">BDT 10.00</span>
-                                </li>
-                                <li class="list-group-item">
-                                    <form th:action="@{/order/savebyvendor}" method="post" class="d-grid gap-3">
-                                        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
+                            <div class="checkout-panel-body">
+                                <form th:action="@{/cart_address/add_billing_address}" th:object="${billingAddress}" method="post">
+                                    <input type="hidden" th:field="*{id}">
+                                    <div class="checkout-form-grid">
                                         <div>
-                                            <div class="fw-semibold mb-2">Payment Plan</div>
+                                            <label class="form-label">First name</label>
+                                            <input type="text" class="form-control" th:field="*{firstName}" required>
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Last name</label>
+                                            <input type="text" class="form-control" th:field="*{lastName}" required>
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Email</label>
+                                            <input type="email" class="form-control" th:field="*{email}" required>
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Mobile</label>
+                                            <input type="text" class="form-control" th:field="*{mobile}" required>
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Company</label>
+                                            <input type="text" class="form-control" th:field="*{company}">
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Country</label>
+                                            <input type="text" class="form-control" th:field="*{country}" required>
+                                        </div>
+                                        <div>
+                                            <label class="form-label">District</label>
+                                            <input type="text" class="form-control" th:field="*{district}" required>
+                                        </div>
+                                        <div>
+                                            <label class="form-label">City</label>
+                                            <input type="text" class="form-control" th:field="*{city}" required>
+                                        </div>
+                                        <div class="full">
+                                            <label class="form-label">Address line 1</label>
+                                            <input type="text" class="form-control" th:field="*{addressLineOne}" required>
+                                        </div>
+                                        <div class="full">
+                                            <label class="form-label">Address line 2</label>
+                                            <input type="text" class="form-control" th:field="*{addressLinetwo}">
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Post code</label>
+                                            <input type="text" class="form-control" th:field="*{postCode}" required>
+                                        </div>
+                                        <div class="d-flex align-items-end">
                                             <div class="form-check mb-2">
-                                                <input class="form-check-input"
-                                                       type="radio"
-                                                       name="paymentPlan"
-                                                       id="addressCheckoutPlanFullCod"
-                                                       value="FULL_COD"
-                                                       th:checked="${selectedPaymentPlan == 'FULL_COD'}">
-                                                <label class="form-check-label" for="addressCheckoutPlanFullCod">
-                                                    Full COD
-                                                </label>
-                                            </div>
-                                            <div class="form-check mb-2">
-                                                <input class="form-check-input"
-                                                       type="radio"
-                                                       name="paymentPlan"
-                                                       id="addressCheckoutPlanAdvanceCod"
-                                                       value="PARTIAL_ADVANCE_COD"
-                                                       th:checked="${selectedPaymentPlan == 'PARTIAL_ADVANCE_COD'}">
-                                                <label class="form-check-label" for="addressCheckoutPlanAdvanceCod">
-                                                    Pay Advance Now, Rest COD
-                                                </label>
-                                            </div>
-                                            <div class="form-check mb-2">
-                                                <input class="form-check-input"
-                                                       type="radio"
-                                                       name="paymentPlan"
-                                                       id="addressCheckoutPlanFullPrepaid"
-                                                       value="FULL_PREPAID"
-                                                       th:checked="${selectedPaymentPlan == 'FULL_PREPAID'}">
-                                                <label class="form-check-label" for="addressCheckoutPlanFullPrepaid">
-                                                    Full Online / Wallet
-                                                </label>
-                                            </div>
-                                            <div class="form-check mt-2">
-                                                <input class="form-check-input"
-                                                       type="radio"
-                                                       name="paymentPlan"
-                                                       id="addressCheckoutPlanEmi"
-                                                       value="EMI"
-                                                       th:checked="${selectedPaymentPlan == 'EMI'}"
-                                                       th:disabled="${!emiEligible}">
-                                                <label class="form-check-label" for="addressCheckoutPlanEmi">
-                                                    Meritten EMI
-                                                </label>
-                                            </div>
-
-                                            <div class="mt-4">
-                                                <label class="form-label">Method For Amount Paid Now</label>
-                                                <div class="form-check">
-                                                    <input class="form-check-input"
-                                                           type="radio"
-                                                           name="paymentMethod"
-                                                           id="addressCheckoutPaymentWallet"
-                                                           value="WALLET"
-                                                           th:checked="${selectedPaymentMethod == 'WALLET'}">
-                                                    <label class="form-check-label" for="addressCheckoutPaymentWallet">
-                                                        Wallet
-                                                    </label>
-                                                </div>
-                                                <div class="form-check mt-2">
-                                                    <input class="form-check-input"
-                                                           type="radio"
-                                                           name="paymentMethod"
-                                                           id="addressCheckoutPaymentSslCommerz"
-                                                           value="SSLCOMMERZ"
-                                                           th:checked="${selectedPaymentMethod == 'SSLCOMMERZ'}">
-                                                    <label class="form-check-label" for="addressCheckoutPaymentSslCommerz">
-                                                        SSLCommerz
-                                                    </label>
-                                                </div>
-                                                <div class="form-check mt-2">
-                                                    <input class="form-check-input"
-                                                           type="radio"
-                                                           name="paymentMethod"
-                                                           id="addressCheckoutPaymentBkash"
-                                                           value="BKASH"
-                                                           th:checked="${selectedPaymentMethod == 'BKASH'}">
-                                                    <label class="form-check-label" for="addressCheckoutPaymentBkash">
-                                                        bKash
-                                                    </label>
-                                                </div>
-                                            </div>
-
-                                            <div class="small text-muted mt-2">
-                                                Available wallet balance:
-                                                <strong th:text="'BDT ' + ${#numbers.formatDecimal(walletBalance, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</strong>
-                                            </div>
-
-                                            <div class="small text-muted mt-2">
-                                                Available reward points:
-                                                <strong th:text="${#numbers.formatDecimal(rewardBalance, 0, 'COMMA', 2, 'POINT')}">0.00</strong>
-                                                <span class="d-block">Current checkout conversion: 1 point = BDT 0.01</span>
-                                            </div>
-
-                                            <div class="mt-3">
-                                                <label class="form-label" for="addressCheckoutCouponCode">Coupon Code</label>
-                                                <input class="form-control"
-                                                       id="addressCheckoutCouponCode"
-                                                       type="text"
-                                                       name="couponCode"
-                                                       th:value="${selectedCouponCode}"
-                                                       placeholder="Enter coupon code">
-                                            </div>
-
-                                            <div class="mt-3">
-                                                <label class="form-label" for="addressCheckoutRewardPointsToUse">Reward Points To Use</label>
-                                                <input class="form-control"
-                                                       id="addressCheckoutRewardPointsToUse"
-                                                       type="number"
-                                                       name="rewardPointsToUse"
-                                                       min="0"
-                                                       step="0.01"
-                                                       th:attr="max=${rewardBalance}"
-                                                       th:value="${selectedRewardPointsToUse}">
-                                            </div>
-
-                                            <div class="mt-3">
-                                                <label class="form-label" for="addressCheckoutGiftCardCode">Gift Card Code</label>
-                                                <input class="form-control"
-                                                       id="addressCheckoutGiftCardCode"
-                                                       type="text"
-                                                       name="giftCardCode"
-                                                       th:value="${selectedGiftCardCode}"
-                                                       placeholder="Enter gift card code">
-                                            </div>
-
-                                            <div class="mt-3">
-                                                <label class="form-label" for="addressCheckoutGiftCardAmount">Gift Card Amount To Use</label>
-                                                <input class="form-control"
-                                                       id="addressCheckoutGiftCardAmount"
-                                                       type="number"
-                                                       name="giftCardAmount"
-                                                       min="0"
-                                                       step="0.01"
-                                                       th:attr="max=${subtotal}"
-                                                       th:value="${selectedGiftCardAmount}">
-                                                <div class="form-text">
-                                                    Leave zero to use as much of the valid gift card balance as possible.
-                                                </div>
-                                            </div>
-
-                                            <div class="mt-3">
-                                                <label class="form-label" for="addressCheckoutAdvanceAmount">Advance Amount</label>
-                                                <input class="form-control"
-                                                       id="addressCheckoutAdvanceAmount"
-                                                       type="number"
-                                                       name="advanceAmount"
-                                                       min="0.01"
-                                                       step="0.01"
-                                                       th:attr="max=${subtotal}"
-                                                       th:value="${selectedAdvanceAmount}">
-                                                <div class="form-text">
-                                                    Used only with "Pay Advance Now, Rest COD". The remaining balance is saved as COD.
-                                                </div>
-                                            </div>
-
-                                            <div class="mt-3">
-                                                <label class="form-label" for="addressCheckoutEmiTenure">Meritten EMI Tenure</label>
-                                                <select class="form-select"
-                                                        id="addressCheckoutEmiTenure"
-                                                        name="emiTenureMonths"
-                                                        th:disabled="${!emiEligible}">
-                                                    <option value="3" th:selected="${selectedEmiTenureMonths == 3}">3 Months</option>
-                                                    <option value="6" th:selected="${selectedEmiTenureMonths == 6}">6 Months</option>
-                                                    <option value="9" th:selected="${selectedEmiTenureMonths == 9}">9 Months</option>
-                                                    <option value="12" th:selected="${selectedEmiTenureMonths == 12}">12 Months</option>
-                                                </select>
-                                                <div class="form-text" th:if="${emiEligible}">
-                                                    Meritten EMI sends the full order amount and selected tenure to the bank or gateway. If approved, the provider settles the full order and collects installments directly from the customer.
-                                                </div>
-                                                <div class="form-text text-danger" th:unless="${emiEligible}">
-                                                    Meritten EMI is available only when every item is marked Meritten EMI eligible and not a virtual product.
-                                                </div>
-                                            </div>
-                                            <div class="small text-muted mt-2">
-                                                Full COD keeps the whole order for delivery collection. Full online collects the whole amount now.
-                                                Advance + COD keeps only the entered advance payable now and stores the rest as COD.
+                                                <input class="form-check-input" type="checkbox" id="sameAddress" name="sameAddress">
+                                                <label class="form-check-label" for="sameAddress">Shipping address is same as billing</label>
                                             </div>
                                         </div>
-
-                                        <button type="submit" class="btn btn-block btn-sm btn-success">
-                                            Place Order
+                                    </div>
+                                    <div class="checkout-actions">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-check2"></i>
+                                            Save billing
                                         </button>
-                                    </form>
-                                </li>
-                            </ul>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="checkout-panel" th:if="${requiresShipping}">
+                            <div class="checkout-panel-header">
+                                <h2 class="checkout-panel-title">
+                                    <i class="bi bi-truck"></i>
+                                    Shipping address
+                                </h2>
+                            </div>
+                            <div class="checkout-panel-body">
+                                <form th:action="@{/cart_address/add_shipping_address}" th:object="${shippingAddress}" method="post">
+                                    <input type="hidden" th:field="*{id}">
+                                    <div class="checkout-form-grid">
+                                        <div>
+                                            <label class="form-label">First name</label>
+                                            <input type="text" class="form-control" th:field="*{firstName}" required>
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Last name</label>
+                                            <input type="text" class="form-control" th:field="*{lastName}" required>
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Email</label>
+                                            <input type="email" class="form-control" th:field="*{email}" required>
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Mobile</label>
+                                            <input type="text" class="form-control" th:field="*{mobile}" required>
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Company</label>
+                                            <input type="text" class="form-control" th:field="*{company}">
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Country</label>
+                                            <input type="text" class="form-control" th:field="*{country}" required>
+                                        </div>
+                                        <div>
+                                            <label class="form-label">District</label>
+                                            <input type="text" class="form-control" th:field="*{district}" required>
+                                        </div>
+                                        <div>
+                                            <label class="form-label">City</label>
+                                            <input type="text" class="form-control" th:field="*{city}" required>
+                                        </div>
+                                        <div class="full">
+                                            <label class="form-label">Address line 1</label>
+                                            <input type="text" class="form-control" th:field="*{addressLineOne}" required>
+                                        </div>
+                                        <div class="full">
+                                            <label class="form-label">Address line 2</label>
+                                            <input type="text" class="form-control" th:field="*{addressLinetwo}">
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Post code</label>
+                                            <input type="text" class="form-control" th:field="*{postCode}" required>
+                                        </div>
+                                    </div>
+                                    <div class="checkout-actions">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-check2"></i>
+                                            Save shipping
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="checkout-panel" th:if="${!requiresShipping}">
+                            <div class="checkout-panel-body">
+                                <div class="alert alert-info mb-0">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    This order contains only virtual products, so no shipping address is required.
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    <aside class="checkout-sidebar">
+                        <div class="checkout-panel">
+                            <div class="checkout-panel-header">
+                                <h2 class="checkout-panel-title">
+                                    <i class="bi bi-cash-coin"></i>
+                                    Payment summary
+                                </h2>
+                            </div>
+                            <div class="checkout-panel-body">
+                                <div class="checkout-total-row">
+                                    <span>Order total</span>
+                                    <strong>BDT [[${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}]]</strong>
+                                </div>
+
+                                <form th:action="@{/order/savebyvendor}" method="post" class="mt-3">
+                                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                                    <label class="form-label">Payment plan</label>
+                                    <div class="checkout-radio-grid">
+                                        <div class="checkout-choice">
+                                            <input class="form-check-input" type="radio" name="paymentPlan" id="addressCheckoutPlanFullCod"
+                                                   value="FULL_COD" th:checked="${selectedPaymentPlan == 'FULL_COD'}">
+                                            <label for="addressCheckoutPlanFullCod">
+                                                Full COD
+                                                <span>Collect the full payable amount on delivery.</span>
+                                            </label>
+                                        </div>
+                                        <div class="checkout-choice">
+                                            <input class="form-check-input" type="radio" name="paymentPlan" id="addressCheckoutPlanAdvanceCod"
+                                                   value="PARTIAL_ADVANCE_COD" th:checked="${selectedPaymentPlan == 'PARTIAL_ADVANCE_COD'}">
+                                            <label for="addressCheckoutPlanAdvanceCod">
+                                                Advance + COD
+                                                <span>Pay an advance now and keep the balance for delivery.</span>
+                                            </label>
+                                        </div>
+                                        <div class="checkout-choice">
+                                            <input class="form-check-input" type="radio" name="paymentPlan" id="addressCheckoutPlanFullPrepaid"
+                                                   value="FULL_PREPAID" th:checked="${selectedPaymentPlan == 'FULL_PREPAID'}">
+                                            <label for="addressCheckoutPlanFullPrepaid">
+                                                Full prepaid
+                                                <span>Pay the full amount through wallet or online gateway.</span>
+                                            </label>
+                                        </div>
+                                        <div class="checkout-choice">
+                                            <input class="form-check-input" type="radio" name="paymentPlan" id="addressCheckoutPlanEmi"
+                                                   value="EMI" th:checked="${selectedPaymentPlan == 'EMI'}" th:disabled="${!emiEligible}">
+                                            <label for="addressCheckoutPlanEmi">
+                                                Meritten EMI
+                                                <span th:if="${emiEligible}">Submit the full order amount for EMI approval.</span>
+                                                <span th:unless="${emiEligible}">Not available for this cart.</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <label class="form-label mt-4">Method for amount paid now</label>
+                                    <div class="checkout-radio-grid">
+                                        <div class="checkout-choice">
+                                            <input class="form-check-input" type="radio" name="paymentMethod" id="addressCheckoutPaymentWallet"
+                                                   value="WALLET" th:checked="${selectedPaymentMethod == 'WALLET'}">
+                                            <label for="addressCheckoutPaymentWallet">Wallet</label>
+                                        </div>
+                                        <div class="checkout-choice">
+                                            <input class="form-check-input" type="radio" name="paymentMethod" id="addressCheckoutPaymentSslCommerz"
+                                                   value="SSLCOMMERZ" th:checked="${selectedPaymentMethod == 'SSLCOMMERZ'}">
+                                            <label for="addressCheckoutPaymentSslCommerz">SSLCommerz</label>
+                                        </div>
+                                        <div class="checkout-choice">
+                                            <input class="form-check-input" type="radio" name="paymentMethod" id="addressCheckoutPaymentBkash"
+                                                   value="BKASH" th:checked="${selectedPaymentMethod == 'BKASH'}">
+                                            <label for="addressCheckoutPaymentBkash">bKash</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="checkout-balance-strip">
+                                        <div class="checkout-balance">
+                                            <span>Wallet</span>
+                                            <strong th:text="'BDT ' + ${#numbers.formatDecimal(walletBalance, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</strong>
+                                        </div>
+                                        <div class="checkout-balance">
+                                            <span>Reward points</span>
+                                            <strong th:text="${#numbers.formatDecimal(rewardBalance, 0, 'COMMA', 2, 'POINT')}">0.00</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label" for="addressCheckoutCouponCode">Coupon code</label>
+                                        <input class="form-control"
+                                               id="addressCheckoutCouponCode"
+                                               type="text"
+                                               name="couponCode"
+                                               th:value="${selectedCouponCode}"
+                                               data-checkout-coupon-code
+                                               placeholder="Enter coupon code">
+                                        <div class="form-text" data-checkout-coupon-message></div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label" for="addressCheckoutRewardPointsToUse">Reward points to use</label>
+                                        <input class="form-control"
+                                               id="addressCheckoutRewardPointsToUse"
+                                               type="number"
+                                               name="rewardPointsToUse"
+                                               min="0"
+                                               step="0.01"
+                                               th:attr="max=${rewardBalance}"
+                                               data-checkout-reward-points
+                                               th:value="${selectedRewardPointsToUse}">
+                                        <div class="form-text">1 point = BDT 0.01</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label" for="addressCheckoutGiftCardCode">Gift card code</label>
+                                        <input class="form-control"
+                                               id="addressCheckoutGiftCardCode"
+                                               type="text"
+                                               name="giftCardCode"
+                                               th:value="${selectedGiftCardCode}"
+                                               data-checkout-gift-card-code
+                                               placeholder="Enter gift card code">
+                                        <div class="form-text" data-checkout-gift-card-message></div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label" for="addressCheckoutGiftCardAmount">Gift card amount to use</label>
+                                        <input class="form-control"
+                                               id="addressCheckoutGiftCardAmount"
+                                               type="number"
+                                               name="giftCardAmount"
+                                               min="0"
+                                               step="0.01"
+                                               th:attr="max=${subtotal}"
+                                               data-checkout-gift-card-amount
+                                               th:value="${selectedGiftCardAmount}">
+                                        <div class="form-text">Leave zero to use as much available balance as possible.</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label" for="addressCheckoutAdvanceAmount">Advance amount</label>
+                                        <input class="form-control"
+                                               id="addressCheckoutAdvanceAmount"
+                                               type="number"
+                                               name="advanceAmount"
+                                               min="0.01"
+                                               step="0.01"
+                                               th:attr="max=${subtotal}"
+                                               th:value="${selectedAdvanceAmount}">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label" for="addressCheckoutEmiTenure">Meritten EMI tenure</label>
+                                        <select class="form-select"
+                                                id="addressCheckoutEmiTenure"
+                                                name="emiTenureMonths"
+                                                th:disabled="${!emiEligible}">
+                                            <option value="3" th:selected="${selectedEmiTenureMonths == 3}">3 Months</option>
+                                            <option value="6" th:selected="${selectedEmiTenureMonths == 6}">6 Months</option>
+                                            <option value="9" th:selected="${selectedEmiTenureMonths == 9}">9 Months</option>
+                                            <option value="12" th:selected="${selectedEmiTenureMonths == 12}">12 Months</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="small mt-3" data-checkout-incentive-summary></div>
+
+                                    <button type="submit" class="btn btn-success checkout-submit mt-3">
+                                        <i class="bi bi-shield-check"></i>
+                                        Place order
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </aside>
                 </div>
             </div>
         </section>
+
+        <script>
+            (function () {
+                const form = document.querySelector('form[action$="/order/savebyvendor"]');
+                if (!form) {
+                    return;
+                }
+
+                const couponInput = form.querySelector('[data-checkout-coupon-code]');
+                const giftCardInput = form.querySelector('[data-checkout-gift-card-code]');
+                const giftCardAmountInput = form.querySelector('[data-checkout-gift-card-amount]');
+                const rewardPointsInput = form.querySelector('[data-checkout-reward-points]');
+                const couponMessage = form.querySelector('[data-checkout-coupon-message]');
+                const giftCardMessage = form.querySelector('[data-checkout-gift-card-message]');
+                const summaryMessage = form.querySelector('[data-checkout-incentive-summary]');
+                let validationTimer;
+
+                function setMessage(target, input, valid, message) {
+                    if (!target || !input) {
+                        return;
+                    }
+                    target.textContent = message || '';
+                    target.classList.toggle('text-success', valid === true);
+                    target.classList.toggle('text-danger', valid === false);
+                    input.classList.toggle('is-valid', valid === true);
+                    input.classList.toggle('is-invalid', valid === false);
+                    if (valid === null || valid === undefined) {
+                        input.classList.remove('is-valid', 'is-invalid');
+                    }
+                }
+
+                function csrfParams(params) {
+                    const csrf = form.querySelector('input[type="hidden"][name^="_csrf"], input[type="hidden"][name="_csrf"]');
+                    if (csrf && csrf.name && csrf.value) {
+                        params.set(csrf.name, csrf.value);
+                    }
+                    return params;
+                }
+
+                async function validateCodes() {
+                    const params = csrfParams(new URLSearchParams());
+                    params.set('couponCode', couponInput ? couponInput.value.trim() : '');
+                    params.set('giftCardCode', giftCardInput ? giftCardInput.value.trim() : '');
+                    params.set('giftCardAmount', giftCardAmountInput && giftCardAmountInput.value ? giftCardAmountInput.value : '0');
+                    params.set('rewardPointsToUse', rewardPointsInput && rewardPointsInput.value ? rewardPointsInput.value : '0');
+
+                    if (!params.get('couponCode') && !params.get('giftCardCode') && Number(params.get('rewardPointsToUse') || 0) <= 0) {
+                        setMessage(couponMessage, couponInput, null, '');
+                        setMessage(giftCardMessage, giftCardInput, null, '');
+                        if (summaryMessage) {
+                            summaryMessage.textContent = '';
+                            summaryMessage.className = 'small mt-3';
+                        }
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/cart/checkout/incentives/preview', {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                            body: params.toString()
+                        });
+                        const data = await response.json();
+                        setMessage(couponMessage, couponInput, data.couponValid, data.couponMessage);
+                        setMessage(giftCardMessage, giftCardInput, data.giftCardValid, data.giftCardMessage);
+                        if (summaryMessage) {
+                            summaryMessage.textContent = data.summaryMessage || data.message || '';
+                            summaryMessage.className = 'small mt-3 ' + (data.valid === false ? 'text-danger' : 'text-muted');
+                        }
+                    } catch (error) {
+                        if (summaryMessage) {
+                            summaryMessage.textContent = 'Could not validate code right now. Please try again.';
+                            summaryMessage.className = 'small mt-3 text-danger';
+                        }
+                    }
+                }
+
+                function scheduleValidation() {
+                    window.clearTimeout(validationTimer);
+                    validationTimer = window.setTimeout(validateCodes, 450);
+                }
+
+                [couponInput, giftCardInput, giftCardAmountInput, rewardPointsInput]
+                        .filter(Boolean)
+                        .forEach(input => input.addEventListener('input', scheduleValidation));
+
+                if ((couponInput && couponInput.value.trim()) || (giftCardInput && giftCardInput.value.trim())) {
+                    scheduleValidation();
+                }
+            }());
+        </script>
     </div>
 </div>

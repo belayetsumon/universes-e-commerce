@@ -1,12 +1,17 @@
 package com.ecommerce.app.product.controller;
 
+import com.ecommerce.app.product.dto.ProductStockReportRow;
+import com.ecommerce.app.product.dto.ProductStockReportSummary;
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.ProductVariant;
 import com.ecommerce.app.product.model.StockTransaction;
+import com.ecommerce.app.product.ripository.ProductcategoryRepository;
 import com.ecommerce.app.product.ripository.ProductRepository;
 import com.ecommerce.app.product.ripository.ProductVariantRepository;
 import com.ecommerce.app.product.ripository.StockTransactionRepository;
+import com.ecommerce.app.product.services.StockInventoryReportService;
 import com.ecommerce.app.product.services.StockLedgerService;
+import com.ecommerce.app.vendor.repository.VendorprofileRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -37,6 +42,45 @@ public class AdminStockController {
 
     @Autowired
     private StockLedgerService stockLedgerService;
+
+    @Autowired
+    private StockInventoryReportService stockInventoryReportService;
+
+    @Autowired
+    private ProductcategoryRepository productcategoryRepository;
+
+    @Autowired
+    private VendorprofileRepository vendorprofileRepository;
+
+    @GetMapping("/current")
+    public String currentStock(
+            @RequestParam(value = "q", required = false) String q,
+            @RequestParam(value = "vendorId", required = false) Long vendorId,
+            @RequestParam(value = "categoryId", required = false) Long categoryId,
+            @RequestParam(value = "stockFilter", required = false, defaultValue = "all") String stockFilter,
+            @RequestParam(value = "lowStockThreshold", required = false, defaultValue = "5") BigDecimal lowStockThreshold,
+            Model model
+    ) {
+        try {
+            List<ProductStockReportRow> rows = stockInventoryReportService.findCurrentStock(
+                    vendorId, categoryId, q, stockFilter, lowStockThreshold);
+            ProductStockReportSummary summary = stockInventoryReportService.summarize(rows);
+            model.addAttribute("rows", rows);
+            model.addAttribute("summary", summary);
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Runtime error while loading current stock: " + userFacingMessage(e));
+            model.addAttribute("rows", List.of());
+            model.addAttribute("summary", new ProductStockReportSummary());
+        }
+        model.addAttribute("q", q);
+        model.addAttribute("selectedVendorId", vendorId);
+        model.addAttribute("selectedCategoryId", categoryId);
+        model.addAttribute("stockFilter", stockFilter);
+        model.addAttribute("lowStockThreshold", lowStockThreshold);
+        model.addAttribute("vendors", vendorprofileRepository.findAll(Sort.by(Sort.Direction.ASC, "companyName", "id")));
+        model.addAttribute("categories", productcategoryRepository.findAll(Sort.by(Sort.Direction.ASC, "name", "id")));
+        return "admin/stock/current";
+    }
 
     @GetMapping("/transactions")
     public String transactions(Model model) {

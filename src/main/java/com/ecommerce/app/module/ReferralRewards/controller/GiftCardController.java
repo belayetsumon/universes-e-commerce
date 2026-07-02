@@ -1,7 +1,7 @@
 package com.ecommerce.app.module.ReferralRewards.controller;
 
 import com.ecommerce.app.module.ReferralRewards.model.GiftCard;
-import com.ecommerce.app.module.ReferralRewards.model.GiftCardStatus;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.GiftCardStatus;
 import com.ecommerce.app.module.ReferralRewards.repository.GiftCardRepository;
 import java.math.BigDecimal;
 import java.util.Arrays;

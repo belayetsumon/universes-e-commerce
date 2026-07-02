@@ -37,6 +37,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class CartService {
 
+    private static final BigDecimal DEFAULT_MARKETPLACE_COMMISSION_RATE = new BigDecimal("20.00");
+
     @Autowired
     private HttpSession session;
 
@@ -144,9 +146,7 @@ public class CartService {
 
         BigDecimal afterDiscountItemTotal = subTotal.subtract(totalDiscountAmount);
 
-        BigDecimal commissionRate = product.getMarketPlaceCommissionRate() != null
-                ? product.getMarketPlaceCommissionRate()
-                : BigDecimal.ZERO.setScale(2);
+        BigDecimal commissionRate = resolveMarketplaceCommissionRate(product);
         BigDecimal marketPlaceCommissionAmount = afterDiscountItemTotal.multiply(commissionRate)
                 .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
 
@@ -247,9 +247,7 @@ public class CartService {
         BigDecimal totalDiscount = subTotal.multiply(discountRate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
         BigDecimal afterDiscountTotal = subTotal.subtract(totalDiscount);
 
-        BigDecimal commissionRate = product.getMarketPlaceCommissionRate() != null
-                ? product.getMarketPlaceCommissionRate()
-                : BigDecimal.ZERO;
+        BigDecimal commissionRate = resolveMarketplaceCommissionRate(product);
         BigDecimal totalCommission = afterDiscountTotal.multiply(commissionRate)
                 .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
         BigDecimal vendorAmount = afterDiscountTotal.subtract(totalCommission);
@@ -362,11 +360,9 @@ public class CartService {
                         product.getMarketPlaceDiscount()
                 ).setScale(2, RoundingMode.HALF_UP);
 
-        BigDecimal commissionRate = existingItem.getMarketPlaceCommissionRate() != null
+        BigDecimal commissionRate = hasCommission(existingItem.getMarketPlaceCommissionRate())
                 ? existingItem.getMarketPlaceCommissionRate().setScale(2, RoundingMode.HALF_UP)
-                : (product.getMarketPlaceCommissionRate() != null
-                ? product.getMarketPlaceCommissionRate().setScale(2, RoundingMode.HALF_UP)
-                : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
+                : resolveMarketplaceCommissionRate(product);
 
         BigDecimal vatRate = existingItem.getVatRate() != null
                 ? existingItem.getVatRate().setScale(2, RoundingMode.HALF_UP)
@@ -749,6 +745,17 @@ public class CartService {
         }
 
         return null;
+    }
+
+    private BigDecimal resolveMarketplaceCommissionRate(Product product) {
+        if (product != null && hasCommission(product.getMarketPlaceCommissionRate())) {
+            return product.getMarketPlaceCommissionRate().setScale(2, RoundingMode.HALF_UP);
+        }
+        return DEFAULT_MARKETPLACE_COMMISSION_RATE.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private boolean hasCommission(BigDecimal rate) {
+        return rate != null && rate.compareTo(BigDecimal.ZERO) > 0;
     }
 
     public boolean hasValidVendor(Product product) {

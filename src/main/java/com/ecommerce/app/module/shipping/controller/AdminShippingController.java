@@ -16,6 +16,7 @@ import com.ecommerce.app.order.model.SalesOrder;
 import com.ecommerce.app.order.repository.SalesOrderRepository;
 import com.ecommerce.app.vendor.services.VendorprofileService;
 import jakarta.validation.Valid;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -78,11 +79,14 @@ public class AdminShippingController {
     }
 
     @GetMapping("/create")
-    public String newForm(@RequestParam(name = "orderId", required = false) Long orderId, Model model) {
+    public String newForm(@RequestParam(name = "orderId", required = false) Long orderId,
+            @RequestParam(name = "orderUuid", required = false) String orderUuid,
+            Model model) {
         Shipment shipment = new Shipment();
         model.addAttribute("shipment", shipment);
         model.addAttribute("trackingEvents", List.of());
         try {
+            orderId = resolveOrderId(orderId, orderUuid);
             if (orderId != null) {
                 String prefillError = prefillShipmentFromOrder(shipment, orderId, true);
                 if (prefillError != null) {
@@ -122,7 +126,7 @@ public class AdminShippingController {
             RedirectAttributes redirectAttrs,
             Model model) {
         Shipment existingShipment = shipment.getId() != null ? shipmentService.getById(shipment.getId()) : null;
-        SalesOrder salesOrder = validateSelectedOrder(shipment, existingShipment, result, true);
+        validateSelectedOrder(shipment, existingShipment, result, true);
         validateShipmentHandler(shipment, result);
 
         if (result.hasErrors()) {
@@ -131,11 +135,22 @@ public class AdminShippingController {
         }
 
         try {
-            shipmentService.save(shipment);
+            Shipment savedShipment = shipmentService.save(shipment);
             redirectAttrs.addFlashAttribute("successMessage", "Shipment saved successfully");
+            if (savedShipment != null && savedShipment.getId() != null) {
+                redirectAttrs.addFlashAttribute("successMessage", "Shipment #" + savedShipment.getId() + " saved successfully");
+            }
+        } catch (IllegalArgumentException ex) {
+            populateFormOptions(model, shipment.getSalesOrderId());
+            model.addAttribute("errorMessage", ex.getMessage());
+            return "admin/shipping/admin_shipments_form";
+        } catch (DataIntegrityViolationException ex) {
+            populateFormOptions(model, shipment.getSalesOrderId());
+            model.addAttribute("errorMessage", "Shipment could not be saved because the order or tracking reference is already used.");
+            return "admin/shipping/admin_shipments_form";
         } catch (Exception ex) {
             populateFormOptions(model, shipment.getSalesOrderId());
-            model.addAttribute("errorMessage", "Runtime error while saving shipment: " + ex.getMessage());
+            model.addAttribute("errorMessage", resolveShipmentSaveError(ex));
             return "admin/shipping/admin_shipments_form";
         }
         return "redirect:/admin/shipments/list";
@@ -171,6 +186,7 @@ public class AdminShippingController {
         model.addAttribute("pickupAddresses", pickupAddressService.getAll());
         model.addAttribute("vendors", vendorprofileService.findAll());
         model.addAttribute("salesOrders", buildSalesOrderOptions(includeOrderId));
+        model.addAttribute("selectedOrderCode", resolveOrderCode(includeOrderId));
     }
 
     private void populateEmptyFormOptions(Model model) {
@@ -190,6 +206,7 @@ public class AdminShippingController {
             option.put("vendorId", order.getVendorId());
             option.put("district", resolveShippingDistrict(order));
             option.put("shippingCost", resolveShippingCost(order));
+            option.put("grandTotal", order.getGrandTotal() != null ? order.getGrandTotal() : BigDecimal.ZERO);
             options.add(option);
         }
         return options;
@@ -278,6 +295,7 @@ public class AdminShippingController {
 
         shipment.setSalesOrderId(orderId);
         shipmentService.syncCodFromOrder(shipment);
+        shipment.setPickupAddress(pickupAddressService.getDefaultForVendor(salesOrder.getVendorId()));
         return null;
     }
 
@@ -293,6 +311,34 @@ public class AdminShippingController {
             return java.math.BigDecimal.ZERO;
         }
         return order.getDeliveryCharge();
+    }
+
+    private String resolveOrderCode(Long orderId) {
+        if (orderId == null) {
+            return null;
+        }
+        return salesOrderRepository.findById(orderId)
+                .map(SalesOrder::getOrderCode)
+                .orElse(null);
+    }
+
+    private Long resolveOrderId(Long orderId, String orderUuid) {
+        if (orderId != null || orderUuid == null || orderUuid.isBlank()) {
+            return orderId;
+        }
+        SalesOrder order = salesOrderRepository.findByUuid(orderUuid.trim());
+        return order != null ? order.getId() : null;
+    }
+
+    private String resolveShipmentSaveError(Exception ex) {
+        String message = ex != null && ex.getMessage() != null ? ex.getMessage() : "";
+        String normalizedMessage = message.toLowerCase();
+        if (normalizedMessage.contains("constraint")
+                || normalizedMessage.contains("duplicate")
+                || normalizedMessage.contains("could not execute statement")) {
+            return "Shipment could not be saved because the order or tracking reference is already used.";
+        }
+        return "Runtime error while saving shipment: " + message;
     }
 
 }

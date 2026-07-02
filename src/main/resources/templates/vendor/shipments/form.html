@@ -1,8 +1,64 @@
 <!DOCTYPE html>
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
     <div layout:fragment="main_content">
-        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <style>
+            .shipment-console {
+                background: #f7f9fc;
+                border: 1px solid #e5eaf1;
+                border-radius: 8px;
+                padding: 18px;
+            }
+            .shipment-header {
+                background: #ffffff;
+                border: 1px solid #dde5ef;
+                border-left: 4px solid #198754;
+                border-radius: 8px;
+                padding: 18px;
+                box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+            }
+            .shipment-kpi {
+                background: #ffffff;
+                border: 1px solid #e5eaf1;
+                border-radius: 8px;
+                padding: 12px 14px;
+                min-height: 78px;
+            }
+            .shipment-kpi span {
+                color: #667085;
+                display: block;
+                font-size: 12px;
+                font-weight: 700;
+                letter-spacing: 0;
+                text-transform: uppercase;
+            }
+            .shipment-kpi strong {
+                color: #111827;
+                display: block;
+                font-size: 18px;
+                margin-top: 4px;
+            }
+            .shipment-section {
+                border: 1px solid #dde5ef;
+                border-radius: 8px;
+                box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+            }
+            .shipment-section .card-header {
+                border-bottom: 1px solid #e5eaf1;
+                padding: 14px 18px;
+            }
+            .shipment-section .card-body {
+                padding: 18px;
+            }
+            .readonly-metric {
+                background: #f8fafc;
+                font-weight: 700;
+            }
+        </style>
+
+        <div class="shipment-console">
+        <div class="shipment-header d-flex justify-content-between align-items-start mb-3 flex-wrap gap-3">
             <div>
+                <div class="text-success fw-semibold small text-uppercase mb-1">Fulfillment workspace</div>
                 <h4 class="mb-1">Vendor Shipment</h4>
                 <p class="text-muted mb-0">
                     Create and manage shipment details for packed vendor orders.
@@ -18,6 +74,33 @@
             </div>
         </div>
 
+        <div class="row g-3 mb-3">
+            <div class="col-md-3">
+                <div class="shipment-kpi">
+                    <span>Request Token</span>
+                    <strong th:text="${shipment.uuid != null and #strings.length(shipment.uuid) >= 8 ? #strings.substring(shipment.uuid, 0, 8) : 'New'}">New</strong>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="shipment-kpi">
+                    <span>Order</span>
+                    <strong id="orderCodeKpi" th:text="${selectedOrderCode != null ? selectedOrderCode : 'Select order'}">Select order</strong>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="shipment-kpi">
+                    <span>Status</span>
+                    <strong th:text="${shipment.status != null ? #strings.replace(shipment.status.name(), '_', ' ') : 'Pending'}">Pending</strong>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="shipment-kpi">
+                    <span>Vendor</span>
+                    <strong th:text="${activeVendor != null ? activeVendor.companyName : shipment.vendorId}">Vendor</strong>
+                </div>
+            </div>
+        </div>
+
         <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
             <span th:text="${successMessage}"></span>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -27,8 +110,8 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
 
-        <form th:action="@{/vendor/shipments}" th:object="${shipment}" method="post">
-            <div class="card mb-3">
+        <form th:action="@{/vendor/shipments}" th:object="${shipment}" method="post" id="shipmentForm">
+            <div class="card shipment-section mb-3">
                 <div class="card-header bg-white">
                     <strong><i class="bi bi-box-seam"></i> Shipment Order</strong>
                 </div>
@@ -50,8 +133,8 @@
                                 <option value="">Select eligible order</option>
                                 <option th:each="order : ${salesOrders}"
                                         th:value="${order['id']}"
-                                        th:text="${order['orderCode'] + ' | ID: ' + order['id']}"
-                                        th:attr="data-location=${order['district']},data-shipping-cost=${order['shippingCost']},data-grand-total=${order['grandTotal']}"></option>
+                                        th:text="${order['orderCode']}"
+                                        th:attr="data-order-code=${order['orderCode']},data-location=${order['district']},data-shipping-cost=${order['shippingCost']},data-grand-total=${order['grandTotal']}"></option>
                             </select>
                             <div class="form-text">Only shipment-ready orders for your active vendor are listed.</div>
                             <div class="text-danger small" th:if="${#fields.hasErrors('salesOrderId')}" th:errors="*{salesOrderId}"></div>
@@ -66,7 +149,7 @@
 
                         <div class="col-lg-3">
                             <label class="form-label">Location</label>
-                            <input th:field="*{district}" id="locationInput" class="form-control" readonly required />
+                            <input th:field="*{district}" id="locationInput" class="form-control readonly-metric" readonly required />
                             <div class="text-danger small" th:if="${#fields.hasErrors('district')}" th:errors="*{district}"></div>
                         </div>
 
@@ -146,7 +229,7 @@
                 </div>
             </div>
 
-            <div class="card mb-3">
+            <div class="card shipment-section mb-3">
                 <div class="card-header bg-white">
                     <strong><i class="bi bi-cash-coin"></i> COD And Settlement</strong>
                 </div>
@@ -154,13 +237,15 @@
                     <div class="row g-3">
                         <div class="col-lg-3">
                             <label class="form-label">Shipping Cost</label>
-                            <input type="number" step="0.01" th:field="*{shippingCost}" id="shippingCostInput" class="form-control" readonly />
+                            <input type="number" step="0.01" th:field="*{shippingCost}" id="shippingCostInput" class="form-control readonly-metric" readonly />
+                            <div class="form-text">Delivery charge copied from the selected order; used in payable calculation based on charge owner.</div>
                             <div class="text-danger small" th:if="${#fields.hasErrors('shippingCost')}" th:errors="*{shippingCost}"></div>
                         </div>
 
                         <div class="col-lg-3">
                             <label class="form-label">Total Order Amount</label>
-                            <input type="number" step="0.01" th:field="*{totalOrderAmount}" id="totalOrderAmountInput" class="form-control" readonly />
+                            <input type="number" step="0.01" th:field="*{totalOrderAmount}" id="totalOrderAmountInput" class="form-control readonly-metric" readonly />
+                            <div class="form-text">Customer order total for this shipment, including product and delivery charges.</div>
                         </div>
 
                         <div class="col-lg-2">
@@ -169,16 +254,19 @@
                                 <input type="checkbox" th:field="*{cod}" class="form-check-input" disabled />
                                 <label class="form-check-label">COD required</label>
                             </div>
+                            <div class="form-text">Auto-detected from unpaid COD amount on the order.</div>
                         </div>
 
                         <div class="col-lg-2">
                             <label class="form-label">COD Collected</label>
-                            <input type="number" step="0.01" th:field="*{codCollected}" class="form-control" readonly />
+                            <input type="number" step="0.01" th:field="*{codCollected}" class="form-control readonly-metric" readonly />
+                            <div class="form-text">Amount already received against this order's COD balance.</div>
                         </div>
 
                         <div class="col-lg-2">
                             <label class="form-label">COD Pending</label>
-                            <input type="number" step="0.01" th:field="*{codPending}" class="form-control" readonly />
+                            <input type="number" step="0.01" th:field="*{codPending}" class="form-control readonly-metric" readonly />
+                            <div class="form-text">Remaining COD amount still to collect before delivery settlement is complete.</div>
                         </div>
 
                         <div class="col-lg-4">
@@ -188,6 +276,7 @@
                                         th:value="${mode}"
                                         th:text="${#strings.replace(mode.name(), '_', ' ')}"></option>
                             </select>
+                            <div class="form-text">Defines who manages settlement between customer, carrier, vendor, and marketplace.</div>
                         </div>
 
                         <div class="col-lg-4">
@@ -197,6 +286,7 @@
                                         th:value="${owner}"
                                         th:text="${#strings.replace(owner.name(), '_', ' ')}"></option>
                             </select>
+                            <div class="form-text">Choose who finally owns the delivery charge: marketplace or vendor.</div>
                         </div>
 
                         <div class="col-lg-4">
@@ -206,21 +296,25 @@
                                         th:value="${mode}"
                                         th:text="${#strings.replace(mode.name(), '_', ' ')}"></option>
                             </select>
+                            <div class="form-text">Shows who collects COD from the customer and where the money should be settled.</div>
                         </div>
 
                         <div class="col-lg-3">
                             <label class="form-label">Product Net Amount</label>
                             <input type="number" step="0.01" th:field="*{productNetAmount}" id="productNetAmountInput" class="form-control" />
+                            <div class="form-text">Product value payable before marketplace commission, COD fees, and delivery ownership adjustments.</div>
                         </div>
 
                         <div class="col-lg-3">
                             <label class="form-label">Marketplace Commission</label>
                             <input type="number" step="0.01" th:field="*{marketplaceCommissionAmount}" id="marketplaceCommissionInput" class="form-control" />
+                            <div class="form-text">Marketplace earning deducted from vendor product value and added to marketplace payable.</div>
                         </div>
 
                         <div class="col-lg-3">
                             <label class="form-label">COD Fee</label>
                             <input type="number" step="0.01" th:field="*{codFeeAmount}" id="codFeeInput" class="form-control" />
+                            <div class="form-text">Extra collection fee for COD handling; counted for marketplace when marketplace collects or receives COD.</div>
                         </div>
 
                         <div class="col-lg-3">
@@ -229,22 +323,25 @@
                                 <input type="checkbox" th:field="*{shippingPaidToMarketplace}" id="shippingPaidToMarketplaceInput" class="form-check-input" />
                                 <label class="form-check-label">Paid to marketplace</label>
                             </div>
+                            <div class="form-text">Enable when customer shipping money has reached marketplace but belongs to vendor.</div>
                         </div>
 
                         <div class="col-lg-3">
                             <label class="form-label">Vendor Payable</label>
-                            <input type="number" step="0.01" th:field="*{vendorPayableAmount}" id="vendorPayableInput" class="form-control" readonly />
+                            <input type="number" step="0.01" th:field="*{vendorPayableAmount}" id="vendorPayableInput" class="form-control readonly-metric" readonly />
+                            <div class="form-text">Calculated vendor payout after commission and eligible vendor-owned shipping amount.</div>
                         </div>
 
                         <div class="col-lg-3">
                             <label class="form-label">Marketplace Payable</label>
-                            <input type="number" step="0.01" th:field="*{marketplacePayableAmount}" id="marketplacePayableInput" class="form-control" readonly />
+                            <input type="number" step="0.01" th:field="*{marketplacePayableAmount}" id="marketplacePayableInput" class="form-control readonly-metric" readonly />
+                            <div class="form-text">Calculated marketplace share from commission, marketplace-owned shipping, and eligible COD fees.</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card shipment-section">
                 <div class="card-header bg-white">
                     <strong><i class="bi bi-braces"></i> Metadata</strong>
                 </div>
@@ -255,16 +352,18 @@
                 </div>
                 <div class="card-footer bg-white d-flex justify-content-end gap-2 flex-wrap">
                     <a th:href="@{/vendor/shipments}" class="btn btn-outline-secondary">Cancel</a>
-                    <button class="btn btn-primary" type="submit">
-                        <i class="bi bi-save"></i> Save Shipment
+                    <button class="btn btn-primary" type="submit" id="saveShipmentButton">
+                        <i class="bi bi-save"></i> <span>Save Shipment</span>
                     </button>
                 </div>
             </div>
         </form>
+        </div>
 
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const salesOrderSelect = document.getElementById('salesOrderIdSelect');
+                const orderCodeKpi = document.getElementById('orderCodeKpi');
                 const carrierSelect = document.getElementById('carrierSelect');
                 const locationInput = document.getElementById('locationInput');
                 const shippingCostInput = document.getElementById('shippingCostInput');
@@ -278,6 +377,8 @@
                 const settlementModeSelect = document.getElementById('settlementModeSelect');
                 const shippingChargeOwnerSelect = document.getElementById('shippingChargeOwnerSelect');
                 const codCollectionModeSelect = document.getElementById('codCollectionModeSelect');
+                const shipmentForm = document.getElementById('shipmentForm');
+                const saveShipmentButton = document.getElementById('saveShipmentButton');
 
                 function toNumber(input) {
                     if (!input) {
@@ -298,10 +399,14 @@
                         return;
                     }
                     const selectedOption = salesOrderSelect.options[salesOrderSelect.selectedIndex];
+                    const orderCode = selectedOption ? (selectedOption.getAttribute('data-order-code') || selectedOption.text || '') : '';
                     const location = selectedOption ? (selectedOption.getAttribute('data-location') || '') : '';
                     const shippingCost = selectedOption ? (selectedOption.getAttribute('data-shipping-cost') || '') : '';
                     const grandTotal = selectedOption ? (selectedOption.getAttribute('data-grand-total') || '') : '';
 
+                    if (orderCodeKpi) {
+                        orderCodeKpi.textContent = orderCode || 'Select order';
+                    }
                     if (locationInput) {
                         locationInput.value = location;
                     }
@@ -380,6 +485,13 @@
 
                 syncOrderFields();
                 recalculateSettlement();
+
+                if (shipmentForm && saveShipmentButton) {
+                    shipmentForm.addEventListener('submit', function () {
+                        saveShipmentButton.disabled = true;
+                        saveShipmentButton.querySelector('span').textContent = 'Saving...';
+                    });
+                }
             });
         </script>
     </div>

@@ -25,10 +25,6 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.Scope;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -52,9 +48,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 )
 @org.hibernate.annotations.Check(constraints = "id = 1")
 @EntityListeners(AuditingEntityListener.class)
-@Cache(usage = CacheConcurrencyStrategy.READ_ONLY)
-@Cacheable
-@Scope("singleton")
 public class GlobalSettings implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -348,8 +341,8 @@ public class GlobalSettings implements Serializable {
 
     // AUDIT & VERSIONING
     @Version
-    @Column(name = "version")
-    private Long version;
+    @Column(name = "version", nullable = false)
+    private Long version = 0L;
 
     @CreatedDate
     @Column(name = "created_on", nullable = false, updatable = false)
@@ -1071,12 +1064,17 @@ public class GlobalSettings implements Serializable {
     }
 
     @PrePersist
-    @PreUpdate
-    private void enforceSingletonPattern() {
-        // Force ID to always be 1
+    private void enforceSingletonPatternOnCreate() {
         this.id = 1;
+        ensureUuid();
+    }
 
-        // Ensure UUID exists
+    @PreUpdate
+    private void enforceSingletonPatternOnUpdate() {
+        ensureUuid();
+    }
+
+    private void ensureUuid() {
         if (this.uuid == null) {
             this.uuid = UUID.randomUUID().toString();
         }

@@ -9,12 +9,18 @@ public class CustomerAccountForm {
 
     @NotBlank(message = "*Please provide your first name")
     @Size(min = 3, max = 50, message = "First name must be 3-50 characters")
-    @Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "First name can only contain letters, numbers, underscores, or hyphens")
+    @Pattern(
+            regexp = "^[a-zA-Z0-9_-]+(?: [a-zA-Z0-9_-]+)*$",
+            message = "First name can only contain letters, numbers, single spaces, underscores, or hyphens, and cannot start or end with a space"
+    )
     private String firstName;
 
     @NotBlank(message = "*Please provide your last name")
-    @Size(min = 3, max = 50, message = "Last name must be 3-50 characters")
-    @Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "Last name can only contain letters, numbers, underscores, or hyphens")
+    @Size(max = 50, message = "Last name must be at most 50 characters")
+    @Pattern(
+            regexp = "^[a-zA-Z0-9_-]+(?: [a-zA-Z0-9_-]+)*$",
+            message = "Last name can only contain letters, numbers, single spaces, underscores, or hyphens"
+    )
     private String lastName;
 
     @NotBlank(message = "*Please provide your mobile")

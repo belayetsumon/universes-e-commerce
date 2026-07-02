@@ -27,6 +27,8 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
 
     Optional<Shipment> findTopBySalesOrderIdOrderByIdDesc(Long orderId);
 
+    Optional<Shipment> findByUuid(String uuid);
+
     Optional<Shipment> findByTrackingNumber(String trackingNumber);
 
     long countByCarrier(Carrier carrier);

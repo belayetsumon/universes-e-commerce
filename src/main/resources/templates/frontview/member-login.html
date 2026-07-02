@@ -1,68 +1,105 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-page">
     <div layout:fragment="main_content">
+        <section class="login-page">
+            <div class="container">
+                <div class="login-shell">
+                    <aside class="login-brand-panel" aria-label="Secure account access">
+                        <span class="login-brand-icon">
+                            <i class="bi bi-shield-lock"></i>
+                        </span>
+                        <span class="login-eyebrow">Secure customer access</span>
+                        <h1>Welcome back</h1>
+                        <p>
+                            Sign in to continue shopping, review orders, manage your profile,
+                            and access customer services from one account.
+                        </p>
 
-        <section style="background-color: #D6D6D6">
-            <section style="padding: 40px 0px 100px 0px">
-                <div class="container">
-                    <div class="card">
-                        <div class="row p-5">
-                            <div class="text-center  col-xs-12  col-sm-6 col-md-6">
-                                <img class="img-fluid img-thumbnail" th:src="@{/img/login.png}" />
+                        <div class="login-assurance-list">
+                            <div class="login-assurance-item">
+                                <i class="bi bi-bag-check"></i>
+                                <span>Order and checkout continuity</span>
+                            </div>
+                            <div class="login-assurance-item">
+                                <i class="bi bi-person-check"></i>
+                                <span>Customer profile access</span>
+                            </div>
+                            <div class="login-assurance-item">
+                                <i class="bi bi-headset"></i>
+                                <span>Faster account support</span>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <div class="login-form-panel">
+                        <div class="login-form-header">
+                            <span class="login-eyebrow">Member login</span>
+                            <h2>Sign in to your account</h2>
+                            <p>Use your registered email address and password.</p>
+                        </div>
+
+                        <div class="alert alert-success alert-dismissible fade show login-alert"
+                             th:if="${success}" role="alert">
+                            <i class="bi bi-check-circle"></i>
+                            <span th:text="${success}">Success message</span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+
+                        <div class="alert alert-danger login-alert" th:if="${param.error}" role="alert">
+                            <i class="bi bi-exclamation-octagon"></i>
+                            <span>Invalid email or password. Please try again.</span>
+                        </div>
+
+                        <div class="alert alert-warning login-alert" th:if="${param.logout}" role="alert">
+                            <i class="bi bi-box-arrow-left"></i>
+                            <span>You have been logged out.</span>
+                        </div>
+
+                        <form class="login-form" th:action="@{/public/member-login}" method="post">
+                            <div class="login-field">
+                                <label for="loginEmail">Email address</label>
+                                <div class="login-input-wrap">
+                                    <i class="bi bi-envelope"></i>
+                                    <input type="email"
+                                           name="username"
+                                           class="form-control"
+                                           id="loginEmail"
+                                           placeholder="name@example.com"
+                                           autocomplete="email"
+                                           required="true">
+                                </div>
                             </div>
 
-
-
-
-                            <div class="col-xs-12 col-sm-6  col-md-6">
-
-                                <!-- ✅ Flash Success Message -->
-                                <!-- Success Flash Message -->
-                                <div class="alert alert-success alert-dismissible fade show" th:if="${success}" role="alert">
-                                    <span th:text="${success}">Success message</span>
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            <div class="login-field">
+                                <div class="login-label-row">
+                                    <label for="loginPassword">Password</label>
+                                    <a th:href="@{/public/forgot-password}">Forgot password?</a>
                                 </div>
-
-                                <!-- Error and logout alerts -->
-                                <div class="alert alert-danger" th:if="${param.error}">
-                                    Invalid User Name or Password. Please try again.
-                                </div>
-                                <div class="alert alert-warning" th:if="${param.logout}">
-                                    You have been logged out.
-                                </div>
-
-                                <!-- Login Form -->
-                                <form th:action="@{/public/member-login}" method="post">
-                                    <div class="form-group">
-                                        <label for="exampleInputEmail1">Email address</label>
-                                        <input type="email" name="username" class="form-control" id="exampleInputEmail1"
-                                               aria-describedby="emailHelp" placeholder="Enter email">
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="exampleInputPassword1">Password</label>
-                                        <input type="text" name="password" class="form-control" id="exampleInputPassword1"
-                                               placeholder="Password">
-                                    </div>
-
-                                    <div class="form-group mt-2 text-center">
-                                        <button type="submit" class="btn btn-sm btn-success">Submit</button>
-                                    </div>
-                                </form>
-
-                                <!-- Additional Links -->
-                                <div class="text-center">
-                                    <a th:href="@{/public/forgot-password}"
-                                       class="btn btn-primary btn-sm m-1 btn-block btn-warning">Forgot Password</a>
-                                    <a th:href="@{/public/front-registration}"
-                                       class="btn btn-primary btn-sm m-1 btn-block btn-success">New Registration</a>
+                                <div class="login-input-wrap">
+                                    <i class="bi bi-key"></i>
+                                    <input type="password"
+                                           name="password"
+                                           class="form-control"
+                                           id="loginPassword"
+                                           placeholder="Enter your password"
+                                           autocomplete="current-password"
+                                           required="true">
                                 </div>
                             </div>
+
+                            <button type="submit" class="btn login-submit-btn">
+                                <i class="bi bi-box-arrow-in-right"></i>
+                                Sign in
+                            </button>
+                        </form>
+
+                        <div class="login-create-account">
+                            <span>New customer?</span>
+                            <a th:href="@{/public/front-registration}">Create an account</a>
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
         </section>
-
     </div>
 </html>

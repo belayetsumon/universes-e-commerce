@@ -21,6 +21,7 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <strong>Inventory Movement History</strong>
                 <div class="d-flex gap-2">
+                    <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/stock/current}">Current Stock</a>
                     <a class="btn btn-sm btn-outline-success" th:href="@{/admin/stock/receive}">Receive Stock</a>
                     <a class="btn btn-sm btn-outline-warning" th:href="@{/admin/stock/adjust}">Adjust Stock</a>
                     <span class="badge bg-secondary" th:text="${#lists.size(transactions)} + ' rows'"></span>

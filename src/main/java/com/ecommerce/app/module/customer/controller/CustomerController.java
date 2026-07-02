@@ -7,6 +7,7 @@ package com.ecommerce.app.module.customer.controller;
 
 import com.ecommerce.app.model.Profile;
 import com.ecommerce.app.model.ProfileImage;
+import com.ecommerce.app.module.ReferralRewards.model.Referral;
 import com.ecommerce.app.module.ReferralRewards.model.CashOutRequest;
 import com.ecommerce.app.module.ReferralRewards.repository.CashOutRequestRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.ReferralRepository;
@@ -32,12 +33,16 @@ import com.ecommerce.app.vendor.model.VendorStatusEnum;
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import com.ecommerce.app.vendor.repository.VendorprofileRepository;
 import com.ecommerce.app.vendor.services.VendorCodeGenerator;
+import com.ecommerce.app.services.BarcodeService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import com.google.zxing.BarcodeFormat;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.Principal;
 import java.text.NumberFormat;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -109,6 +114,9 @@ public class CustomerController {
     @Autowired
     VendorCodeGenerator vendorCodeGenerator;
 
+    @Autowired
+    BarcodeService barcodeService;
+
     @RequestMapping(value = {"", "/", "/index", "dashboards"})
     public String index(Model model) {
         Long activeUserId = loggedUserService.activeUserid();
@@ -133,6 +141,23 @@ public class CustomerController {
         BigDecimal walletBalance = rewardAccountRepository.findByUsers(user)
                 .map(com.ecommerce.app.module.ReferralRewards.model.RewardAccount::getBalance)
                 .orElse(BigDecimal.ZERO);
+        String referralCode = referralRepository.findByUsers(user)
+                .map(Referral::getReferralCode)
+                .orElse("");
+        String referralRegistrationUrl = referralCode == null || referralCode.isBlank()
+                ? "/customerregister/register"
+                : "/customerregister/register?ref=" + URLEncoder.encode(referralCode, StandardCharsets.UTF_8);
+        String referralInviteMessage = referralCode == null || referralCode.isBlank()
+                ? "Register on our site and start shopping: /customerregister/register"
+                : "Register on our site using my referral code " + referralCode
+                        + " to join and buy products: " + referralRegistrationUrl;
+        String referralWhatsAppUrl = "https://wa.me/?text="
+                + URLEncoder.encode(referralInviteMessage, StandardCharsets.UTF_8);
+        String referralFacebookUrl = "https://www.facebook.com/sharer/sharer.php?u="
+                + URLEncoder.encode(referralRegistrationUrl, StandardCharsets.UTF_8);
+        String referralQrBase64 = referralCode == null || referralCode.isBlank()
+                ? null
+                : barcodeDataUri(referralRegistrationUrl, BarcodeFormat.QR_CODE, 160, 160);
 
         long totalOrders = orders.size();
         long openOrders = orders.stream().filter(order -> isOpenStatus(order.getStatus())).count();
@@ -184,6 +209,12 @@ public class CustomerController {
         model.addAttribute("billingAddressSummary", summarizeBillingAddress(billingAddress));
         model.addAttribute("walletBalance", walletBalance);
         model.addAttribute("walletBalanceLabel", formatMoney(walletBalance));
+        model.addAttribute("referralCode", referralCode);
+        model.addAttribute("referralRegistrationUrl", referralRegistrationUrl);
+        model.addAttribute("referralInviteMessage", referralInviteMessage);
+        model.addAttribute("referralWhatsAppUrl", referralWhatsAppUrl);
+        model.addAttribute("referralFacebookUrl", referralFacebookUrl);
+        model.addAttribute("referralQrBase64", referralQrBase64);
         model.addAttribute("grossOrderValueLabel", formatMoney(grossOrderValue));
         model.addAttribute("averageOrderValueLabel", formatMoney(averageOrderValue));
         model.addAttribute("totalOrders", totalOrders);
@@ -316,13 +347,13 @@ public class CustomerController {
                 storeCount == 0 ? "Create Store" : "Open Vendor Panel"
         ));
         actions.add(actionCard(
-                "Referral Team",
+                "Referral Rewards",
                 referredCustomerCount + " joined",
-                "See who joined your network and keep your referral growth moving.",
+                "See who joined your network, review reward balance, and open the referral dashboard.",
                 "bi-people",
                 "tone-emerald",
-                "/customer-team/index",
-                "Review Team"
+                "/referralrewards/dashbords",
+                "Open Rewards"
         ));
         actions.add(actionCard(
                 "Cash Out Requests",
@@ -352,6 +383,14 @@ public class CustomerController {
         card.put("href", href);
         card.put("ctaLabel", ctaLabel);
         return card;
+    }
+
+    private String barcodeDataUri(String value, BarcodeFormat format, int width, int height) {
+        try {
+            return barcodeService.generateBarcodeBase64(value, format, width, height);
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     private List<Map<String, Object>> buildRecentOrders(List<SalesOrder> orders) {

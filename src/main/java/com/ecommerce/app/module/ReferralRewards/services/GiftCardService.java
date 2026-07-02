@@ -1,7 +1,8 @@
 package com.ecommerce.app.module.ReferralRewards.services;
 
 import com.ecommerce.app.module.ReferralRewards.model.GiftCard;
-import com.ecommerce.app.module.ReferralRewards.model.GiftCardStatus;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.GiftCardStatus;
+import com.ecommerce.app.module.ReferralRewards.enumvalue.GiftCardTransactionType;
 import com.ecommerce.app.module.ReferralRewards.model.GiftCardTransaction;
 import com.ecommerce.app.module.ReferralRewards.repository.GiftCardRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.GiftCardTransactionRepository;
@@ -9,7 +10,6 @@ import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.order.model.SalesOrder;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,21 +31,25 @@ public class GiftCardService {
             return Optional.empty();
         }
         return giftCardRepository.findByCodeIgnoreCase(code.trim())
-                .filter(gc -> gc.getStatus() == GiftCardStatus.ACTIVE)
+                .filter(this::isUsableStatus)
                 .filter(gc -> !gc.isRedeemed())
-                .filter(gc -> gc.getBalance() != null && gc.getBalance().compareTo(BigDecimal.ZERO) > 0);
+                .filter(gc -> gc.getBalance() != null && gc.getBalance().compareTo(BigDecimal.ZERO) > 0)
+                .filter(this::isNotExpired);
     }
 
     @Transactional
     public BigDecimal applyToOrder(GiftCard giftCard, Users user, SalesOrder order, BigDecimal requestedAmount) {
         GiftCardTransaction transaction = applyToOrderWithTransaction(giftCard, user, order, requestedAmount);
-        return transaction == null ? BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP) : transaction.getAmountUsed();
+        return transaction == null ? BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP) : transaction.getAmount();
     }
 
     @Transactional
     public GiftCardTransaction applyToOrderWithTransaction(GiftCard giftCard, Users user, SalesOrder order, BigDecimal requestedAmount) {
         if (giftCard == null) {
             throw new IllegalArgumentException("Gift card is required.");
+        }
+        if (giftCard.getId() == null) {
+            throw new IllegalArgumentException("Gift card id is required.");
         }
         if (order == null || order.getId() == null) {
             throw new IllegalArgumentException("Order is required.");
@@ -57,15 +61,19 @@ public class GiftCardService {
         GiftCard locked = giftCardRepository.findById(giftCard.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Gift card not found."));
 
-        if (locked.getStatus() != GiftCardStatus.ACTIVE || locked.isRedeemed()) {
+        if (!isUsableStatus(locked) || locked.isRedeemed() || !isNotExpired(locked)) {
             throw new IllegalArgumentException("Gift card is not usable.");
         }
+        if (!isAvailableToUser(locked, user)) {
+            throw new IllegalArgumentException("Gift card is not available for this customer.");
+        }
 
-        if (giftCardTransactionRepository.existsByGiftCardAndOrder_Id(locked, order.getId())) {
+        String orderId = String.valueOf(order.getId());
+        if (giftCardTransactionRepository.existsByGiftCardAndOrderId(locked, orderId)) {
             return null;
         }
 
-        BigDecimal balance = locked.getBalance() == null ? BigDecimal.ZERO : locked.getBalance();
+        BigDecimal balance = safeMoney(locked.getBalance());
         BigDecimal applyAmount = requestedAmount.setScale(2, RoundingMode.HALF_UP).min(balance).max(BigDecimal.ZERO);
         if (applyAmount.compareTo(BigDecimal.ZERO) <= 0) {
             return null;
@@ -75,17 +83,48 @@ public class GiftCardService {
         locked.setBalance(remaining);
         if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
             locked.setRedeemed(true);
-            locked.setStatus(GiftCardStatus.USED);
+            locked.setStatus(GiftCardStatus.REDEEMED);
+        } else {
+            locked.setRedeemed(false);
+            locked.setStatus(GiftCardStatus.PARTIALLY_REDEEMED);
         }
+        locked.setLastUsedAt(java.time.LocalDateTime.now());
         giftCardRepository.save(locked);
 
         GiftCardTransaction txn = new GiftCardTransaction();
         txn.setGiftCard(locked);
-        txn.setOrder(order);
-        txn.setUser(user);
-        txn.setUsedAt(LocalDateTime.now());
-        txn.setAmountUsed(applyAmount);
-        txn.setRemainingBalance(remaining);
+        txn.setType(GiftCardTransactionType.REDEEM);
+        txn.setAmount(applyAmount);
+        txn.setBalanceAfter(remaining);
+        txn.setCurrency("BDT");
+        txn.setOrderId(orderId);
+        txn.setIdempotencyKey("GIFT_CARD:" + locked.getId() + ":ORDER:" + orderId);
         return giftCardTransactionRepository.save(txn);
+    }
+
+    private boolean isUsableStatus(GiftCard giftCard) {
+        return giftCard != null
+                && (giftCard.getStatus() == GiftCardStatus.ACTIVE
+                || giftCard.getStatus() == GiftCardStatus.PARTIALLY_REDEEMED);
+    }
+
+    private boolean isNotExpired(GiftCard giftCard) {
+        return giftCard == null
+                || giftCard.getExpiresAt() == null
+                || giftCard.getExpiresAt().isAfter(java.time.LocalDateTime.now());
+    }
+
+    private boolean isAvailableToUser(GiftCard giftCard, Users user) {
+        if (giftCard == null || giftCard.getIssuedTo() == null) {
+            return true;
+        }
+        return user != null
+                && user.getId() != null
+                && giftCard.getIssuedTo().getId() != null
+                && user.getId().equals(giftCard.getIssuedTo().getId());
+    }
+
+    private BigDecimal safeMoney(BigDecimal amount) {
+        return amount == null ? BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP) : amount.setScale(2, RoundingMode.HALF_UP);
     }
 }

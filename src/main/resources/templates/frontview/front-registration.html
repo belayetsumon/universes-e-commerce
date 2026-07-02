@@ -1,99 +1,227 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
-<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-page">
-    <div layout:fragment = "main_content">
-
-
-
-
-
-        <section style="padding: 40px 0px 100px 0px">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-page">
+    <div layout:fragment="main_content">
+        <section class="registration-page">
             <div class="container">
-                <div class="row">
-                    <div class=" col-xs-12 col-sm-6 col-md-6 ">
-                        <div class="card">
-                            <div class="card-header">
-                                Create Your Account
-                            </div>
-                            <div class="card-body">
-                                <form th:action="@{/users/frontRegistrationSave}" th:object="${users}"  method="post" >
-                                    <div class="alert alert-danger alert-dismissible fade show" th:if="${#fields.hasErrors('*')}" role="alert">
-                                        <h4 class="alert-heading">
-                                            <i class="fa fa-ban me-2"></i> Error
-                                        </h4>
-                                        <ul class="mb-0">
-                                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
-                                        </ul>
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                    </div>
+                <div class="registration-hero">
+                    <div class="registration-hero__copy">
+                        <span class="registration-eyebrow">Customer onboarding</span>
+                        <h1>Create your shopping account</h1>
+                        <p>
+                            Register once to manage orders, saved profile information, referral rewards,
+                            and a faster checkout experience across the storefront.
+                        </p>
+                    </div>
+                    <a th:href="@{/public/member-login}" class="registration-login-link">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        Already registered? Sign in
+                    </a>
+                </div>
 
-                                    <div class="row" th:if="${!#strings.isEmpty(success)}">
-                                        <span  class="alert alert-success alert-dismissible" th:text="${success}"> </span>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <input type="hidden" class="form-control"  th:field="*{id}" />
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="exampleInputEmail1">First Name</label>
-                                        <input type="text" minlength="5" required="true" class="form-control" th:field="*{firstName}" aria-describedby="emailHelp" placeholder="Enter first name">
-                                        <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}">Book Name</span>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="exampleInputEmail1"> Last Name</label>
-                                        <input type="text" minlength="5" required="true" class="form-control" th:field="*{lastName}" aria-describedby="emailHelp" placeholder="Enter last name">
-                                        <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}">Book Name</span>
-                                    </div>
-
-
-                                    <div class="form-group">
-                                        <label for="exampleInputEmail1">Email address</label>
-                                        <input type="email"
-                                               pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-                                               minlength="5"
-                                               required="true"
-                                               class="form-control" th:field="*{email}" aria-describedby="emailHelp" placeholder="Enter email">
-                                        <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Book Name</span>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="exampleInputEmail1">Mobile Number</label>
-                                        <input type="text" minlength="11" required="true" class="form-control" th:field="*{mobile}" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter Mobile">
-                                        <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('mobile')}" th:errors="*{mobile}">Book Name</span>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="exampleInputPassword1">Password</label>
-
-                                        <input type="password" minlength="6" required="true" th:field="*{password}" class="form-control" id="exampleInputPassword1" placeholder="Enter Password">
-                                        <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Book Name</span>
-                                    </div>
-
-
-                                    <div class="form-group">
-                                        <label for="exampleInputPassword1">Referral Code</label>
-
-                                        <input type="text" minlength="6"  maxlength="6" name="ref_code"   class="form-control" id="exampleInputPassword1" placeholder="Enter Referral Code">
-
-                                    </div>
-
-                                    <div class="form-group mt-3">
-                                        <label for="exampleInputEmail1"></label>
-                                        <button type="submit" class="btn btn-info">Submit</button>
-                                    </div>
-
-                                </form>
+                <div class="registration-layout">
+                    <aside class="registration-insight-panel" aria-label="Account benefits">
+                        <div class="registration-insight-header">
+                            <span class="registration-insight-icon">
+                                <i class="bi bi-shield-check"></i>
+                            </span>
+                            <div>
+                                <span class="registration-eyebrow">Secure profile</span>
+                                <h2>Built for reliable commerce</h2>
                             </div>
                         </div>
+
+                        <div class="registration-benefit-list">
+                            <div class="registration-benefit">
+                                <i class="bi bi-receipt"></i>
+                                <div>
+                                    <strong>Order visibility</strong>
+                                    <span>Keep account and order information connected after checkout.</span>
+                                </div>
+                            </div>
+                            <div class="registration-benefit">
+                                <i class="bi bi-gift"></i>
+                                <div>
+                                    <strong>Referral ready</strong>
+                                    <span>Use an optional referral code during signup when one is available.</span>
+                                </div>
+                            </div>
+                            <div class="registration-benefit">
+                                <i class="bi bi-lock"></i>
+                                <div>
+                                    <strong>Protected access</strong>
+                                    <span>Your account is secured with a private password and verified email login.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="registration-support-box">
+                            <span>Need help?</span>
+                            <strong th:text="${session.globalSettings.siteName}">Support team</strong>
+                            <small>Use accurate contact details so support can reach you about orders and account activity.</small>
+                        </div>
+                    </aside>
+
+                    <div class="registration-form-panel">
+                        <div class="registration-form-header">
+                            <div>
+                                <span class="registration-eyebrow">New customer</span>
+                                <h2>Account details</h2>
+                            </div>
+                            <span class="registration-required-note">All required fields</span>
+                        </div>
+
+                        <form class="registration-form" th:action="@{/users/frontRegistrationSave}" th:object="${users}" method="post">
+                            <div class="alert alert-danger alert-dismissible fade show registration-alert"
+                                 th:if="${#fields.hasErrors('*')}" role="alert">
+                                <div class="registration-alert-title">
+                                    <i class="bi bi-exclamation-octagon"></i>
+                                    Please review the highlighted information.
+                                </div>
+                                <ul class="mb-0">
+                                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+
+                            <div class="alert alert-success alert-dismissible fade show registration-alert"
+                                 th:if="${!#strings.isEmpty(success)}" role="alert">
+                                <span th:text="${success}">Registration completed successfully.</span>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+
+                            <input type="hidden" th:field="*{id}" />
+
+                            <div class="registration-field-grid">
+                                <div class="registration-field">
+                                    <label for="registrationFirstName">First name</label>
+                                    <div class="registration-input-wrap">
+                                        <i class="bi bi-person"></i>
+                                        <input type="text"
+                                               id="registrationFirstName"
+                                               minlength="5"
+                                               required="true"
+                                               class="form-control"
+                                               th:field="*{firstName}"
+                                               placeholder="Enter first name"
+                                               autocomplete="given-name">
+                                    </div>
+                                    <span class="registration-field-error"
+                                          th:if="${#fields.hasErrors('firstName')}"
+                                          th:errors="*{firstName}">First name error</span>
+                                </div>
+
+                                <div class="registration-field">
+                                    <label for="registrationLastName">Last name</label>
+                                    <div class="registration-input-wrap">
+                                        <i class="bi bi-person-badge"></i>
+                                        <input type="text"
+                                               id="registrationLastName"
+                                               minlength="5"
+                                               required="true"
+                                               class="form-control"
+                                               th:field="*{lastName}"
+                                               placeholder="Enter last name"
+                                               autocomplete="family-name">
+                                    </div>
+                                    <span class="registration-field-error"
+                                          th:if="${#fields.hasErrors('lastName')}"
+                                          th:errors="*{lastName}">Last name error</span>
+                                </div>
+                            </div>
+
+                            <div class="registration-field">
+                                <label for="registrationEmail">Email address</label>
+                                <div class="registration-input-wrap">
+                                    <i class="bi bi-envelope"></i>
+                                    <input type="email"
+                                           id="registrationEmail"
+                                           pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                                           minlength="5"
+                                           required="true"
+                                           class="form-control"
+                                           th:field="*{email}"
+                                           placeholder="name@example.com"
+                                           autocomplete="email">
+                                </div>
+                                <span class="registration-field-error"
+                                      th:if="${#fields.hasErrors('email')}"
+                                      th:errors="*{email}">Email error</span>
+                            </div>
+
+                            <div class="registration-field-grid">
+                                <div class="registration-field">
+                                    <label for="registrationMobile">Mobile number</label>
+                                    <div class="registration-input-wrap">
+                                        <i class="bi bi-telephone"></i>
+                                        <input type="text"
+                                               id="registrationMobile"
+                                               minlength="11"
+                                               required="true"
+                                               class="form-control"
+                                               th:field="*{mobile}"
+                                               placeholder="Enter mobile number"
+                                               autocomplete="tel">
+                                    </div>
+                                    <span class="registration-field-error"
+                                          th:if="${#fields.hasErrors('mobile')}"
+                                          th:errors="*{mobile}">Mobile error</span>
+                                </div>
+
+                                <div class="registration-field">
+                                    <label for="registrationPassword">Password</label>
+                                    <div class="registration-input-wrap">
+                                        <i class="bi bi-key"></i>
+                                        <input type="password"
+                                               id="registrationPassword"
+                                               minlength="6"
+                                               required="true"
+                                               th:field="*{password}"
+                                               class="form-control"
+                                               placeholder="Minimum 6 characters"
+                                               autocomplete="new-password">
+                                    </div>
+                                    <span class="registration-field-error"
+                                          th:if="${#fields.hasErrors('password')}"
+                                          th:errors="*{password}">Password error</span>
+                                </div>
+                            </div>
+
+                            <div class="registration-field">
+                                <label for="registrationReferral">Referral code <span>optional</span></label>
+                                <div class="registration-input-wrap">
+                                    <i class="bi bi-ticket-perforated"></i>
+                                    <input type="text"
+                                           id="registrationReferral"
+                                           minlength="6"
+                                           maxlength="6"
+                                           name="ref_code"
+                                           class="form-control"
+                                           placeholder="Enter 6 digit referral code"
+                                           autocomplete="off">
+                                </div>
+                            </div>
+
+                            <label class="registration-consent">
+                                <input class="form-check-input" type="checkbox" required="true">
+                                <span>
+                                    I confirm that the account information is accurate and I agree to the
+                                    <a th:href="@{/public/terms-and-conditions}">Terms &amp; Conditions</a>.
+                                </span>
+                            </label>
+
+                            <div class="registration-actions">
+                                <button type="submit" class="btn registration-submit-btn">
+                                    <i class="bi bi-person-check"></i>
+                                    Create account
+                                </button>
+                                <a th:href="@{/public/member-login}" class="btn btn-outline-dark registration-secondary-btn">
+                                    Sign in instead
+                                </a>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
         </section>
     </div>
-</div>
+</html>
