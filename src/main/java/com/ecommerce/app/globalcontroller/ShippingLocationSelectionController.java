@@ -6,6 +6,7 @@ package com.ecommerce.app.globalcontroller;
 
 import com.ecommerce.app.module.cart.model.CartItem;
 import com.ecommerce.app.module.shipping.model.ShippingLocation;
+import com.ecommerce.app.module.shipping.model.ShippingLocationType;
 import com.ecommerce.app.module.shipping.services.ShippingLocationService;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
@@ -34,8 +35,16 @@ public class ShippingLocationSelectionController {
     @GetMapping("/select-district")
     public String districtPage(Model model) {
 
-        model.addAttribute("districts", locationService.getActiveLocations());
+        model.addAttribute("districts", locationService.getActiveDistricts());
         return "/district/select-district"; // Name of Thymeleaf HTML file
+    }
+
+    @GetMapping("/thanas")
+    @ResponseBody
+    public List<LocationOption> thanas(@RequestParam(name = "districtId") Long districtId) {
+        return locationService.getActiveChildren(districtId, ShippingLocationType.THANA).stream()
+                .map(location -> new LocationOption(location.getId(), location.getName(), location.getDisplayLabel()))
+                .toList();
     }
 
     @PostMapping("/save-district")
@@ -102,6 +111,9 @@ public class ShippingLocationSelectionController {
                     session.removeAttribute("shippingCost_" + vendorUuid);
                     session.removeAttribute("shippingOption_" + vendorUuid);
                 });
+    }
+
+    public record LocationOption(Long id, String name, String displayLabel) {
     }
 
 }

@@ -70,6 +70,7 @@ public class SecurityConfig {
         "/forgotpassword/**",
         "/district/select-district",
         "/district/save-district",
+        "/district/thanas",
         "/error"
     };
 

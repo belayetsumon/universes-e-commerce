@@ -1,14 +1,23 @@
 package com.ecommerce.app.module.settings.controller;
 
+import com.ecommerce.app.module.settings.form.BasicSiteSettingsForm;
+import com.ecommerce.app.module.settings.form.DeliverySettingsForm;
+import com.ecommerce.app.module.settings.form.MaintenanceSettingsForm;
+import com.ecommerce.app.module.settings.form.OrderSettingsForm;
+import com.ecommerce.app.module.settings.form.PaymentSettingsForm;
+import com.ecommerce.app.module.settings.form.PolicySettingsForm;
+import com.ecommerce.app.module.settings.form.SeoSettingsForm;
+import com.ecommerce.app.module.settings.form.SocialSettingsForm;
+import com.ecommerce.app.module.settings.form.StoreSettingsForm;
 import com.ecommerce.app.module.settings.model.GlobalSettings;
 import com.ecommerce.app.module.settings.services.GlobalSettingsService;
+import com.ecommerce.app.module.settings.services.GlobalSettingsService.SettingsImageType;
 import com.ecommerce.app.module.settings.services.GlobalSettingsService.SettingsOperationException;
 import com.ecommerce.app.module.settings.services.GlobalSettingsService.SettingsValidationException;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,80 +37,169 @@ public class GlobalSettingsController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalSettingsController.class);
     private static final String VIEW = "admin/settings/global-settings";
-
     private static final String REDIRECT = "redirect:/admin/settings/index";
+
     private static final String SETTINGS_ATTRIBUTE = "settings";
+    private static final String BASIC_FORM_ATTRIBUTE = "basicSiteSettingsForm";
+    private static final String SEO_FORM_ATTRIBUTE = "seoSettingsForm";
+    private static final String STORE_FORM_ATTRIBUTE = "storeSettingsForm";
+    private static final String PAYMENT_FORM_ATTRIBUTE = "paymentSettingsForm";
+    private static final String DELIVERY_FORM_ATTRIBUTE = "deliverySettingsForm";
+    private static final String ORDER_FORM_ATTRIBUTE = "orderSettingsForm";
+    private static final String SOCIAL_FORM_ATTRIBUTE = "socialSettingsForm";
+    private static final String POLICY_FORM_ATTRIBUTE = "policySettingsForm";
+    private static final String MAINTENANCE_FORM_ATTRIBUTE = "maintenanceSettingsForm";
     private static final String SUCCESS_ATTRIBUTE = "successMessage";
     private static final String ERROR_ATTRIBUTE = "errorMessage";
+    private static final String ACTIVE_SECTION_ATTRIBUTE = "activeSettingsSection";
 
     private final GlobalSettingsService globalSettingsService;
 
-    @Autowired
     public GlobalSettingsController(GlobalSettingsService globalSettingsService) {
         this.globalSettingsService = globalSettingsService;
     }
 
     @GetMapping("/index")
     public String settingsPage(Model model) {
-        if (!model.containsAttribute(SETTINGS_ATTRIBUTE)) {
-            model.addAttribute(SETTINGS_ATTRIBUTE, loadSettingsForView(model));
-        }
+        Object existingSettings = model.asMap().get(SETTINGS_ATTRIBUTE);
+        GlobalSettings settings = existingSettings instanceof GlobalSettings globalSettings
+                ? globalSettings
+                : loadSettingsForView(model);
+        model.addAttribute(SETTINGS_ATTRIBUTE, settings);
+        addSectionForms(model, settings);
         return VIEW;
     }
 
     @GetMapping("/update")
     public String updatePageFallback(RedirectAttributes redirectAttributes) {
-        redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE, "Use the settings form to save changes.");
+        redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE, "Use a section save button to update settings.");
         return REDIRECT;
     }
 
     @PostMapping("/update")
-    public String updateSettings(
-            @Valid @ModelAttribute(SETTINGS_ATTRIBUTE) GlobalSettings settings,
+    public String updateSettingsFallback(RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE, "The full settings save action is no longer available. Please save one commented section at a time.");
+        return REDIRECT;
+    }
+
+    @PostMapping("/basic")
+    public String updateBasic(
+            @Valid @ModelAttribute(BASIC_FORM_ATTRIBUTE) BasicSiteSettingsForm form,
             BindingResult bindingResult,
             @RequestParam(name = "siteLogoFile", required = false) MultipartFile siteLogoFile,
             @RequestParam(name = "faviconFile", required = false) MultipartFile faviconFile,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (bindingResult.hasErrors()) {
+            return validationRedirect("Basic site", "basic", BASIC_FORM_ATTRIBUTE, form, bindingResult, redirectAttributes);
+        }
+        return saveSection("Basic site", "basic", BASIC_FORM_ATTRIBUTE, form, redirectAttributes,
+                () -> globalSettingsService.updateBasicSiteSettings(form, siteLogoFile, faviconFile));
+    }
+
+    @PostMapping("/seo")
+    public String updateSeo(
+            @Valid @ModelAttribute(SEO_FORM_ATTRIBUTE) SeoSettingsForm form,
+            BindingResult bindingResult,
             @RequestParam(name = "ogImageFile", required = false) MultipartFile ogImageFile,
             RedirectAttributes redirectAttributes
     ) {
-        LOGGER.info("Global settings update request received");
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE, "Please review the highlighted settings and try again.");
-            redirectAttributes.addFlashAttribute(SETTINGS_ATTRIBUTE, settings);
-            redirectAttributes.addFlashAttribute(
-                    "org.springframework.validation.BindingResult." + SETTINGS_ATTRIBUTE,
-                    bindingResult
-            );
-            return REDIRECT;
+            return validationRedirect("SEO", "seo", SEO_FORM_ATTRIBUTE, form, bindingResult, redirectAttributes);
         }
+        return saveSection("SEO", "seo", SEO_FORM_ATTRIBUTE, form, redirectAttributes,
+                () -> globalSettingsService.updateSeoSettings(form, ogImageFile));
+    }
 
-        try {
-            globalSettingsService.updateSettings(settings, siteLogoFile, faviconFile, ogImageFile);
-            redirectAttributes.addFlashAttribute(SUCCESS_ATTRIBUTE, "Global settings updated successfully.");
-        } catch (SettingsValidationException ex) {
-            LOGGER.warn("Settings update rejected by service validation: {}", ex.getMessage());
-            redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE, String.join(" ", ex.getErrors()));
-        } catch (OptimisticLockingFailureException ex) {
-            LOGGER.warn("Settings update rejected because the submitted version is stale", ex);
-            redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE, ex.getMessage());
-        } catch (SettingsOperationException ex) {
-            LOGGER.error("Failed to update global settings", ex);
-            redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE, ex.getMessage());
-        } catch (RuntimeException ex) {
-            String reference = errorReference();
-            LOGGER.error("Unexpected global settings update error. reference={}", reference, ex);
-            redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE,
-                    "Settings could not be saved. Error reference: " + reference + ".");
+    @PostMapping("/store")
+    public String updateStore(
+            @Valid @ModelAttribute(STORE_FORM_ATTRIBUTE) StoreSettingsForm form,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (bindingResult.hasErrors()) {
+            return validationRedirect("Store", "store", STORE_FORM_ATTRIBUTE, form, bindingResult, redirectAttributes);
         }
+        return saveSection("Store", "store", STORE_FORM_ATTRIBUTE, form, redirectAttributes,
+                () -> globalSettingsService.updateStoreSettings(form));
+    }
 
-        return REDIRECT;
+    @PostMapping("/payment")
+    public String updatePayment(
+            @ModelAttribute(PAYMENT_FORM_ATTRIBUTE) PaymentSettingsForm form,
+            RedirectAttributes redirectAttributes
+    ) {
+        return saveSection("Payment", "payment", PAYMENT_FORM_ATTRIBUTE, form, redirectAttributes,
+                () -> globalSettingsService.updatePaymentSettings(form));
+    }
+
+    @PostMapping("/delivery")
+    public String updateDelivery(
+            @Valid @ModelAttribute(DELIVERY_FORM_ATTRIBUTE) DeliverySettingsForm form,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (bindingResult.hasErrors()) {
+            return validationRedirect("Delivery", "delivery", DELIVERY_FORM_ATTRIBUTE, form, bindingResult, redirectAttributes);
+        }
+        return saveSection("Delivery", "delivery", DELIVERY_FORM_ATTRIBUTE, form, redirectAttributes,
+                () -> globalSettingsService.updateDeliverySettings(form));
+    }
+
+    @PostMapping("/order")
+    public String updateOrder(
+            @Valid @ModelAttribute(ORDER_FORM_ATTRIBUTE) OrderSettingsForm form,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (bindingResult.hasErrors()) {
+            return validationRedirect("Order", "order", ORDER_FORM_ATTRIBUTE, form, bindingResult, redirectAttributes);
+        }
+        return saveSection("Order", "order", ORDER_FORM_ATTRIBUTE, form, redirectAttributes,
+                () -> globalSettingsService.updateOrderSettings(form));
+    }
+
+    @PostMapping("/social")
+    public String updateSocial(
+            @Valid @ModelAttribute(SOCIAL_FORM_ATTRIBUTE) SocialSettingsForm form,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (bindingResult.hasErrors()) {
+            return validationRedirect("Social", "social", SOCIAL_FORM_ATTRIBUTE, form, bindingResult, redirectAttributes);
+        }
+        return saveSection("Social", "social", SOCIAL_FORM_ATTRIBUTE, form, redirectAttributes,
+                () -> globalSettingsService.updateSocialSettings(form));
+    }
+
+    @PostMapping("/policy")
+    public String updatePolicy(
+            @ModelAttribute(POLICY_FORM_ATTRIBUTE) PolicySettingsForm form,
+            RedirectAttributes redirectAttributes
+    ) {
+        return saveSection("Policy", "policy", POLICY_FORM_ATTRIBUTE, form, redirectAttributes,
+                () -> globalSettingsService.updatePolicySettings(form));
+    }
+
+    @PostMapping("/maintenance")
+    public String updateMaintenance(
+            @Valid @ModelAttribute(MAINTENANCE_FORM_ATTRIBUTE) MaintenanceSettingsForm form,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (bindingResult.hasErrors()) {
+            return validationRedirect("Maintenance", "maintenance", MAINTENANCE_FORM_ATTRIBUTE, form, bindingResult, redirectAttributes);
+        }
+        return saveSection("Maintenance", "maintenance", MAINTENANCE_FORM_ATTRIBUTE, form, redirectAttributes,
+                () -> globalSettingsService.updateMaintenanceSettings(form));
     }
 
     @PostMapping("/images/delete")
     public String deleteImage(
-            @RequestParam("type") GlobalSettingsService.SettingsImageType imageType,
+            @RequestParam("type") SettingsImageType imageType,
             RedirectAttributes redirectAttributes
     ) {
+        String sectionId = imageType == SettingsImageType.OG_IMAGE ? "seo" : "basic";
         try {
             globalSettingsService.deleteImage(imageType);
             redirectAttributes.addFlashAttribute(SUCCESS_ATTRIBUTE, imageType.getLabel() + " deleted successfully.");
@@ -114,74 +212,40 @@ public class GlobalSettingsController {
             redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE,
                     "Image could not be deleted. Error reference: " + reference + ".");
         }
-
-        return REDIRECT + "#images";
-    }
-
-    @PostMapping("/basic")
-    public String updateBasic(@ModelAttribute GlobalSettings settings, RedirectAttributes redirectAttributes) {
-        return updateSettingsSection(settings, GlobalSettingsService.SettingsSection.BASIC, "Basic", redirectAttributes);
-    }
-
-    @PostMapping("/seo")
-    public String updateSeo(@ModelAttribute GlobalSettings settings, RedirectAttributes redirectAttributes) {
-        return updateSettingsSection(settings, GlobalSettingsService.SettingsSection.SEO, "SEO", redirectAttributes);
-    }
-
-    @PostMapping("/store")
-    public String updateStore(@ModelAttribute GlobalSettings settings, RedirectAttributes redirectAttributes) {
-        return updateSettingsSection(settings, GlobalSettingsService.SettingsSection.STORE, "Store", redirectAttributes);
-    }
-
-    @PostMapping("/payment")
-    public String updatePayment(@ModelAttribute GlobalSettings settings, RedirectAttributes redirectAttributes) {
-        return updateSettingsSection(settings, GlobalSettingsService.SettingsSection.PAYMENT, "Payment", redirectAttributes);
-    }
-
-    @PostMapping("/delivery")
-    public String updateDelivery(@ModelAttribute GlobalSettings settings, RedirectAttributes redirectAttributes) {
-        return updateSettingsSection(settings, GlobalSettingsService.SettingsSection.DELIVERY, "Delivery", redirectAttributes);
-    }
-
-    @PostMapping("/order")
-    public String updateOrder(@ModelAttribute GlobalSettings settings, RedirectAttributes redirectAttributes) {
-        return updateSettingsSection(settings, GlobalSettingsService.SettingsSection.ORDER, "Order", redirectAttributes);
-    }
-
-    @PostMapping("/social")
-    public String updateSocial(@ModelAttribute GlobalSettings settings, RedirectAttributes redirectAttributes) {
-        return updateSettingsSection(settings, GlobalSettingsService.SettingsSection.SOCIAL, "Social", redirectAttributes);
-    }
-
-    @PostMapping("/policy")
-    public String updatePolicy(@ModelAttribute GlobalSettings settings, RedirectAttributes redirectAttributes) {
-        return updateSettingsSection(settings, GlobalSettingsService.SettingsSection.POLICY, "Policy", redirectAttributes);
-    }
-
-    @PostMapping("/maintenance")
-    public String updateMaintenance(@ModelAttribute GlobalSettings settings, RedirectAttributes redirectAttributes) {
-        return updateSettingsSection(settings, GlobalSettingsService.SettingsSection.MAINTENANCE, "Maintenance", redirectAttributes);
+        redirectAttributes.addFlashAttribute(ACTIVE_SECTION_ATTRIBUTE, sectionId);
+        return REDIRECT + "#" + sectionId;
     }
 
     @ExceptionHandler(Exception.class)
     public String handleUnexpectedError(Exception ex, Model model) {
         String reference = errorReference();
         LOGGER.error("Unexpected settings page error. reference={}", reference, ex);
-        model.addAttribute(SETTINGS_ATTRIBUTE, globalSettingsService.defaultSettingsForForm());
+        GlobalSettings settings = globalSettingsService.defaultSettingsForForm();
+        model.addAttribute(SETTINGS_ATTRIBUTE, settings);
+        addSectionForms(model, settings);
         model.addAttribute(ERROR_ATTRIBUTE, "Settings page could not complete the request. Error reference: " + reference + ".");
         return VIEW;
     }
 
-    private String updateSettingsSection(
-            GlobalSettings settings,
-            GlobalSettingsService.SettingsSection section,
+    private String saveSection(
             String sectionName,
-            RedirectAttributes redirectAttributes
+            String sectionId,
+            String formAttribute,
+            Object form,
+            RedirectAttributes redirectAttributes,
+            SettingsUpdateAction action
     ) {
         try {
-            globalSettingsService.updateSettingsField(settings, section);
+            action.update();
             redirectAttributes.addFlashAttribute(SUCCESS_ATTRIBUTE, sectionName + " settings updated successfully.");
-        } catch (SettingsValidationException | SettingsOperationException | OptimisticLockingFailureException ex) {
+        } catch (SettingsValidationException ex) {
+            LOGGER.warn("{} settings validation failed: {}", sectionName, ex.getMessage());
+            redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE, sectionName + " settings could not be saved: " + String.join(" ", ex.getErrors()));
+            redirectAttributes.addFlashAttribute(formAttribute, form);
+        } catch (OptimisticLockingFailureException ex) {
+            LOGGER.warn("{} settings update rejected because the submitted version is stale", sectionName, ex);
+            redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE, ex.getMessage());
+        } catch (SettingsOperationException ex) {
             LOGGER.error("Failed to update {} settings", sectionName, ex);
             redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE, ex.getMessage());
         } catch (RuntimeException ex) {
@@ -190,7 +254,54 @@ public class GlobalSettingsController {
             redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE,
                     sectionName + " settings could not be saved. Error reference: " + reference + ".");
         }
-        return REDIRECT + "#" + section.getFragment();
+        redirectAttributes.addFlashAttribute(ACTIVE_SECTION_ATTRIBUTE, sectionId);
+        return REDIRECT + "#" + sectionId;
+    }
+
+    private String validationRedirect(
+            String sectionName,
+            String sectionId,
+            String formAttribute,
+            Object form,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes
+    ) {
+        LOGGER.warn("{} settings rejected by controller validation: {}", sectionName, bindingResult.getAllErrors());
+        redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE, sectionName + " settings could not be saved. Please review the highlighted fields.");
+        redirectAttributes.addFlashAttribute(formAttribute, form);
+        redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult." + formAttribute, bindingResult);
+        redirectAttributes.addFlashAttribute(ACTIVE_SECTION_ATTRIBUTE, sectionId);
+        return REDIRECT + "#" + sectionId;
+    }
+
+    private void addSectionForms(Model model, GlobalSettings settings) {
+        if (!model.containsAttribute(BASIC_FORM_ATTRIBUTE)) {
+            model.addAttribute(BASIC_FORM_ATTRIBUTE, BasicSiteSettingsForm.from(settings));
+        }
+        if (!model.containsAttribute(SEO_FORM_ATTRIBUTE)) {
+            model.addAttribute(SEO_FORM_ATTRIBUTE, SeoSettingsForm.from(settings));
+        }
+        if (!model.containsAttribute(STORE_FORM_ATTRIBUTE)) {
+            model.addAttribute(STORE_FORM_ATTRIBUTE, StoreSettingsForm.from(settings));
+        }
+        if (!model.containsAttribute(PAYMENT_FORM_ATTRIBUTE)) {
+            model.addAttribute(PAYMENT_FORM_ATTRIBUTE, PaymentSettingsForm.from(settings));
+        }
+        if (!model.containsAttribute(DELIVERY_FORM_ATTRIBUTE)) {
+            model.addAttribute(DELIVERY_FORM_ATTRIBUTE, DeliverySettingsForm.from(settings));
+        }
+        if (!model.containsAttribute(ORDER_FORM_ATTRIBUTE)) {
+            model.addAttribute(ORDER_FORM_ATTRIBUTE, OrderSettingsForm.from(settings));
+        }
+        if (!model.containsAttribute(SOCIAL_FORM_ATTRIBUTE)) {
+            model.addAttribute(SOCIAL_FORM_ATTRIBUTE, SocialSettingsForm.from(settings));
+        }
+        if (!model.containsAttribute(POLICY_FORM_ATTRIBUTE)) {
+            model.addAttribute(POLICY_FORM_ATTRIBUTE, PolicySettingsForm.from(settings));
+        }
+        if (!model.containsAttribute(MAINTENANCE_FORM_ATTRIBUTE)) {
+            model.addAttribute(MAINTENANCE_FORM_ATTRIBUTE, MaintenanceSettingsForm.from(settings));
+        }
     }
 
     private GlobalSettings loadSettingsForView(Model model) {
@@ -213,5 +324,11 @@ public class GlobalSettingsController {
 
     private String errorReference() {
         return UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    @FunctionalInterface
+    private interface SettingsUpdateAction {
+
+        void update();
     }
 }

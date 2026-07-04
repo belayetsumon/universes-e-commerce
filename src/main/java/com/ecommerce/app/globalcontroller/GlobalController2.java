@@ -7,6 +7,7 @@ package com.ecommerce.app.globalcontroller;
 
 import com.ecommerce.app.globalComponant.EntityNameResolver;
 import com.ecommerce.app.module.shipping.model.ShippingLocation;
+import com.ecommerce.app.module.shipping.model.ShippingLocationType;
 import com.ecommerce.app.module.shipping.services.ShippingLocationService;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.wishlist.service.WishlistService;
@@ -14,11 +15,15 @@ import com.ecommerce.app.product.model.ProductStatusEnum;
 import com.ecommerce.app.product.model.Productcategory;
 import com.ecommerce.app.product.ripository.ProductcategoryRepository;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.Principal;
+import java.util.Collections;
 import java.util.Set;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -29,6 +34,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
  */
 @ControllerAdvice
 public class GlobalController2 {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalController2.class);
 
     @Autowired
     private EntityNameResolver entityNameResolver;
@@ -56,15 +63,25 @@ public class GlobalController2 {
     }
 
     @ModelAttribute
-    public void addWishlistAttributes(Model model, Principal principal) {
-        Set<String> wishlistProductUuids = wishlistService.getWishlistProductUuids(principal);
-        Set<String> wishlistProductKeys = wishlistProductUuids.stream()
-                .filter(uuid -> uuid != null && !uuid.isBlank())
-                .collect(Collectors.toSet());
-        model.addAttribute("wishlistProductIds", wishlistProductUuids);
-        model.addAttribute("wishlistProductUuids", wishlistProductUuids);
-        model.addAttribute("wishlistProductKeys", wishlistProductKeys);
-        model.addAttribute("wishlistCount", wishlistProductUuids.size());
+    public void addWishlistAttributes(Model model, Principal principal, HttpServletRequest request) {
+        if (isBackOfficeRequest(request)) {
+            addEmptyWishlistAttributes(model);
+            return;
+        }
+
+        try {
+            Set<String> wishlistProductUuids = wishlistService.getWishlistProductUuids(principal);
+            Set<String> wishlistProductKeys = wishlistProductUuids.stream()
+                    .filter(uuid -> uuid != null && !uuid.isBlank())
+                    .collect(Collectors.toSet());
+            model.addAttribute("wishlistProductIds", wishlistProductUuids);
+            model.addAttribute("wishlistProductUuids", wishlistProductUuids);
+            model.addAttribute("wishlistProductKeys", wishlistProductKeys);
+            model.addAttribute("wishlistCount", wishlistProductUuids.size());
+        } catch (RuntimeException ex) {
+            LOGGER.warn("Unable to populate wishlist model attributes for {}", requestPath(request), ex);
+            addEmptyWishlistAttributes(model);
+        }
     }
 
 //    @ModelAttribute
@@ -84,17 +101,53 @@ public class GlobalController2 {
 //    }
 //
     @ModelAttribute("maincategory")
-    public List<Productcategory> populateCategories() {
-        return productcategoryRepository.findByStatusAndParentIsNull(ProductStatusEnum.Active);
+    public List<Productcategory> populateCategories(HttpServletRequest request) {
+        if (isBackOfficeRequest(request)) {
+            return Collections.emptyList();
+        }
+
+        try {
+            return productcategoryRepository.findByStatusAndParentIsNull(ProductStatusEnum.Active);
+        } catch (RuntimeException ex) {
+            LOGGER.warn("Unable to populate category model attributes for {}", requestPath(request), ex);
+            return Collections.emptyList();
+        }
     }
 
     @ModelAttribute("shippinglocations")
-    public List<ShippingLocation> shippingLocations() {
-        return shippingLocationService.getActiveLocations();
+    public List<ShippingLocation> shippingLocations(HttpServletRequest request) {
+        if (isBackOfficeRequest(request)) {
+            return Collections.emptyList();
+        }
+
+        try {
+            return shippingLocationService.getActiveLocations();
+        } catch (RuntimeException ex) {
+            LOGGER.warn("Unable to populate shipping location model attributes for {}", requestPath(request), ex);
+            return Collections.emptyList();
+        }
+    }
+
+    @ModelAttribute("shippingDistricts")
+    public List<ShippingLocation> shippingDistricts(HttpServletRequest request) {
+        if (isBackOfficeRequest(request)) {
+            return Collections.emptyList();
+        }
+
+        try {
+            return shippingLocationService.getActiveDistricts();
+        } catch (RuntimeException ex) {
+            LOGGER.warn("Unable to populate shipping district model attributes for {}", requestPath(request), ex);
+            return Collections.emptyList();
+        }
     }
 
     @ModelAttribute("currentShippingLocation")
-    public ShippingLocation currentShippingLocation(HttpSession session) {
+    public ShippingLocation currentShippingLocation(HttpSession session, HttpServletRequest request) {
+        if (isBackOfficeRequest(request)) {
+            return null;
+        }
+
         Object obj = session.getAttribute("shippingLocation");
         if (obj == null) {
             obj = session.getAttribute("shippingLocationId");
@@ -105,11 +158,15 @@ public class GlobalController2 {
         if (obj instanceof ShippingLocation location) {
             return location;
         }
-        if (obj instanceof Long locationId) {
-            return shippingLocationService.getById(locationId);
-        }
-        if (obj instanceof String value) {
-            return resolveLocation(value);
+        try {
+            if (obj instanceof Long locationId) {
+                return shippingLocationService.getById(locationId);
+            }
+            if (obj instanceof String value) {
+                return resolveLocation(value);
+            }
+        } catch (RuntimeException ex) {
+            LOGGER.warn("Unable to resolve current shipping location for {}", requestPath(request), ex);
         }
         return null;
     }
@@ -129,5 +186,61 @@ public class GlobalController2 {
                     .findFirst()
                     .orElse(null);
         }
+    }
+
+    @ModelAttribute("currentShippingDistrictId")
+    public Long currentShippingDistrictId(HttpSession session, HttpServletRequest request) {
+        ShippingLocation location = currentShippingLocation(session, request);
+        if (location == null) {
+            return null;
+        }
+        if (location.getType() == ShippingLocationType.DISTRICT) {
+            return location.getId();
+        }
+        if (location.getType() == ShippingLocationType.THANA && location.getParent() != null) {
+            return location.getParent().getId();
+        }
+        return null;
+    }
+
+    @ModelAttribute("autoShowLocationPicker")
+    public boolean autoShowLocationPicker(HttpSession session, HttpServletRequest request) {
+        if (isBackOfficeRequest(request) || currentShippingLocation(session, request) != null) {
+            return false;
+        }
+
+        String path = requestPath(request);
+        return !path.startsWith("/cart")
+                && !path.startsWith("/carts")
+                && !path.startsWith("/district");
+    }
+
+    private void addEmptyWishlistAttributes(Model model) {
+        Set<String> emptySet = Collections.emptySet();
+        model.addAttribute("wishlistProductIds", emptySet);
+        model.addAttribute("wishlistProductUuids", emptySet);
+        model.addAttribute("wishlistProductKeys", emptySet);
+        model.addAttribute("wishlistCount", 0);
+    }
+
+    private boolean isBackOfficeRequest(HttpServletRequest request) {
+        String path = requestPath(request);
+        return path.startsWith("/admin")
+                || path.startsWith("/vendor")
+                || path.startsWith("/api")
+                || path.startsWith("/actuator")
+                || path.startsWith("/error");
+    }
+
+    private String requestPath(HttpServletRequest request) {
+        if (request == null || request.getRequestURI() == null) {
+            return "";
+        }
+        String contextPath = request.getContextPath();
+        String requestUri = request.getRequestURI();
+        if (contextPath != null && !contextPath.isBlank() && requestUri.startsWith(contextPath)) {
+            return requestUri.substring(contextPath.length());
+        }
+        return requestUri;
     }
 }

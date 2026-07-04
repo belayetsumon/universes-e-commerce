@@ -1,15 +1,26 @@
 ﻿<div class="sidebar-shell" th:fragment="nav-left">
     <div class="sidebar-header text-center">
-        <a class="navbar-brand" th:href="@{/admin/index}">Universal e-Commerce </a><br>
+        <a class="navbar-brand" th:href="@{/admin/index}">Universal e-Commerce</a>
     </div>
 
-    <div class="sidebar-search">
-        <form class="d-flex" role="search">
-            <div class="input-group">
-                <input class="form-control" type="search" placeholder="Search" aria-label="Search">
-                <span class="input-group-text"><i class="bi-search"></i></span>
-            </div>
-        </form>
+    <div class="sidebar-brand-panel">
+        <a class="sidebar-brand-card" th:href="@{/admin/index}">
+            <span class="sidebar-brand-logo"
+                  th:if="${session.globalSettings != null and session.globalSettings.resolvedSiteLogoSquare != null}">
+                <img th:src="@{${session.globalSettings.resolvedSiteLogoSquare}}"
+                     th:alt="${session.globalSettings.siteName != null ? session.globalSettings.siteName : 'Store'}">
+            </span>
+            <span class="sidebar-brand-logo sidebar-brand-logo--fallback"
+                  th:if="${session.globalSettings == null or session.globalSettings.resolvedSiteLogoSquare == null}">
+                <i class="bi bi-grid-1x2-fill"></i>
+            </span>
+            <span class="sidebar-brand-copy">
+                <strong th:text="${session.globalSettings != null and session.globalSettings.siteName != null ? session.globalSettings.siteName : 'Universes Commerce'}">
+                    Universal e-Commerce
+                </strong>
+                <small>Administration</small>
+            </span>
+        </a>
     </div>
     <div class="sidebar-content">
         <ul class="nav flex-column sidebar-nav" id="sidebar-accordion">

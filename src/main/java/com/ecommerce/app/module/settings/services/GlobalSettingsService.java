@@ -1,6 +1,15 @@
 package com.ecommerce.app.module.settings.services;
 
 import com.ecommerce.app.globalServices.ImageService;
+import com.ecommerce.app.module.settings.form.BasicSiteSettingsForm;
+import com.ecommerce.app.module.settings.form.DeliverySettingsForm;
+import com.ecommerce.app.module.settings.form.MaintenanceSettingsForm;
+import com.ecommerce.app.module.settings.form.OrderSettingsForm;
+import com.ecommerce.app.module.settings.form.PaymentSettingsForm;
+import com.ecommerce.app.module.settings.form.PolicySettingsForm;
+import com.ecommerce.app.module.settings.form.SeoSettingsForm;
+import com.ecommerce.app.module.settings.form.SocialSettingsForm;
+import com.ecommerce.app.module.settings.form.StoreSettingsForm;
 import com.ecommerce.app.module.settings.model.GlobalSettings;
 import com.ecommerce.app.module.settings.repository.GlobalSettingsRepository;
 import com.ecommerce.app.services.StorageProperties;
@@ -147,6 +156,129 @@ public class GlobalSettingsService {
         }
     }
 
+    public GlobalSettings updateBasicSiteSettings(
+            BasicSiteSettingsForm form,
+            MultipartFile siteLogoFile,
+            MultipartFile faviconFile
+    ) {
+        requireFormData(form, "Basic site settings form data is required.");
+        GlobalSettings source = toGlobalSettings(form);
+        List<String> errors = new ArrayList<>();
+        validateBasic(source, errors);
+        validateImage(siteLogoFile, "Site logo", errors);
+        validateImage(faviconFile, "Favicon", errors);
+        if (!errors.isEmpty()) {
+            throw new SettingsValidationException(errors);
+        }
+
+        GlobalSettings settings = getActiveSettings();
+        assertVersionIsCurrent(form.getVersion(), settings);
+        applyBasic(source, settings);
+        prepareForSave(settings);
+        applyBasicSiteImages(settings, siteLogoFile, faviconFile);
+        return saveSection(settings, "Basic site");
+    }
+
+    public GlobalSettings updateSeoSettings(SeoSettingsForm form, MultipartFile ogImageFile) {
+        requireFormData(form, "SEO settings form data is required.");
+        GlobalSettings source = toGlobalSettings(form);
+        List<String> errors = new ArrayList<>();
+        validateSeo(source, errors);
+        validateImage(ogImageFile, "OG image", errors);
+        if (!errors.isEmpty()) {
+            throw new SettingsValidationException(errors);
+        }
+
+        GlobalSettings settings = getActiveSettings();
+        assertVersionIsCurrent(form.getVersion(), settings);
+        applySeo(source, settings);
+        prepareForSave(settings);
+        applyOgImage(settings, ogImageFile);
+        return saveSection(settings, "SEO");
+    }
+
+    public GlobalSettings updateStoreSettings(StoreSettingsForm form) {
+        requireFormData(form, "Store settings form data is required.");
+        GlobalSettings source = toGlobalSettings(form);
+        validateSection(source, SettingsSection.STORE);
+
+        GlobalSettings settings = getActiveSettings();
+        assertVersionIsCurrent(form.getVersion(), settings);
+        applyStore(source, settings);
+        prepareForSave(settings);
+        return saveSection(settings, "Store");
+    }
+
+    public GlobalSettings updatePaymentSettings(PaymentSettingsForm form) {
+        requireFormData(form, "Payment settings form data is required.");
+        GlobalSettings source = toGlobalSettings(form);
+
+        GlobalSettings settings = getActiveSettings();
+        assertVersionIsCurrent(form.getVersion(), settings);
+        applyPayment(source, settings);
+        prepareForSave(settings);
+        return saveSection(settings, "Payment");
+    }
+
+    public GlobalSettings updateDeliverySettings(DeliverySettingsForm form) {
+        requireFormData(form, "Delivery settings form data is required.");
+        GlobalSettings source = toGlobalSettings(form);
+        validateSection(source, SettingsSection.DELIVERY);
+
+        GlobalSettings settings = getActiveSettings();
+        assertVersionIsCurrent(form.getVersion(), settings);
+        applyDelivery(source, settings);
+        prepareForSave(settings);
+        return saveSection(settings, "Delivery");
+    }
+
+    public GlobalSettings updateOrderSettings(OrderSettingsForm form) {
+        requireFormData(form, "Order settings form data is required.");
+        GlobalSettings source = toGlobalSettings(form);
+        validateSection(source, SettingsSection.ORDER);
+
+        GlobalSettings settings = getActiveSettings();
+        assertVersionIsCurrent(form.getVersion(), settings);
+        applyOrder(source, settings);
+        prepareForSave(settings);
+        return saveSection(settings, "Order");
+    }
+
+    public GlobalSettings updatePolicySettings(PolicySettingsForm form) {
+        requireFormData(form, "Policy settings form data is required.");
+        GlobalSettings source = toGlobalSettings(form);
+
+        GlobalSettings settings = getActiveSettings();
+        assertVersionIsCurrent(form.getVersion(), settings);
+        applyPolicy(source, settings);
+        prepareForSave(settings);
+        return saveSection(settings, "Policy");
+    }
+
+    public GlobalSettings updateMaintenanceSettings(MaintenanceSettingsForm form) {
+        requireFormData(form, "Maintenance settings form data is required.");
+        GlobalSettings source = toGlobalSettings(form);
+        validateSection(source, SettingsSection.MAINTENANCE);
+
+        GlobalSettings settings = getActiveSettings();
+        assertVersionIsCurrent(form.getVersion(), settings);
+        applyMaintenance(source, settings);
+        prepareForSave(settings);
+        return saveSection(settings, "Maintenance");
+    }
+
+    public GlobalSettings updateSocialSettings(SocialSettingsForm form) {
+        requireFormData(form, "Social settings form data is required.");
+        GlobalSettings source = toGlobalSettings(form);
+        validateSection(source, SettingsSection.SOCIAL);
+
+        GlobalSettings settings = getActiveSettings();
+        assertVersionIsCurrent(form.getVersion(), settings);
+        applySocial(source, settings);
+        prepareForSave(settings);
+        return saveSection(settings, "Social");
+    }
+
     public GlobalSettings deleteImage(SettingsImageType imageType) {
         if (imageType == null) {
             throw new SettingsValidationException("Image type is required.");
@@ -164,6 +296,137 @@ public class GlobalSettingsService {
             LOGGER.error("Database failure while deleting global settings image. type={}", imageType.name(), ex);
             throw new SettingsOperationException("Database error while deleting " + imageType.getLabel().toLowerCase(Locale.ROOT) + ".", ex);
         }
+    }
+
+    private GlobalSettings saveSection(GlobalSettings settings, String sectionName) {
+        try {
+            GlobalSettings saved = globalSettingsRepository.save(settings);
+            LOGGER.info("Global settings {} section updated. settingsId={}, version={}",
+                    sectionName, saved.getId(), saved.getVersion());
+            return saved;
+        } catch (DataAccessException ex) {
+            LOGGER.error("Database failure while saving {} settings section. settingsId={}",
+                    sectionName, settings.getId(), ex);
+            throw new SettingsOperationException("Database error while saving " + sectionName.toLowerCase(Locale.ROOT) + " settings.", ex);
+        }
+    }
+
+    private GlobalSettings toGlobalSettings(BasicSiteSettingsForm form) {
+        GlobalSettings settings = new GlobalSettings();
+        settings.setVersion(form.getVersion());
+        settings.setSiteName(form.getSiteName());
+        settings.setSiteTitle(form.getSiteTitle());
+        settings.setSiteTagline(form.getSiteTagline());
+        settings.setSiteUrl(form.getSiteUrl());
+        settings.setAdminEmail(form.getAdminEmail());
+        settings.setSupportEmail(form.getSupportEmail());
+        settings.setSupportPhone(form.getSupportPhone());
+        settings.setAddress(form.getAddress());
+        settings.setTimezone(form.getTimezone());
+        settings.setCurrency(form.getCurrency());
+        settings.setLanguage(form.getLanguage());
+        return settings;
+    }
+
+    private GlobalSettings toGlobalSettings(StoreSettingsForm form) {
+        GlobalSettings settings = new GlobalSettings();
+        settings.setVersion(form.getVersion());
+        settings.setDefaultCurrency(form.getDefaultCurrency());
+        settings.setTaxEnabled(form.getTaxEnabled());
+        settings.setTaxPercentage(form.getTaxPercentage());
+        settings.setStockManagementEnabled(form.getStockManagementEnabled());
+        settings.setLowStockAlertQty(form.getLowStockAlertQty());
+        settings.setAllowGuestCheckout(form.getAllowGuestCheckout());
+        settings.setMinimumOrderAmount(form.getMinimumOrderAmount());
+        settings.setMaximumOrderAmount(form.getMaximumOrderAmount());
+        return settings;
+    }
+
+    private GlobalSettings toGlobalSettings(PaymentSettingsForm form) {
+        GlobalSettings settings = new GlobalSettings();
+        settings.setVersion(form.getVersion());
+        settings.setCodEnabled(form.getCodEnabled());
+        settings.setOnlinePaymentEnabled(form.getOnlinePaymentEnabled());
+        settings.setPartialPaymentEnabled(form.getPartialPaymentEnabled());
+        settings.setEmiEnabled(form.getEmiEnabled());
+        return settings;
+    }
+
+    private GlobalSettings toGlobalSettings(DeliverySettingsForm form) {
+        GlobalSettings settings = new GlobalSettings();
+        settings.setVersion(form.getVersion());
+        settings.setDeliveryEnabled(form.getDeliveryEnabled());
+        settings.setFreeDeliveryEnabled(form.getFreeDeliveryEnabled());
+        settings.setFreeDeliveryMinAmount(form.getFreeDeliveryMinAmount());
+        settings.setInsideDhakaDeliveryCharge(form.getInsideDhakaDeliveryCharge());
+        settings.setOutsideDhakaDeliveryCharge(form.getOutsideDhakaDeliveryCharge());
+        settings.setDeliveryTimeText(form.getDeliveryTimeText());
+        settings.setCashOnDeliveryCharge(form.getCashOnDeliveryCharge());
+        return settings;
+    }
+
+    private GlobalSettings toGlobalSettings(OrderSettingsForm form) {
+        GlobalSettings settings = new GlobalSettings();
+        settings.setVersion(form.getVersion());
+        settings.setOrderPrefix(form.getOrderPrefix());
+        settings.setInvoicePrefix(form.getInvoicePrefix());
+        settings.setAutoConfirmOrder(form.getAutoConfirmOrder());
+        settings.setAutoCancelUnpaidOrder(form.getAutoCancelUnpaidOrder());
+        settings.setCancelOrderAfterMinutes(form.getCancelOrderAfterMinutes());
+        settings.setReturnAllowedDays(form.getReturnAllowedDays());
+        settings.setRefundAllowedDays(form.getRefundAllowedDays());
+        return settings;
+    }
+
+    private GlobalSettings toGlobalSettings(PolicySettingsForm form) {
+        GlobalSettings settings = new GlobalSettings();
+        settings.setVersion(form.getVersion());
+        settings.setAboutUs(form.getAboutUs());
+        settings.setContactUsContent(form.getContactUsContent());
+        settings.setHelpPageContent(form.getHelpPageContent());
+        settings.setTermsOfUseContent(form.getTermsOfUseContent());
+        settings.setTermsAndConditions(form.getTermsAndConditions());
+        settings.setPrivacyPolicy(form.getPrivacyPolicy());
+        settings.setPaymentMethodsContent(form.getPaymentMethodsContent());
+        settings.setReturnPolicy(form.getReturnPolicy());
+        settings.setRefundPolicy(form.getRefundPolicy());
+        settings.setShippingPolicy(form.getShippingPolicy());
+        return settings;
+    }
+
+    private GlobalSettings toGlobalSettings(MaintenanceSettingsForm form) {
+        GlobalSettings settings = new GlobalSettings();
+        settings.setVersion(form.getVersion());
+        settings.setMaintenanceMode(form.getMaintenanceMode());
+        settings.setMaintenanceMessage(form.getMaintenanceMessage());
+        settings.setRegistrationEnabled(form.getRegistrationEnabled());
+        settings.setVendorRegistrationEnabled(form.getVendorRegistrationEnabled());
+        return settings;
+    }
+
+    private GlobalSettings toGlobalSettings(SeoSettingsForm form) {
+        GlobalSettings settings = new GlobalSettings();
+        settings.setVersion(form.getVersion());
+        settings.setMetaTitle(form.getMetaTitle());
+        settings.setMetaDescription(form.getMetaDescription());
+        settings.setMetaKeywords(form.getMetaKeywords());
+        settings.setOgTitle(form.getOgTitle());
+        settings.setOgDescription(form.getOgDescription());
+        settings.setGoogleAnalyticsId(form.getGoogleAnalyticsId());
+        settings.setFacebookPixelId(form.getFacebookPixelId());
+        return settings;
+    }
+
+    private GlobalSettings toGlobalSettings(SocialSettingsForm form) {
+        GlobalSettings settings = new GlobalSettings();
+        settings.setVersion(form.getVersion());
+        settings.setFacebookUrl(form.getFacebookUrl());
+        settings.setYoutubeUrl(form.getYoutubeUrl());
+        settings.setInstagramUrl(form.getInstagramUrl());
+        settings.setLinkedinUrl(form.getLinkedinUrl());
+        settings.setTwitterUrl(form.getTwitterUrl());
+        settings.setWhatsappNumber(form.getWhatsappNumber());
+        return settings;
     }
 
     private GlobalSettings createDefaultSettings() {
@@ -454,6 +717,35 @@ public class GlobalSettingsService {
         }
     }
 
+    private void applyBasicSiteImages(
+            GlobalSettings target,
+            MultipartFile siteLogoFile,
+            MultipartFile faviconFile
+    ) {
+        try {
+            if (hasFile(siteLogoFile)) {
+                replaceSiteLogo(target, siteLogoFile);
+            }
+            if (hasFile(faviconFile)) {
+                replaceFavicon(target, faviconFile);
+            }
+        } catch (IOException ex) {
+            LOGGER.error("Failed to process basic site settings image upload", ex);
+            throw new SettingsOperationException("Image upload failed. Please verify the file type and storage permission.", ex);
+        }
+    }
+
+    private void applyOgImage(GlobalSettings target, MultipartFile ogImageFile) {
+        try {
+            if (hasFile(ogImageFile)) {
+                replaceOgImage(target, ogImageFile);
+            }
+        } catch (IOException ex) {
+            LOGGER.error("Failed to process SEO OG image upload", ex);
+            throw new SettingsOperationException("OG image upload failed. Please verify the file type and storage permission.", ex);
+        }
+    }
+
     private void replaceSiteLogo(GlobalSettings target, MultipartFile file) throws IOException {
         String previousSiteLogo = target.getSiteLogo();
         String previousDesktopLogo = target.getSiteLogoDesktop();
@@ -554,17 +846,21 @@ public class GlobalSettingsService {
     }
 
     private void assertVersionIsCurrent(GlobalSettings formData, GlobalSettings settings) {
+        assertVersionIsCurrent(formData.getVersion(), settings);
+    }
+
+    private void assertVersionIsCurrent(Long submittedVersion, GlobalSettings settings) {
         if (settings.getVersion() == null) {
             throw new SettingsOperationException(
                     "Settings version is missing in the database. Please repair the global_settings.version column before saving."
             );
         }
-        if (formData.getVersion() == null) {
+        if (submittedVersion == null) {
             throw new OptimisticLockingFailureException(
                     "Settings version is missing from the form. Please reload the settings page and try again."
             );
         }
-        if (!Objects.equals(formData.getVersion(), settings.getVersion())) {
+        if (!Objects.equals(submittedVersion, settings.getVersion())) {
             throw new OptimisticLockingFailureException(
                     "Settings were updated by another user. Please reload the page and try again."
             );
@@ -574,6 +870,12 @@ public class GlobalSettingsService {
     private void requireFormData(GlobalSettings formData) {
         if (formData == null) {
             throw new SettingsValidationException("Settings form data is required.");
+        }
+    }
+
+    private void requireFormData(Object formData, String message) {
+        if (formData == null) {
+            throw new SettingsValidationException(message);
         }
     }
 

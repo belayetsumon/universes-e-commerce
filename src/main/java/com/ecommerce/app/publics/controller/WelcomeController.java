@@ -42,6 +42,8 @@ public class WelcomeController {
     @RequestMapping("/")
     public String welcome(Model model) {
         List<Map<String, Object>> banner = adsService.findAllAdsAsMap(Placement.HOME_BANNER);
+        List<Map<String, Object>> afterFeaturedCategoryBanners = adsService.findAllAdsAsMap(Placement.HOME_FEATURED_CATEGORY_SHOWCASE);
+        List<Map<String, Object>> afterDealsTodayBanners = adsService.findAllAdsAsMap(Placement.HOME_TODAY_DEALS_SPOTLIGHT);
         List<Map<String, Object>> featuredProducts = productService.all_Product_front_view(
                 null, null, null, null, Boolean.TRUE, null, null, 10
         );
@@ -61,6 +63,8 @@ public class WelcomeController {
                 .toList();
 
         model.addAttribute("banner", banner);
+        model.addAttribute("afterFeaturedCategoryBanners", afterFeaturedCategoryBanners);
+        model.addAttribute("afterDealsTodayBanners", afterDealsTodayBanners);
         model.addAttribute("featureCatList", productcategoryRepository.findByStatusAndFeaturedCat(ProductStatusEnum.Active, Boolean.TRUE));
         model.addAttribute("featuredProducts", featuredProducts);
         model.addAttribute("newArrivalProducts", newArrivalProducts);

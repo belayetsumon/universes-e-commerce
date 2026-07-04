@@ -73,7 +73,7 @@ and open the template in the editor.
                                             th:classappend="${#fields.hasErrors('placement')} ? 'is-invalid'">
                                         <option value="">-- select --</option>
                                         <option th:each="p : ${placements}"
-                                                th:value="${p}" th:text="${p}"></option>
+                                                th:value="${p}" th:text="${p.displayName}"></option>
                                     </select>
                                     <div class="invalid-feedback" th:errors="*{placement}"></div>
                                 </div>

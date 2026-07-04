@@ -44,69 +44,122 @@ $(document).ready(function () {
 
 
 
-//// cart location popup  start //////////////////////////////
+//// district and thana location popup  start //////////////////////////////
 document.addEventListener('DOMContentLoaded', function () {
-    var modalEl = document.getElementById('districtModal');
+    document.querySelectorAll('.location-picker-modal').forEach(function (pickerEl) {
+        if (pickerEl.dataset.locationPickerReady === 'true') {
+            return;
+        }
+        pickerEl.dataset.locationPickerReady = 'true';
 
-    if (!modalEl)
-        return; // Safety check
-    var districtModal = new bootstrap.Modal(modalEl);
+        var modalEl = pickerEl.classList.contains('modal') ? pickerEl : pickerEl.closest('.modal');
+        var districtSelect = pickerEl.querySelector('[data-location-district]');
+        var thanaSelect = pickerEl.querySelector('[data-location-thana]');
+        var saveBtn = pickerEl.querySelector('[data-location-save]');
 
-    // Auto-show modal if data-show attribute is true
-    if (modalEl.dataset.show && modalEl.dataset.show.toLowerCase() === 'true') {
-        districtModal.show();
-    }
+        if (!modalEl || !districtSelect || !thanaSelect || !saveBtn) {
+            return;
+        }
 
-    // Save selected location
-    var saveBtn = document.getElementById('saveLocation');
-    if (saveBtn) {
+        var districtModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        var currentDistrict = pickerEl.dataset.currentDistrict || modalEl.dataset.currentDistrict || '';
+        var currentLocation = pickerEl.dataset.currentLocation || modalEl.dataset.currentLocation || '';
+
+        function resetThanas(message) {
+            thanaSelect.innerHTML = '';
+            var option = document.createElement('option');
+            option.value = '';
+            option.textContent = message;
+            thanaSelect.appendChild(option);
+            thanaSelect.disabled = true;
+        }
+
+        function loadThanas(districtId, selectedThanaId) {
+            resetThanas('Loading thanas...');
+            fetch('/district/thanas?districtId=' + encodeURIComponent(districtId))
+                    .then(function (res) {
+                        if (!res.ok) {
+                            throw new Error('Network response was not OK');
+                        }
+                        return res.json();
+                    })
+                    .then(function (thanas) {
+                        resetThanas(thanas.length ? 'Select Thana' : 'No thana available');
+                        thanas.forEach(function (thana) {
+                            var option = document.createElement('option');
+                            option.value = thana.id;
+                            option.textContent = thana.name;
+                            thanaSelect.appendChild(option);
+                        });
+                        thanaSelect.disabled = thanas.length === 0;
+                        if (selectedThanaId) {
+                            thanaSelect.value = selectedThanaId;
+                        }
+                    })
+                    .catch(function (err) {
+                        console.error('Error loading thanas:', err);
+                        resetThanas('Unable to load thanas');
+                    });
+        }
+
+        if (currentDistrict) {
+            districtSelect.value = currentDistrict;
+            loadThanas(currentDistrict, currentLocation);
+        }
+
+        if (modalEl.dataset.show && modalEl.dataset.show.toLowerCase() === 'true') {
+            districtModal.show();
+        }
+
+        districtSelect.addEventListener('change', function () {
+            if (this.value) {
+                loadThanas(this.value, '');
+            } else {
+                resetThanas('Select Thana');
+            }
+        });
+
         saveBtn.addEventListener('click', function () {
-            var locationSelect = document.getElementById('locationSelect');
-            if (!locationSelect)
-                return;
+            var district = districtSelect.value;
+            var thana = thanaSelect.value;
 
-            var location = locationSelect.value;
-            if (!location) {
-                alert('Please select a location!');
+            if (!district) {
+                alert('Please select a district.');
+                return;
+            }
+            if (!thanaSelect.disabled && !thana) {
+                alert('Please select a thana.');
                 return;
             }
 
+            var location = thana || district;
             fetch('/district/save-district', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                 body: 'location=' + encodeURIComponent(location)
             })
-                    .then(res => {
-                        if (!res.ok)
+                    .then(function (res) {
+                        if (!res.ok) {
                             throw new Error('Network response was not OK');
+                        }
                         return res.text();
                     })
-                    .then(data => {
+                    .then(function (data) {
                         if (data === 'success') {
-                            districtModal.hide(); // Close modal
+                            districtModal.hide();
+                            window.location.reload();
                         } else {
                             alert('Invalid location selection');
-                            console.log('Invalid location selection');
                         }
                     })
-                    .catch(err => console.error('Fetch error:', err));
+                    .catch(function (err) {
+                        console.error('Fetch error:', err);
+                        alert('Unable to save location. Please try again.');
+                    });
         });
-    }
-
-    // Refresh page after modal closes
-    modalEl.addEventListener('hidden.bs.modal', function () {
-        window.location.reload();
     });
-});
 
-//// header location select
-
-
-document.addEventListener('DOMContentLoaded', function () {
-    // Get all location buttons
-    var locationButtons = document.querySelectorAll('.location-btn');
-
-    locationButtons.forEach(function (btn) {
+    document.querySelectorAll('.location-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var location = btn.dataset.location;
 
@@ -134,6 +187,236 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     })
                     .catch(err => console.error('Error saving location:', err));
+        });
+    });
+});
+
+// District and thana location picker
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.location-picker-modal').forEach(function (pickerEl) {
+        if (pickerEl.dataset.locationPickerReady === 'true') {
+            return;
+        }
+        pickerEl.dataset.locationPickerReady = 'true';
+
+        var modalEl = pickerEl.classList.contains('modal') ? pickerEl : pickerEl.closest('.modal');
+        var districtSelect = pickerEl.querySelector('[data-location-district]');
+        var thanaSelect = pickerEl.querySelector('[data-location-thana]');
+        var saveBtn = pickerEl.querySelector('[data-location-save]');
+
+        if (!modalEl || !districtSelect || !thanaSelect || !saveBtn) {
+            return;
+        }
+
+        var locationModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        var currentDistrict = pickerEl.dataset.currentDistrict || modalEl.dataset.currentDistrict || '';
+        var currentLocation = pickerEl.dataset.currentLocation || modalEl.dataset.currentLocation || '';
+
+        function resetThanas(message) {
+            thanaSelect.innerHTML = '';
+            var option = document.createElement('option');
+            option.value = '';
+            option.textContent = message;
+            thanaSelect.appendChild(option);
+            thanaSelect.disabled = true;
+        }
+
+        function loadThanas(districtId, selectedThanaId) {
+            resetThanas('Loading thanas...');
+            fetch('/district/thanas?districtId=' + encodeURIComponent(districtId))
+                    .then(function (res) {
+                        if (!res.ok) {
+                            throw new Error('Network response was not OK');
+                        }
+                        return res.json();
+                    })
+                    .then(function (thanas) {
+                        resetThanas(thanas.length ? 'Select Thana' : 'No thana available');
+                        thanas.forEach(function (thana) {
+                            var option = document.createElement('option');
+                            option.value = thana.id;
+                            option.textContent = thana.name;
+                            thanaSelect.appendChild(option);
+                        });
+                        thanaSelect.disabled = thanas.length === 0;
+                        if (selectedThanaId) {
+                            thanaSelect.value = selectedThanaId;
+                        }
+                    })
+                    .catch(function (err) {
+                        console.error('Error loading thanas:', err);
+                        resetThanas('Unable to load thanas');
+                    });
+        }
+
+        if (currentDistrict) {
+            districtSelect.value = currentDistrict;
+            loadThanas(currentDistrict, currentLocation);
+        }
+
+        if (modalEl.dataset.show && modalEl.dataset.show.toLowerCase() === 'true') {
+            locationModal.show();
+        }
+
+        districtSelect.addEventListener('change', function () {
+            if (this.value) {
+                loadThanas(this.value, '');
+            } else {
+                resetThanas('Select Thana');
+            }
+        });
+
+        saveBtn.addEventListener('click', function () {
+            var district = districtSelect.value;
+            var thana = thanaSelect.value;
+
+            if (!district) {
+                alert('Please select a district.');
+                return;
+            }
+            if (!thanaSelect.disabled && !thana) {
+                alert('Please select a thana.');
+                return;
+            }
+
+            fetch('/district/save-district', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'location=' + encodeURIComponent(thana || district)
+            })
+                    .then(function (res) {
+                        if (!res.ok) {
+                            throw new Error('Network response was not OK');
+                        }
+                        return res.text();
+                    })
+                    .then(function (data) {
+                        if (data === 'success') {
+                            locationModal.hide();
+                            window.location.reload();
+                        } else {
+                            alert('Invalid location selection');
+                        }
+                    })
+                    .catch(function (err) {
+                        console.error('Fetch error:', err);
+                        alert('Unable to save location. Please try again.');
+                    });
+        });
+    });
+});
+
+// District and thana location picker
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.location-picker-modal').forEach(function (pickerEl) {
+        if (pickerEl.dataset.locationPickerReady === 'true') {
+            return;
+        }
+        pickerEl.dataset.locationPickerReady = 'true';
+
+        var modalEl = pickerEl.classList.contains('modal') ? pickerEl : pickerEl.closest('.modal');
+        var districtSelect = pickerEl.querySelector('[data-location-district]');
+        var thanaSelect = pickerEl.querySelector('[data-location-thana]');
+        var saveBtn = pickerEl.querySelector('[data-location-save]');
+
+        if (!modalEl || !districtSelect || !thanaSelect || !saveBtn) {
+            return;
+        }
+
+        var locationModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        var currentDistrict = pickerEl.dataset.currentDistrict || modalEl.dataset.currentDistrict || '';
+        var currentLocation = pickerEl.dataset.currentLocation || modalEl.dataset.currentLocation || '';
+
+        function resetThanas(message) {
+            thanaSelect.innerHTML = '';
+            var option = document.createElement('option');
+            option.value = '';
+            option.textContent = message;
+            thanaSelect.appendChild(option);
+            thanaSelect.disabled = true;
+        }
+
+        function loadThanas(districtId, selectedThanaId) {
+            resetThanas('Loading thanas...');
+            fetch('/district/thanas?districtId=' + encodeURIComponent(districtId))
+                    .then(function (res) {
+                        if (!res.ok) {
+                            throw new Error('Network response was not OK');
+                        }
+                        return res.json();
+                    })
+                    .then(function (thanas) {
+                        resetThanas(thanas.length ? 'Select Thana' : 'No thana available');
+                        thanas.forEach(function (thana) {
+                            var option = document.createElement('option');
+                            option.value = thana.id;
+                            option.textContent = thana.name;
+                            thanaSelect.appendChild(option);
+                        });
+                        thanaSelect.disabled = thanas.length === 0;
+                        if (selectedThanaId) {
+                            thanaSelect.value = selectedThanaId;
+                        }
+                    })
+                    .catch(function (err) {
+                        console.error('Error loading thanas:', err);
+                        resetThanas('Unable to load thanas');
+                    });
+        }
+
+        if (currentDistrict) {
+            districtSelect.value = currentDistrict;
+            loadThanas(currentDistrict, currentLocation);
+        }
+
+        if (modalEl.dataset.show && modalEl.dataset.show.toLowerCase() === 'true') {
+            locationModal.show();
+        }
+
+        districtSelect.addEventListener('change', function () {
+            if (this.value) {
+                loadThanas(this.value, '');
+            } else {
+                resetThanas('Select Thana');
+            }
+        });
+
+        saveBtn.addEventListener('click', function () {
+            var district = districtSelect.value;
+            var thana = thanaSelect.value;
+
+            if (!district) {
+                alert('Please select a district.');
+                return;
+            }
+            if (!thanaSelect.disabled && !thana) {
+                alert('Please select a thana.');
+                return;
+            }
+
+            fetch('/district/save-district', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'location=' + encodeURIComponent(thana || district)
+            })
+                    .then(function (res) {
+                        if (!res.ok) {
+                            throw new Error('Network response was not OK');
+                        }
+                        return res.text();
+                    })
+                    .then(function (data) {
+                        if (data === 'success') {
+                            locationModal.hide();
+                            window.location.reload();
+                        } else {
+                            alert('Invalid location selection');
+                        }
+                    })
+                    .catch(function (err) {
+                        console.error('Fetch error:', err);
+                        alert('Unable to save location. Please try again.');
+                    });
         });
     });
 });

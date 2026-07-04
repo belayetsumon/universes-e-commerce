@@ -5,23 +5,28 @@
 
 <div class="modal fade" id="districtModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content location-picker-modal"
+             th:data-current-location="${currentShippingLocation != null ? currentShippingLocation.id : ''}"
+             th:data-current-district="${currentShippingDistrictId != null ? currentShippingDistrictId : ''}"
+             data-refresh-on-save="true">
             <div class="modal-header">
                 <h5 class="modal-title">Select Your Shipping Location</h5>
             </div>
             <div class="modal-body">
-                <form hx-post="/district/select"
-                      hx-trigger="submit"
-                      hx-target="none"
-                      hx-swap="none">
-                    <select name="location" class="form-select" required>
-                        <option value="" disabled selected>Select Location</option>
-                        <th:block th:each="location : ${shippinglocations}">
-                            <option th:value="${location.id}" th:text="${location.displayLabel}"></option>
-                        </th:block>
-                    </select>
-                    <button type="submit" class="btn btn-primary mt-3 w-100">Save</button>
-                </form>
+                <label class="form-label" for="districtPageDistrictSelect">District</label>
+                <select id="districtPageDistrictSelect" class="form-select" data-location-district required>
+                    <option value="">Select District</option>
+                    <option th:each="district : ${districts}"
+                            th:value="${district.id}"
+                            th:text="${district.name}">
+                    </option>
+                </select>
+
+                <label class="form-label mt-3" for="districtPageThanaSelect">Thana</label>
+                <select id="districtPageThanaSelect" class="form-select" data-location-thana required disabled>
+                    <option value="">Select Thana</option>
+                </select>
+                <button type="button" class="btn btn-primary mt-3 w-100" data-location-save>Save</button>
             </div>
 
         </div>
@@ -37,9 +42,65 @@
         });
         modal.show();
 
-        // When HTMX request finishes, hide the modal
-        modalElement.addEventListener('htmx:afterOnLoad', function () {
-            modal.hide();
+        const picker = modalElement.querySelector('.location-picker-modal');
+        const districtSelect = picker.querySelector('[data-location-district]');
+        const thanaSelect = picker.querySelector('[data-location-thana]');
+        const saveButton = picker.querySelector('[data-location-save]');
+
+        function resetThanas(message) {
+            thanaSelect.innerHTML = '';
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = message;
+            thanaSelect.appendChild(option);
+            thanaSelect.disabled = true;
+        }
+
+        function loadThanas(districtId) {
+            resetThanas('Loading thanas...');
+            fetch('/district/thanas?districtId=' + encodeURIComponent(districtId))
+                .then(response => response.ok ? response.json() : Promise.reject())
+                .then(thanas => {
+                    resetThanas(thanas.length ? 'Select Thana' : 'No thana available');
+                    thanas.forEach(thana => {
+                        const option = document.createElement('option');
+                        option.value = thana.id;
+                        option.textContent = thana.name;
+                        thanaSelect.appendChild(option);
+                    });
+                    thanaSelect.disabled = thanas.length === 0;
+                })
+                .catch(() => resetThanas('Unable to load thanas'));
+        }
+
+        districtSelect.addEventListener('change', function () {
+            if (this.value) {
+                loadThanas(this.value);
+            } else {
+                resetThanas('Select Thana');
+            }
+        });
+
+        saveButton.addEventListener('click', function () {
+            const selectedLocation = thanaSelect.value || districtSelect.value;
+            if (!selectedLocation) {
+                alert('Please select a district and thana.');
+                return;
+            }
+            fetch('/district/save-district', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'location=' + encodeURIComponent(selectedLocation)
+            })
+                .then(response => response.ok ? response.text() : Promise.reject())
+                .then(result => {
+                    if (result === 'success') {
+                        window.location.href = '/';
+                    } else {
+                        alert('Invalid location selection');
+                    }
+                })
+                .catch(() => alert('Unable to save location. Please try again.'));
         });
     });
 </script>

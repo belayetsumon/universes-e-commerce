@@ -47,7 +47,7 @@ public class Users implements Serializable {
     @Email(message = "Invalid email format")
     private String email;
 
-    @NotBlank(message = "*Please provide your mobile")
+//    @NotBlank(message = "*Please provide your mobile")
     @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Invalid mobile number")
     @Column(nullable = false, unique = true)
     private String mobile;

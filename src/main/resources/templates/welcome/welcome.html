@@ -161,24 +161,39 @@
             </script>
         </section>
 
-        <section class="my-1">
-            <div class="container-fluid  "> <!-- full width -->
-                <div class="row row-gap-3"> <!-- g-0 removes all gutters/padding between cols -->
+        <section class="my-1 home-ad-strip home-ad-strip-featured-category">
+            <div class="container-fluid">
+                <div th:if="${afterFeaturedCategoryBanners != null and !#lists.isEmpty(afterFeaturedCategoryBanners)}"
+                     class="row row-cols-1 g-3"
+                     th:classappend="${#lists.size(afterFeaturedCategoryBanners) == 1} ? ' row-cols-sm-1' : ' row-cols-sm-2'">
+                    <div class="col banner-effect" th:each="ad : ${afterFeaturedCategoryBanners}">
+                        <a th:if="${not #strings.isEmpty(ad.targetUrl)}"
+                           th:href="${ad.targetUrl}"
+                           th:target="${ad.openInNewTab} ? '_blank' : null"
+                           th:rel="${ad.openInNewTab} ? 'noopener noreferrer' : null">
+                            <img th:src="@{'/files/banner/' + ${ad.imageUrl}}"
+                                 th:alt="${ad.title}"
+                                 class="img-fluid w-100">
+                        </a>
+                        <img th:if="${#strings.isEmpty(ad.targetUrl)}"
+                             th:src="@{'/files/banner/' + ${ad.imageUrl}}"
+                             th:alt="${ad.title}"
+                             class="img-fluid w-100">
+                    </div>
+                </div>
 
-                    <!-- First Promo Image -->
+                <div th:if="${afterFeaturedCategoryBanners == null or #lists.isEmpty(afterFeaturedCategoryBanners)}"
+                     class="row row-gap-3">
                     <div class="col-6 col-sm-6 pe-2 banner-effect">
-                        <a>    <img th:src="@{/img/banner/promo_1.jpg}"
-                                    alt="Promo 1"
-                                    class="img-fluid w-100"> </a>
+                        <img th:src="@{/img/banner/promo_1.jpg}"
+                             alt="Promo 1"
+                             class="img-fluid w-100">
                     </div>
-
-                    <!-- Second Promo Image -->
                     <div class="col-6 col-sm-6 ps-2 banner-effect">
-                        <a>     <img th:src="@{/img/banner/promo_2.jpg}"
-                                     alt="Promo 2"
-                                     class="img-fluid w-100"></a>
+                        <img th:src="@{/img/banner/promo_2.jpg}"
+                             alt="Promo 2"
+                             class="img-fluid w-100">
                     </div>
-
                 </div>
             </div>
         </section>
@@ -268,34 +283,46 @@
                 </div>
             </div>
         </section>
-        <section class="my-1">
+        <section class="my-1 home-ad-strip home-ad-strip-deals-today">
             <div class="container-fluid p-0">
-                <div class="row row-gap-3">
-                    <!-- First Promo Image -->
-                    <div class="col-4 col-md-4 pe-md-2 banner-effect">
-                        <a> <img th:src="@{/img/banner/promo_1.jpg}"
-                                 alt="Promo 1"
-                                 class="img-fluid w-100 rounded shadow-sm"> </a>
-                    </div>
-
-                    <!-- Second Promo Image -->
-                    <div class="col-4 col-md-4 px-md-1 banner-effect">
-                        <a>  <img th:src="@{/img/banner/promo_2.jpg}"
-                                  alt="Promo 2"
-                                  class="img-fluid w-100 rounded shadow-sm"></a>
-                    </div>
-
-
-                    <!-- Third Promo Image -->
-                    <div class="col-4 col-md-4 ps-md-1 banner-effect">
-                        <a>    <img th:src="@{/img/banner/promo_2.jpg}"
-                                    alt="Promo 3"
-                                    class="img-fluid w-100 rounded shadow-sm"> </a>
+                <div th:if="${afterDealsTodayBanners != null and !#lists.isEmpty(afterDealsTodayBanners)}"
+                     class="row row-cols-1 g-3"
+                     th:classappend="${#lists.size(afterDealsTodayBanners) == 1} ? ' row-cols-md-1' : (${#lists.size(afterDealsTodayBanners) == 2} ? ' row-cols-md-2' : ' row-cols-md-3')">
+                    <div class="col banner-effect" th:each="ad : ${afterDealsTodayBanners}">
+                        <a th:if="${not #strings.isEmpty(ad.targetUrl)}"
+                           th:href="${ad.targetUrl}"
+                           th:target="${ad.openInNewTab} ? '_blank' : null"
+                           th:rel="${ad.openInNewTab} ? 'noopener noreferrer' : null">
+                            <img th:src="@{'/files/banner/' + ${ad.imageUrl}}"
+                                 th:alt="${ad.title}"
+                                 class="img-fluid w-100 rounded shadow-sm">
+                        </a>
+                        <img th:if="${#strings.isEmpty(ad.targetUrl)}"
+                             th:src="@{'/files/banner/' + ${ad.imageUrl}}"
+                             th:alt="${ad.title}"
+                             class="img-fluid w-100 rounded shadow-sm">
                     </div>
                 </div>
 
+                <div th:if="${afterDealsTodayBanners == null or #lists.isEmpty(afterDealsTodayBanners)}"
+                     class="row row-gap-3">
+                    <div class="col-4 col-md-4 pe-md-2 banner-effect">
+                        <img th:src="@{/img/banner/promo_1.jpg}"
+                             alt="Promo 1"
+                             class="img-fluid w-100 rounded shadow-sm">
+                    </div>
+                    <div class="col-4 col-md-4 px-md-1 banner-effect">
+                        <img th:src="@{/img/banner/promo_2.jpg}"
+                             alt="Promo 2"
+                             class="img-fluid w-100 rounded shadow-sm">
+                    </div>
+                    <div class="col-4 col-md-4 ps-md-1 banner-effect">
+                        <img th:src="@{/img/banner/promo_2.jpg}"
+                             alt="Promo 3"
+                             class="img-fluid w-100 rounded shadow-sm">
+                    </div>
+                </div>
             </div>
-
         </section>
         <section class="pt-5 pb-2 trending-products">
             <div class="container-fluid my-3 featured-cat-container card border-0 shadow-none h-100">

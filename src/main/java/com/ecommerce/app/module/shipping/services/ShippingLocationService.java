@@ -2,6 +2,7 @@ package com.ecommerce.app.module.shipping.services;
 
 import com.ecommerce.app.module.shipping.model.CarrierRate;
 import com.ecommerce.app.module.shipping.model.ShippingLocation;
+import com.ecommerce.app.module.shipping.model.ShippingLocationType;
 import com.ecommerce.app.module.shipping.repository.ShippingLocationRepository;
 import java.util.Collection;
 import java.util.List;
@@ -22,6 +23,22 @@ public class ShippingLocationService {
 
     public List<ShippingLocation> getActiveLocations() {
         return repository.findByActiveTrueOrderByTypeAscPriorityAscNameAsc();
+    }
+
+    public List<ShippingLocation> getActiveDistricts() {
+        return getActiveLocations().stream()
+                .filter(location -> location.getType() == ShippingLocationType.DISTRICT)
+                .toList();
+    }
+
+    public List<ShippingLocation> getActiveChildren(Long parentId, ShippingLocationType type) {
+        if (parentId == null) {
+            return List.of();
+        }
+        return repository.findByParentIdOrderByPriorityAscNameAsc(parentId).stream()
+                .filter(ShippingLocation::isActive)
+                .filter(location -> type == null || location.getType() == type)
+                .toList();
     }
 
     public List<ShippingLocation> findAllById(Collection<Long> ids) {

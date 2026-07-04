@@ -2,7 +2,12 @@
     var storageKey = 'activeGlobalSettingsTab';
 
     function activateStoredTab() {
-        var activeTab = window.localStorage ? window.localStorage.getItem(storageKey) : null;
+        var workspace = document.querySelector('.settings-workspace');
+        var requestedSection = window.location.hash || null;
+        if (!requestedSection && workspace && workspace.dataset.activeSection) {
+            requestedSection = '#' + workspace.dataset.activeSection;
+        }
+        var activeTab = requestedSection || (window.localStorage ? window.localStorage.getItem(storageKey) : null);
         if (!activeTab) {
             return;
         }
@@ -28,47 +33,49 @@
     }
 
     function bindValidation() {
-        var form = document.getElementById('settingsForm');
-        if (!form) {
+        var forms = document.querySelectorAll('.settings-section-form');
+        if (!forms.length) {
             return;
         }
 
-        form.addEventListener('submit', function (event) {
-            var submitter = event.submitter;
-            if (submitter && submitter.hasAttribute('formnovalidate')) {
-                return;
-            }
+        forms.forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                var submitter = event.submitter;
+                if (submitter && submitter.hasAttribute('formnovalidate')) {
+                    return;
+                }
 
-            var firstInvalid = null;
-            form.querySelectorAll('[required]').forEach(function (field) {
-                var invalid = !field.value || !field.value.trim();
-                field.classList.toggle('is-invalid', invalid);
-                if (invalid && !firstInvalid) {
-                    firstInvalid = field;
+                var firstInvalid = null;
+                form.querySelectorAll('[required]').forEach(function (field) {
+                    var invalid = !field.value || !field.value.trim();
+                    field.classList.toggle('is-invalid', invalid);
+                    if (invalid && !firstInvalid) {
+                        firstInvalid = field;
+                    }
+                });
+
+                if (firstInvalid) {
+                    event.preventDefault();
+                    var tabPane = firstInvalid.closest('.tab-pane');
+                    if (tabPane) {
+                        var tabTrigger = document.querySelector('[data-bs-target="#' + tabPane.id + '"]');
+                        if (tabTrigger && window.bootstrap && window.bootstrap.Tab) {
+                            window.bootstrap.Tab.getOrCreateInstance(tabTrigger).show();
+                        }
+                    }
+                    firstInvalid.focus({preventScroll: true});
+                    firstInvalid.scrollIntoView({behavior: 'smooth', block: 'center'});
                 }
             });
 
-            if (firstInvalid) {
-                event.preventDefault();
-                var tabPane = firstInvalid.closest('.tab-pane');
-                if (tabPane) {
-                    var tabTrigger = document.querySelector('[data-bs-target="#' + tabPane.id + '"]');
-                    if (tabTrigger && window.bootstrap && window.bootstrap.Tab) {
-                        window.bootstrap.Tab.getOrCreateInstance(tabTrigger).show();
-                    }
+            form.addEventListener('input', function (event) {
+                if (event.target.matches('input, select, textarea')) {
+                    event.target.classList.remove('is-invalid');
                 }
-                firstInvalid.focus({preventScroll: true});
-                firstInvalid.scrollIntoView({behavior: 'smooth', block: 'center'});
-            }
+            });
         });
 
-        form.addEventListener('input', function (event) {
-            if (event.target.matches('input, select, textarea')) {
-                event.target.classList.remove('is-invalid');
-            }
-        });
-
-        form.addEventListener('click', function (event) {
+        document.addEventListener('click', function (event) {
             var action = event.target.closest('[data-confirm-message]');
             if (!action) {
                 return;

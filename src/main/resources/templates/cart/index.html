@@ -53,23 +53,33 @@
                                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                 </div>
 
-                                <div class="modal fade" id="districtModal" tabindex="-1" aria-hidden="true"
-                                     th:data-show="${showDistrictModal}">
+                                <div class="modal fade location-picker-modal" id="districtModal" tabindex="-1" aria-hidden="true"
+                                     th:data-show="${showDistrictModal}"
+                                     th:data-current-location="${currentShippingLocation != null ? currentShippingLocation.id : ''}"
+                                     th:data-current-district="${currentShippingDistrictId != null ? currentShippingDistrictId : ''}"
+                                     data-refresh-on-save="true">
                                     <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-content">
                                             <div class="modal-header">
                                                 <h5 class="modal-title">Select Your Shipping Location</h5>
                                             </div>
                                             <div class="modal-body">
-                                                <select id="locationSelect" class="form-select">
-                                                    <option th:each="d : ${shippinglocations}"
-                                                            th:value="${d.id}"
-                                                            th:text="${d.displayLabel}">
+                                                <label class="form-label" for="cartDistrictSelect">District</label>
+                                                <select id="cartDistrictSelect" class="form-select" data-location-district required>
+                                                    <option value="">Select District</option>
+                                                    <option th:each="district : ${shippingDistricts}"
+                                                            th:value="${district.id}"
+                                                            th:text="${district.name}">
                                                     </option>
                                                 </select>
+                                                <label class="form-label mt-3" for="cartThanaSelect">Thana</label>
+                                                <select id="cartThanaSelect" class="form-select" data-location-thana required disabled>
+                                                    <option value="">Select Thana</option>
+                                                </select>
+                                                <div class="form-text">Choose your delivery thana to continue.</div>
                                             </div>
                                             <div class="modal-footer">
-                                                <button id="saveLocation" class="btn btn-primary">Save</button>
+                                                <button type="button" class="btn btn-primary" data-location-save>Save</button>
                                             </div>
                                         </div>
                                     </div>

@@ -14,22 +14,22 @@
             </div>
         </section>
 
-        <section class="single-product-page">
-            <div class="container-fluid">
-                <div class="row mt-4">
-                    <div class="col-sm-12">
-                        <div class="card mb-4 ">
+        <section class="single-product-page product-detail-page">
+            <div class="container-fluid px-3 px-xl-4">
+                <div class="row g-4 mt-2">
+                    <div class="col-12">
+                        <div class="product-detail-shell mb-4">
 
-                            <div class="card-header">
-                                <h5 class="font-weight-bold "> <i class="fas fa-list"></i> Product Details </h5>
+                            <div class="product-detail-heading">
+                                <h5 class="font-weight-bold "> <i class="bi bi-box-seam"></i> Product Overview </h5>
                             </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-sm-6">
+                            <div class="product-detail-body">
+                                <div class="row g-4 align-items-start">
+                                    <div class="col-lg-5 product-media-column">
 
 
 
-                                        <div id="main-preview" class="position-relative">
+                                        <div id="main-preview" class="position-relative product-gallery-main">
                                             <div class="product-status-badge-stack"
                                                  th:if="${product_details['showPreorderBadge'] == true or product_details['showOutOfStockBadge'] == true}">
                                                 <span class="product-status-badge preorder"
@@ -42,21 +42,21 @@
                                                 </span>
                                             </div>
                                             <span th:if="${not #strings.isEmpty(#strings.trim(product_details.imageName))}" class="">
-                                                <img  id="mainImage" class="img-fluid " th:src="@{/files/}+${product_details.imageName}"
+                                                <img  id="mainImage" class="img-fluid product-main-image" th:src="@{/files/}+${product_details.imageName}"
                                                       th:attr="onerror=|this.onerror=null;this.src='@{/img/image-not-available.png}';|"
                                                       width="800"
                                                       height="600"/>
                                             </span>
                                             <span th:if="${#strings.isEmpty(#strings.trim(product_details.imageName))}" >
-                                                <img  class="img-fluid" th:src="@{/img/image-not-available.png}" />
+                                                <img  class="img-fluid product-main-image" th:src="@{/img/image-not-available.png}" />
                                             </span>
 
                                         </div>
-                                        <div class="slider-nav">
+                                        <div class="slider-nav product-thumb-strip">
                                             <!-- Loop through product images and check if the image is not null -->
                                             <div th:each="img : ${img_list}" th:if="${img_list != null}">
                                                 <!--                                                <img th:src="@{/images/{file}(file=${img})}" alt="Thumbnail"/>-->
-                                                <img  class="img-fluid"
+                                                <img  class="img-fluid product-thumb-image"
                                                       th:src="@{/files/}+${img.productImageName}"
                                                       th:attr="data-img=@{/files/}+${img.productImageName}"  width="100" height="80"/>
                                             </div>
@@ -68,11 +68,11 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-sm-6 product-summary">
-                                        <div class="row">
-                                            <div class="col-6">
+                                    <div class="col-lg-7 product-summary">
+                                        <div class="row g-4">
+                                            <div class="col-xl-7 product-purchase-column">
 
-                                                <div class="fs-5">  <span  th:text="${product_details.title}">    </span></div>
+                                                <div class="fs-5 product-title">  <span  th:text="${product_details.title}">    </span></div>
 
                                                 <div class="review-inline-rating" th:if="${productReviewSummary.hasReviews}">
                                                     <div class="review-star-row">
@@ -96,7 +96,7 @@
                                                 </div>
 
                                                 <div th:if="${productViewCount > 0}"
-                                                     class="d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill border text-muted bg-light small">
+                                                     class="product-view-chip">
 
                                                     <i class="bi bi-eye"></i>
 
@@ -105,14 +105,14 @@
 
                                                 </div>
 
-                                                <div>  <strong>Category: </strong><span  th:text="${product_details.category}">    </span></div>
+                                                <div class="product-meta-line">  <strong>Category: </strong><span  th:text="${product_details.category}">    </span></div>
 
-                                                <p th:utext="${product_details.shortDescription}">
+                                                <p class="product-short-description" th:utext="${product_details.shortDescription}">
 
                                                 </p>
 
                                                 <!--                                                <p th:if="${product_details.totalDiscountPercent > 0}">-->
-                                                <ul class="list-unstyled" th:if="${product_details.totalDiscountPercent > 0}">
+                                                <ul class="list-unstyled product-price-panel" th:if="${product_details.totalDiscountPercent > 0}">
                                                     <li>
                                                         <strong class="fs-6 text-muted">
                                                             Tk <del><span th:text="${product_details.salesPrice}"></span></del>
@@ -135,7 +135,7 @@
 
 
 
-                                                <p th:if="${product_details.totalDiscountPercent == 0}">
+                                                <p class="product-price-panel product-price-panel-simple" th:if="${product_details.totalDiscountPercent == 0}">
                                                     <strong class="fs-5"> Tk: </strong> <span class="fs-5" th:text="${product_details.salesPrice}">    </span>
                                                 </p>
 
@@ -144,7 +144,7 @@
                                                 <div th:if="${errorMessage}" class="alert alert-danger py-2" role="alert" th:text="${errorMessage}"></div>
                                                 <div th:if="${successMessage}" class="alert alert-success py-2" role="alert" th:text="${successMessage}"></div>
 
-                                                <form id="addToCartForm" class="" th:action="@{/cart/add}"  enctype="multipart/form-data" method="post" >
+                                                <form id="addToCartForm" class="product-action-form" th:action="@{/cart/add}"  enctype="multipart/form-data" method="post" >
                                                     <div th:if="${hasCatalogVariants}">
                                                         <input type="hidden" name="catalogVariantUuid" id="catalogVariantUuid" value="" />
 
@@ -177,10 +177,10 @@
                                                     <label class="form-label">Quantity</label>
                                                     <input type="hidden" class="form-control" name ="product_uuid" th:value="${product_details.uuid}" />
 
-                                                    <input  type="number" min="1"   class="col-auto form-control w-50 mb-3"  size="10" name="quantity" value="1" />
+                                                    <input  type="number" min="1"   class="col-auto form-control product-quantity-input mb-3"  size="10" name="quantity" value="1" />
 
                                                     <div class="col-auto form-group">
-                                                        <button class="btn btn-block btn-success" > <i class="bi bi-cart-plus"></i> Add to Cart</button>
+                                                        <button class="btn btn-block btn-danger product-primary-action" > <i class="bi bi-cart-plus"></i> Add to Cart</button>
                                                     </div>
                                                 </form>
 
@@ -192,7 +192,7 @@
                                                            name="redirectUrl"
                                                            th:value="@{/public/single-product/{prodid}(prodid=${product_details.uuid})}" />
                                                     <button type="submit"
-                                                            class="btn"
+                                                            class="btn product-secondary-action"
                                                             th:classappend="${currentProductInWishlist} ? ' btn-outline-danger' : ' btn-outline-info'">
                                                         <i class="bi"
                                                            th:classappend="${currentProductInWishlist} ? ' bi-heart-fill' : ' bi-suit-heart'"></i>
@@ -321,17 +321,17 @@
 
 
                                                 <!--                                        <a class="btn btn-block btn-warning" th:href="@{/cart/add/{prodid}(prodid=${product_details.uuid})}">Add to Cart</a>-->
-                                                <div>  <strong>SKU: </strong><span th:text="${product_details.sku}"> </span></div>
-                                                <div>  <strong>Manufacturer: </strong><span  th:text="${product_details.manufacturerName}"> </span></div>
-                                                <div>
+                                                <div class="product-fact-item">  <strong>SKU: </strong><span th:text="${product_details.sku}"> </span></div>
+                                                <div class="product-fact-item">  <strong>Manufacturer: </strong><span  th:text="${product_details.manufacturerName}"> </span></div>
+                                                <div class="product-fact-item">
                                                     <strong>Availability: </strong>
                                                     <span th:text="${product_details['availabilityLabel']}">In stock</span>
                                                 </div>
-                                                <div>  <strong>Meritten EMI Available:  </strong>  <span  th:text="${product_details.emiAvailable}"> </span> </div>
-                                                <div>
+                                                <div class="product-fact-item">  <strong>Meritten EMI Available:  </strong>  <span  th:text="${product_details.emiAvailable}"> </span> </div>
+                                                <div class="product-fact-item">
                                                     <strong>Sold By : </strong>  <span  th:text="${product_details.vendorProfileName}"> </span>
                                                 </div>
-                                                <div class="card mt-4" th:if="${productSpecifications != null and !#lists.isEmpty(productSpecifications)}">
+                                                <div class="card mt-4 product-spec-card" th:if="${productSpecifications != null and !#lists.isEmpty(productSpecifications)}">
                                                     <div class="card-header bg-light">
                                                         <strong>Key Specifications</strong>
                                                     </div>
@@ -354,7 +354,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-6 product-info-sidebar">
+                                            <div class="col-xl-5 product-info-sidebar">
                                                 <div class="fs-6"> Delivery Options </div>
                                                 <p>Available Delivery Area: </p>
                                                 <ul class="list-unstyled">
@@ -382,7 +382,7 @@
 
                                                     </ul>
 
-                                                    <div th:unless="${d_c_lists != null and !#lists.isEmpty(d_c_lists)}">
+                                                    <div th:unless="${d_c_list != null and !#lists.isEmpty(d_c_list)}">
                                                         No information available.
                                                     </div>
                                                     <hr>
@@ -443,7 +443,14 @@
 
 
 
-                                    <div class="row row-cols-1 row-cols-md-5 g-4 ">
+                                    <section class="col-12 product-recommendation-section">
+                                        <div class="product-section-heading">
+                                            <div>
+                                                <span class="product-section-kicker">From this seller</span>
+                                                <h2>More products you may like</h2>
+                                            </div>
+                                        </div>
+                                    <div class="row row-cols-1 row-cols-md-5 g-4 product-recommendation-grid">
 
                                         <div class="col" th:each="productlists,status:${vProduct}">
 
@@ -547,11 +554,18 @@
                                             </div>
                                         </div>
                                     </div>
+                                    </section>
 
-                                    <div class="col-sm-12">
+                                    <section class="col-12 product-tabs-shell">
+                                        <div class="product-section-heading">
+                                            <div>
+                                                <span class="product-section-kicker">Product intelligence</span>
+                                                <h2>Details, reviews, and specifications</h2>
+                                            </div>
+                                        </div>
 
 
-                                        <ul class="nav nav-tabs m-5" id="productTabs">
+                                        <ul class="nav nav-tabs" id="productTabs">
                                             <li class="nav-item">
                                                 <a class="nav-link active" id="description-tab" data-bs-toggle="tab" href="#description">Description</a>
                                             </li>
@@ -769,10 +783,17 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </section>
 
 
-                                    <div class="row row-cols-1 row-cols-md-5 g-4 ">
+                                    <section class="col-12 product-recommendation-section">
+                                        <div class="product-section-heading">
+                                            <div>
+                                                <span class="product-section-kicker">Recommended marketplace picks</span>
+                                                <h2>Explore more products</h2>
+                                            </div>
+                                        </div>
+                                    <div class="row row-cols-1 row-cols-md-5 g-4 product-recommendation-grid">
 
                                         <div class="col" th:each="productlists,status:${allReandomProduct}">
 
@@ -881,6 +902,7 @@
                                             </div>
                                         </div>
                                     </div>
+                                    </section>
 
                                 </div>
                             </div>

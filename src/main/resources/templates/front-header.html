@@ -15,26 +15,16 @@
             <div class="col-12 col-sm-6 text-end storefront-topbar-utilities">
                 <div class="d-flex justify-content-end flex-wrap gap-2 storefront-topbar-links">
 
-                    <!-- Language Dropdown -->
-                    <div class="dropdown storefront-topbar-dropdown">
-                        <a href="#" class="nav-link dropdown-toggle text-decoration-none"
-                           data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-translate"></i>
+                    <!-- Shipping Location -->
+                    <div class="storefront-topbar-dropdown">
+                        <button type="button"
+                                class="nav-link text-decoration-none d-flex align-items-center gap-1 storefront-location-trigger"
+                                data-bs-toggle="modal"
+                                data-bs-target="#locationPickerModal">
+                            <i class="bi bi-geo-alt"></i>
                             <span class="storefront-topbar-link-text"
                                   th:text="${currentShippingLocation != null ? currentShippingLocation.displayLabel : 'Select Shipping Location'}"></span>
-                        </a>
-
-                        <ul class="dropdown-menu">
-                            <th:block th:each="d : ${shippinglocations}">
-                                <li>
-                                    <button class="dropdown-item location-btn"
-                                            type="button"
-                                            th:data-location="${d.id}">
-                                        [[${d.displayLabel}]]
-                                    </button>
-                                </li>
-                            </th:block>
-                        </ul>
+                        </button>
                     </div>
 
                     <!-- Currency Dropdown -->
@@ -72,6 +62,42 @@
 
 
 </section>
+
+<div class="modal fade location-picker-modal" id="locationPickerModal" tabindex="-1" aria-hidden="true"
+     th:data-current-location="${currentShippingLocation != null ? currentShippingLocation.id : ''}"
+     th:data-current-district="${currentShippingDistrictId != null ? currentShippingDistrictId : ''}"
+     th:data-show="${autoShowLocationPicker}"
+     data-refresh-on-save="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Your Shipping Location</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label" for="headerDistrictSelect">District</label>
+                <select id="headerDistrictSelect" class="form-select" data-location-district required>
+                    <option value="">Select District</option>
+                    <option th:each="district : ${shippingDistricts}"
+                            th:value="${district.id}"
+                            th:text="${district.name}">
+                    </option>
+                </select>
+
+                <label class="form-label mt-3" for="headerThanaSelect">Thana</label>
+                <select id="headerThanaSelect" class="form-select" data-location-thana required disabled>
+                    <option value="">Select Thana</option>
+                </select>
+                <div class="form-text">Delivery charges and availability will update for this location.</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" data-location-save>Save Location</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <header>
 
     <nav class="navbar navbar-expand-md navbar-light bg-white py-2 storefront-header-nav">

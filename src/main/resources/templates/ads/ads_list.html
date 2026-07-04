@@ -71,7 +71,7 @@ and open the template in the editor.
                                             <option th:each="p : ${placements}"
                                                     th:value="${p}"
                                                     th:selected="${currentPlacement == p.name()}"
-                                                    th:text="${p}"></option>
+                                                    th:text="${p.displayName}"></option>
                                         </select>
                                     </div>
                                     <div class="col-md-3">
@@ -128,7 +128,7 @@ and open the template in the editor.
 
                                             <td>
                                                 <span class="badge bg-info text-dark"
-                                                      th:text="${ad.placement}"></span>
+                                                      th:text="${ad.placement != null ? ad.placement.displayName : 'Not selected'}"></span>
                                             </td>
 
                                             <!-- Show target info -->

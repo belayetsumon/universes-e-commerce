@@ -1,24 +1,57 @@
 .settings-workspace {
     --settings-panel: #ffffff;
-    --settings-border: #dfe5ee;
+    --settings-border: rgba(15, 23, 42, .08);
     --settings-muted: #667085;
     --settings-text: #182230;
-    --settings-accent: #0f6b63;
-    --settings-accent-dark: #0a4f49;
+    --settings-accent: #0d6efd;
+    --settings-accent-dark: #113459;
+    --settings-header-bg: #113459;
+    --settings-shadow: 0 .75rem 1.75rem rgba(15, 23, 42, .08);
     color: var(--settings-text);
 }
 
 .settings-header {
+    overflow: hidden;
+    color: #ffffff;
+    background: var(--settings-header-bg);
+    border: 1px solid rgba(17, 52, 89, .32);
+    border-radius: 8px;
+    box-shadow: var(--settings-shadow);
+}
+
+.settings-header .card-header {
+    background: rgba(255, 255, 255, .08);
+    border-bottom: 1px solid rgba(255, 255, 255, .12);
+}
+
+.settings-header .card-body {
+    background: var(--settings-header-bg);
+}
+
+.settings-header-main {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 1.25rem;
-    margin-bottom: 1rem;
-    background: #0b1f2a;
-    border: 1px solid #153242;
-    border-radius: 8px;
-    color: #fff;
+    gap: 1.5rem;
+}
+
+.settings-header-title {
+    display: flex;
+    align-items: flex-start;
+    gap: .85rem;
+    min-width: 0;
+}
+
+.settings-header-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    color: var(--settings-header-bg);
+    background: #ffffff;
+    border-radius: 50%;
 }
 
 .settings-kicker,
@@ -33,11 +66,16 @@
 
 .settings-header .settings-kicker,
 .settings-header .settings-subtitle {
-    color: #c8d3df;
+    color: rgba(255, 255, 255, .76);
+}
+
+.settings-header .settings-kicker {
+    color: #9fd8ff;
 }
 
 .settings-header h1 {
     margin: 0;
+    color: #ffffff;
     font-size: 1.6rem;
     font-weight: 700;
     letter-spacing: 0;
@@ -55,6 +93,12 @@
     display: flex;
     align-items: center;
     gap: .6rem;
+}
+
+.settings-header-actions .btn-light {
+    color: var(--settings-header-bg);
+    background: #ffffff;
+    border-color: rgba(255, 255, 255, .7);
 }
 
 .settings-status-grid {
@@ -355,7 +399,7 @@
 }
 
 @media (max-width: 767.98px) {
-    .settings-header,
+    .settings-header-main,
     .settings-panel-head,
     .settings-savebar {
         flex-direction: column;

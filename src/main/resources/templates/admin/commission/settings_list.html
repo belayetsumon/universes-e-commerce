@@ -105,9 +105,83 @@
                 border-radius: 50%;
             }
 
+            .commission-table-toolbar {
+                display: grid;
+                grid-template-columns: minmax(220px, 1fr) 180px 220px;
+                gap: .75rem;
+                align-items: center;
+            }
+
+            .commission-rules-table {
+                min-width: 980px;
+            }
+
+            .commission-rules-table th,
+            .commission-rules-table td {
+                vertical-align: middle;
+            }
+
+            .commission-rule-title {
+                display: grid;
+                gap: .2rem;
+                min-width: 240px;
+            }
+
+            .commission-target-badge {
+                max-width: 220px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .commission-action-bar {
+                display: inline-flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: .35rem;
+                min-width: 168px;
+            }
+
+            .commission-action-form {
+                display: inline-flex;
+                margin: 0;
+            }
+
+            .commission-action-bar .btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 34px;
+                height: 34px;
+                padding: 0;
+                border-radius: 7px;
+            }
+
+            .commission-table-footer {
+                min-height: 54px;
+            }
+
+            .commission-table-footer .dt-buttons {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+                gap: .4rem;
+            }
+
+            .commission-empty-state {
+                display: grid;
+                justify-items: center;
+                gap: .75rem;
+                padding: 3rem 1rem;
+            }
+
             @media (max-width: 1399.98px) {
                 .commission-status-grid {
                     grid-template-columns: repeat(3, minmax(0, 1fr));
+                }
+
+                .commission-table-toolbar {
+                    grid-template-columns: 1fr 180px;
                 }
             }
 
@@ -123,6 +197,11 @@
 
                 .commission-status-grid {
                     grid-template-columns: 1fr;
+                }
+
+                .commission-table-toolbar {
+                    grid-template-columns: 1fr;
+                    width: 100%;
                 }
             }
         </style>
@@ -225,26 +304,36 @@
                             <h2 class="h5 mb-1">Rules</h2>
                             <p class="text-muted small mb-0">Resolution order: Product, Vendor, Category, then Default fallback.</p>
                         </div>
-                        <form method="get" th:action="@{/admin/commission-settings/list-by-type}" class="d-flex align-items-center gap-2">
-                            <label for="typeFilter" class="form-label small text-muted mb-0">Commission type</label>
-                            <select id="typeFilter"
-                                    name="type"
-                                    class="form-select form-select-sm"
-                                    th:data-all-url="@{/admin/commission-settings/list}">
-                                <option value="" th:selected="${filterType == null}">All commission rules</option>
-                                <option th:each="type : ${commissionTypes}"
-                                        th:value="${type}"
-                                        th:text="${type.label}"
-                                        th:selected="${filterType == type}">Type</option>
+                        <div class="commission-table-toolbar">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input id="commissionRuleSearch" type="search" class="form-control" placeholder="Search rules, targets, status, or rate">
+                            </div>
+                            <select id="commissionStatusFilter" class="form-select form-select-sm">
+                                <option value="">All statuses</option>
+                                <option value="ACTIVE">Active</option>
+                                <option value="INACTIVE">Inactive</option>
                             </select>
-                        </form>
+                            <form method="get" th:action="@{/admin/commission-settings/list-by-type}">
+                                <select id="typeFilter"
+                                        name="type"
+                                        class="form-select form-select-sm"
+                                        th:data-all-url="@{/admin/commission-settings/list}">
+                                    <option value="" th:selected="${filterType == null}">All commission types</option>
+                                    <option th:each="type : ${commissionTypes}"
+                                            th:value="${type}"
+                                            th:text="${type.label}"
+                                            th:selected="${filterType == type}">Type</option>
+                                </select>
+                            </form>
+                        </div>
                     </div>
                 </div>
 
                 <div class="card-body p-0 mt-3">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light text-uppercase small">
+                        <table id="commissionRulesTable" class="table table-hover align-middle mb-0 commission-rules-table">
+                            <thead class="table-light">
                                 <tr>
                                     <th class="fw-semibold ps-3">Rule</th>
                                     <th class="fw-semibold">Rate</th>
@@ -254,62 +343,70 @@
                                     <th class="fw-semibold text-end pe-3">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr th:each="setting : ${commissionSettings}">
+                            <tbody th:if="${not commissionSettings.isEmpty()}">
+                                <tr th:each="setting : ${commissionSettings}"
+                                    th:data-status="${setting.status.name()}">
                                     <td class="ps-3">
-                                        <div class="fw-semibold" th:text="${setting.commissionType.label}">Default Commission</div>
-                                        <div class="text-muted small" th:text="${setting.description ?: 'No description provided'}">Description</div>
+                                        <div class="commission-rule-title">
+                                            <span class="fw-semibold" th:text="${setting.commissionType.label}">Default Commission</span>
+                                            <span class="text-muted small text-break" th:text="${setting.description ?: 'No description provided'}">Description</span>
+                                        </div>
                                     </td>
                                     <td>
                                         <span class="fw-semibold" th:text="${#numbers.formatDecimal(setting.commissionRate, 1, 2)} + '%'">20.00%</span>
                                     </td>
                                     <td>
-                                        <span class="badge rounded-pill bg-light text-dark border" th:text="${setting.targetSummary}">Global default</span>
+                                        <span class="badge rounded-pill bg-light text-dark border commission-target-badge" th:text="${setting.targetSummary}">Global default</span>
                                     </td>
                                     <td>
                                         <span class="badge rounded-pill"
-                                              th:classappend="${setting.status.name() == 'ACTIVE'} ? ' bg-success' : ${setting.status.name() == 'INACTIVE'} ? ' bg-secondary' : ' bg-dark'"
-                                              th:text="${setting.status.label}">Active</span>
+                                              th:classappend="${setting.status.name() == 'ACTIVE' ? ' bg-success' : (setting.status.name() == 'INACTIVE' ? ' bg-secondary' : ' bg-dark')}"
+                                              th:text="${setting.status.label}"
+                                              th:data-status-value="${setting.status.name()}">Active</span>
                                     </td>
                                     <td>
                                         <div class="small" th:text="${setting.updatedAt != null ? #temporals.format(setting.updatedAt, 'dd MMM yyyy HH:mm') : 'Not recorded'}">Not recorded</div>
                                         <div class="text-muted small" th:text="${setting.updatedBy ?: 'system'}">system</div>
                                     </td>
                                     <td class="text-end pe-3">
-                                        <div class="btn-group btn-group-sm" role="group" aria-label="Rule actions">
-                                            <a th:href="@{/admin/commission-settings/{id}(id=${setting.id})}" class="btn btn-outline-secondary" title="View">
+                                        <div class="commission-action-bar" aria-label="Rule actions">
+                                            <a th:href="@{/admin/commission-settings/{id}(id=${setting.id})}" class="btn btn-outline-secondary" title="View" aria-label="View rule">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            <a th:href="@{/admin/commission-settings/edit/{id}(id=${setting.id})}" class="btn btn-outline-primary" title="Edit">
+                                            <a th:href="@{/admin/commission-settings/edit/{id}(id=${setting.id})}" class="btn btn-outline-primary" title="Edit" aria-label="Edit rule">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <form th:if="${setting.status.name() == 'ACTIVE'}" th:action="@{/admin/commission-settings/deactivate/{id}(id=${setting.id})}" method="post" class="d-inline">
+                                            <form th:if="${setting.status.name() == 'ACTIVE'}" th:action="@{/admin/commission-settings/deactivate/{id}(id=${setting.id})}" method="post" class="commission-action-form">
                                                 <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                                <button type="submit" class="btn btn-outline-warning" title="Deactivate" onclick="return confirm('Deactivate this commission setting?');">
+                                                <button type="submit" class="btn btn-outline-warning" title="Deactivate" aria-label="Deactivate rule" onclick="return confirm('Deactivate this commission setting?');">
                                                     <i class="bi bi-pause"></i>
                                                 </button>
                                             </form>
-                                            <form th:if="${setting.status.name() == 'INACTIVE'}" th:action="@{/admin/commission-settings/activate/{id}(id=${setting.id})}" method="post" class="d-inline">
+                                            <form th:if="${setting.status.name() == 'INACTIVE'}" th:action="@{/admin/commission-settings/activate/{id}(id=${setting.id})}" method="post" class="commission-action-form">
                                                 <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                                <button type="submit" class="btn btn-outline-success" title="Activate" onclick="return confirm('Activate this commission setting?');">
+                                                <button type="submit" class="btn btn-outline-success" title="Activate" aria-label="Activate rule" onclick="return confirm('Activate this commission setting?');">
                                                     <i class="bi bi-play"></i>
                                                 </button>
                                             </form>
-                                            <form th:action="@{/admin/commission-settings/delete/{id}(id=${setting.id})}" method="post" class="d-inline">
+                                            <form th:action="@{/admin/commission-settings/delete/{id}(id=${setting.id})}" method="post" class="commission-action-form">
                                                 <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                                <button type="submit" class="btn btn-outline-danger" title="Delete" onclick="return confirm('Delete this commission setting permanently?');">
+                                                <button type="submit" class="btn btn-outline-danger" title="Delete" aria-label="Delete rule" onclick="return confirm('Delete this commission setting permanently?');">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
                                         </div>
                                     </td>
                                 </tr>
-                                <tr th:if="${commissionSettings.isEmpty()}">
-                                    <td colspan="6" class="text-center py-5">
-                                        <div class="text-muted mb-3">No commission settings found for this filter.</div>
-                                        <a th:href="@{/admin/commission-settings/create}" class="btn btn-primary btn-sm">
-                                            <i class="bi bi-plus-lg"></i> Create Rule
-                                        </a>
+                            </tbody>
+                            <tbody th:if="${commissionSettings.isEmpty()}">
+                                <tr>
+                                    <td colspan="6">
+                                        <div class="commission-empty-state">
+                                            <div class="text-muted">No commission settings found for this filter.</div>
+                                            <a th:href="@{/admin/commission-settings/create}" class="btn btn-primary btn-sm">
+                                                <i class="bi bi-plus-lg"></i> Create Rule
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -317,11 +414,12 @@
                     </div>
                 </div>
 
-                <div class="card-footer bg-white d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <div class="card-footer bg-white d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 commission-table-footer">
                     <div class="text-muted small">
-                        Showing <strong th:text="${commissionSettings.size()}">0</strong>
+                        Showing <strong id="visibleCommissionRuleCount" th:text="${commissionSettings.size()}">0</strong>
                         of <strong th:text="${page.totalElements}">0</strong> entries
                     </div>
+                    <div id="commissionExportButtons" class="d-flex flex-wrap justify-content-end gap-2"></div>
                     <nav th:if="${page.totalPages > 1}" aria-label="Commission settings pagination">
                         <ul class="pagination pagination-sm mb-0">
                             <li class="page-item" th:classappend="${page.first} ? 'disabled'">
@@ -360,6 +458,87 @@
                         typeFilter.form.submit();
                     });
                 }
+
+                const initializeCommissionRulesTable = function () {
+                    if (!window.jQuery || !jQuery.fn || !jQuery.fn.DataTable) {
+                        window.setTimeout(initializeCommissionRulesTable, 180);
+                        return;
+                    }
+
+                    const tableElement = document.getElementById('commissionRulesTable');
+                    if (!tableElement || tableElement.dataset.commissionDataTableInitialized === 'true') {
+                        return;
+                    }
+
+                    const hasDataRows = tableElement.querySelectorAll('tbody tr[data-status]').length > 0;
+                    if (!hasDataRows) {
+                        return;
+                    }
+
+                    tableElement.dataset.commissionDataTableInitialized = 'true';
+
+                    const searchInput = document.getElementById('commissionRuleSearch');
+                    const statusFilter = document.getElementById('commissionStatusFilter');
+                    const visibleCount = document.getElementById('visibleCommissionRuleCount');
+
+                    const table = jQuery(tableElement).DataTable({
+                        ordering: true,
+                        order: [[4, 'desc']],
+                        paging: false,
+                        info: false,
+                        lengthChange: false,
+                        searching: true,
+                        autoWidth: false,
+                        scrollX: true,
+                        buttons: ['copy', 'csv', 'excel', 'print'],
+                        layout: {
+                            topStart: null,
+                            topEnd: null,
+                            bottomStart: null,
+                            bottomEnd: null
+                        },
+                        columnDefs: [
+                            {targets: 0, width: '28%'},
+                            {targets: 1, width: '90px'},
+                            {targets: 2, width: '190px'},
+                            {targets: 3, width: '110px'},
+                            {targets: 4, width: '160px'},
+                            {targets: 5, orderable: false, searchable: false, width: '190px'}
+                        ],
+                        language: {
+                            zeroRecords: 'No commission rules match the current filters.',
+                            emptyTable: 'No commission settings found.'
+                        }
+                    });
+
+                    if (table && typeof table.buttons === 'function') {
+                        table.buttons().container().appendTo('#commissionExportButtons');
+                    }
+
+                    const updateVisibleCount = function () {
+                        if (visibleCount && table && typeof table.rows === 'function') {
+                            visibleCount.textContent = table.rows({filter: 'applied'}).count();
+                        }
+                    };
+
+                    if (searchInput) {
+                        searchInput.addEventListener('input', function () {
+                            table.search(searchInput.value || '').draw();
+                        });
+                    }
+
+                    if (statusFilter) {
+                        statusFilter.addEventListener('change', function () {
+                            const status = statusFilter.value || '';
+                            table.column(3).search(status ? status : '', false, false).draw();
+                        });
+                    }
+
+                    table.on('draw', updateVisibleCount);
+                    updateVisibleCount();
+                };
+
+                initializeCommissionRulesTable();
             });
         </script>
     </th:block>
