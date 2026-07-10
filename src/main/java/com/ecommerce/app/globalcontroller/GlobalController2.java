@@ -6,9 +6,12 @@
 package com.ecommerce.app.globalcontroller;
 
 import com.ecommerce.app.globalComponant.EntityNameResolver;
+import com.ecommerce.app.module.communication.model.ReceiverType;
+import com.ecommerce.app.module.communication.services.CommunicationNotificationService;
 import com.ecommerce.app.module.shipping.model.ShippingLocation;
 import com.ecommerce.app.module.shipping.model.ShippingLocationType;
 import com.ecommerce.app.module.shipping.services.ShippingLocationService;
+import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.wishlist.service.WishlistService;
 import com.ecommerce.app.product.model.ProductStatusEnum;
@@ -52,6 +55,9 @@ public class GlobalController2 {
     @Autowired
     ShippingLocationService shippingLocationService;
 
+    @Autowired
+    CommunicationNotificationService communicationNotificationService;
+
     @ModelAttribute
     public void addAttributes(Model model) {
 
@@ -82,6 +88,22 @@ public class GlobalController2 {
             LOGGER.warn("Unable to populate wishlist model attributes for {}", requestPath(request), ex);
             addEmptyWishlistAttributes(model);
         }
+    }
+
+    @ModelAttribute
+    public void addCommunicationNotificationAttributes(Model model, Principal principal, HttpServletRequest request) {
+        long unreadCount = 0L;
+        if (principal != null && principal.getName() != null) {
+            try {
+                Users user = usersRepository.findByEmail(principal.getName()).orElse(null);
+                if (user != null && user.getId() != null) {
+                    unreadCount = communicationNotificationService.getUnreadCount(user.getId(), receiverTypeForPath(requestPath(request)));
+                }
+            } catch (RuntimeException ex) {
+                LOGGER.warn("Unable to populate communication unread count for {}", principal.getName(), ex);
+            }
+        }
+        model.addAttribute("communicationUnreadCount", unreadCount);
     }
 
 //    @ModelAttribute
@@ -230,6 +252,22 @@ public class GlobalController2 {
                 || path.startsWith("/api")
                 || path.startsWith("/actuator")
                 || path.startsWith("/error");
+    }
+
+    private ReceiverType receiverTypeForPath(String path) {
+        if (path == null) {
+            return null;
+        }
+        if (path.startsWith("/admin")) {
+            return ReceiverType.ADMIN;
+        }
+        if (path.startsWith("/vendor")) {
+            return ReceiverType.VENDOR;
+        }
+        if (path.startsWith("/customer")) {
+            return ReceiverType.CUSTOMER;
+        }
+        return null;
     }
 
     private String requestPath(HttpServletRequest request) {

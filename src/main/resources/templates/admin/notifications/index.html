@@ -1,0 +1,12 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div>
+                <h3 class="mb-1">Notifications</h3>
+                <p class="text-muted mb-0">Your admin, system, and operational in-app messages.</p>
+            </div>
+            <span class="badge text-bg-danger" th:if="${unreadCount > 0}" th:text="${unreadCount + ' unread'}">0 unread</span>
+        </div>
+        <div th:replace="customer/notifications/index :: notificationList"></div>
+    </div>
+</div>

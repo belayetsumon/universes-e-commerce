@@ -1,0 +1,28 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <div th:replace="admin/communication/fragments :: tabs('messages')"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div>
+                <h3 class="mb-1" th:text="${message.subject}">Message Report</h3>
+                <p class="text-muted mb-0">Read tracking summary for this in-app message.</p>
+            </div>
+            <a class="btn btn-outline-secondary btn-sm" th:href="@{/admin/communication/messages}">Back</a>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-3"><div class="bg-white border rounded p-3 shadow-sm"><div class="text-muted small">Total Sent</div><strong th:text="${report.totalRecipients}">0</strong></div></div>
+            <div class="col-md-3"><div class="bg-white border rounded p-3 shadow-sm"><div class="text-muted small">Total Read</div><strong th:text="${report.readCount}">0</strong></div></div>
+            <div class="col-md-3"><div class="bg-white border rounded p-3 shadow-sm"><div class="text-muted small">Total Unread</div><strong th:text="${report.unreadCount}">0</strong></div></div>
+            <div class="col-md-3"><div class="bg-white border rounded p-3 shadow-sm"><div class="text-muted small">Read %</div><strong th:text="${#numbers.formatDecimal(report.readPercentage, 1, 2) + '%'}">0%</strong></div></div>
+        </div>
+        <div class="table-responsive bg-white border rounded shadow-sm">
+            <table class="table table-hover align-middle mb-0">
+                <thead><tr><th>Receiver Type</th><th>Read Count</th><th>Unread Count</th></tr></thead>
+                <tbody>
+                    <tr><td>Customer</td><td th:text="${receiverReport.customerReadCount}">0</td><td th:text="${receiverReport.customerUnreadCount}">0</td></tr>
+                    <tr><td>Vendor</td><td th:text="${receiverReport.vendorReadCount}">0</td><td th:text="${receiverReport.vendorUnreadCount}">0</td></tr>
+                    <tr><td>Admin</td><td th:text="${receiverReport.adminReadCount}">0</td><td th:text="${receiverReport.adminUnreadCount}">0</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

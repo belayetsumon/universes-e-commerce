@@ -1,0 +1,80 @@
+﻿<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section class="mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <h4 class="mb-1"><i class="bi bi-send me-2 text-primary"></i>Manual Message</h4>
+                <p class="text-muted mb-0">Send custom communication through the existing delivery channels.</p>
+            </div>
+        </section>
+        <div th:replace="admin/communication/fragments :: tabs('manual')"></div>
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+        <form th:action="@{/admin/communication/manual/send}" th:object="${manualMessage}" method="post" class="card">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Audience</label>
+                        <select class="form-select" th:field="*{audience}" required>
+                            <option value="">Select audience</option>
+                            <option th:each="audience : ${manualAudiences}" th:value="${audience}" th:text="${audience.displayName}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Single customer</label>
+                        <select class="form-select" th:field="*{recipientId}">
+                            <option value="">Choose when needed</option>
+                            <option th:each="customer : ${customerOptions}" th:value="${customer.id}" th:text="${(customer.firstName != null ? customer.firstName : '') + ' ' + (customer.lastName != null ? customer.lastName : '') + ' - ' + customer.email}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Single vendor</label>
+                        <select class="form-select" th:field="*{recipientId}">
+                            <option value="">Choose when needed</option>
+                            <option th:each="vendor : ${vendorOptions}" th:value="${vendor.id}" th:text="${vendor.companyName != null ? vendor.companyName : vendor.email}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Selected customers</label>
+                        <select class="form-select" th:field="*{recipientIds}" multiple size="8">
+                            <option th:each="customer : ${customerOptions}" th:value="${customer.id}" th:text="${(customer.firstName != null ? customer.firstName : '') + ' ' + (customer.lastName != null ? customer.lastName : '') + ' - ' + customer.email}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Selected vendors</label>
+                        <select class="form-select" th:field="*{recipientIds}" multiple size="8">
+                            <option th:each="vendor : ${vendorOptions}" th:value="${vendor.id}" th:text="${vendor.companyName != null ? vendor.companyName : vendor.email}"></option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label d-block">Channels</label>
+                        <div class="d-flex flex-wrap gap-3">
+                            <label class="form-check" th:each="channel : ${messageChannels}">
+                                <input class="form-check-input" type="checkbox" th:field="*{channels}" th:value="${channel}">
+                                <span class="form-check-label" th:text="${channel.displayName}"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">Subject</label>
+                        <input class="form-control" th:field="*{subject}" maxlength="250">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Message type</label>
+                        <select class="form-select" th:field="*{messageType}">
+                            <option th:each="type : ${messageTypes}" th:value="${type}" th:text="${type}"></option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-control" th:field="*{body}" rows="7" required></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-end gap-2">
+                <a class="btn btn-outline-secondary" th:href="@{/admin/communication/manual/sent}">Sent</a>
+                <button class="btn btn-primary" type="submit"><i class="bi bi-send me-1"></i>Send Message</button>
+            </div>
+        </form>
+    </div>
+</div>
+

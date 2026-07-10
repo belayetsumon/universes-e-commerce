@@ -12,11 +12,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 //@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class Testproject {
 
+//    @Autowired
+//    AdminVendorManagementService adminVendorManagementService;
     @Test
     public void contextLoads() {
-        double totalweight = 5;
-        double baseweight = 0.5;
-        // System.out.println("total Price ......" + packagingRateService.calculateRate(13l, baseweight, totalweight));
+
     }
 
 }

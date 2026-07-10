@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-customar-page">
+    <div layout:fragment="main_content">
+        <style>
+            .giftcard-payment-shell {
+                max-width: 980px;
+            }
+
+            .giftcard-payment-hero,
+            .giftcard-payment-panel,
+            .giftcard-payment-summary {
+                background: #ffffff;
+                border: 1px solid #dbe3ef;
+                border-radius: 8px;
+            }
+
+            .giftcard-payment-hero {
+                padding: 18px 20px;
+                margin-bottom: 16px;
+            }
+
+            .giftcard-payment-hero h4 {
+                margin: 0;
+                font-weight: 700;
+                color: #102033;
+            }
+
+            .giftcard-payment-hero p {
+                margin: 4px 0 0;
+                color: #65758b;
+            }
+
+            .giftcard-payment-panel .card-header {
+                background: #ffffff;
+                border-bottom: 1px solid #e5edf6;
+                padding: 14px 16px;
+            }
+
+            .giftcard-payment-panel .card-body {
+                padding: 18px;
+            }
+
+            .giftcard-payment-summary {
+                padding: 14px;
+                background: #f8fafc;
+            }
+
+            .summary-label {
+                color: #64748b;
+                font-size: 12px;
+                text-transform: uppercase;
+            }
+
+            .summary-value {
+                color: #0f172a;
+                font-weight: 700;
+            }
+
+            .field-error {
+                color: #b91c1c;
+                font-size: 13px;
+                margin-top: 4px;
+            }
+        </style>
+
+        <div class="giftcard-payment-shell">
+            <section class="giftcard-payment-hero">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <h4>Gift Card Payment</h4>
+                        <p>Confirm payment to issue and activate the gift-card code.</p>
+                    </div>
+                    <a class="btn btn-outline-secondary btn-sm" th:href="@{/customer-giftcard/list}">
+                        <i class="bi bi-arrow-left"></i> My Gift Cards
+                    </a>
+                </div>
+            </section>
+
+            <div th:if="${successMessage}" class="alert alert-success" role="alert">
+                <strong>Success.</strong> <span th:text="${successMessage}">Purchase ready.</span>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                <strong>Action needed.</strong> <span th:text="${errorMessage}">Payment issue.</span>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-lg-5">
+                    <div class="giftcard-payment-summary">
+                        <div class="mb-3">
+                            <div class="summary-label">Purchase Reference</div>
+                            <div class="summary-value" th:text="${purchase.uuid != null and #strings.length(purchase.uuid) >= 8 ? #strings.substring(purchase.uuid, 0, 8) : 'New'}">ref</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="summary-label">Amount</div>
+                            <div class="summary-value">
+                                <span th:text="${purchase.amount}">0</span>
+                                <span th:text="${purchase.currency}">BDT</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="summary-label">Recipient</div>
+                            <div class="summary-value" th:text="${purchase.recipientEmail != null ? purchase.recipientEmail : 'Self'}">Self</div>
+                            <small class="text-muted" th:if="${purchase.recipientName != null}" th:text="${purchase.recipientName}">Recipient</small>
+                        </div>
+                        <div>
+                            <div class="summary-label">Status</div>
+                            <div class="summary-value" th:text="${purchase.status}">PENDING_PAYMENT</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-7">
+                    <div class="card giftcard-payment-panel">
+                        <div class="card-header">
+                            <strong><i class="bi bi-credit-card"></i> Confirm Online Payment</strong>
+                            <small class="d-block text-muted">Use a unique transaction reference from the payment gateway.</small>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/customer-giftcard/payment/{uuid}(uuid=${purchase.uuid})}" method="post" th:object="${paymentForm}">
+                                <div th:if="${#fields.hasErrors('*')}" class="alert alert-warning" role="alert">
+                                    Please correct the payment details before confirming.
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label" for="paymentMethod">Payment Method</label>
+                                    <select id="paymentMethod" class="form-select" th:field="*{paymentMethod}" required>
+                                        <option th:each="method:${paymentMethods}"
+                                                th:value="${method}"
+                                                th:text="${method.displayName}">SSLCommerz</option>
+                                    </select>
+                                    <div class="field-error" th:if="${#fields.hasErrors('paymentMethod')}" th:errors="*{paymentMethod}">Method error</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label" for="paymentReference">Payment Reference / Transaction ID</label>
+                                    <input id="paymentReference" class="form-control" type="text" maxlength="120"
+                                           th:field="*{paymentReference}" required>
+                                    <div class="form-text">Duplicate references are blocked to prevent double gift-card issuing.</div>
+                                    <div class="field-error" th:if="${#fields.hasErrors('paymentReference')}" th:errors="*{paymentReference}">Reference error</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label" for="paymentNote">Payment Note</label>
+                                    <textarea id="paymentNote" class="form-control" rows="3" maxlength="500"
+                                              th:field="*{paymentNote}" placeholder="Optional payment note"></textarea>
+                                    <div class="field-error" th:if="${#fields.hasErrors('paymentNote')}" th:errors="*{paymentNote}">Note error</div>
+                                </div>
+
+                                <div class="alert alert-info" role="alert">
+                                    After confirmation, the gift card will be created with active balance and an issue transaction will be recorded.
+                                </div>
+
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button class="btn btn-primary" type="submit"
+                                            th:disabled="${purchase.status == null or purchase.status.name() != 'PENDING_PAYMENT'}">
+                                        <i class="bi bi-check2-circle"></i> Confirm Payment
+                                    </button>
+                                    <a class="btn btn-outline-secondary" th:href="@{/customer-giftcard/list}">Back</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

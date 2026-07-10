@@ -19,6 +19,7 @@ import com.ecommerce.app.product.model.Warranty;
 import static com.ecommerce.app.product.model.SortingType.ASC;
 import static com.ecommerce.app.product.model.SortingType.DESC;
 import static com.ecommerce.app.product.model.SortingType.RANDOM;
+import com.ecommerce.app.vendor.model.VendorStatusEnum;
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -169,6 +170,14 @@ public class ProductService {
         }
 
         return false;
+    }
+
+    private Predicate publicSaleableProductPredicate(CriteriaBuilder cb, Root<Product> productRoot, Join<Product, Vendorprofile> vendorJoin) {
+        return cb.and(
+                cb.equal(productRoot.get("status"), ProductStatusEnum.Active),
+                cb.isTrue(productRoot.get("onlineShow")),
+                cb.equal(vendorJoin.get("vendorStatusEnum"), VendorStatusEnum.Active)
+        );
     }
 
     public List<Map<String, Object>> product_List_For_Dropdown() {
@@ -824,6 +833,7 @@ public class ProductService {
         CriteriaQuery<Tuple> cq = cb.createQuery(Tuple.class);
 
         Root<Product> productRoot = cq.from(Product.class);
+        Join<Product, Vendorprofile> vendorJoin = productRoot.join("vendorprofile", JoinType.INNER);
 
         // Base URL
         String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
@@ -883,8 +893,9 @@ public class ProductService {
         // WHERE vendor + category
         cq.where(
                 cb.and(
-                        cb.equal(productRoot.get("vendorprofile").get("id"), vendorId),
-                        cb.equal(productRoot.get("productcategory").get("id"), categoryId)
+                        cb.equal(vendorJoin.get("id"), vendorId),
+                        cb.equal(productRoot.get("productcategory").get("id"), categoryId),
+                        publicSaleableProductPredicate(cb, productRoot, vendorJoin)
                 )
         );
 
@@ -996,6 +1007,7 @@ public class ProductService {
         CriteriaQuery<Tuple> cq = cb.createQuery(Tuple.class);
 
         Root<Product> productRoot = cq.from(Product.class);
+        Join<Product, Vendorprofile> vendorJoin = productRoot.join("vendorprofile", JoinType.INNER);
 
         // Base URL
         String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
@@ -1014,8 +1026,8 @@ public class ProductService {
                 productRoot.get("sku").alias("productSku"),
                 productRoot.get("userId").alias("productUserId"),
                 productRoot.get("productcategory").get("name").alias("productCategory"),
-                productRoot.get("vendorprofile").get("id").alias("vendorprofileId"),
-                productRoot.get("vendorprofile").get("companyName").alias("vendorprName"),
+                vendorJoin.get("id").alias("vendorprofileId"),
+                vendorJoin.get("companyName").alias("vendorprName"),
                 productRoot.get("title").alias("productTitle"),
                 productRoot.get("slug").alias("productSlug"),
                 productRoot.get("orderno").alias("productOrderno"),
@@ -1054,7 +1066,10 @@ public class ProductService {
 
         // WHERE vendor + category
         cq.where(
-                cb.equal(productRoot.get("vendorprofile").get("id"), vendorId)
+                cb.and(
+                        cb.equal(vendorJoin.get("id"), vendorId),
+                        publicSaleableProductPredicate(cb, productRoot, vendorJoin)
+                )
         );
 
         // ORDER BY
@@ -1164,6 +1179,7 @@ public class ProductService {
         CriteriaQuery<Tuple> cq = cb.createQuery(Tuple.class);
 
         Root<Product> productRoot = cq.from(Product.class);
+        Join<Product, Vendorprofile> vendorJoin = productRoot.join("vendorprofile", JoinType.INNER);
 
         // Base URL
         String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
@@ -1182,8 +1198,8 @@ public class ProductService {
                 productRoot.get("sku").alias("productSku"),
                 productRoot.get("userId").alias("productUserId"),
                 productRoot.get("productcategory").get("name").alias("productCategory"),
-                productRoot.get("vendorprofile").get("id").alias("vendorprofileId"),
-                productRoot.get("vendorprofile").get("companyName").alias("vendorprName"),
+                vendorJoin.get("id").alias("vendorprofileId"),
+                vendorJoin.get("companyName").alias("vendorprName"),
                 productRoot.get("title").alias("productTitle"),
                 productRoot.get("slug").alias("productSlug"),
                 productRoot.get("orderno").alias("productOrderno"),
@@ -1220,10 +1236,7 @@ public class ProductService {
                 productRoot.get("modified").alias("productModified")
         );
 
-        // WHERE vendor + category
-//        cq.where(
-//                cb.equal(productRoot.get("vendorprofile").get("id"), vendorId)
-//        );
+        cq.where(publicSaleableProductPredicate(cb, productRoot, vendorJoin));
         // ORDER BY
         // ORDER BY
         if (sortingType != null) {
@@ -1380,8 +1393,10 @@ public class ProductService {
                 productRoot.get("modified").alias("productModified")
         );
 
-        // Apply where condition
-        cq.where(cb.equal(productRoot.get("uuid"), productUuid));
+        cq.where(cb.and(
+                cb.equal(productRoot.get("uuid"), productUuid),
+                publicSaleableProductPredicate(cb, productRoot, vendorJoin)
+        ));
 
         // Execute query safely
         Tuple tuple = null;
@@ -1547,10 +1562,7 @@ public class ProductService {
 
         List<Predicate> predicates = new ArrayList<>();
 
-        // 2026-04-29: Public product listings should only load active products
-        // that are marked for online display.
-        predicates.add(cb.equal(productRoot.get("status"), ProductStatusEnum.Active));
-        predicates.add(cb.isTrue(productRoot.get("onlineShow")));
+        predicates.add(publicSaleableProductPredicate(cb, productRoot, vendorJoin));
 
         // Filter by Vendor Profile ID
         if (vendorprofileId != null) {
@@ -1735,10 +1747,7 @@ public class ProductService {
         );
 
         List<Predicate> predicates = new ArrayList<>();
-        predicates.add(cb.equal(
-                cb.upper(productRoot.get("status").as(String.class)),
-                ProductStatusEnum.Active.name().toUpperCase()
-        ));
+        predicates.add(publicSaleableProductPredicate(cb, productRoot, vendorJoin));
 
         if (categoryUuid != null && !categoryUuid.isBlank()) {
             var categorySubquery = cq.subquery(Long.class);

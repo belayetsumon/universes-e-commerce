@@ -1,5 +1,4 @@
-<form th:action="@{/wallet/generate-giftcard}" method="post">
-    <label>Enter points to convert into a gift card:</label>
-    <input type="number" name="points" min="100" th:attr="max=${eligiblePoints}" required />
-    <button type="submit">Generate Gift Card</button>
-</form>
+<div xmlns:th="http://www.thymeleaf.org" class="alert alert-info">
+    Gift card purchase is now handled through the customer gift-card purchase flow.
+    <a class="btn btn-primary btn-sm ms-2" th:href="@{/customer-giftcard/buy}">Buy Gift Card</a>
+</div>

@@ -38,6 +38,12 @@
                 </div>
 
                 <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2">
+                    <a class="btn btn-outline-primary btn-sm position-relative" th:href="@{/vendor/notifications}">
+                        <i class="bi bi-bell me-1"></i> Notifications
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                              th:if="${communicationUnreadCount != null and communicationUnreadCount > 0}"
+                              th:text="${communicationUnreadCount}">0</span>
+                    </a>
                     <a class="btn btn-outline-secondary btn-sm" th:href="@{/}">
                         <i class="bi bi-shop me-1"></i> Storefront
                     </a>

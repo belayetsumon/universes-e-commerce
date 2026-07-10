@@ -1,5 +1,8 @@
 package com.ecommerce.app.order.services;
 
+import com.ecommerce.app.module.communication.model.MessageChannel;
+import com.ecommerce.app.module.communication.model.MessageEventType;
+import com.ecommerce.app.module.communication.events.CommunicationRequestedEvent;
 import com.ecommerce.app.order.model.OrderPaymentPlan;
 import com.ecommerce.app.order.model.OrderPaymentState;
 import com.ecommerce.app.order.model.OrderStatus;
@@ -11,9 +14,12 @@ import com.ecommerce.app.order.repository.PaymentRepository;
 import com.ecommerce.app.order.repository.SalesOrderRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +31,9 @@ public class PaymentService {
 
     @Autowired
     private SalesOrderRepository salesOrderRepository;
+
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional(readOnly = true)
     public List<Payment> getPaymentsForOrder(Long orderId) {
@@ -102,6 +111,7 @@ public class PaymentService {
 
         Payment savedPayment = paymentRepository.save(payment);
         refreshOrderPaymentTracking(order);
+        notifyPaymentEvent(MessageEventType.PAYMENT_SUCCESS, order, normalizedAmount);
         return savedPayment;
     }
 
@@ -153,7 +163,34 @@ public class PaymentService {
 
         Payment savedPayment = paymentRepository.save(payment);
         refreshOrderPaymentTracking(order);
+        notifyPaymentEvent(MessageEventType.PAYMENT_REFUNDED, order, refundableAmount);
         return new RefundResult(savedPayment, refundableAmount, refundMethod);
+    }
+
+    private void notifyPaymentEvent(MessageEventType eventType, SalesOrder order, BigDecimal amount) {
+        try {
+            if (order == null || order.getCustomer() == null || order.getCustomer().getEmail() == null) {
+                return;
+            }
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("customerName", safeText(order.getCustomer().getFirstName()));
+            variables.put("orderNumber", safeText(order.getOrderCode()));
+            variables.put("orderTotal", safeMoney(order.getGrandTotal()).toPlainString());
+            variables.put("paymentAmount", safeMoney(amount).toPlainString());
+            applicationEventPublisher.publishEvent(CommunicationRequestedEvent.payment(
+                    eventType,
+                    MessageChannel.EMAIL,
+                    order.getCustomer().getEmail(),
+                    order.getOrderCode(),
+                    variables
+            ));
+        } catch (Exception ignored) {
+            // Communication failure must not block payment processing.
+        }
+    }
+
+    private String safeText(String value) {
+        return value == null ? "" : value;
     }
 
     private PaymentSummary buildSummary(SalesOrder order, List<Payment> payments) {

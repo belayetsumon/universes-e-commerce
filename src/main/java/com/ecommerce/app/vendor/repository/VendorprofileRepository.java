@@ -28,4 +28,7 @@ public interface VendorprofileRepository extends JpaRepository<Vendorprofile, Lo
 
     Optional<Vendorprofile> findByUuid(String uuid);
 
+    boolean existsByUuid(String uuid);
+
+    public void deleteByUuid(String uuid);
 }

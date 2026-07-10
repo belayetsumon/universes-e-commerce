@@ -40,6 +40,29 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
     Optional<SalesOrder> findByIdAndVendorId(Long id, Long vendorId);
 
     @Query("""
+            select distinct s.customer
+            from SalesOrder s
+            where s.vendorId = :vendorId
+              and s.customer is not null
+              and s.customer.status = com.ecommerce.app.module.user.model.Status.Active
+            order by s.customer.id desc
+            """)
+    List<Users> findDistinctCustomersByVendorId(@Param("vendorId") Long vendorId);
+
+    @Query("""
+            select distinct s.customer
+            from SalesOrder s
+            where s.vendorId = :vendorId
+              and s.customer is not null
+              and s.customer.id in :customerIds
+              and s.customer.status = com.ecommerce.app.module.user.model.Status.Active
+            order by s.customer.id desc
+            """)
+    List<Users> findDistinctCustomersByVendorIdAndCustomerIds(
+            @Param("vendorId") Long vendorId,
+            @Param("customerIds") java.util.Collection<Long> customerIds);
+
+    @Query("""
   SELECT s.orderCode
   FROM SalesOrder s
   WHERE s.orderCode LIKE :prefix

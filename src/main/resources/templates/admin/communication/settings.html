@@ -1,0 +1,24 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section class="mb-3"><h4 class="mb-0"><i class="bi bi-sliders me-2 text-primary"></i>Communication Settings</h4></section>
+        <div th:replace="admin/communication/fragments :: tabs('settings')"></div>
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show"><span th:text="${successMessage}"></span><button class="btn-close" data-bs-dismiss="alert"></button></div>
+        <div class="card"><div class="card-body">
+            <form method="post" th:action="@{/admin/communication/settings/save}" th:object="${settings}">
+                <input type="hidden" th:field="*{id}"><input type="hidden" th:field="*{uuid}"><input type="hidden" th:field="*{version}">
+                <div class="row g-3">
+                    <div class="col-md-4"><label class="form-label">Default Language</label><input class="form-control" th:field="*{defaultLanguage}"><div class="text-danger small" th:errors="*{defaultLanguage}"></div></div>
+                    <div class="col-md-4"><label class="form-label">Direct Volume Threshold</label><input type="number" min="1" class="form-control" th:field="*{directVolumeThreshold}"><div class="text-danger small" th:errors="*{directVolumeThreshold}"></div></div>
+                    <div class="col-md-4"><label class="form-label">Queue Volume Threshold</label><input type="number" min="1" class="form-control" th:field="*{queueVolumeThreshold}"><div class="text-danger small" th:errors="*{queueVolumeThreshold}"></div></div>
+                    <div class="col-md-4"><label class="form-label">Max Retry Count</label><input type="number" min="0" class="form-control" th:field="*{maxRetryCount}"><div class="text-danger small" th:errors="*{maxRetryCount}"></div></div>
+                    <div class="col-md-4"><label class="form-label">Retry Delay Minutes</label><input type="number" min="1" class="form-control" th:field="*{retryDelayMinutes}"><div class="text-danger small" th:errors="*{retryDelayMinutes}"></div></div>
+                    <div class="col-md-4"><label class="form-label">Recipient Hourly Limit</label><input type="number" min="1" class="form-control" th:field="*{recipientHourlyLimit}"><div class="text-danger small" th:errors="*{recipientHourlyLimit}"></div></div>
+                    <div class="col-md-4"><label class="form-label">Provider Per-Minute Limit</label><input type="number" min="1" class="form-control" th:field="*{providerPerMinuteLimit}"><div class="text-danger small" th:errors="*{providerPerMinuteLimit}"></div></div>
+                    <div class="col-md-4 d-flex align-items-end"><label class="form-check mb-2"><input class="form-check-input" type="checkbox" th:field="*{schedulerEnabled}"> Scheduler Enabled</label></div>
+                </div>
+                <button class="btn btn-primary mt-3" type="submit">Save Settings</button>
+            </form>
+        </div></div>
+    </div>
+</div>
+

@@ -1,0 +1,43 @@
+﻿<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-customar-page">
+    <div layout:fragment="main_content">
+        <section class="mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <h4 class="mb-1"><i class="bi bi-chat-square-text me-2 text-primary"></i>Manual Communication</h4>
+                <p class="text-muted mb-0">Review manual message inbox, sent messages, and recipient-level delivery logs.</p>
+            </div>
+            <a class="btn btn-primary btn-sm" th:href="@{/customer/communication/manual/compose}"><i class="bi bi-send me-1"></i>Compose</a>
+        </section>
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <a th:class="${activeView == 'inbox' ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'}" th:href="@{/customer/communication/manual/inbox}">Inbox</a>
+            <a th:class="${activeView == 'sent' ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'}" th:href="@{/customer/communication/manual/sent}">Sent</a>
+        </div>
+        <form class="card mb-3" method="get" th:action="${basePath + '/' + activeView}">
+            <div class="card-body row g-3 align-items-end">
+                <div class="col-md-3"><label class="form-label">Channel</label><select class="form-select" name="channel"><option value="">All</option><option th:each="channel : ${messageChannels}" th:value="${channel}" th:selected="${channel == selectedChannel}" th:text="${channel.displayName}"></option></select></div>
+                <div class="col-md-3"><label class="form-label">Status</label><select class="form-select" name="status"><option value="">All</option><option th:each="status : ${messageStatuses}" th:value="${status}" th:selected="${status == selectedStatus}" th:text="${status}"></option></select></div>
+                <div class="col-md-4"><label class="form-label">Search</label><input class="form-control" name="q" th:value="${q}" placeholder="Recipient, code, response"></div>
+                <div class="col-md-2"><button class="btn btn-outline-primary w-100" type="submit">Filter</button></div>
+            </div>
+        </form>
+        <div class="card"><div class="card-body table-responsive">
+            <table class="table table-bordered table-hover align-middle mb-0">
+                <thead class="table-light"><tr><th>ID</th><th>Channel</th><th>Recipient</th><th>Type</th><th>Status</th><th>Code</th><th>Response</th><th>Sent</th></tr></thead>
+                <tbody>
+                    <tr th:each="row : ${page.content}">
+                        <td th:text="${row.id}"></td><td th:text="${row.channel}"></td><td class="text-break" th:text="${row.recipient}"></td><td th:text="${row.messageType}"></td>
+                        <td><span class="badge bg-secondary" th:text="${row.status}"></span></td><td th:text="${row.responseCode}"></td><td class="text-break" th:text="${row.responseMessage}"></td><td th:text="${row.sentAt}"></td>
+                    </tr>
+                    <tr th:if="${page.empty}"><td colspan="8" class="text-center text-muted py-4">No manual messages found.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer d-flex justify-content-between align-items-center">
+            <span class="text-muted small" th:text="${'Page ' + (page.number + 1) + ' of ' + (page.totalPages == 0 ? 1 : page.totalPages)}"></span>
+            <div class="btn-group btn-group-sm">
+                <a class="btn btn-outline-secondary" th:classappend="${page.first} ? ' disabled'" th:href="${basePath + '/' + activeView + '?page=' + (page.number - 1)}">Previous</a>
+                <a class="btn btn-outline-secondary" th:classappend="${page.last} ? ' disabled'" th:href="${basePath + '/' + activeView + '?page=' + (page.number + 1)}">Next</a>
+            </div>
+        </div></div>
+    </div>
+</div>

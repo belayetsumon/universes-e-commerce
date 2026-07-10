@@ -1,5 +1,271 @@
-<form action="/verify-mobile" method="post">
-    Email: <input type="email" name="email"/><br/>
-    OTP: <input type="text" name="otp"/><br/>
-    <button type="submit">Verify Mobile</button>
-</form>
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
+    <th:block layout:fragment="page_css">
+        <style>
+            .vendor-mobile-verification {
+                --vm-border: rgba(15, 23, 42, 0.08);
+                --vm-text: #101828;
+                --vm-muted: #667085;
+                --vm-accent: #0f4c81;
+                --vm-accent-soft: #eaf3fb;
+                --vm-shadow: 0 18px 42px rgba(15, 23, 42, 0.07);
+            }
+
+            .vendor-mobile-verification .mobile-shell {
+                display: grid;
+                grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+                gap: 1.25rem;
+                align-items: start;
+            }
+
+            .vendor-mobile-verification .hero-card,
+            .vendor-mobile-verification .form-card {
+                border: 1px solid var(--vm-border);
+                border-radius: 1.25rem;
+                background: #ffffff;
+                box-shadow: var(--vm-shadow);
+            }
+
+            .vendor-mobile-verification .hero-card {
+                overflow: hidden;
+                background: linear-gradient(135deg, #0f4c81 0%, #163a5f 58%, #1f2937 100%);
+                color: #ffffff;
+            }
+
+            .vendor-mobile-verification .card-body {
+                padding: 1.5rem;
+            }
+
+            .vendor-mobile-verification .eyebrow {
+                display: inline-flex;
+                gap: 0.45rem;
+                align-items: center;
+                padding: 0.42rem 0.75rem;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.14);
+                font-size: 0.78rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+            }
+
+            .vendor-mobile-verification .hero-title {
+                margin: 0.9rem 0 0.5rem;
+                font-size: clamp(1.55rem, 2vw, 2.15rem);
+                font-weight: 700;
+            }
+
+            .vendor-mobile-verification .hero-copy {
+                color: rgba(255, 255, 255, 0.78);
+                margin-bottom: 1.25rem;
+            }
+
+            .vendor-mobile-verification .meta-box {
+                border-radius: 1rem;
+                padding: 1rem;
+                background: rgba(255, 255, 255, 0.12);
+            }
+
+            .vendor-mobile-verification .meta-label {
+                font-size: 0.78rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: rgba(255, 255, 255, 0.72);
+                font-weight: 700;
+            }
+
+            .vendor-mobile-verification .meta-value {
+                margin: 0.25rem 0 0;
+                font-size: 1.05rem;
+                font-weight: 700;
+                word-break: break-word;
+            }
+
+            .vendor-mobile-verification .form-title {
+                color: var(--vm-text);
+                font-size: 1.1rem;
+                font-weight: 700;
+                margin-bottom: 0.25rem;
+            }
+
+            .vendor-mobile-verification .form-copy {
+                color: var(--vm-muted);
+                margin-bottom: 1.1rem;
+            }
+
+            .vendor-mobile-verification .otp-input {
+                min-height: 3.1rem;
+                border-radius: 0.85rem;
+                font-size: 1.15rem;
+                font-weight: 700;
+                letter-spacing: 0.18em;
+                text-align: center;
+            }
+
+            .vendor-mobile-verification .btn {
+                border-radius: 0.75rem;
+                font-weight: 700;
+            }
+
+            .vendor-mobile-verification .top-actions {
+                display: flex;
+                justify-content: flex-end;
+                margin-bottom: 1rem;
+            }
+
+            .vendor-mobile-verification .helper-card {
+                border: 1px solid rgba(15, 23, 42, 0.06);
+                border-radius: 1rem;
+                background: #f8fafc;
+                padding: 1rem;
+                color: var(--vm-muted);
+            }
+
+            .vendor-mobile-verification .status-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+                border-radius: 999px;
+                padding: 0.48rem 0.72rem;
+                font-size: 0.86rem;
+                font-weight: 700;
+            }
+
+            .vendor-mobile-verification .status-pill.verified {
+                background: #e8f7ef;
+                color: #067647;
+            }
+
+            .vendor-mobile-verification .status-pill.pending {
+                background: #fff7e6;
+                color: #b54708;
+            }
+
+            .vendor-mobile-verification .status-pill.missing {
+                background: #fee4e2;
+                color: #b42318;
+            }
+
+            @media (max-width: 991.98px) {
+                .vendor-mobile-verification .mobile-shell {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </th:block>
+
+    <div layout:fragment="main_content">
+        <section class="vendor-mobile-verification">
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>Success.</strong> <span th:text="${successMessage}">OTP sent.</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Action needed.</strong> <span th:text="${errorMessage}">Invalid OTP.</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div class="top-actions">
+                <a class="btn btn-outline-secondary" th:href="@{/vendorverifications}">
+                    <i class="bi bi-arrow-left me-2"></i>Back To Verification
+                </a>
+            </div>
+
+            <div class="mobile-shell">
+                <div class="card hero-card">
+                    <div class="card-body">
+                        <div class="eyebrow">
+                            <i class="bi bi-phone-vibrate"></i>
+                            Mobile OTP
+                        </div>
+                        <h1 class="hero-title">Verify mobile number</h1>
+                        <p class="hero-copy">
+                            Enter the OTP sent to your vendor mobile number to complete contact verification.
+                        </p>
+                        <div class="meta-box">
+                            <div class="meta-label">Mobile Number</div>
+                            <p class="meta-value" th:text="${verification.mobile != null and !#strings.isEmpty(verification.mobile) ? verification.mobile : 'Not provided'}">mobile</p>
+                        </div>
+                        <div class="meta-box mt-3">
+                            <div class="meta-label">OTP Validity</div>
+                            <p class="meta-value"><span th:text="${mobileOtpValidMinutes}">10</span> minutes</p>
+                        </div>
+                        <div class="mt-3">
+                            <span class="status-pill verified" th:if="${verification.mobileVerified}">
+                                <i class="bi bi-patch-check-fill"></i> Mobile verified
+                            </span>
+                            <span class="status-pill missing" th:if="${!verification.mobileVerified and (verification.mobile == null or #strings.isEmpty(verification.mobile))}">
+                                <i class="bi bi-exclamation-triangle"></i> Mobile missing
+                            </span>
+                            <span class="status-pill pending" th:if="${!verification.mobileVerified and verification.mobile != null and !#strings.isEmpty(verification.mobile)}">
+                                <i class="bi bi-clock-history"></i> OTP pending
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card form-card">
+                    <div class="card-body">
+                        <h2 class="form-title"
+                            th:text="${verification.mobileVerified ? 'Mobile verification complete' : ((verification.mobile == null or #strings.isEmpty(verification.mobile)) ? 'Add mobile number first' : 'Enter verification code')}">
+                            Enter verification code
+                        </h2>
+                        <p class="form-copy"
+                           th:text="${verification.mobileVerified ? 'Your vendor mobile number is already verified.' : ((verification.mobile == null or #strings.isEmpty(verification.mobile)) ? 'A mobile number is required before an OTP can be sent or verified.' : 'Use the latest OTP. Request a new code if the previous one expired.')}">
+                            Use the latest OTP. Request a new code if the previous one expired.
+                        </p>
+
+                        <div th:if="${verification.mobileVerified}" class="alert alert-success" role="alert">
+                            <strong>Verified.</strong> This vendor mobile number is ready for operational alerts and OTP workflows.
+                        </div>
+
+                        <div th:if="${!verification.mobileVerified and (verification.mobile == null or #strings.isEmpty(verification.mobile))}" class="alert alert-warning" role="alert">
+                            <strong>Mobile number required.</strong> Update your vendor profile before requesting an OTP.
+                        </div>
+
+                        <form th:action="@{/vendorverifications/verify-mobile}" method="post">
+                            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <div class="mb-3">
+                                <label class="form-label" for="otp">OTP Code</label>
+                                <input id="otp" class="form-control otp-input" type="text" name="otp"
+                                       inputmode="numeric" maxlength="6" autocomplete="one-time-code"
+                                       placeholder="000000"
+                                       th:disabled="${verification.mobileVerified or verification.mobile == null or #strings.isEmpty(verification.mobile)}"
+                                       required>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button class="btn btn-primary" type="submit"
+                                        th:disabled="${verification.mobileVerified or verification.mobile == null or #strings.isEmpty(verification.mobile)}">
+                                    <i class="bi bi-shield-check me-2"></i>Verify Mobile
+                                </button>
+                                <a th:if="${verification.mobile == null or #strings.isEmpty(verification.mobile)}"
+                                   class="btn btn-outline-primary" th:href="@{/vendorprofile/edit}">
+                                    <i class="bi bi-pencil-square me-2"></i>Update Mobile
+                                </a>
+                                <a class="btn btn-outline-secondary" th:href="@{/vendorverifications}">
+                                    Back To Status
+                                </a>
+                            </div>
+                        </form>
+
+                        <div class="helper-card mt-4">
+                            <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+                                <div>
+                                    <strong class="text-dark">Need a fresh OTP?</strong>
+                                    <div>Only the latest generated OTP should be used for verification.</div>
+                                </div>
+                                <form th:action="@{/vendorverifications/mobile-verification-otp-send}" method="post">
+                                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                    <button class="btn btn-outline-primary" type="submit"
+                                            th:disabled="${verification.mobileVerified or verification.mobile == null or #strings.isEmpty(verification.mobile)}">
+                                        <i class="bi bi-arrow-clockwise me-2"></i>Resend OTP
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

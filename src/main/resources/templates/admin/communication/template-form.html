@@ -1,0 +1,24 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section class="mb-3 d-flex justify-content-between align-items-center">
+            <h4 class="mb-0" th:text="${template.id == null ? 'New Message Template' : 'Edit Message Template'}"></h4>
+            <a class="btn btn-outline-secondary btn-sm" th:href="@{/admin/communication/templates}">Back</a>
+        </section>
+        <div th:replace="admin/communication/fragments :: tabs('templates')"></div>
+        <div class="card"><div class="card-body">
+            <form method="post" th:action="@{/admin/communication/templates/save}" th:object="${template}">
+                <input type="hidden" th:field="*{id}"><input type="hidden" th:field="*{uuid}"><input type="hidden" th:field="*{version}">
+                <div class="row g-3">
+                    <div class="col-md-4"><label class="form-label">Event Type</label><select class="form-select" th:field="*{eventType}"><option value="">Select event</option><option th:each="e : ${messageEventTypes}" th:value="${e}" th:text="${e}"></option></select><div class="text-danger small" th:errors="*{eventType}"></div></div>
+                    <div class="col-md-4"><label class="form-label">Channel</label><select class="form-select" th:field="*{channel}"><option value="">Select channel</option><option th:each="c : ${messageChannels}" th:value="${c}" th:text="${c.displayName}"></option></select><div class="text-danger small" th:errors="*{channel}"></div></div>
+                    <div class="col-md-4"><label class="form-label">Language</label><input class="form-control" th:field="*{language}" placeholder="en"><div class="text-danger small" th:errors="*{language}"></div></div>
+                    <div class="col-md-8"><label class="form-label">Subject</label><input class="form-control" th:field="*{subject}"><div class="text-danger small" th:errors="*{subject}"></div></div>
+                    <div class="col-md-4"><label class="form-label">Status</label><select class="form-select" th:field="*{status}"><option th:each="s : ${messageStatuses}" th:value="${s}" th:text="${s}"></option></select><div class="text-danger small" th:errors="*{status}"></div></div>
+                    <div class="col-12"><label class="form-label">Body</label><textarea class="form-control" rows="8" th:field="*{body}" placeholder="Hello {{customerName}}, your order {{orderNumber}} is confirmed."></textarea><div class="text-danger small" th:errors="*{body}"></div></div>
+                    <div class="col-12"><label class="form-label">Variables</label><input class="form-control" th:field="*{variables}" placeholder="{{customerName}}, {{orderNumber}}, {{orderTotal}}, {{trackingNumber}}"></div>
+                </div>
+                <button class="btn btn-primary mt-3" type="submit">Save Template</button>
+            </form>
+        </div></div>
+    </div>
+</div>

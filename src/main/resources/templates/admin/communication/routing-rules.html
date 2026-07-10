@@ -1,0 +1,31 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section class="mb-3 d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="bi bi-signpost-split me-2 text-primary"></i>Routing Rules</h4>
+            <a class="btn btn-success btn-sm" th:href="@{/admin/communication/routing-rules/new}"><i class="bi bi-plus-circle"></i> Add Rule</a>
+        </section>
+        <div th:replace="admin/communication/fragments :: tabs('routing')"></div>
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show"><span th:text="${successMessage}"></span><button class="btn-close" data-bs-dismiss="alert"></button></div>
+        <div class="card"><div class="card-body table-responsive">
+            <table class="table table-bordered table-hover align-middle mb-0">
+                <thead class="table-light"><tr><th>Event</th><th>Channel</th><th>Mode</th><th>Provider</th><th>Volume</th><th>Active</th><th>Actions</th></tr></thead>
+                <tbody>
+                    <tr th:each="row : ${routingRules}">
+                        <td th:text="${row.eventType}"></td><td th:text="${row.channel}"></td><td th:text="${row.deliveryMode.displayName}"></td>
+                        <td th:text="${row.provider != null ? row.provider.providerName : 'Auto provider'}"></td>
+                        <td th:text="${row.minVolume + ' - ' + (row.maxVolume != null ? row.maxVolume : 'Any')}"></td>
+                        <td><span th:class="${row.active ? 'badge bg-success' : 'badge bg-danger'}" th:text="${row.active ? 'Active' : 'Inactive'}"></span></td>
+                        <td class="text-nowrap">
+                            <a class="btn btn-sm btn-primary" th:href="@{/admin/communication/routing-rules/{id}/edit(id=${row.id})}">Edit</a>
+                            <form class="d-inline" method="post" th:action="@{/admin/communication/routing-rules/{id}/delete(id=${row.id})}" onsubmit="return confirm('Delete this routing rule?')">
+                                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(routingRules)}"><td colspan="7" class="text-center text-muted py-4">No routing rules found.</td></tr>
+                </tbody>
+            </table>
+        </div></div>
+    </div>
+</div>

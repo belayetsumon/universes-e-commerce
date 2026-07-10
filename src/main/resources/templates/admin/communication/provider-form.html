@@ -1,0 +1,105 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section class="mb-3 d-flex justify-content-between align-items-center">
+            <h4 class="mb-0" th:text="${provider.id == null ? 'New Message Provider' : 'Edit Message Provider'}"></h4>
+            <a class="btn btn-outline-secondary btn-sm" th:href="@{/admin/communication/providers}">Back</a>
+        </section>
+        <div th:replace="admin/communication/fragments :: tabs('providers')"></div>
+        <div class="card"><div class="card-body">
+                <form method="post"
+                      th:action="@{/admin/communication/providers/save}"
+                      th:object="${provider}">
+
+                    <input type="hidden" th:field="*{id}">
+                    <input type="hidden" th:field="*{uuid}">
+                    <input type="hidden" th:field="*{version}">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label">Provider Name</label>
+                            <input class="form-control" th:field="*{providerName}">
+                            <div class="text-danger small" th:errors="*{providerName}"></div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Channel</label>
+                            <select class="form-select" th:field="*{channel}">
+                                <option value="">Select channel</option>
+                                <option th:each="c : ${messageChannels}"
+                                        th:value="${c}"
+                                        th:text="${c.displayName}">
+                                </option>
+                            </select>
+                            <div class="text-danger small" th:errors="*{channel}"></div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Provider Type</label>
+                            <select class="form-select" th:field="*{providerType}">
+                                <option value="">Select type</option>
+                                <option th:each="t : ${providerTypes}"
+                                        th:value="${t}"
+                                        th:text="${t.displayName}">
+                                </option>
+                            </select>
+                            <div class="text-danger small" th:errors="*{providerType}"></div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Sender ID / From</label>
+                            <input class="form-control" th:field="*{senderId}">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" th:field="*{status}">
+                                <option th:each="s : ${messageStatuses}"
+                                        th:value="${s}"
+                                        th:text="${s}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Priority</label>
+                            <input type="number" min="0" class="form-control" th:field="*{priority}">
+                            <div class="text-danger small" th:errors="*{priority}"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Base URL</label>
+                            <input class="form-control"
+                                   th:field="*{baseUrl}"
+                                   placeholder="https://provider.example/api/send">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">API Key</label>
+                            <input class="form-control" th:field="*{apiKey}" autocomplete="off">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">API Secret</label>
+                            <input class="form-control" th:field="*{apiSecret}" autocomplete="off">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Config JSON</label>
+                            <textarea class="form-control"
+                                      th:field="*{configJson}"
+                                      rows="5"
+                                      autocomplete="off"></textarea>
+                        </div>
+
+                        <div class="col-12">
+                            <button class="btn btn-primary mt-3" type="submit">
+                                Save Provider
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div></div>
+    </div>
+</div>

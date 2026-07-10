@@ -18,7 +18,7 @@ and open the template in the editor.
                         <div class="card-header  ">
                             <div class="row">  <div class="col-sm-12">
 
-                                    <h5 class="font-weight-bold "><i class="fas fa-list"></i> Your Team List  [[${refeList.size()}]]</h5></div>
+                                    <h5 class="font-weight-bold "><i class="fas fa-list"></i> My Referred List  [[${refeList.size()}]]</h5></div>
 
                             </div>
                         </div>
@@ -43,14 +43,14 @@ and open the template in the editor.
                                     <tbody>
                                         <tr th:each="alluser,status:${refeList}">
                                             <td th:text="${status.count}">2.</td>
-                                            <td th:text="${alluser.referredUser.firstName}">Chakma</td>
-                                            <td th:text="${alluser.referredUser.lastName}">Chakma</td>
+                                            <td th:text="${alluser.users.firstName}">Chakma</td>
+                                            <td th:text="${alluser.users.lastName}">Chakma</td>
                                             <td th:text="${alluser.referralCode}">Chakma</td>
-                                            <td th:text="${alluser.referredUser.mobile}">Chakma</td>
-                                            <td th:text="${alluser.referredUser.email}">Chakma</td>
-                                            <td th:text="${alluser.referredUser.status}">Chakma</td>
-                                            <td th:text="${alluser.referredUser.remarks}">Chakma</td>
-                                            <td th:text="${alluser.referredUser.createdOn}">Chakma</td>
+                                            <td th:text="${alluser.users.mobile}">Chakma</td>
+                                            <td th:text="${alluser.users.email}">Chakma</td>
+                                            <td th:text="${alluser.users.status}">Chakma</td>
+                                            <td th:text="${alluser.users.remarks}">Chakma</td>
+                                            <td th:text="${alluser.users.createdOn}">Chakma</td>
                                         </tr>
                                     </tbody>
                                 </table>

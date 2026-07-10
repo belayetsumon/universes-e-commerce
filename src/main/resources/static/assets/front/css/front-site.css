@@ -1865,6 +1865,43 @@ body.site-is-loading {
     background: #fff7e6;
 }
 
+.product-referral-share {
+    max-width: 520px;
+    padding: 0.85rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.product-referral-share-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.65rem;
+    color: #0f172a;
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.product-referral-share-header strong {
+    color: #d71920;
+    font-size: 0.9rem;
+}
+
+.product-referral-share-link .form-control {
+    min-width: 0;
+    font-size: 0.86rem;
+}
+
+.product-referral-share-link .btn {
+    min-width: 44px;
+}
+
+.product-referral-share-guest {
+    background: #fff7e6;
+    border-color: #fde68a;
+}
 .product-fact-item {
     display: grid;
     grid-template-columns: minmax(120px, auto) minmax(0, 1fr);
@@ -2058,7 +2095,8 @@ body.site-is-loading {
         width: 100%;
     }
 
-    .product-fact-item {
+
+.product-fact-item {
         grid-template-columns: 1fr;
         gap: 0.15rem;
     }

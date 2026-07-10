@@ -17,4 +17,8 @@ public interface VendorVerificationsRepository extends JpaRepository<VendorVerif
     Optional<VendorVerifications> findByToken(String token);
 
     Optional<VendorVerifications> findByEmail(String email);
+
+    Optional<VendorVerifications> findByVendorprofile_Id(Long vendorId);
+
+    Optional<VendorVerifications> findByVendorprofile_Uuid(String uuid);
 }

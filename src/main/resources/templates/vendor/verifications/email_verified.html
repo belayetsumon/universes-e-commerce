@@ -1,2 +1,16 @@
-<p>Your email has been successfully verified.</p>
-<a href="/verify-mobile">Now verify your mobile</a>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Email Verified</title>
+</head>
+<body>
+<section class="container py-4">
+    <h1>Email verified</h1>
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <p>Your vendor email address has been verified successfully.</p>
+    <a th:href="@{/vendorverifications/verify-mobile}">Verify mobile number</a>
+    <a th:href="@{/vendorverifications}">Verification status</a>
+</section>
+</body>
+</html>

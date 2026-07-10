@@ -1,1 +1,16 @@
-<p>Mobile number verified successfully!</p>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mobile Verified</title>
+</head>
+<body>
+<section class="container py-4">
+    <h1>Mobile verified</h1>
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <p>Your vendor mobile number has been verified successfully.</p>
+    <a th:href="@{/vendorverifications}">Verification status</a>
+    <a th:href="@{/vendorprofile/details}">Vendor profile</a>
+</section>
+</body>
+</html>

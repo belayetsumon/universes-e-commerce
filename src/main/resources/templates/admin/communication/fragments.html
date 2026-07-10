@@ -1,0 +1,12 @@
+﻿<div xmlns:th="http://www.thymeleaf.org" th:fragment="tabs(active)">
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <a th:class="${active == 'manual' ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'}" th:href="@{/admin/communication/manual/compose}">Manual</a>
+        <a th:class="${active == 'templates' ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'}" th:href="@{/admin/communication/templates}">Templates</a>
+        <a th:class="${active == 'providers' ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'}" th:href="@{/admin/communication/providers}">Providers</a>
+        <a th:class="${active == 'routing' ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'}" th:href="@{/admin/communication/routing-rules}">Routing Rules</a>
+        <a th:class="${active == 'jobs' ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'}" th:href="@{/admin/communication/jobs}">Jobs</a>
+        <a th:class="${active == 'logs' ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'}" th:href="@{/admin/communication/logs}">Logs</a>
+        <a th:class="${active == 'messages' ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'}" th:href="@{/admin/communication/messages}">In-App Reports</a>
+        <a th:class="${active == 'settings' ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'}" th:href="@{/admin/communication/settings}">Settings</a>
+    </div>
+</div>

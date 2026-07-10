@@ -1,103 +1,456 @@
-<!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
-<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
-    <div layout:fragment = "main_content">
-        <section>
-            <div class="row">
-                <div class="col-sm-1"><h4> Vendor</h4></div>
-                <div class="col-sm-2">   <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Vendor List</li>
-                        </ol>
-                    </nav>
-                </div></div>
-        </section>
-        <hr/>
-        <div class="row">
-            <div class="col-sm-9">
+<!doctype html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="admin-layout">
+    <head>
+    <th:block layout:fragment="page_css">
+        <style>
+            .vendor-admin-page {
+                --vendor-surface: #ffffff;
+                --vendor-border: rgba(15, 23, 42, .08);
+                --vendor-text: #0f172a;
+                --vendor-muted: #64748b;
+                --vendor-primary: #123a63;
+                --vendor-shadow: 0 18px 42px rgba(15, 23, 42, .08);
+            }
 
-                <div class="card">
-                    <div class="card-header">
-                        <div class="row">
-                            <div class="col-sm-5 font-weight-bold "><strong> <i class="bi bi-list-task"></i> Vendor  List. Total [[${list.size()}]]</strong> </div>
+            .vendor-admin-page .vendor-shell {
+                display: flex;
+                flex-direction: column;
+                gap: 1.35rem;
+            }
 
-                            <div class="col-sm-7 text-end">
-                                <div class="btn-group ">
-                                    <!--                                    <a class="btn btn-success btn-sm " th:href="@{/product/create}"> <i class="bi bi-plus-circle"></i> Add Product </a>
-                                                                        <a th:href="@{/admin/index}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>-->
+            .vendor-admin-page .hero-panel {
+                position: relative;
+                overflow: hidden;
+                border-radius: 1.35rem;
+                padding: 1.65rem;
+                color: #fff;
+                background:
+                    radial-gradient(circle at top right, rgba(255, 255, 255, .13), transparent 30%),
+                    linear-gradient(135deg, #102d4d 0%, #123a63 52%, #0e7490 100%);
+                box-shadow: var(--vendor-shadow);
+            }
+
+            .vendor-admin-page .hero-chip,
+            .vendor-admin-page .hero-badge,
+            .vendor-admin-page .status-pill {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .vendor-admin-page .hero-chip {
+                gap: .45rem;
+                padding: .42rem .82rem;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, .12);
+                font-size: .78rem;
+                font-weight: 750;
+                letter-spacing: .05em;
+                text-transform: uppercase;
+            }
+
+            .vendor-admin-page .hero-title {
+                margin: .9rem 0 .45rem;
+                font-size: clamp(1.75rem, 2.1vw, 2.55rem);
+                font-weight: 750;
+                letter-spacing: -.03em;
+            }
+
+            .vendor-admin-page .hero-copy {
+                max-width: 50rem;
+                margin: 0;
+                color: rgba(255, 255, 255, .82);
+                line-height: 1.65;
+            }
+
+            .vendor-admin-page .hero-meta {
+                display: flex;
+                flex-wrap: wrap;
+                gap: .72rem;
+                margin-top: 1.1rem;
+            }
+
+            .vendor-admin-page .hero-badge {
+                gap: .42rem;
+                padding: .55rem .9rem;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, .12);
+                font-size: .86rem;
+                font-weight: 650;
+            }
+
+            .vendor-admin-page .surface-card {
+                overflow: hidden;
+                border: 1px solid var(--vendor-border);
+                border-radius: 1.2rem;
+                background: var(--vendor-surface);
+                box-shadow: 0 12px 32px rgba(15, 23, 42, .05);
+            }
+
+            .vendor-admin-page .surface-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                flex-wrap: wrap;
+                padding: 1.15rem 1.25rem;
+                border-bottom: 1px solid rgba(15, 23, 42, .07);
+            }
+
+            .vendor-admin-page .filter-panel {
+                padding: 1.15rem 1.25rem;
+            }
+
+            .vendor-admin-page .filter-panel .form-label {
+                color: var(--vendor-muted);
+                font-size: .76rem;
+                font-weight: 750;
+                letter-spacing: .04em;
+                text-transform: uppercase;
+            }
+
+            .vendor-admin-page .filter-panel .form-control,
+            .vendor-admin-page .filter-panel .form-select {
+                border-color: rgba(15, 23, 42, .12);
+                border-radius: .55rem;
+                min-height: 2.55rem;
+            }
+
+            .vendor-admin-page .filter-actions {
+                display: flex;
+                gap: .55rem;
+                justify-content: flex-end;
+            }
+
+            .vendor-admin-page .section-eyebrow {
+                color: var(--vendor-primary);
+                font-size: .76rem;
+                font-weight: 750;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+            }
+
+            .vendor-admin-page .section-title {
+                margin: .2rem 0 0;
+                color: var(--vendor-text);
+                font-size: 1.08rem;
+                font-weight: 750;
+            }
+
+            .vendor-admin-page .section-copy {
+                margin: .2rem 0 0;
+                color: var(--vendor-muted);
+                font-size: .88rem;
+            }
+
+            .vendor-admin-page .table {
+                margin: 0;
+            }
+
+            .vendor-admin-page .table thead th {
+                color: var(--vendor-muted);
+                font-size: .75rem;
+                font-weight: 750;
+                letter-spacing: .04em;
+                text-transform: uppercase;
+                white-space: nowrap;
+            }
+
+            .vendor-admin-page .vendor-name {
+                color: var(--vendor-text);
+                font-weight: 750;
+                text-decoration: none;
+            }
+
+            .vendor-admin-page .vendor-name:hover {
+                color: var(--vendor-primary);
+            }
+
+            .vendor-admin-page .vendor-code {
+                color: var(--vendor-muted);
+                font-size: .78rem;
+                font-weight: 650;
+            }
+
+            .vendor-admin-page .status-pill {
+                gap: .35rem;
+                min-width: 6.2rem;
+                padding: .38rem .7rem;
+                border-radius: 999px;
+                font-size: .76rem;
+                font-weight: 750;
+            }
+
+            .vendor-admin-page .status-pill.verified {
+                background: rgba(22, 163, 74, .12);
+                color: #166534;
+            }
+
+            .vendor-admin-page .status-pill.unverified {
+                background: rgba(245, 158, 11, .15);
+                color: #92400e;
+            }
+
+            .vendor-admin-page .status-pill.neutral {
+                background: rgba(100, 116, 139, .14);
+                color: #475569;
+            }
+
+            .vendor-admin-page .action-button {
+                border-radius: .75rem;
+                font-weight: 700;
+            }
+
+            @media (max-width: 767.98px) {
+                .vendor-admin-page .hero-panel {
+                    padding: 1.25rem;
+                    border-radius: 1.1rem;
+                }
+
+                .vendor-admin-page .filter-actions {
+                    justify-content: stretch;
+                }
+
+                .vendor-admin-page .filter-actions .btn {
+                    flex: 1 1 auto;
+                }
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+    <div layout:fragment="main_content">
+        <div class="vendor-admin-page">
+            <div class="vendor-shell">
+                <div class="hero-panel">
+                    <div class="hero-chip">
+                        <i class="bi bi-shop-window"></i>
+                        Vendor Operations
+                    </div>
+                    <h1 class="hero-title">Vendor Management</h1>
+                    <p class="hero-copy">Review vendor accounts, approval state, and contact verification status from one admin dashboard view.</p>
+                    <div class="hero-meta">
+                        <div class="hero-badge">
+                            <i class="bi bi-building"></i>
+                            <span th:text="${list != null ? #lists.size(list) + ' vendors' : '0 vendors'}">0 vendors</span>
+                        </div>
+                        <div class="hero-badge" th:if="${filter != null and filter.hasActiveFilters()}">
+                            <i class="bi bi-funnel"></i>
+                            Filters applied
+                        </div>
+                        <div class="hero-badge">
+                            <i class="bi bi-envelope-check"></i>
+                            Email verification tracked
+                        </div>
+                        <div class="hero-badge">
+                            <i class="bi bi-phone"></i>
+                            Mobile verification tracked
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div th:if="${infoMessage}" class="alert alert-info alert-dismissible fade show" role="alert">
+                    <span th:text="${infoMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div class="surface-card">
+                    <div class="surface-head">
+                        <div>
+                            <div class="section-eyebrow">Directory Filters</div>
+                            <h2 class="section-title">Find Vendors</h2>
+                            <p class="section-copy">Search vendor identity, approval state, verification, and registration date.</p>
+                        </div>
+                        <span class="badge text-bg-light border"
+                              th:text="${list != null ? #lists.size(list) + ' results' : '0 results'}">0 results</span>
+                    </div>
+
+                    <form class="filter-panel" th:action="@{/adminvendor/list}" method="get" th:object="${filter}">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-12 col-xl-2">
+                                <label class="form-label" for="q">Search</label>
+                                <input type="search"
+                                       class="form-control"
+                                       id="q"
+                                       th:field="*{q}"
+                                       placeholder="Code, company, name, phone, email">
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-2">
+                                <label class="form-label" for="status">Status</label>
+                                <select class="form-select" id="status" th:field="*{status}">
+                                    <option value="">All statuses</option>
+                                    <option th:each="statusOption : ${vendorStatusOptions}"
+                                            th:value="${statusOption}"
+                                            th:text="${statusOption}">Active</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-2">
+                                <label class="form-label" for="emailVerified">Email</label>
+                                <select class="form-select" id="emailVerified" th:field="*{emailVerified}">
+                                    <option value="">All email states</option>
+                                    <option value="true">Verified</option>
+                                    <option value="false">Not verified</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-2">
+                                <label class="form-label" for="mobileVerified">Mobile</label>
+                                <select class="form-select" id="mobileVerified" th:field="*{mobileVerified}">
+                                    <option value="">All mobile states</option>
+                                    <option value="true">Verified</option>
+                                    <option value="false">Not verified</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-1">
+                                <label class="form-label" for="createdFrom">From</label>
+                                <input type="date" class="form-control" id="createdFrom" th:field="*{createdFrom}">
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-1">
+                                <label class="form-label" for="createdTo">To</label>
+                                <input type="date" class="form-control" id="createdTo" th:field="*{createdTo}">
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-2">
+                                <div class="filter-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-funnel me-1"></i>Apply
+                                    </button>
+                                    <a class="btn btn-outline-secondary" th:href="@{/adminvendor/list}">
+                                        <i class="bi bi-x-circle"></i>
+                                    </a>
                                 </div>
                             </div>
+                        </div>
+                    </form>
+                </div>
 
+                <div class="surface-card">
+                    <div class="surface-head">
+                        <div>
+                            <div class="section-eyebrow">Vendor Directory</div>
+                            <h2 class="section-title">Marketplace Vendors</h2>
+                            <p class="section-copy">Verification badges show whether the vendor contact channels are confirmed.</p>
                         </div>
                     </div>
 
-
-
-
-
-                    <div class="card-body table-responsive">
-                        <table id="tablesdata" class="table  table-hover table-striped">
-                            <thead class="thead-light">
+                    <div class="table-responsive">
+                        <table id="tablesdata" class="table table-hover align-middle">
+                            <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Company/vendor Name </th>
-                                    <th> Name </th>
-                                    <th> Phone </th>
-                                    <th> Email </th>
-                                    <th> Status </th>
-                                    <th>Action</th>
+                                    <th>Vendor</th>
+                                    <th>Contact Person</th>
+                                    <th>Phone</th>
+                                    <th>Email</th>
+                                    <th>Mobile Verified</th>
+                                    <th>Email Verified</th>
+                                    <th>Created</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Action</th>
                                 </tr>
                             </thead>
+
                             <tbody>
-                                <tr th:each="lists,status:${list}">
-                                    <td th:text="${status.count}">1</td>
-                                    <td>
-                                        <a  class="nav-link" th:href="@{/vendor/{id}(id=${lists.id})}"><span th:text="${lists.companyName}"></span>  </a>
+                                <tr th:if="${list == null or #lists.isEmpty(list)}">
+                                    <td colspan="10" class="text-center text-muted py-4">
+                                        No vendor profiles match the selected filters.
                                     </td>
-                                    <td> [[${lists.firstName}]] [[${lists.lastName}]]</td>
-                                    <td> [[${lists.phone}]] </td>
-                                    <td> [[${lists.email}]] </td>
-                                    <td> [[${lists.vendorStatusEnum}]] </td>
+                                </tr>
+
+                                <tr th:each="vendor, status : ${list}">
+                                    <td th:text="${status.count}">1</td>
+
                                     <td>
+                                        <a class="vendor-name"
+                                           th:href="@{/vendor/{id}(id=${vendor.id})}"
+                                           th:text="${vendor.companyName}">
+                                            Vendor Company
+                                        </a>
 
-                                        <a  type="button" th:href="@{/adminvendor/view/{id}(id=${lists.id})}">  <button class="btn btn-success btn-sm " > <i class="bi bi-eye-slash"></i> View </button>  </a>
+                                        <div class="vendor-code"
+                                             th:text="${vendor.vendorCode != null ? vendor.vendorCode : 'No vendor code'}">
+                                            VEN-BD-2026-0001
+                                        </div>
+                                    </td>
 
+                                    <td th:text="${((vendor.firstName != null ? vendor.firstName : '') + ' ' + (vendor.lastName != null ? vendor.lastName : '')).trim().isEmpty() ? 'Not provided' : ((vendor.firstName != null ? vendor.firstName : '') + ' ' + (vendor.lastName != null ? vendor.lastName : '')).trim()}">
+                                        Vendor Admin
+                                    </td>
+
+                                    <td th:text="${vendor.phone != null and !#strings.isEmpty(vendor.phone) ? vendor.phone : 'Not provided'}">
+                                        01700000000
+                                    </td>
+
+                                    <td th:text="${vendor.email != null and !#strings.isEmpty(vendor.email) ? vendor.email : 'Not provided'}">
+                                        vendor@example.com
+                                    </td>
+
+                                    <td>
+                                        <span class="status-pill"
+                                              th:classappend="${mobileVerifiedByVendorUuid != null and mobileVerifiedByVendorUuid[vendor.uuid] == true} ? ' verified' : ' unverified'">
+                                            <i th:class="${mobileVerifiedByVendorUuid != null and mobileVerifiedByVendorUuid[vendor.uuid] == true} ? 'bi bi-check-circle' : 'bi bi-exclamation-circle'"></i>
+                                            <span th:text="${mobileVerifiedByVendorUuid != null and mobileVerifiedByVendorUuid[vendor.uuid] == true ? 'Verified' : 'Not verified'}">
+                                                Verified
+                                            </span>
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="status-pill"
+                                              th:classappend="${emailVerifiedByVendorUuid != null and emailVerifiedByVendorUuid[vendor.uuid] == true} ? ' verified' : ' unverified'">
+                                            <i th:class="${emailVerifiedByVendorUuid != null and emailVerifiedByVendorUuid[vendor.uuid] == true} ? 'bi bi-check-circle' : 'bi bi-exclamation-circle'"></i>
+                                            <span th:text="${emailVerifiedByVendorUuid != null and emailVerifiedByVendorUuid[vendor.uuid] == true ? 'Verified' : 'Not verified'}">
+                                                Verified
+                                            </span>
+                                        </span>
+                                    </td>
+
+                                    <td th:text="${vendor.created != null ? #temporals.format(vendor.created, 'dd MMM yyyy') : 'Not recorded'}">
+                                        10 Jul 2026
+                                    </td>
+
+                                    <td>
+                                        <span class="status-pill neutral"
+                                              th:text="${vendor.vendorStatusEnum != null ? vendor.vendorStatusEnum : 'Not selected'}">
+                                            Active
+                                        </span>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <a class="btn btn-primary btn-sm action-button"
+                                           th:href="@{/adminvendor/view/{uuid}(uuid=${vendor.uuid})}">
+                                            <i class="bi bi-eye me-1"></i>View
+                                        </a>
+
+                                        <a class="btn btn-outline-secondary btn-sm action-button"
+                                           th:href="@{/adminvendor/edit/{uuid}(uuid=${vendor.uuid})}">
+                                            <i class="bi bi-pencil-square me-1"></i>Edit
+                                        </a>
+
+                                        <!--                                        <a class="btn btn-outline-danger btn-sm action-button"
+                                                                                   th:href="@{/adminvendor/delete/{uuid}(uuid=${vendor.uuid})}"
+                                                                                   onclick="return confirm('Are you sure you want to delete this vendor profile?');">
+                                                                                    <i class="bi bi-trash me-1"></i>Delete
+                                                                                </a>-->
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-
-
-
-
-                </div><!--  Card  end-->
-
-
-            </div><!--  Main Content  end-->
-            <div class="col-sm-3">
-
-                <div class="card">
-                    <div class="card-header">
-                        <div class="row">
-                            <div class="col-sm-5 font-weight-bold ">  <strong><i class="fas fa-list"></i> Filter</strong> </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-
-
-
-                    </div><!--  Card body end-->
-
-
-                </div><!--  Card  end-->
-
-
+                </div>
             </div>
-        </div>   <!--  Layout end-->      </div><!--  Main Content  end-->
-</div>
+        </div>
+    </div>
+</body>
+</html>

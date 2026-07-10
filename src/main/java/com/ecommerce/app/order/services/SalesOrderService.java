@@ -4,6 +4,9 @@
  */
 package com.ecommerce.app.order.services;
 
+import com.ecommerce.app.module.communication.model.MessageChannel;
+import com.ecommerce.app.module.communication.model.MessageEventType;
+import com.ecommerce.app.module.communication.events.CommunicationRequestedEvent;
 import com.ecommerce.app.module.shipping.model.Shipment;
 import com.ecommerce.app.module.shipping.model.ShipmentStatus;
 import com.ecommerce.app.module.shipping.repository.ShipmentRepository;
@@ -45,6 +48,7 @@ import java.util.UUID;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,6 +88,9 @@ public class SalesOrderService {
 
     @Autowired
     CashbackService cashbackService;
+
+    @Autowired
+    ApplicationEventPublisher applicationEventPublisher;
 
     @PersistenceContext
     private EntityManager em;
@@ -525,6 +532,7 @@ public class SalesOrderService {
                 OrderStatusChangedBy.Customer,
                 buildHistoryRemark(cleanedRemark, buildItemReturnRequestNote(itemNames))
         );
+        notifyOrderEvent(MessageEventType.RETURN_REQUESTED, order);
         return order;
     }
 
@@ -661,6 +669,9 @@ public class SalesOrderService {
                         buildItemReturnProcessedNote(orderItem, refundResult, vendorRefund, resolvedStatus)
                 )
         );
+        notifyOrderEvent(refundResult != null && refundResult.isRefunded()
+                ? MessageEventType.REFUND_COMPLETED
+                : MessageEventType.RETURN_APPROVED, refreshedOrder);
 
         return refreshedOrder;
     }
@@ -799,6 +810,7 @@ public class SalesOrderService {
         salesOrderRepository.save(order);
         syncStockWithOrderStatus(orderId, previousStatus, nextStatus);
         syncVendorFinanceWithOrderStatus(order, nextStatus, null);
+        notifyOrderEvent(nextStatus == OrderStatus.COMPLETED ? MessageEventType.ORDER_DELIVERED : MessageEventType.ORDER_CONFIRMED, order);
         return order;
     }
 
@@ -815,6 +827,7 @@ public class SalesOrderService {
         order.setStatus(OrderStatus.CONFIRMED);
         salesOrderRepository.save(order);
         syncStockWithOrderStatus(orderId, previousStatus, OrderStatus.CONFIRMED);
+        notifyOrderEvent(MessageEventType.ORDER_CONFIRMED, order);
         return order;
     }
 
@@ -900,7 +913,51 @@ public class SalesOrderService {
         String systemNote = buildPostStatusChangeNote(order, nextStatus);
         paymentService.refreshOrderPaymentTracking(order);
         saveOrderHistory(order, nextStatus, changedBy, buildHistoryRemark(remark, systemNote));
+        notifyOrderEvent(resolveCommunicationEvent(nextStatus), order);
         return order;
+    }
+
+    private void notifyOrderEvent(MessageEventType eventType, SalesOrder order) {
+        try {
+            if (eventType == null || order == null || order.getCustomer() == null || cleanText(order.getCustomer().getEmail()) == null) {
+                return;
+            }
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("customerName", safeText(order.getCustomer().getFirstName()));
+            variables.put("orderNumber", safeText(order.getOrderCode()));
+            variables.put("orderTotal", defaultMoney(order.getGrandTotal()).toPlainString());
+            applicationEventPublisher.publishEvent(CommunicationRequestedEvent.order(
+                    eventType,
+                    MessageChannel.EMAIL,
+                    order.getCustomer().getEmail(),
+                    order.getOrderCode(),
+                    variables
+            ));
+        } catch (Exception ignored) {
+            // Communication failure must not block order processing.
+        }
+    }
+
+    private String safeText(String value) {
+        return value == null ? "" : value;
+    }
+
+    private MessageEventType resolveCommunicationEvent(OrderStatus status) {
+        if (status == null) {
+            return null;
+        }
+        return switch (status) {
+            case CONFIRMED -> MessageEventType.ORDER_CONFIRMED;
+            case PROCESSING -> MessageEventType.ORDER_PROCESSING;
+            case PACKED -> MessageEventType.ORDER_PACKED;
+            case SHIPPED, IN_TRANSIT -> MessageEventType.ORDER_SHIPPED;
+            case OUT_FOR_DELIVERY -> MessageEventType.ORDER_OUT_FOR_DELIVERY;
+            case DELIVERED, COMPLETED -> MessageEventType.ORDER_DELIVERED;
+            case CANCELLED -> MessageEventType.ORDER_CANCELLED;
+            case RETURN_REQUESTED -> MessageEventType.RETURN_REQUESTED;
+            case RETURNED, PARTIALLY_RETURNED -> MessageEventType.RETURN_APPROVED;
+            default -> MessageEventType.ORDER_PROCESSING;
+        };
     }
 
     private void validateCustomerStatusChange(SalesOrder order, OrderStatus nextStatus) {

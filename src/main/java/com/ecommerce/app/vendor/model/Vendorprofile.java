@@ -34,7 +34,7 @@ public class Vendorprofile {  // vendor or store
     @Column(nullable = false, unique = true, updatable = false)
     private String uuid = UUID.randomUUID().toString();
 
-    @Column(length = 50, nullable = false, unique = true)
+    @Column(length = 50, nullable = false, unique = true, updatable = false)
     @Pattern(regexp = "VEN-[A-Z]{2}-\\d{4}-\\d{4}",
             message = "Vendor code must match format VEN-XX-YYYY-NNNN")
     private String vendorCode;

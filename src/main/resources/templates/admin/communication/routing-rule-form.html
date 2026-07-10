@@ -1,0 +1,24 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section class="mb-3 d-flex justify-content-between align-items-center">
+            <h4 class="mb-0" th:text="${routingRule.id == null ? 'New Routing Rule' : 'Edit Routing Rule'}"></h4>
+            <a class="btn btn-outline-secondary btn-sm" th:href="@{/admin/communication/routing-rules}">Back</a>
+        </section>
+        <div th:replace="admin/communication/fragments :: tabs('routing')"></div>
+        <div class="card"><div class="card-body">
+            <form method="post" th:action="@{/admin/communication/routing-rules/save}" th:object="${routingRule}">
+                <input type="hidden" th:field="*{id}"><input type="hidden" th:field="*{uuid}"><input type="hidden" th:field="*{version}">
+                <div class="row g-3">
+                    <div class="col-md-4"><label class="form-label">Event Type</label><select class="form-select" th:field="*{eventType}"><option value="">Select event</option><option th:each="e : ${messageEventTypes}" th:value="${e}" th:text="${e}"></option></select></div>
+                    <div class="col-md-4"><label class="form-label">Channel</label><select class="form-select" th:field="*{channel}"><option value="">Select channel</option><option th:each="c : ${messageChannels}" th:value="${c}" th:text="${c.displayName}"></option></select></div>
+                    <div class="col-md-4"><label class="form-label">Delivery Mode</label><select class="form-select" th:field="*{deliveryMode}"><option th:each="m : ${deliveryModes}" th:value="${m}" th:text="${m.displayName}"></option></select></div>
+                    <div class="col-md-4"><label class="form-label">Provider</label><select class="form-select" name="providerId"><option value="">Auto provider</option><option th:each="p : ${activeProviders}" th:value="${p.id}" th:selected="${routingRule.provider != null and routingRule.provider.id == p.id}" th:text="${p.channel + ' - ' + p.providerName}"></option></select></div>
+                    <div class="col-md-3"><label class="form-label">Min Volume</label><input type="number" min="0" class="form-control" th:field="*{minVolume}"></div>
+                    <div class="col-md-3"><label class="form-label">Max Volume</label><input type="number" min="0" class="form-control" th:field="*{maxVolume}"></div>
+                    <div class="col-md-2 d-flex align-items-end"><label class="form-check mb-2"><input class="form-check-input" type="checkbox" th:field="*{active}"> Active</label></div>
+                </div>
+                <button class="btn btn-primary mt-3" type="submit">Save Rule</button>
+            </form>
+        </div></div>
+    </div>
+</div>

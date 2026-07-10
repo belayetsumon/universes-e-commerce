@@ -8,7 +8,6 @@ import com.ecommerce.app.module.ReferralRewards.model.CashOutRequest;
 import com.ecommerce.app.module.ReferralRewards.enumvalue.CashOutStatus;
 import com.ecommerce.app.module.ReferralRewards.model.CustomerCashOutPaymentMethod;
 import com.ecommerce.app.module.ReferralRewards.repository.CashOutRequestRepository;
-import com.ecommerce.app.module.ReferralRewards.repository.GiftCardRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.RewardAccountRepository;
 import com.ecommerce.app.module.ReferralRewards.services.RedemptionService;
 import com.ecommerce.app.module.user.model.Users;
@@ -47,9 +46,6 @@ public class WalletCustomerController {
     RedemptionService redemptionService;
 
     @Autowired
-    GiftCardRepository giftCardRepository;
-
-    @Autowired
     CashOutRequestRepository cashOutRequestRepository;
 
     @GetMapping("/wallet")
@@ -77,36 +73,11 @@ public class WalletCustomerController {
 
     @PostMapping("/wallet/generate-giftcard")
     public String generateGiftCard(@RequestParam BigDecimal points, Principal principal, RedirectAttributes redirect) {
-        Users user = usersRepository.findByEmail(principal.getName()).orElseThrow();
-
-//        BigDecimal availablePoints = walletTransactionRepository
-//                .sumAmountByWalletAndExpiryDateAfterAndRedeemedFalse(
-//                        user.getId(), LocalDateTime.now()
-//                ).orElse(BigDecimal.ZERO);
-//
-//        if (points.compareTo(availablePoints) > 0) {
-//            redirect.addFlashAttribute("error", "Insufficient points.");
-//            return "redirect:/wallet";
-//        }
-        BigDecimal value = points.multiply(CASHOUT_CONVERSION_RATE);
-
-        // 1. Redeem points
-        boolean redeemed = redemptionService.redeemPoints(user, points, "GIFTCARD", "Points converted to gift card");
-        if (!redeemed) {
-            redirect.addFlashAttribute("error", "Insufficient wallet balance for gift card conversion.");
-            return "redirect:/customerwallet/wallet";
-        }
-
-        // 2. Create gift card
-//        GiftCard card = new GiftCard();
-//        card.setCode(UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase());
-//        card.setValue(value);
-//        card.setIssuedTo(user);
-//        card.setCreatedAt(LocalDateTime.now());
-//        card.setRedeemed(false);
-//        giftCardRepository.save(card);
-//        redirect.addFlashAttribute("message", "Gift card created: " + card.getCode());
-        return "redirect:/customerwallet/wallet";
+        redirect.addFlashAttribute(
+                "error",
+                "Reward-point conversion to gift card is not active. Please use the gift card purchase page."
+        );
+        return "redirect:/customer-giftcard/buy";
     }
 
     @PostMapping("/wallet/cashout")

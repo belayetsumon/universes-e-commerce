@@ -31,6 +31,15 @@
                     <span>Dashboard</span>
                 </a>
 
+                <a class="btn admin-topbar-action admin-topbar-action--ghost position-relative"
+                   th:href="@{/admin/notifications}">
+                    <i class="bi bi-bell"></i>
+                    <span>Notifications</span>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                          th:if="${communicationUnreadCount != null and communicationUnreadCount > 0}"
+                          th:text="${communicationUnreadCount}">0</span>
+                </a>
+
                 <a class="btn admin-topbar-action admin-topbar-action--storefront"
                    th:href="@{/}"
                    target="_blank"

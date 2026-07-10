@@ -1,6 +1,6 @@
-<div xmlns:th="http://www.thymeleaf.org"
-     th:fragment="customerSidebar"
-     class="card customer-sidebar-menu vendor-sidebar-menu border-0 shadow-sm">
+﻿<div xmlns:th="http://www.thymeleaf.org"
+      th:fragment="customerSidebar"
+      class="card customer-sidebar-menu vendor-sidebar-menu border-0 shadow-sm">
 
     <div class="card-header bg-white border-bottom-0 fw-semibold">
         <i class="fas fa-list"></i> Navigation : Customer
@@ -12,6 +12,21 @@
                 <a class="nav-link" data-path-match="/customer,/customer/index,/customer/dashboards" th:href="@{/customer/}">
                     <i class="bi bi-house-door"></i>
                     <span>Home</span>
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a class="nav-link" data-path-match="/customer/communication/manual" th:href="@{/customer/communication/manual/compose}">
+                    <i class="bi bi-send"></i>
+                    <span>Message Admin</span>
+                </a>
+            </li>
+            <li class="list-group-item">
+                <a class="nav-link" data-path-match="/customer/notifications" th:href="@{/customer/notifications}">
+                    <i class="bi bi-bell"></i>
+                    <span>Notifications</span>
+                    <span class="badge text-bg-danger ms-auto"
+                          th:if="${communicationUnreadCount != null and communicationUnreadCount > 0}"
+                          th:text="${communicationUnreadCount}">0</span>
                 </a>
             </li>
             <li class="list-group-item">
@@ -148,7 +163,7 @@
             <li class="list-group-item">
                 <a class="nav-link" data-path-match="/customer-team" th:href="@{/customer-team/index}">
                     <i class="bi bi-people"></i>
-                    <span>My Team</span>
+                    <span>My Referred </span>
                 </a>
             </li>
             <!--      <li class="list-group-item"><a class="textMaroon " th:href="@{/customer-profile/index}"> <span class="fa-li"><i class="fas fa-wallet"></i> </span>Profile</a></li>
@@ -234,6 +249,12 @@
                             <a class="nav-link customer-submenu-link" data-path-match="/customerwallettransaction" th:href="@{/customerwallettransaction/list}">
                                 <i class="bi bi-receipt"></i>
                                 <span>Wallet Transaction</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link customer-submenu-link" data-path-match="/customer-giftcard" th:href="@{/customer-giftcard/list}">
+                                <i class="bi bi-gift"></i>
+                                <span>Gift Cards</span>
                             </a>
                         </li>
                     </ul>

@@ -1,110 +1,493 @@
-<!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
-<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
-    <div layout:fragment = "main_content">
+<!doctype html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="admin-layout">
+    <head>
+    <th:block layout:fragment="page_css">
+        <style>
+            .vendor-profile-page {
+                --vendor-surface: #ffffff;
+                --vendor-border: rgba(15, 23, 42, .08);
+                --vendor-text: #0f172a;
+                --vendor-muted: #64748b;
+                --vendor-primary: #123a63;
+                --vendor-shadow: 0 18px 42px rgba(15, 23, 42, .08);
+            }
 
-        <section> 
-            <div class="row">
-                <div class="col-sm-3"><h4>Vendor</h4></div>
-                <div class="col-sm-5">   
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a  class="nav-link" href="#">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Vendor Profile </li>
-                        </ol>
-                    </nav>
-                </div></div>
-        </section>
+            .vendor-profile-page .vendor-shell {
+                display: flex;
+                flex-direction: column;
+                gap: 1.35rem;
+            }
 
-        <hr/>
-        <section>
-            <div class="card">
-                <div class="card-header ">
-                    <h5 class="font-weight-bold "><i class="fas fa-list"></i> Vendor Profile </h5>
+            .vendor-profile-page .hero-panel {
+                position: relative;
+                overflow: hidden;
+                border-radius: 1.35rem;
+                padding: 1.65rem;
+                color: #fff;
+                background:
+                    radial-gradient(circle at top right, rgba(255, 255, 255, .13), transparent 30%),
+                    linear-gradient(135deg, #102d4d 0%, #123a63 52%, #0e7490 100%);
+                box-shadow: var(--vendor-shadow);
+            }
+
+            .vendor-profile-page .hero-chip,
+            .vendor-profile-page .hero-badge,
+            .vendor-profile-page .status-pill {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .vendor-profile-page .hero-chip {
+                gap: .45rem;
+                padding: .42rem .82rem;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, .12);
+                font-size: .78rem;
+                font-weight: 750;
+                letter-spacing: .05em;
+                text-transform: uppercase;
+            }
+
+            .vendor-profile-page .hero-title {
+                margin: .9rem 0 .45rem;
+                font-size: clamp(1.75rem, 2.1vw, 2.55rem);
+                font-weight: 750;
+                letter-spacing: -.03em;
+            }
+
+            .vendor-profile-page .hero-copy {
+                max-width: 50rem;
+                margin: 0;
+                color: rgba(255, 255, 255, .82);
+                line-height: 1.65;
+            }
+
+            .vendor-profile-page .hero-meta {
+                display: flex;
+                flex-wrap: wrap;
+                gap: .72rem;
+                margin-top: 1.1rem;
+            }
+
+            .vendor-profile-page .hero-badge {
+                gap: .42rem;
+                padding: .55rem .9rem;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, .12);
+                font-size: .86rem;
+                font-weight: 650;
+            }
+
+            .vendor-profile-page .hero-actions .btn {
+                min-width: 9.5rem;
+                border-radius: .9rem;
+                font-weight: 700;
+            }
+
+            .vendor-profile-page .surface-card,
+            .vendor-profile-page .verification-card {
+                overflow: hidden;
+                border: 1px solid var(--vendor-border);
+                border-radius: 1.2rem;
+                background: var(--vendor-surface);
+                box-shadow: 0 12px 32px rgba(15, 23, 42, .05);
+            }
+
+            .vendor-profile-page .section-heading {
+                padding: 1.15rem 1.25rem;
+                border-bottom: 1px solid rgba(15, 23, 42, .07);
+            }
+
+            .vendor-profile-page .section-eyebrow {
+                color: var(--vendor-primary);
+                font-size: .76rem;
+                font-weight: 750;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+            }
+
+            .vendor-profile-page .section-title {
+                margin: .2rem 0 0;
+                color: var(--vendor-text);
+                font-size: 1.08rem;
+                font-weight: 750;
+            }
+
+            .vendor-profile-page .info-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: .9rem;
+                padding: 1.25rem;
+            }
+
+            .vendor-profile-page .info-item {
+                padding: 1rem;
+                border: 1px solid rgba(15, 23, 42, .06);
+                border-radius: 1rem;
+                background: #f8fafc;
+            }
+
+            .vendor-profile-page .info-label {
+                display: block;
+                color: var(--vendor-muted);
+                font-size: .75rem;
+                font-weight: 750;
+                letter-spacing: .06em;
+                text-transform: uppercase;
+            }
+
+            .vendor-profile-page .info-value {
+                display: block;
+                margin-top: .32rem;
+                color: var(--vendor-text);
+                font-size: .96rem;
+                font-weight: 700;
+                overflow-wrap: anywhere;
+            }
+
+            .vendor-profile-page .info-item.full-width {
+                grid-column: 1 / -1;
+            }
+
+            .vendor-profile-page .verification-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 1rem;
+            }
+
+            .vendor-profile-page .verification-card {
+                padding: 1.2rem;
+            }
+
+            .vendor-profile-page .verification-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 2.8rem;
+                height: 2.8rem;
+                border-radius: 1rem;
+                font-size: 1.15rem;
+                margin-bottom: .9rem;
+            }
+
+            .vendor-profile-page .verification-card.verified .verification-icon {
+                background: rgba(22, 163, 74, .12);
+                color: #166534;
+            }
+
+            .vendor-profile-page .verification-card.unverified .verification-icon {
+                background: rgba(245, 158, 11, .15);
+                color: #92400e;
+            }
+
+            .vendor-profile-page .verification-title {
+                margin: 0 0 .25rem;
+                color: var(--vendor-text);
+                font-size: 1rem;
+                font-weight: 750;
+            }
+
+            .vendor-profile-page .verification-copy {
+                margin: 0;
+                color: var(--vendor-muted);
+                font-size: .88rem;
+            }
+
+            .vendor-profile-page .status-pill {
+                gap: .35rem;
+                padding: .38rem .72rem;
+                border-radius: 999px;
+                font-size: .78rem;
+                font-weight: 750;
+            }
+
+            .vendor-profile-page .status-pill.verified {
+                background: rgba(22, 163, 74, .12);
+                color: #166534;
+            }
+
+            .vendor-profile-page .status-pill.unverified {
+                background: rgba(245, 158, 11, .15);
+                color: #92400e;
+            }
+
+            .vendor-profile-page .status-pill.neutral {
+                background: rgba(100, 116, 139, .14);
+                color: #475569;
+            }
+
+            @media (max-width: 767.98px) {
+                .vendor-profile-page .hero-panel {
+                    padding: 1.25rem;
+                    border-radius: 1.1rem;
+                }
+
+                .vendor-profile-page .info-grid,
+                .vendor-profile-page .verification-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </th:block>
+</head>
+
+<body>
+    <div layout:fragment="main_content">
+        <div class="vendor-profile-page">
+
+            <div class="alert alert-success alert-dismissible fade show"
+                 th:if="${successMessage}"
+                 role="alert">
+                <i class="bi bi-check-circle me-2"></i>
+                <span th:text="${successMessage}">Success message</span>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close"></button>
+            </div>
+
+            <div class="alert alert-danger alert-dismissible fade show"
+                 th:if="${errorMessage}"
+                 role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <span th:text="${errorMessage}">Error message</span>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close"></button>
+            </div>
+
+            <div class="vendor-shell" th:if="${vendor != null}">
+
+                <div class="hero-panel">
+                    <div class="d-flex flex-column flex-xl-row justify-content-between gap-4">
+                        <div>
+                            <div class="hero-chip">
+                                <i class="bi bi-shop-window"></i>
+                                Vendor Profile
+                            </div>
+
+                            <h1 class="hero-title"
+                                th:text="${vendor.companyName != null and !#strings.isEmpty(vendor.companyName) ? vendor.companyName : 'Vendor Profile'}">
+                                Vendor Profile
+                            </h1>
+
+                            <p class="hero-copy">
+                                Review vendor account details, approval state, and contact verification readiness before allowing marketplace activity.
+                            </p>
+
+                            <div class="hero-meta">
+                                <div class="hero-badge">
+                                    <i class="bi bi-hash"></i>
+                                    <span th:text="${vendor.vendorCode != null and !#strings.isEmpty(vendor.vendorCode) ? vendor.vendorCode : 'No vendor code'}">
+                                        VEN-BD-2026-0001
+                                    </span>
+                                </div>
+
+                                <div class="hero-badge">
+                                    <i class="bi bi-patch-check"></i>
+                                    <span th:text="${vendor.vendorStatusEnum != null ? vendor.vendorStatusEnum : 'Not selected'}">
+                                        Active
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="hero-actions d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2">
+                            <a class="btn btn-light"
+                               th:href="@{/adminvendor/edit/{uuid}(uuid=${vendor.uuid})}">
+                                <i class="bi bi-pencil-square me-2"></i>Edit
+                            </a>
+
+                            <a class="btn btn-outline-light"
+                               th:href="@{/adminvendor/list}">
+                                <i class="bi bi-arrow-left me-2"></i>Vendor List
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
 
-                    <table class="table">
-                        <tr>
-                            <td>Action</td>
-                            <td>
-                                <a type="button"   class="btn btn-success btn-sm " th:href="@{/adminvendor/edit/{id}(id=${vendor.id})}"> Edit</a>
-                                 <a  type="button"  class="btn btn-danger btn-sm " th:href="@{/adminvendor/delete/{id}(id=${vendor.id})}"> Delete</a>
-                            </td>
-                        </tr> 
-                        <tr>
-                            <td>First Name</td>
-                            <td>[[${vendor.firstName}]]</td>
-                        </tr>  
+                <div class="verification-grid">
 
-                        <tr>
-                            <td>Last Name</td>
-                            <td>[[${vendor.lastName}]]</td>
-                        </tr>  
+                    <div class="verification-card"
+                         th:classappend="${mobileVerified == true} ? ' verified' : ' unverified'">
+                        <div class="verification-icon">
+                            <i class="bi bi-phone"></i>
+                        </div>
 
-                        <tr>
-                            <td>Designation</td>
-                            <td>[[${vendor.designation}]]</td>
-                        </tr>  
+                        <h2 class="verification-title">Mobile Verification</h2>
 
-                        <tr>
-                            <td>Company Name</td>
-                            <td>[[${vendor.companyName}]]</td>
-                        </tr>  
+                        <p class="verification-copy"
+                           th:text="${mobileVerified == true} ? 'Vendor mobile number is verified.' : 'Vendor mobile number is not verified yet.'">
+                            Mobile status
+                        </p>
 
-                        <tr>
-                            <td>Phone/Mobile</td>
-                            <td>[[${vendor.phone}]]</td>
-                        </tr> 
+                        <div class="mt-3">
+                            <span class="status-pill"
+                                  th:classappend="${mobileVerified == true} ? ' verified' : ' unverified'">
+                                <i th:class="${mobileVerified == true} ? 'bi bi-check-circle' : 'bi bi-exclamation-circle'"></i>
+                                <span th:text="${mobileVerified == true} ? 'Verified' : 'Not verified'">
+                                    Verified
+                                </span>
+                            </span>
+                        </div>
+                    </div>
 
-                        <tr>
-                            <td>Email</td>
-                            <td>[[${vendor.email}]]</td>
-                        </tr> 
+                    <div class="verification-card"
+                         th:classappend="${emailVerified == true} ? ' verified' : ' unverified'">
+                        <div class="verification-icon">
+                            <i class="bi bi-envelope-check"></i>
+                        </div>
 
-                        <tr>
-                            <td>Address</td>
-                            <td>[[${vendor.address}]]</td>
-                        </tr>  
+                        <h2 class="verification-title">Email Verification</h2>
 
-                        <tr>
-                            <td>Description</td>
-                            <td>[[${vendor.description}]]</td>
-                        </tr>  
+                        <p class="verification-copy"
+                           th:text="${emailVerified == true} ? 'Vendor email address is verified.' : 'Vendor email address is not verified yet.'">
+                            Email status
+                        </p>
 
-                        <tr>
-                            <td>Status</td>
-                            <td>[[${vendor.vendorStatusEnum}]]</td>
-                        </tr>  
+                        <div class="mt-3">
+                            <span class="status-pill"
+                                  th:classappend="${emailVerified == true} ? ' verified' : ' unverified'">
+                                <i th:class="${emailVerified == true} ? 'bi bi-check-circle' : 'bi bi-exclamation-circle'"></i>
+                                <span th:text="${emailVerified == true} ? 'Verified' : 'Not verified'">
+                                    Verified
+                                </span>
+                            </span>
+                        </div>
+                    </div>
 
-                        <tr>
-                            <td>createdBy</td>
-                            <td>[[${vendor.createdBy}]]</td>
-                        </tr>  
+                </div>
 
-                        <tr>
-                            <td>created</td>
-                            <td>[[${vendor.created}]]</td>
-                        </tr>  
+                <div class="surface-card">
+                    <div class="section-heading">
+                        <div class="section-eyebrow">Profile Details</div>
+                        <h2 class="section-title">Vendor Information</h2>
+                    </div>
 
-                        <tr>
-                            <td>modifiedBy</td>
-                            <td>[[${vendor.modifiedBy}]]</td>
-                        </tr>  
+                    <div class="info-grid">
 
-                        <tr>
-                            <td>modified</td>
-                            <td>[[${vendor.modified}]]</td>
-                        </tr>  
+                        <div class="info-item">
+                            <span class="info-label">Vendor UUID</span>
+                            <span class="info-value"
+                                  th:text="${vendor.uuid != null and !#strings.isEmpty(vendor.uuid) ? vendor.uuid : 'Not available'}">
+                                UUID
+                            </span>
+                        </div>
 
-                    </table>
+                        <div class="info-item">
+                            <span class="info-label">Vendor Code</span>
+                            <span class="info-value"
+                                  th:text="${vendor.vendorCode != null and !#strings.isEmpty(vendor.vendorCode) ? vendor.vendorCode : 'Not assigned'}">
+                                Vendor Code
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Contact Person</span>
+                            <span class="info-value"
+                                  th:text="${(((vendor.firstName != null ? vendor.firstName : '') + ' ' + (vendor.lastName != null ? vendor.lastName : '')).trim()).isEmpty() ? 'Not provided' : (((vendor.firstName != null ? vendor.firstName : '') + ' ' + (vendor.lastName != null ? vendor.lastName : '')).trim())}">
+                                Vendor Admin
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Designation</span>
+                            <span class="info-value"
+                                  th:text="${vendor.designation != null and !#strings.isEmpty(vendor.designation) ? vendor.designation : 'Not provided'}">
+                                Owner
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Phone/Mobile</span>
+                            <span class="info-value"
+                                  th:text="${vendor.phone != null and !#strings.isEmpty(vendor.phone) ? vendor.phone : 'Not provided'}">
+                                01700000000
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Email</span>
+                            <span class="info-value"
+                                  th:text="${vendor.email != null and !#strings.isEmpty(vendor.email) ? vendor.email : 'Not provided'}">
+                                vendor@example.com
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Status</span>
+                            <span class="info-value">
+                                <span class="status-pill neutral"
+                                      th:text="${vendor.vendorStatusEnum != null ? vendor.vendorStatusEnum : 'Not selected'}">
+                                    Active
+                                </span>
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Created</span>
+                            <span class="info-value"
+                                  th:text="${vendor.created != null ? #temporals.format(vendor.created, 'dd MMM yyyy HH:mm') : 'Not available'}">
+                                Created
+                            </span>
+                        </div>
+
+                        <div class="info-item full-width">
+                            <span class="info-label">Address</span>
+                            <span class="info-value"
+                                  th:text="${vendor.address != null and !#strings.isEmpty(vendor.address) ? vendor.address : 'Not provided'}">
+                                Address
+                            </span>
+                        </div>
+
+                        <div class="info-item full-width">
+                            <span class="info-label">Description</span>
+                            <span class="info-value"
+                                  th:text="${vendor.description != null and !#strings.isEmpty(vendor.description) ? vendor.description : 'Not provided'}">
+                                Description
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Created By</span>
+                            <span class="info-value"
+                                  th:text="${vendor.createdBy != null ? vendor.createdBy : 'System'}">
+                                System
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Modified By</span>
+                            <span class="info-value"
+                                  th:text="${vendor.modifiedBy != null ? vendor.modifiedBy : 'Not available'}">
+                                Modified By
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">Modified</span>
+                            <span class="info-value"
+                                  th:text="${vendor.modified != null ? #temporals.format(vendor.modified, 'dd MMM yyyy HH:mm') : 'Not available'}">
+                                Modified
+                            </span>
+                        </div>
+
+                    </div>
                 </div>
             </div>
-        </section>
 
+            <div class="alert alert-danger mt-3"
+                 th:if="${vendor == null}">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Vendor profile was not found.
+            </div>
+
+        </div>
     </div>
-</div>
+</body>
+</html>

@@ -1,1 +1,14 @@
-<p>Your OTP has expired. Please register again.</p>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>OTP Expired</title>
+</head>
+<body>
+<section class="container py-4">
+    <h1>Mobile OTP expired</h1>
+    <p>Please request a new mobile verification OTP.</p>
+    <a th:href="@{/vendorverifications/verify-mobile}">Request or enter OTP</a>
+</section>
+</body>
+</html>

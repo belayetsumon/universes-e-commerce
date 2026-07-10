@@ -79,6 +79,8 @@ public class SalesOrderController {
     private static final String PAYMENT_PLAN_PARTIAL_ADVANCE_COD = "PARTIAL_ADVANCE_COD";
     private static final String PAYMENT_PLAN_EMI = "EMI";
     private static final BigDecimal DEFAULT_ADVANCE_RATIO = new BigDecimal("0.20");
+    private static final String PRODUCT_SHARE_REFERRAL_CODE_SESSION_KEY = "productShareReferralCode";
+    private static final String PRODUCT_SHARE_REFERRAL_PRODUCT_SESSION_KEY = "productShareReferralProductUuid";
 
     @Autowired
     SalesOrderRepository salesOrderRepository;
@@ -379,6 +381,7 @@ public class SalesOrderController {
         Users customer = usersRepository.findById(loggedUserService.activeUserid())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+
         BigDecimal grossPayableTotal = calculateCartTotal(cartitem, session, false);
         CheckoutIncentiveQuote incentiveQuote;
         try {
@@ -420,6 +423,8 @@ public class SalesOrderController {
         if (walletCheckoutRedirect != null) {
             return walletCheckoutRedirect;
         }
+
+        applyProductShareReferral(customer, session);
 
 //        String stockAvailabilityMessage = validateCartStockAvailability(cartitem);
 //        if (stockAvailabilityMessage != null) {
@@ -535,6 +540,8 @@ public class SalesOrderController {
         session.removeAttribute("session_Shipping_address");
         session.removeAttribute("session_Billing_address");
 
+        clearProductShareReferral(session);
+
         return finalizePlacedOrders(
                 orders,
                 normalizedPaymentPlan,
@@ -589,6 +596,7 @@ public class SalesOrderController {
         Users customer = usersRepository.findById(loggedUserService.activeUserid())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+
         BigDecimal grossPayableTotal = calculateCartTotal(cartitem, session, true);
         CheckoutIncentiveQuote incentiveQuote;
         try {
@@ -630,6 +638,8 @@ public class SalesOrderController {
         if (walletCheckoutRedirect != null) {
             return walletCheckoutRedirect;
         }
+
+        applyProductShareReferral(customer, session);
 
 //        String stockAvailabilityMessage = validateCartStockAvailability(cartitem);
 //        if (stockAvailabilityMessage != null) {
@@ -744,6 +754,8 @@ public class SalesOrderController {
         session.removeAttribute("session_Shipping_address");
         session.removeAttribute("session_Billing_address");
 
+        clearProductShareReferral(session);
+
         // Clear dynamic session keys for costs
         itemsByVendors.keySet().forEach(vId -> {
             session.removeAttribute("shippingCost_" + vId);
@@ -764,6 +776,31 @@ public class SalesOrderController {
         );
     }
 
+    private void applyProductShareReferral(Users customer, HttpSession session) {
+        if (customer == null || session == null) {
+            return;
+        }
+
+        Object referralCode = session.getAttribute(PRODUCT_SHARE_REFERRAL_CODE_SESSION_KEY);
+        if (!(referralCode instanceof String) || ((String) referralCode).isBlank()) {
+            return;
+        }
+
+        Object productUuid = session.getAttribute(PRODUCT_SHARE_REFERRAL_PRODUCT_SESSION_KEY);
+        referralService.applyProductShareReferralIfEligible(
+                customer,
+                ((String) referralCode).trim(),
+                productUuid instanceof String ? ((String) productUuid).trim() : null
+        );
+    }
+
+    private void clearProductShareReferral(HttpSession session) {
+        if (session == null) {
+            return;
+        }
+        session.removeAttribute(PRODUCT_SHARE_REFERRAL_CODE_SESSION_KEY);
+        session.removeAttribute(PRODUCT_SHARE_REFERRAL_PRODUCT_SESSION_KEY);
+    }
     private BigDecimal loadCurrentUserWalletBalance() {
         return usersRepository.findById(loggedUserService.activeUserid())
                 .flatMap(walletRepository::findByUsers)

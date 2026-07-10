@@ -21,6 +21,8 @@ public interface GiftCardRepository extends JpaRepository<GiftCard, Long> {
 
     Optional<GiftCard> findByCodeIgnoreCase(String code);
 
+    boolean existsByCodeIgnoreCase(String code);
+
     @Query("""
             SELECT g
             FROM GiftCard g

@@ -9,6 +9,9 @@ import com.ecommerce.app.model.Contact;
 import com.ecommerce.app.module.browsinghistory.model.BrowsingHistory;
 import com.ecommerce.app.module.browsinghistory.model.BrowsingHistoryViewType;
 import com.ecommerce.app.module.browsinghistory.service.BrowsingHistoryService;
+import com.ecommerce.app.module.ReferralRewards.model.Referral;
+import com.ecommerce.app.module.ReferralRewards.repository.ReferralRepository;
+import com.ecommerce.app.module.ReferralRewards.services.ReferralService;
 import com.ecommerce.app.module.settings.model.GlobalSettings;
 import com.ecommerce.app.module.settings.services.GlobalSettingsService;
 import com.ecommerce.app.module.user.model.UserType;
@@ -48,8 +51,11 @@ import com.ecommerce.app.vendor.model.Vendorprofile;
 import com.ecommerce.app.vendor.repository.VendorprofileRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -69,6 +75,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.HtmlUtils;
 
 /**
@@ -171,6 +178,12 @@ public class PublicController {
     @Autowired
     BrowsingHistoryService browsingHistoryService;
 
+    @Autowired
+    ReferralRepository referralRepository;
+
+    @Autowired
+    ReferralService referralService;
+
     @RequestMapping("/about-us")
     public String aboutUs(Model model) {
         GlobalSettings settings = globalSettingsService.getActiveSettings();
@@ -196,12 +209,20 @@ public class PublicController {
 
     @RequestMapping("/front-registration")
     public String studentRegistration(Model model,
+            @RequestParam(name = "ref", required = false) String referralCode,
+            HttpSession session,
             Users users) {
 
         /////Role instructor = roleRepository.findBySlug("instructor");
         ////  model.addAttribute("instructor", instructor);
         //// Role customer = roleRepository.findBySlug("customer");
-        ///// model.addAttribute("customer", customer);
+        ///// model.addAttribute("customer", customer);
+        String normalizedReferralCode = trimToNull(referralCode);
+        if (normalizedReferralCode != null && session != null) {
+            session.setAttribute("productShareReferralCode", normalizedReferralCode);
+        }
+        Object prefilledReferralCode = session == null ? null : session.getAttribute("productShareReferralCode");
+        model.addAttribute("prefilledReferralCode", prefilledReferralCode instanceof String ? prefilledReferralCode : "");
         return "frontview/front-registration";
     }
 
@@ -525,23 +546,27 @@ public class PublicController {
     }
 
     @RequestMapping("/single-product/{prodid}")
-    public String single_product(Model model, @PathVariable String prodid, Product product, Principal principal, HttpServletRequest request, HttpServletResponse response) {
+    public String single_product(Model model, @PathVariable String prodid, Product product, Principal principal,
+            @RequestParam(name = "ref", required = false) String referralCode,
+            HttpSession session, HttpServletRequest request, HttpServletResponse response) {
 
         Product activeProduct = resolveProductReference(prodid);
         if (activeProduct == null || activeProduct.getUuid() == null || activeProduct.getUuid().isBlank()) {
             return "redirect:/public/product";
         }
 
-        browsingHistoryService.recordProductView(activeProduct, request, response);
-        long productViewCount = browsingHistoryService.getProductViewCount(activeProduct);
-        model.addAttribute("productViewCount", productViewCount);
-
         Map<String, Object> product_details = productService.product_details_for_front_view_single_product_page_by_Uuid(activeProduct.getUuid());
         if (product_details == null || product_details.isEmpty()) {
             return "redirect:/public/product";
         }
 
+        captureProductShareReferral(referralCode, activeProduct.getUuid(), session);
+        browsingHistoryService.recordProductView(activeProduct, request, response);
+        long productViewCount = browsingHistoryService.getProductViewCount(activeProduct);
+        model.addAttribute("productViewCount", productViewCount);
+
         model.addAttribute("product_details", product_details);
+        addProductShareModel(model, activeProduct, product_details, request);
         model.addAttribute("productSpecifications",
                 catalogProductAttributeService.buildSpecificationViews(getString(product_details, "uuid")));
 
@@ -659,6 +684,66 @@ public class PublicController {
         return "frontview/browsing-history";
     }
 
+    private void captureProductShareReferral(String referralCode, String productUuid, HttpSession session) {
+        String normalizedCode = trimToNull(referralCode);
+        if (normalizedCode == null || session == null) {
+            return;
+        }
+
+        Users referrer = referralService.resolveReferrerByCode(normalizedCode);
+        if (referrer == null || referrer.getId() == null) {
+            return;
+        }
+
+        Users currentUser = getAuthenticatedUser();
+        if (currentUser != null && referrer.getId().equals(currentUser.getId())) {
+            return;
+        }
+
+        session.setAttribute("productShareReferralCode", normalizedCode);
+        session.setAttribute("productShareReferralProductUuid", productUuid);
+    }
+
+    private void addProductShareModel(Model model, Product product, Map<String, Object> productDetails, HttpServletRequest request) {
+        Users currentUser = getAuthenticatedUser();
+        String referralCode = currentUser == null ? null
+                : referralRepository.findByUsers(currentUser)
+                        .map(Referral::getReferralCode)
+                        .orElse(null);
+        String shareUrl = buildProductShareUrl(request, product.getUuid(), referralCode);
+        String productTitle = getString(productDetails, "title");
+        String shareMessage = (productTitle == null || productTitle.isBlank() ? "Check this product" : "Check this product: " + productTitle)
+                + " " + shareUrl;
+
+        model.addAttribute("customerProductReferralCode", referralCode);
+        model.addAttribute("productShareUrl", shareUrl);
+        model.addAttribute("productShareMessage", shareMessage);
+        model.addAttribute("productShareWhatsAppUrl", "https://wa.me/?text=" + encodeUrl(shareMessage));
+        model.addAttribute("productShareFacebookUrl", "https://www.facebook.com/sharer/sharer.php?u=" + encodeUrl(shareUrl));
+    }
+
+    private String buildProductShareUrl(HttpServletRequest request, String productUuid, String referralCode) {
+        String path = request.getContextPath() + "/public/single-product/" + productUuid;
+        var builder = ServletUriComponentsBuilder.fromRequest(request)
+                .replacePath(path)
+                .replaceQuery(null);
+        if (referralCode != null && !referralCode.isBlank()) {
+            builder.queryParam("ref", referralCode.trim());
+        }
+        return builder.build().toUriString();
+    }
+
+    private String encodeUrl(String value) {
+        return URLEncoder.encode(value == null ? "" : value, StandardCharsets.UTF_8);
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
     private Productcategory resolveCategoryReference(String categoryRef) {
         if (categoryRef == null || categoryRef.isBlank()) {
             return null;

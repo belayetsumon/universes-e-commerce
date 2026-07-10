@@ -538,7 +538,7 @@ public class CartController {
 
         String resolvedProductUuid = product.getUuid();
         if (!cartService.hasValidVendor(product)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "This product is not assigned to a vendor yet, so it cannot be added to the cart.");
+            redirectAttributes.addFlashAttribute("errorMessage", "This product is not available from an active approved vendor right now.");
             return "redirect:/public/single-product/" + resolvedProductUuid;
         }
         boolean requiresShipping = cartService.requiresShipping(product);

@@ -1,4 +1,4 @@
-<div class="card vendor-sidebar-menu border-0 shadow-sm">
+﻿<div class="card vendor-sidebar-menu border-0 shadow-sm">
     <div class="card-header bg-white border-bottom-0 fw-semibold">
         Navigation : Vendor
     </div>
@@ -6,6 +6,15 @@
     <ul class="list-group list-group-flush">
         <li class="list-group-item"><a class="nav-link" th:href="@{/vendor/home}"><i class="bi bi-house"></i><span>Home</span></a></li>
         <li class="list-group-item"><a class="nav-link" th:href="@{/productvendor/index}"><i class="bi bi-box-seam"></i><span>Product List</span></a></li>
+        <li class="list-group-item"><a class="nav-link" th:href="@{/vendor/communication/manual/compose}"><i class="bi bi-send"></i><span>Manual Messages</span></a></li>
+        <li class="list-group-item">
+            <a class="nav-link" th:href="@{/vendor/notifications}">
+                <i class="bi bi-bell"></i><span>Notifications</span>
+                <span class="badge text-bg-danger ms-auto"
+                      th:if="${communicationUnreadCount != null and communicationUnreadCount > 0}"
+                      th:text="${communicationUnreadCount}">0</span>
+            </a>
+        </li>
         <li class="list-group-item"><a class="nav-link" th:href="@{/vendor-order/index}"><i class="bi bi-journal-text"></i><span>Sales Order List</span></a></li>
         <li class="list-group-item"><a class="nav-link" th:href="@{/vendor-order/returns}"><i class="bi bi-arrow-return-left"></i><span>Returns</span></a></li>
         <li class="list-group-item"><a class="nav-link" th:href="@{/vendor-order/refunds}"><i class="bi bi-arrow-left-circle"></i><span>Refunds</span></a></li>
@@ -34,3 +43,5 @@
                     <li class="list-group-item"> <a class="textMaroon " th:href="@{/instructor}"> <span class="fa-li"><i class="far fa-bell"></i></span> Notifications</a></li>-->
     </ul>
 </div>
+
+

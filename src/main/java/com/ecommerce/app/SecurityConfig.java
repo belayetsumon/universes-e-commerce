@@ -66,6 +66,8 @@ public class SecurityConfig {
         "/users/uregistrations",
         "/users/usave",
         "/users/frontRegistrationSave",
+        "/customer_registration/registration",
+        "/customer_registration/customer_registration_save",
         "/users/userforgotpassword",
         "/forgotpassword/**",
         "/district/select-district",

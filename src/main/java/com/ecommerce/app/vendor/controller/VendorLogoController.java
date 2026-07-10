@@ -5,9 +5,12 @@
 package com.ecommerce.app.vendor.controller;
 
 import com.ecommerce.app.globalServices.ImageService;
+import com.ecommerce.app.globalServices.ImageUploadPolicy;
+import com.ecommerce.app.globalServices.ImageUploadValidationException;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.services.LoggedUserService;
 import com.ecommerce.app.services.StorageProperties;
+import com.ecommerce.app.vendor.config.VendorLogoUploadProperties;
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import com.ecommerce.app.vendor.repository.VendorprofileRepository;
 import com.ecommerce.app.vendor.user.componant.VendorUserContext;
@@ -15,6 +18,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,6 +38,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/vendorlogo")
 public class VendorLogoController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(VendorLogoController.class);
     private static final String VENDOR_LOGO_DIRECTORY = "vendor/logo";
     private static final int VENDOR_LOGO_WIDTH = 300;
     private static final int VENDOR_LOGO_HEIGHT = 300;
@@ -50,6 +57,9 @@ public class VendorLogoController {
 
     @Autowired
     private StorageProperties storageProperties;
+
+    @Autowired
+    private VendorLogoUploadProperties vendorLogoUploadProperties;
 
     @RequestMapping(value = {"", "/", "/index"})
     public String index(Model model) {
@@ -77,10 +87,10 @@ public class VendorLogoController {
         String storedLogoPath = null;
 
         try {
-            String fileName = imageService.validateAndRename(logoFile);
+            String fileName = imageService.validateAndRename(logoFile, vendorLogoUploadPolicy());
+            storedLogoPath = VENDOR_LOGO_DIRECTORY + "/" + fileName;
             imageService.resizeAndUpload(logoFile, VENDOR_LOGO_WIDTH, VENDOR_LOGO_HEIGHT, VENDOR_LOGO_DIRECTORY, fileName);
 
-            storedLogoPath = VENDOR_LOGO_DIRECTORY + "/" + fileName;
             vendorprofile.setVendorLogo(storedLogoPath);
 
             Vendorprofile savedVendorProfile = vendorprofileRepository.save(vendorprofile);
@@ -90,10 +100,14 @@ public class VendorLogoController {
 
             redirectAttributes.addFlashAttribute("messageType", "success");
             redirectAttributes.addFlashAttribute("message", "Vendor logo uploaded successfully.");
+        } catch (ImageUploadValidationException e) {
+            redirectAttributes.addFlashAttribute("messageType", "warning");
+            redirectAttributes.addFlashAttribute("message", e.getMessage());
         } catch (IOException e) {
             deleteStoredFile(storedLogoPath);
+            LOGGER.error("Vendor logo upload failed for vendor profile {}", vendorprofile.getId(), e);
             redirectAttributes.addFlashAttribute("messageType", "danger");
-            redirectAttributes.addFlashAttribute("message", "Vendor logo upload failed: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("message", "Vendor logo upload failed. Please use a valid JPG or PNG image and try again.");
         }
 
         return "redirect:/vendorlogo/index";
@@ -178,6 +192,18 @@ public class VendorLogoController {
                 : storedFilePath;
 
         return new File(storageProperties.getRootPath(), normalizedPath.replace("/", File.separator));
+    }
+
+    private ImageUploadPolicy vendorLogoUploadPolicy() {
+        return new ImageUploadPolicy(
+                Set.of("image/jpeg", "image/png"),
+                Set.of("jpg", "jpeg", "png"),
+                Set.of("jpeg", "png"),
+                vendorLogoUploadProperties.getMaxFileSizeBytes(),
+                vendorLogoUploadProperties.getMaxWidth(),
+                vendorLogoUploadProperties.getMaxHeight(),
+                "JPG or PNG images"
+        );
     }
 
 }

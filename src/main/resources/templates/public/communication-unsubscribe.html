@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Communication Preferences</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.0/css/bootstrap.min.css}">
+</head>
+<body class="bg-light">
+<main class="container py-5">
+    <div class="mx-auto bg-white border rounded p-4" style="max-width: 560px;">
+        <h1 class="h4 mb-3">Communication Preferences</h1>
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+        <a class="btn btn-primary" th:href="@{/}">Return home</a>
+    </div>
+</main>
+</body>
+</html>

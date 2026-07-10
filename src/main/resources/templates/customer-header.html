@@ -41,6 +41,24 @@
                     </span>
                 </div>
 
+                <a class="btn customer-header-icon-btn d-lg-none position-relative"
+                   th:href="@{/customer/notifications}"
+                   sec:authorize="isAuthenticated()"
+                   aria-label="Notifications">
+                    <i class="bi bi-bell"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                          th:if="${communicationUnreadCount != null and communicationUnreadCount > 0}"
+                          th:text="${communicationUnreadCount}">0</span>
+                </a>
+                <a class="btn customer-header-action customer-header-action--light d-none d-lg-inline-flex position-relative"
+                   th:href="@{/customer/notifications}"
+                   sec:authorize="isAuthenticated()">
+                    <i class="bi bi-bell"></i>
+                    <span>Notifications</span>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                          th:if="${communicationUnreadCount != null and communicationUnreadCount > 0}"
+                          th:text="${communicationUnreadCount}">0</span>
+                </a>
                 <a class="btn customer-header-icon-btn d-lg-none"
                    th:href="@{/}"
                    aria-label="Open storefront">

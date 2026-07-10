@@ -39,7 +39,6 @@ import jakarta.validation.Valid;
 import com.google.zxing.BarcodeFormat;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.security.Principal;
 import java.text.NumberFormat;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -145,12 +144,12 @@ public class CustomerController {
                 .map(Referral::getReferralCode)
                 .orElse("");
         String referralRegistrationUrl = referralCode == null || referralCode.isBlank()
-                ? "/customerregister/register"
-                : "/customerregister/register?ref=" + URLEncoder.encode(referralCode, StandardCharsets.UTF_8);
+                ? "/public/front-registration"
+                : "/public/front-registration?ref=" + URLEncoder.encode(referralCode, StandardCharsets.UTF_8);
         String referralInviteMessage = referralCode == null || referralCode.isBlank()
                 ? "Register on our site and start shopping: /customerregister/register"
                 : "Register on our site using my referral code " + referralCode
-                        + " to join and buy products: " + referralRegistrationUrl;
+                + " to join and buy products: " + referralRegistrationUrl;
         String referralWhatsAppUrl = "https://wa.me/?text="
                 + URLEncoder.encode(referralInviteMessage, StandardCharsets.UTF_8);
         String referralFacebookUrl = "https://www.facebook.com/sharer/sharer.php?u="

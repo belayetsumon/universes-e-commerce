@@ -1,5 +1,8 @@
 package com.ecommerce.app.module.shipping.services;
 
+import com.ecommerce.app.module.communication.model.MessageChannel;
+import com.ecommerce.app.module.communication.model.MessageEventType;
+import com.ecommerce.app.module.communication.events.CommunicationRequestedEvent;
 import com.ecommerce.app.module.shipping.model.Shipment;
 import com.ecommerce.app.module.shipping.model.ShipmentStatus;
 import com.ecommerce.app.module.shipping.repository.ShipmentRepository;
@@ -12,12 +15,14 @@ import com.ecommerce.app.order.services.SalesOrderService;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,16 +40,19 @@ public class ShipmentService {
     private final SalesOrderService salesOrderService;
     private final PaymentService paymentService;
     private final ShipmentTrackingService shipmentTrackingService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public ShipmentService(ShipmentRepository repo, SalesOrderRepository salesOrderRepository,
             SalesOrderService salesOrderService,
             PaymentService paymentService,
-            ShipmentTrackingService shipmentTrackingService) {
+            ShipmentTrackingService shipmentTrackingService,
+            ApplicationEventPublisher applicationEventPublisher) {
         this.repo = repo;
         this.salesOrderRepository = salesOrderRepository;
         this.salesOrderService = salesOrderService;
         this.paymentService = paymentService;
         this.shipmentTrackingService = shipmentTrackingService;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     public List<Shipment> getAll() {
@@ -99,6 +107,7 @@ public class ShipmentService {
         }
         Shipment savedShipment = repo.saveAndFlush(preparedShipment);
         shipmentTrackingService.recordStatusChange(savedShipment, previousStatus, savedShipment.getStatus(), "shipment form");
+        notifyShipmentEvents(savedShipment, previousStatus);
         return savedShipment;
     }
 
@@ -256,6 +265,73 @@ public class ShipmentService {
 
         Shipment savedShipment = repo.save(shipment);
         shipmentTrackingService.recordStatusChange(savedShipment, previousStatus, savedShipment.getStatus(), "COD collection");
+        notifyShipmentEvents(savedShipment, previousStatus);
+    }
+
+    private void notifyShipmentEvents(Shipment shipment, ShipmentStatus previousStatus) {
+        try {
+            SalesOrder order = shipment != null && shipment.getSalesOrderId() != null
+                    ? salesOrderRepository.findById(shipment.getSalesOrderId()).orElse(null)
+                    : null;
+            if (order == null || order.getCustomer() == null || order.getCustomer().getEmail() == null) {
+                return;
+            }
+
+            if (previousStatus == null) {
+                applicationEventPublisher.publishEvent(CommunicationRequestedEvent.shipment(
+                        MessageEventType.SHIPMENT_CREATED,
+                        MessageChannel.EMAIL,
+                        order.getCustomer().getEmail(),
+                        shipment.getTrackingNumber(),
+                        shipmentVariables(order, shipment)
+                ));
+            }
+
+            if (shipment.getTrackingNumber() != null && !shipment.getTrackingNumber().isBlank()) {
+                applicationEventPublisher.publishEvent(CommunicationRequestedEvent.shipment(
+                        MessageEventType.TRACKING_NUMBER_ADDED,
+                        MessageChannel.EMAIL,
+                        order.getCustomer().getEmail(),
+                        shipment.getTrackingNumber(),
+                        shipmentVariables(order, shipment)
+                ));
+            }
+
+            MessageEventType statusEvent = resolveShipmentEvent(shipment.getStatus());
+            if (statusEvent != null && previousStatus != shipment.getStatus()) {
+                applicationEventPublisher.publishEvent(CommunicationRequestedEvent.shipment(
+                        statusEvent,
+                        MessageChannel.EMAIL,
+                        order.getCustomer().getEmail(),
+                        shipment.getTrackingNumber(),
+                        shipmentVariables(order, shipment)
+                ));
+            }
+        } catch (Exception ignored) {
+            // Communication failure must not block shipment processing.
+        }
+    }
+
+    private Map<String, Object> shipmentVariables(SalesOrder order, Shipment shipment) {
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("customerName", order.getCustomer() != null && order.getCustomer().getFirstName() != null ? order.getCustomer().getFirstName() : "");
+        variables.put("orderNumber", order.getOrderCode() != null ? order.getOrderCode() : "");
+        variables.put("orderTotal", defaultAmount(order.getGrandTotal()).toPlainString());
+        variables.put("trackingNumber", shipment != null && shipment.getTrackingNumber() != null ? shipment.getTrackingNumber() : "");
+        return variables;
+    }
+
+    private MessageEventType resolveShipmentEvent(ShipmentStatus status) {
+        if (status == null) {
+            return null;
+        }
+        return switch (status) {
+            case SHIPPED, IN_TRANSIT -> MessageEventType.ORDER_SHIPPED;
+            case OUT_FOR_DELIVERY -> MessageEventType.ORDER_OUT_FOR_DELIVERY;
+            case DELIVERED -> MessageEventType.ORDER_DELIVERED;
+            case FAILED -> MessageEventType.DELIVERY_FAILED;
+            default -> null;
+        };
     }
 
     public boolean isShipmentEligibleStatus(OrderStatus status) {

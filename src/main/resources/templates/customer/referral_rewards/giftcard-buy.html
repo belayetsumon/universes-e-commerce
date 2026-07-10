@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-customar-page">
+    <div layout:fragment="main_content">
+        <style>
+            .giftcard-buy-shell {
+                max-width: 980px;
+            }
+
+            .giftcard-buy-hero,
+            .giftcard-buy-panel {
+                background: #ffffff;
+                border: 1px solid #dbe3ef;
+                border-radius: 8px;
+            }
+
+            .giftcard-buy-hero {
+                padding: 18px 20px;
+                margin-bottom: 16px;
+            }
+
+            .giftcard-buy-hero h4 {
+                margin: 0;
+                font-weight: 700;
+                color: #102033;
+            }
+
+            .giftcard-buy-hero p {
+                margin: 4px 0 0;
+                color: #65758b;
+            }
+
+            .giftcard-buy-panel .card-header {
+                background: #ffffff;
+                border-bottom: 1px solid #e5edf6;
+                padding: 14px 16px;
+            }
+
+            .giftcard-buy-panel .card-body {
+                padding: 18px;
+            }
+
+            .quick-amount {
+                min-width: 90px;
+            }
+
+            .giftcard-help {
+                border: 1px solid #dbe3ef;
+                border-radius: 8px;
+                background: #f8fafc;
+                color: #475569;
+                padding: 12px;
+                font-size: 13px;
+            }
+
+            .field-error {
+                color: #b91c1c;
+                font-size: 13px;
+                margin-top: 4px;
+            }
+        </style>
+
+        <div class="giftcard-buy-shell">
+            <section class="giftcard-buy-hero">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <h4>Buy Gift Card</h4>
+                        <p>Create a pending purchase first. The card code is issued only after payment confirmation.</p>
+                    </div>
+                    <a class="btn btn-outline-secondary btn-sm" th:href="@{/customer-giftcard/list}">
+                        <i class="bi bi-arrow-left"></i> My Gift Cards
+                    </a>
+                </div>
+            </section>
+
+            <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                <strong>Action needed.</strong> <span th:text="${errorMessage}">Please check the form.</span>
+            </div>
+
+            <div class="card giftcard-buy-panel">
+                <div class="card-header">
+                    <strong><i class="bi bi-gift"></i> Gift Card Details</strong>
+                    <small class="d-block text-muted">Amounts are stored in BDT and become spendable checkout balance after payment.</small>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/customer-giftcard/buy}" method="post" th:object="${purchaseForm}">
+                        <div th:if="${#fields.hasErrors('*')}" class="alert alert-warning" role="alert">
+                            Please correct the highlighted fields before continuing.
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" for="giftCardAmount">Gift Card Amount</label>
+                            <input id="giftCardAmount" class="form-control" type="number" min="100" max="50000"
+                                   step="0.01" th:field="*{amount}" required>
+                            <div class="form-text">Allowed range: BDT 100.00 to BDT 50000.00.</div>
+                            <div class="field-error" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}">Amount error</div>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                <button th:each="quickAmount:${quickAmounts}" type="button"
+                                        class="btn btn-outline-primary btn-sm quick-amount"
+                                        th:attr="data-giftcard-amount=${quickAmount}"
+                                        th:text="${quickAmount}">1000</button>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="recipientName">Recipient Name</label>
+                                <input id="recipientName" class="form-control" type="text" maxlength="120"
+                                       th:field="*{recipientName}" placeholder="Leave blank for yourself">
+                                <div class="field-error" th:if="${#fields.hasErrors('recipientName')}" th:errors="*{recipientName}">Name error</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="recipientEmail">Recipient Email</label>
+                                <input id="recipientEmail" class="form-control" type="email" maxlength="180"
+                                       th:field="*{recipientEmail}" placeholder="customer@example.com">
+                                <div class="form-text">If this email belongs to a customer account, the card appears in that customer's gift-card list.</div>
+                                <div class="field-error" th:if="${#fields.hasErrors('recipientEmail')}" th:errors="*{recipientEmail}">Email error</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <label class="form-label" for="giftMessage">Gift Message</label>
+                            <textarea id="giftMessage" class="form-control" rows="3" maxlength="500"
+                                      th:field="*{message}" placeholder="Optional short note"></textarea>
+                            <div class="field-error" th:if="${#fields.hasErrors('message')}" th:errors="*{message}">Message error</div>
+                        </div>
+
+                        <div class="giftcard-help mt-3">
+                            <strong>Payment safety:</strong> the gift card is not active yet. After this step, complete online payment and the system will issue a unique active code.
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2 mt-4">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-arrow-right-circle"></i> Continue To Payment
+                            </button>
+                            <a class="btn btn-outline-secondary" th:href="@{/customer-giftcard/list}">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            (function () {
+                const amountInput = document.getElementById('giftCardAmount');
+                document.querySelectorAll('[data-giftcard-amount]').forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        amountInput.value = button.dataset.giftcardAmount;
+                        amountInput.focus();
+                    });
+                });
+            })();
+        </script>
+    </div>
+</div>

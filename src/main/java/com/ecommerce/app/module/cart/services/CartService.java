@@ -9,6 +9,7 @@ import com.ecommerce.app.module.shipping.model.PackagingRate;
 import com.ecommerce.app.module.shipping.services.CarrierRateService;
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.ProductDimension;
+import com.ecommerce.app.product.model.ProductStatusEnum;
 import com.ecommerce.app.product.model.ProductTypeEnum;
 import com.ecommerce.app.product.model.ProductVariant;
 import com.ecommerce.app.product.model.Unitofmeasurement;
@@ -18,6 +19,7 @@ import com.ecommerce.app.product.ripository.ProductVariantRepository;
 import com.ecommerce.app.product.services.ProductService;
 import com.ecommerce.app.product.services.ProductVariantCatalogService;
 import com.ecommerce.app.product.services.StockLedgerService;
+import com.ecommerce.app.vendor.model.VendorStatusEnum;
 import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -760,10 +762,13 @@ public class CartService {
 
     public boolean hasValidVendor(Product product) {
         return product != null
+                && product.getStatus() == ProductStatusEnum.Active
+                && Boolean.TRUE.equals(product.getOnlineShow())
                 && product.getVendorprofile() != null
                 && product.getVendorprofile().getId() != null
                 && product.getVendorprofile().getUuid() != null
-                && !product.getVendorprofile().getUuid().isBlank();
+                && !product.getVendorprofile().getUuid().isBlank()
+                && product.getVendorprofile().getVendorStatusEnum() == VendorStatusEnum.Active;
     }
 
 }

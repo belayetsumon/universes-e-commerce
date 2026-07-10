@@ -1,0 +1,46 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <div th:replace="admin/communication/fragments :: tabs('messages')"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div>
+                <h3 class="mb-1" th:text="${message.subject}">Message Recipients</h3>
+                <p class="text-muted mb-0">Recipient-level delivery and read status.</p>
+            </div>
+            <a class="btn btn-outline-secondary btn-sm" th:href="@{/admin/communication/messages}">Back</a>
+        </div>
+        <div class="table-responsive bg-white border rounded shadow-sm">
+            <table id="tablesdata" class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Receiver Name</th>
+                        <th>Receiver Type</th>
+                        <th>Mobile/Email</th>
+                        <th>Delivered</th>
+                        <th>Read</th>
+                        <th>Delivered At</th>
+                        <th>Read At</th>
+                        <th>Clicked At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${recipients == null or #lists.isEmpty(recipients)}">
+                        <td colspan="8" class="text-center text-muted py-4">No recipients found.</td>
+                    </tr>
+                    <tr th:each="recipient : ${recipients}">
+                        <td th:text="${recipient.receiverName != null ? recipient.receiverName : 'User #' + recipient.receiverUserId}">Receiver</td>
+                        <td th:text="${recipient.receiverType}">CUSTOMER</td>
+                        <td>
+                            <div th:text="${recipient.receiverMobile != null ? recipient.receiverMobile : '-'}">-</div>
+                            <div class="small text-muted" th:text="${recipient.receiverEmail != null ? recipient.receiverEmail : '-'}">-</div>
+                        </td>
+                        <td><span th:class="${recipient.delivered ? 'badge text-bg-success' : 'badge text-bg-secondary'}" th:text="${recipient.delivered ? 'Delivered' : 'Not delivered'}">Delivered</span></td>
+                        <td><span th:class="${recipient.readStatus ? 'badge text-bg-success' : 'badge text-bg-warning text-dark'}" th:text="${recipient.readStatus ? 'Read' : 'Unread'}">Unread</span></td>
+                        <td th:text="${recipient.deliveredAt != null ? #temporals.format(recipient.deliveredAt, 'dd MMM yyyy HH:mm') : '-'}">-</td>
+                        <td th:text="${recipient.readAt != null ? #temporals.format(recipient.readAt, 'dd MMM yyyy HH:mm') : '-'}">-</td>
+                        <td th:text="${recipient.clickedAt != null ? #temporals.format(recipient.clickedAt, 'dd MMM yyyy HH:mm') : '-'}">-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -98,6 +98,34 @@ public class ReferralService {
                 .orElse(null);
     }
 
+    @Transactional
+    public Referral applyProductShareReferralIfEligible(Users buyer, String referralCode, String productUuid) {
+        if (buyer == null || buyer.getId() == null || referralCode == null || referralCode.isBlank()) {
+            return null;
+        }
+
+        Users referrer = resolveReferrerByCode(referralCode);
+        if (referrer == null || referrer.getId() == null) {
+            return referralRepository.findByUsers(buyer).orElse(null);
+        }
+
+        if (promotionFraudService.flagSelfReferralIfMatched(buyer, referrer)) {
+            return referralRepository.findByUsers(buyer).orElse(null);
+        }
+
+        Referral referral = referralRepository.findByUsers(buyer).orElse(null);
+        if (referral == null) {
+            return createReferralProfile(buyer, referrer, false);
+        }
+
+        if (referral.getReferredUser() == null) {
+            referral.setReferredUser(referrer);
+            referralRepository.save(referral);
+        }
+
+        rewardAccountService.ensureRewardAccount(buyer);
+        return referral;
+    }
     public void handleReferralReward(Users customer, BigDecimal amount) {
         if (customer == null || amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             return;

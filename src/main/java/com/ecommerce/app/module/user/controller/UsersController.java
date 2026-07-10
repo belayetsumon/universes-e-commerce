@@ -306,7 +306,8 @@ public class UsersController {
     @RequestMapping("/frontRegistrationSave")
     public String frontUserSave(Model model, @Valid Users users, BindingResult bindingResult, RedirectAttributes redirectAttributes,
             @RequestParam(name = "parent", required = false) String parent,
-            @RequestParam(name = "ref_code", required = false) String ref
+            @RequestParam(name = "ref_code", required = false) String ref,
+            HttpSession session
     ) {
         // System.out.println("ref_code" + ref);
         //userValidator.validate(users, bindingResult);
@@ -338,7 +339,8 @@ public class UsersController {
 
         usersRepository.save(users);
 
-        Users referringUsers = referralService.resolveReferrerByCode(ref);
+        String resolvedReferralCode = resolveRegistrationReferralCode(ref, session);
+        Users referringUsers = referralService.resolveReferrerByCode(resolvedReferralCode);
         referralService.createReferralProfileAndGrantSignupReward(users, referringUsers);
         redirectAttributes.addFlashAttribute(
                 "success", "Congratulations! You have successfully registered.");
@@ -346,6 +348,16 @@ public class UsersController {
         return "redirect:/public/member-login";
     }
 
+    private String resolveRegistrationReferralCode(String submittedReferralCode, HttpSession session) {
+        if (submittedReferralCode != null && !submittedReferralCode.isBlank()) {
+            return submittedReferralCode.trim();
+        }
+        if (session == null) {
+            return null;
+        }
+        Object sharedProductReferralCode = session.getAttribute("productShareReferralCode");
+        return sharedProductReferralCode instanceof String ? ((String) sharedProductReferralCode).trim() : null;
+    }
     private boolean passwordMatches(String rawPassword, String storedPassword) {
         if (rawPassword == null || storedPassword == null) {
             return false;

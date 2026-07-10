@@ -12,8 +12,12 @@ import com.ecommerce.app.services.StorageProperties;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Locale;
 import java.util.UUID;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,6 +41,34 @@ public class ImageService {
         }
 
         // Generate unique filename with webp extension
+        return UUID.randomUUID().toString() + ".webp";
+    }
+
+    /**
+     * Validates a restricted image upload before it is converted to WebP.
+     * MIME type, filename extension, and decoded image format must all match
+     * the supplied policy.
+     */
+    public String validateAndRename(MultipartFile file, ImageUploadPolicy policy) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new ImageUploadValidationException("Please select an image file to upload.");
+        }
+        if (file.getSize() > policy.maxFileSizeBytes()) {
+            throw new ImageUploadValidationException("The image exceeds the "
+                    + formatFileSize(policy.maxFileSizeBytes()) + " upload limit.");
+        }
+
+        String contentType = normalize(file.getContentType());
+        if (!policy.allowedContentTypes().contains(contentType)) {
+            throw unsupportedType(policy);
+        }
+
+        String extension = extractExtension(file.getOriginalFilename());
+        if (!policy.allowedExtensions().contains(extension)) {
+            throw unsupportedType(policy);
+        }
+
+        validateDecodedImage(file, policy);
         return UUID.randomUUID().toString() + ".webp";
     }
 
@@ -70,5 +102,62 @@ public class ImageService {
                 .toFile(new File(dir, fileName));
 
         return fileName;
+    }
+
+    private void validateDecodedImage(MultipartFile file, ImageUploadPolicy policy) throws IOException {
+        try (ImageInputStream imageInput = ImageIO.createImageInputStream(file.getInputStream())) {
+            if (imageInput == null) {
+                throw new ImageUploadValidationException("The uploaded file could not be read as an image.");
+            }
+
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(imageInput);
+            if (!readers.hasNext()) {
+                throw new ImageUploadValidationException("The uploaded file is not a valid image.");
+            }
+
+            ImageReader reader = readers.next();
+            try {
+                String format = normalize(reader.getFormatName());
+                if (!policy.allowedImageFormats().contains(format)) {
+                    throw unsupportedType(policy);
+                }
+
+                reader.setInput(imageInput, true, true);
+                int width = reader.getWidth(0);
+                int height = reader.getHeight(0);
+                if (width <= 0 || height <= 0 || width > policy.maxWidth() || height > policy.maxHeight()) {
+                    throw new ImageUploadValidationException("Image dimensions must not exceed "
+                            + policy.maxWidth() + " x " + policy.maxHeight() + " pixels.");
+                }
+            } finally {
+                reader.dispose();
+            }
+        }
+    }
+
+    private ImageUploadValidationException unsupportedType(ImageUploadPolicy policy) {
+        return new ImageUploadValidationException("Only " + policy.allowedFileDescription() + " files are allowed.");
+    }
+
+    private String extractExtension(String originalFilename) {
+        if (originalFilename == null) {
+            return "";
+        }
+
+        int extensionStart = originalFilename.lastIndexOf('.');
+        if (extensionStart < 0 || extensionStart == originalFilename.length() - 1) {
+            return "";
+        }
+
+        return normalize(originalFilename.substring(extensionStart + 1));
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String formatFileSize(long bytes) {
+        long megabytes = bytes / (1024 * 1024);
+        return megabytes > 0 ? megabytes + " MB" : bytes + " bytes";
     }
 }
