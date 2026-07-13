@@ -51,6 +51,8 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
 
     Users findByMobile(String mobile);
 
+    Optional<Users> findOptionalByMobile(String mobile);
+
     List<Users> findByRole(Role role);
 
     List<Users> findByParent(Users users);

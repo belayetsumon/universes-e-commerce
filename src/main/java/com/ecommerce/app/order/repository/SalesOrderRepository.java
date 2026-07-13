@@ -40,25 +40,23 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
     Optional<SalesOrder> findByIdAndVendorId(Long id, Long vendorId);
 
     @Query("""
-            select distinct s.customer
+            select distinct customer.id
             from SalesOrder s
+            join s.customer customer
             where s.vendorId = :vendorId
-              and s.customer is not null
-              and s.customer.status = com.ecommerce.app.module.user.model.Status.Active
-            order by s.customer.id desc
+              and customer.status = com.ecommerce.app.module.user.model.Status.Active
             """)
-    List<Users> findDistinctCustomersByVendorId(@Param("vendorId") Long vendorId);
+    List<Long> findDistinctCustomerIdsByVendorId(@Param("vendorId") Long vendorId);
 
     @Query("""
-            select distinct s.customer
+            select distinct customer.id
             from SalesOrder s
+            join s.customer customer
             where s.vendorId = :vendorId
-              and s.customer is not null
-              and s.customer.id in :customerIds
-              and s.customer.status = com.ecommerce.app.module.user.model.Status.Active
-            order by s.customer.id desc
+              and customer.id in :customerIds
+              and customer.status = com.ecommerce.app.module.user.model.Status.Active
             """)
-    List<Users> findDistinctCustomersByVendorIdAndCustomerIds(
+    List<Long> findDistinctCustomerIdsByVendorIdAndCustomerIds(
             @Param("vendorId") Long vendorId,
             @Param("customerIds") java.util.Collection<Long> customerIds);
 

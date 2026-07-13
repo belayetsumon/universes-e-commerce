@@ -45,6 +45,8 @@ public class CustomerTeamController {
         List< Referral> refeList = referralRepository.findAllByReferredUser(users.get());
 
         model.addAttribute("refeList", refeList);
+        model.addAttribute("rewardGrantedCount", refeList.stream().filter(Referral::isRewardGranted).count());
+        model.addAttribute("rewardPendingCount", refeList.stream().filter(referral -> !referral.isRewardGranted()).count());
         return "customer/team";
     }
 

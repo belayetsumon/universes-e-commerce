@@ -14,6 +14,7 @@ import com.ecommerce.app.module.ReferralRewards.repository.WalletRepository;
 import com.ecommerce.app.module.user.componant.UserValidator;
 import com.ecommerce.app.module.user.dto.AdminUserPasswordForm;
 import com.ecommerce.app.module.user.model.LoginHistory;
+import com.ecommerce.app.module.user.model.LoginStatus;
 import com.ecommerce.app.module.user.model.Role;
 import com.ecommerce.app.module.user.model.Status;
 import com.ecommerce.app.module.user.model.UserType;
@@ -85,7 +86,9 @@ public class UsersController {
 
     @RequestMapping(value = {"", "/", "/index"})
     public String index(Model model) {
-        model.addAttribute("alluser", usersRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
+        List<Users> allUsers = usersRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
+        model.addAttribute("alluser", allUsers);
+        addUserListSummary(model, allUsers);
         return "user/allusers";
     }
 
@@ -109,12 +112,14 @@ public class UsersController {
 
     @GetMapping("/login-history")
     public String loginHistory(Model model) {
-        model.addAttribute("historyEntries", loginHistoryRepository.findAllForAdminList());
+        List<LoginHistory> historyEntries = loginHistoryRepository.findAllForAdminList();
+        model.addAttribute("historyEntries", historyEntries);
         model.addAttribute("historyTitle", "All User Login History");
         model.addAttribute("historySubtitle", "Recent login, logout, failed attempt, and session activity records across all users.");
         model.addAttribute("backUrl", "/users/index");
         model.addAttribute("backLabel", "Back to Users");
         model.addAttribute("selectedUser", null);
+        addLoginHistorySummary(model, historyEntries);
         return "user/login_history";
     }
 
@@ -133,6 +138,7 @@ public class UsersController {
         model.addAttribute("backUrl", "/users/view/" + uid);
         model.addAttribute("backLabel", "Back to Profile");
         model.addAttribute("selectedUser", user);
+        addLoginHistorySummary(model, historyEntries);
         return "user/login_history";
     }
 
@@ -206,7 +212,18 @@ public class UsersController {
 
     @RequestMapping("/save")
     //@Transactional
-    public String save(Model model, @RequestParam(value = "password2", required = false) String password2, @Valid Users users, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+    public String save(Model model, @Valid Users users, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+
+        String submittedPassword = users.getPassword();
+        boolean passwordBlank = submittedPassword == null || submittedPassword.isBlank();
+
+        if (users.getId() == null && passwordBlank) {
+            bindingResult.rejectValue("password", "required", "Password is required for new users.");
+        }
+
+        if (!passwordBlank && submittedPassword.length() < 8) {
+            bindingResult.rejectValue("password", "size", "Password must be at least 8 characters.");
+        }
 
         if (bindingResult.hasErrors()) {
 
@@ -219,12 +236,17 @@ public class UsersController {
         // users.setPassword(bCryptPasswordEncoder.encode(users.getPassword()));
         try {
 
-            if (users.getPassword().isEmpty() && password2 != null && users.getId() != null) {
+            if (passwordBlank && users.getId() != null) {
+                Users existingUser = usersRepository.findById(users.getId()).orElse(null);
+                if (existingUser == null) {
+                    redirectAttributes.addFlashAttribute("error", "User not found.");
+                    return "redirect:/users/index";
+                }
 
-                users.setPassword(password2);
+                users.setPassword(existingUser.getPassword());
             } else {
 
-                users.setPassword(bCryptPasswordEncoder.encode(users.getPassword()));
+                users.setPassword(bCryptPasswordEncoder.encode(submittedPassword));
             }
 
             usersRepository.save(users);
@@ -235,8 +257,7 @@ public class UsersController {
             model.addAttribute("roles", roleRepository.findAll());
             model.addAttribute("status", Status.values());
             model.addAttribute("userTypes", UserType.values());
-            redirectAttributes.addFlashAttribute("message", e);
-            model.addAttribute("message", e);
+            model.addAttribute("error", "Unable to save user. Please verify unique email, unique mobile number, and required access fields.");
             return "user/registrations";
         }
     }
@@ -391,6 +412,60 @@ public class UsersController {
         }
 
         return "User #" + user.getId();
+    }
+
+    private void addLoginHistorySummary(Model model, List<LoginHistory> historyEntries) {
+        List<LoginHistory> safeEntries = historyEntries == null ? List.of() : historyEntries;
+        long activeSessions = safeEntries.stream()
+                .filter(entry -> entry.getLoginStatus() == LoginStatus.ACTIVE)
+                .count();
+        long failedAttempts = safeEntries.stream()
+                .filter(entry -> entry.getLoginStatus() == LoginStatus.FAILED)
+                .count();
+        long expiredSessions = safeEntries.stream()
+                .filter(entry -> entry.getLoginStatus() == LoginStatus.SESSION_EXPIRED)
+                .count();
+        long loggedOutSessions = safeEntries.stream()
+                .filter(entry -> entry.getLoginStatus() == LoginStatus.LOGGED_OUT)
+                .count();
+        Object latestLoginTime = safeEntries.stream()
+                .filter(entry -> entry.getLoginTime() != null)
+                .max(Comparator.comparing(LoginHistory::getLoginTime))
+                .map(LoginHistory::getLoginTime)
+                .orElse(null);
+
+        model.addAttribute("historyCount", safeEntries.size());
+        model.addAttribute("activeSessionCount", activeSessions);
+        model.addAttribute("failedAttemptCount", failedAttempts);
+        model.addAttribute("expiredSessionCount", expiredSessions);
+        model.addAttribute("loggedOutSessionCount", loggedOutSessions);
+        model.addAttribute("latestLoginTime", latestLoginTime);
+    }
+
+    private void addUserListSummary(Model model, List<Users> users) {
+        List<Users> safeUsers = users == null ? List.of() : users;
+        long activeUsers = safeUsers.stream()
+                .filter(user -> user.getStatus() == Status.Active)
+                .count();
+        long pendingUsers = safeUsers.stream()
+                .filter(user -> user.getStatus() == Status.Pending)
+                .count();
+        long blockedUsers = safeUsers.stream()
+                .filter(user -> user.getStatus() == Status.Block)
+                .count();
+        long customerUsers = safeUsers.stream()
+                .filter(user -> user.getUserType() == UserType.customer)
+                .count();
+        long adminManagedUsers = safeUsers.stream()
+                .filter(user -> user.getUserType() != UserType.customer)
+                .count();
+
+        model.addAttribute("userCount", safeUsers.size());
+        model.addAttribute("activeUserCount", activeUsers);
+        model.addAttribute("pendingUserCount", pendingUsers);
+        model.addAttribute("blockedUserCount", blockedUsers);
+        model.addAttribute("customerUserCount", customerUsers);
+        model.addAttribute("adminManagedUserCount", adminManagedUsers);
     }
 
 }

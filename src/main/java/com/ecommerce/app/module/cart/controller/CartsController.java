@@ -6,11 +6,14 @@ package com.ecommerce.app.module.cart.controller;
 
 import com.ecommerce.app.module.cart.model.CartItem;
 import com.ecommerce.app.module.cart.services.CartService;
+import com.ecommerce.app.module.checkout.availability.CheckoutAvailability;
+import com.ecommerce.app.module.checkout.availability.CheckoutAvailabilityService;
 import com.ecommerce.app.module.shipping.dto.ShippingOption;
 import com.ecommerce.app.module.shipping.model.ShippingLocation;
 import com.ecommerce.app.module.shipping.model.PackagingRate;
 import com.ecommerce.app.module.shipping.services.PackagingRateService;
 import com.ecommerce.app.module.shipping.services.ShippingQuoteService;
+import com.ecommerce.app.module.user.services.LoggedUserService;
 import com.ecommerce.app.product.ripository.ProductRepository;
 import com.ecommerce.app.vendor.repository.VendorprofileRepository;
 import jakarta.servlet.http.HttpSession;
@@ -54,6 +57,12 @@ public class CartsController {
 
     @Autowired
     VendorprofileRepository vendorprofileRepository;
+
+    @Autowired
+    CheckoutAvailabilityService checkoutAvailabilityService;
+
+    @Autowired
+    LoggedUserService loggedUserService;
 
     @GetMapping("/api")
     public ResponseEntity<Map<String, Object>> getCart(HttpSession session) {
@@ -234,6 +243,10 @@ public class CartsController {
             @RequestParam(required = false) Long vendorId,
             @RequestParam BigDecimal shippingCost,
             HttpSession session) {
+        ResponseEntity<Map<String, Object>> unavailable = checkoutUnavailableIfDisabled(session);
+        if (unavailable != null) {
+            return unavailable;
+        }
         String resolvedVendorUuid = resolveVendorUuid(vendorUuid, vendorId);
         if (resolvedVendorUuid == null) {
             return getCart(session);
@@ -254,6 +267,10 @@ public class CartsController {
             @RequestParam(required = false) Long vendorId,
             @RequestParam BigDecimal packagingCost,
             HttpSession session) {
+        ResponseEntity<Map<String, Object>> unavailable = checkoutUnavailableIfDisabled(session);
+        if (unavailable != null) {
+            return unavailable;
+        }
         String resolvedVendorUuid = resolveVendorUuid(vendorUuid, vendorId);
         if (resolvedVendorUuid == null) {
             return getCart(session);
@@ -275,6 +292,10 @@ public class CartsController {
             @RequestParam(required = false) String shippingOptionCode,
             HttpSession session) {
 
+        ResponseEntity<Map<String, Object>> unavailable = checkoutUnavailableIfDisabled(session);
+        if (unavailable != null) {
+            return unavailable;
+        }
         String resolvedVendorUuid = resolveVendorUuid(vendorUuid, vendorId);
         if (resolvedVendorUuid == null) {
             return getCart(session);
@@ -312,6 +333,10 @@ public class CartsController {
             @RequestParam(required = false) String packagingRateId,
             HttpSession session) {
 
+        ResponseEntity<Map<String, Object>> unavailable = checkoutUnavailableIfDisabled(session);
+        if (unavailable != null) {
+            return unavailable;
+        }
         String resolvedVendorUuid = resolveVendorUuid(vendorUuid, vendorId);
         if (resolvedVendorUuid == null) {
             return getCart(session);
@@ -372,6 +397,23 @@ public class CartsController {
         body.put("success", false);
         body.put("message", message);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    private ResponseEntity<Map<String, Object>> checkoutUnavailableIfDisabled(HttpSession session) {
+        boolean authenticated = loggedUserService.isAuthenticatedUser();
+        CheckoutAvailability availability = checkoutAvailabilityService.availability(authenticated);
+        if (availability.isCheckoutAvailable()
+                && (authenticated || !availability.isLoginRequired() || availability.isGuestAllowed())) {
+            return null;
+        }
+        Map<String, Object> body = getCart(session).getBody();
+        if (body == null) {
+            body = new HashMap<>();
+        }
+        body.put("success", false);
+        body.put("checkoutUnavailable", !availability.isCheckoutAvailable());
+        body.put("message", availability.isCheckoutAvailable() ? "Please login before checkout." : CheckoutAvailabilityService.CHECKOUT_UNAVAILABLE_MESSAGE);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
 
     private String normalizeUuid(String uuid) {

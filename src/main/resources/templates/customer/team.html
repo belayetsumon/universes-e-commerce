@@ -1,78 +1,105 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
-<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-customar-page">
-    <div layout:fragment = "main_content">
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="front-layout-inner-customar-page">
+    <th:block layout:fragment="page_css">
+        <style>
+            .team-page { padding: .25rem 0 1.5rem; }
+            .team-page .team-hero { background: linear-gradient(135deg,#113459 0%,#0d6efd 100%); border: 0; border-radius: 1rem; color: #fff; overflow: hidden; }
+            .team-page .team-hero::after { background: radial-gradient(circle,rgba(255,255,255,.16) 0,rgba(255,255,255,0) 68%); content: ''; height: 260px; pointer-events: none; position: absolute; right: -100px; top: -120px; width: 260px; }
+            .team-page .team-hero .card-body { position: relative; z-index: 1; }
+            .team-kicker { color: #a9e3ff; font-size: .75rem; font-weight: 700; letter-spacing: .06em; margin: 0 0 .4rem; text-transform: uppercase; }
+            .team-hero h1 { color: #fff; font-size: clamp(1.45rem,2.5vw,2rem); font-weight: 700; margin: 0; }
+            .team-hero-copy { color: rgba(255,255,255,.8); margin: .45rem 0 0; max-width: 620px; }
+            .team-hero-icon { align-items: center; background: #fff; border-radius: 50%; color: #113459; display: inline-flex; height: 52px; justify-content: center; width: 52px; }
+            .team-total { border: 1px solid rgba(255,255,255,.24); border-radius: .8rem; color: #fff; min-width: 120px; padding: .75rem 1rem; text-align: center; }
+            .team-total strong { display: block; font-size: 1.45rem; line-height: 1.1; }
+            .team-total span { color: rgba(255,255,255,.75); font-size: .75rem; text-transform: uppercase; }
+            .team-metrics { display: grid; gap: 1rem; grid-template-columns: repeat(3,minmax(0,1fr)); }
+            .team-metric { border: 1px solid rgba(17,52,89,.12); border-radius: .8rem; min-width: 0; padding: 1rem; }
+            .team-metric-icon { align-items: center; background: #eaf4ff; border-radius: .6rem; color: #0d6efd; display: inline-flex; height: 38px; justify-content: center; width: 38px; }
+            .team-metric-label { color: #6c757d; font-size: .72rem; font-weight: 700; letter-spacing: .05em; margin-top: .65rem; text-transform: uppercase; }
+            .team-metric-value { color: #1f2937; font-size: 1.45rem; font-weight: 700; line-height: 1.1; margin-top: .2rem; }
+            .team-directory { border: 1px solid rgba(17,52,89,.12); border-radius: .9rem; overflow: hidden; }
+            .team-directory-header { background: #fff; border-bottom: 1px solid rgba(17,52,89,.1); }
+            .team-search { max-width: 330px; }
+            .team-table { min-width: 930px; }
+            .team-table th { background: #f4f7fa; color: #506070; font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+            .team-table th, .team-table td { padding: .85rem .75rem; vertical-align: middle; }
+            .team-member-icon { align-items: center; background: #eaf4ff; border-radius: 50%; color: #0d6efd; display: inline-flex; flex: 0 0 38px; height: 38px; justify-content: center; width: 38px; }
+            .team-member-name { color: #1f2937; font-weight: 700; }
+            .team-member-email { color: #6c757d; font-size: .8rem; margin-top: .15rem; }
+            .team-code { background: #edf7f1; border: 1px solid #c7ead3; border-radius: 999px; color: #0f5132; display: inline-block; font-size: .8rem; padding: .28rem .55rem; }
+            .team-empty { padding: 4rem 1rem; text-align: center; }
+            .team-empty-icon { align-items: center; background: #eaf4ff; border-radius: 50%; color: #0d6efd; display: inline-flex; height: 52px; justify-content: center; width: 52px; }
+            @media (max-width: 767.98px) { .team-metrics { grid-template-columns: 1fr; } .team-hero .card-body > .d-flex { align-items: stretch !important; flex-direction: column; } .team-total { text-align: left; } .team-search { max-width: none; width: 100%; } }
+        </style>
+    </th:block>
 
-
-        <section class="">
-            <div class="row">
-
-                <div class="col-sm-12">
-
-
-                    <div class="card">
-                        <div class="card-header  ">
-                            <div class="row">  <div class="col-sm-12">
-
-                                    <h5 class="font-weight-bold "><i class="fas fa-list"></i> My Referred List  [[${refeList.size()}]]</h5></div>
-
+    <div layout:fragment="main_content">
+        <section class="team-page">
+            <header class="card shadow-sm mb-4 team-hero position-relative">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start justify-content-between gap-4">
+                        <div class="d-flex align-items-start gap-3">
+                            <span class="team-hero-icon"><i class="bi bi-people-fill fs-4"></i></span>
+                            <div>
+                                <p class="team-kicker">Referral rewards</p>
+                                <h1>My Referral Network</h1>
+                                <p class="team-hero-copy">Keep track of the customers connected through your referral activity and their reward progress.</p>
                             </div>
                         </div>
-                        <div class="card-body">
+                        <div class="team-total"><strong th:text="${refeList.size()}">0</strong><span>Connections</span></div>
+                    </div>
+                </div>
+            </header>
 
+            <div class="team-metrics mb-4">
+                <article class="card shadow-sm team-metric"><span class="team-metric-icon"><i class="bi bi-people"></i></span><div class="team-metric-label">Total connections</div><div class="team-metric-value" th:text="${refeList.size()}">0</div></article>
+                <article class="card shadow-sm team-metric"><span class="team-metric-icon"><i class="bi bi-check2-circle"></i></span><div class="team-metric-label">Reward granted</div><div class="team-metric-value" th:text="${rewardGrantedCount}">0</div></article>
+                <article class="card shadow-sm team-metric"><span class="team-metric-icon"><i class="bi bi-hourglass-split"></i></span><div class="team-metric-label">Awaiting reward</div><div class="team-metric-value" th:text="${rewardPendingCount}">0</div></article>
+            </div>
 
-                            <div class="table-responsive">
-                                <table id="example" class="table table-bordered table-hover table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 10px">#</th>
-                                            <th>First Name</th>
-                                            <th>Last Name</th>
-                                            <th>Referral Code</th>
-                                            <th>Mobile</th>
-                                            <th>Email</th>
-                                            <th>Status</th>
-                                            <th>Remark</th>
-                                            <th>Created Date</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr th:each="alluser,status:${refeList}">
-                                            <td th:text="${status.count}">2.</td>
-                                            <td th:text="${alluser.users.firstName}">Chakma</td>
-                                            <td th:text="${alluser.users.lastName}">Chakma</td>
-                                            <td th:text="${alluser.referralCode}">Chakma</td>
-                                            <td th:text="${alluser.users.mobile}">Chakma</td>
-                                            <td th:text="${alluser.users.email}">Chakma</td>
-                                            <td th:text="${alluser.users.status}">Chakma</td>
-                                            <td th:text="${alluser.users.remarks}">Chakma</td>
-                                            <td th:text="${alluser.users.createdOn}">Chakma</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                                <!--                                                <table class="table table-bordered" th:if="${ #lists.isEmpty(orderlist_panding)}">
-                                                                                    <tr>
-                                                                                        <td> Sorry no team member is found ! </td>
-                                                                                    </tr>
-
-
-                                                                                </table>-->
-
-                            </div>
-
-
-
-
-
-                        </div>
-                    </div></div></div>
-
+            <div class="card shadow-sm team-directory">
+                <div class="card-header team-directory-header d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 py-3 px-3 px-md-4">
+                    <div><h2 class="h5 mb-1">Referral Directory</h2><p class="text-muted small mb-0">Search your referral connections by name, code, phone, or email.</p></div>
+                    <div class="input-group input-group-sm team-search"><span class="input-group-text bg-white"><i class="bi bi-search"></i></span><input id="teamSearch" class="form-control" type="search" placeholder="Search referral connections"></div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 team-table">
+                        <thead><tr><th>#</th><th>Customer</th><th>Referral code</th><th>Mobile</th><th>Account status</th><th>Reward status</th><th>Remark</th><th>Joined</th></tr></thead>
+                        <tbody id="teamTableBody" th:if="${!refeList.isEmpty()}">
+                            <tr th:each="referral, stat : ${refeList}">
+                                <td class="text-muted" th:text="${stat.count}">1</td>
+                                <td><div class="d-flex align-items-center gap-2"><span class="team-member-icon"><i class="bi bi-person"></i></span><div><div class="team-member-name" th:text="${referral.users.firstName + ' ' + referral.users.lastName}">Customer name</div><div class="team-member-email" th:text="${referral.users.email}">email@example.com</div></div></div></td>
+                                <td><code class="team-code" th:text="${referral.referralCode}">REF123</code></td>
+                                <td th:text="${referral.users.mobile}">01700000000</td>
+                                <td><span class="badge text-bg-light border" th:text="${referral.users.status}">Active</span></td>
+                                <td><span th:if="${referral.rewardGranted}" class="badge text-bg-success"><i class="bi bi-check-lg me-1"></i>Granted</span><span th:unless="${referral.rewardGranted}" class="badge text-bg-warning"><i class="bi bi-clock me-1"></i>Pending</span></td>
+                                <td class="text-muted small" th:text="${referral.users.remarks}">-</td>
+                                <td class="text-muted small" th:text="${referral.users.createdOn}">Date</td>
+                            </tr>
+                        </tbody>
+                        <tbody th:if="${refeList.isEmpty()}"><tr><td colspan="8"><div class="team-empty"><span class="team-empty-icon"><i class="bi bi-people fs-4"></i></span><h3 class="h6 mt-3 mb-1">No referral connections yet</h3><p class="text-muted small mb-0">When a customer joins through your referral activity, they will appear here.</p></div></td></tr></tbody>
+                    </table>
+                </div>
+            </div>
         </section>
-
-
     </div>
+
+    <th:block layout:fragment="page_js">
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const searchInput = document.getElementById('teamSearch');
+                const rows = document.querySelectorAll('#teamTableBody tr');
+                if (!searchInput || !rows.length) return;
+                searchInput.addEventListener('input', function () {
+                    const query = searchInput.value.trim().toLowerCase();
+                    rows.forEach(function (row) {
+                        row.hidden = query && !row.textContent.toLowerCase().includes(query);
+                    });
+                });
+            });
+        </script>
+    </th:block>
 </div>

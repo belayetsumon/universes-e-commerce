@@ -1,114 +1,134 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
-<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
-    <div layout:fragment = "main_content">
-        <section> 
-            <div class="row">
-                <div class="col-sm-3"><h4> Categories</h4></div>
-                <div class="col-sm-5">   
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a  class="nav-link" href="#">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Product Category</li>
-                        </ol>
-                    </nav>
-                </div></div>
-        </section>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <style>
+            .main-content > section.category-workspace:first-child { background: transparent; border: 0; box-shadow: none; padding: 0; }
+            .category-hero { background: #113459; border: 0; color: #fff; overflow: hidden; }
+            .category-hero .card-header { background: rgba(255,255,255,.08); border-bottom-color: rgba(255,255,255,.12); }
+            .category-kicker { color: #9fd8ff; font-size: .75rem; font-weight: 700; letter-spacing: 0; margin: 0 0 .35rem; text-transform: uppercase; }
+            .category-hero h1 { color: #fff; font-size: 1.65rem; font-weight: 700; letter-spacing: 0; margin: 0; }
+            .category-hero-copy { color: rgba(255,255,255,.78); margin: .45rem 0 0; max-width: 680px; }
+            .category-hero-icon { align-items: center; background: #fff; border-radius: 50%; color: #113459; display: inline-flex; flex: 0 0 48px; height: 48px; justify-content: center; width: 48px; }
+            .category-primary-action { background: linear-gradient(135deg,#0d6efd 0%,#00a6c8 100%); border: 0; box-shadow: 0 .55rem 1rem rgba(0,166,200,.24); color: #fff; }
+            .category-primary-action:hover, .category-primary-action:focus { background: linear-gradient(135deg,#0b5ed7 0%,#0089a8 100%); color: #fff; }
+            .category-metrics { display: grid; gap: 1rem; grid-template-columns: repeat(4,minmax(0,1fr)); }
+            .category-metric { border: 1px solid rgba(17,52,89,.12); border-radius: .5rem; min-width: 0; padding: 1rem; }
+            .category-metric-icon { align-items: center; background: #eaf4ff; border-radius: .5rem; color: #0d6efd; display: inline-flex; height: 38px; justify-content: center; width: 38px; }
+            .category-metric-label { color: #6c757d; font-size: .75rem; font-weight: 700; letter-spacing: 0; margin-top: .7rem; text-transform: uppercase; }
+            .category-metric-value { color: #212529; font-size: 1.45rem; font-weight: 700; line-height: 1.1; margin-top: .2rem; }
+            .category-filter-panel { border-color: rgba(17,52,89,.13); }
+            .category-filter-grid { align-items: end; display: grid; gap: .85rem; grid-template-columns: minmax(220px,2fr) repeat(4,minmax(130px,1fr)) auto; }
+            .category-table { min-width: 1010px; }
+            .category-table th { background: #f4f7fa; color: #506070; font-size: .75rem; letter-spacing: 0; text-transform: uppercase; white-space: nowrap; }
+            .category-table th, .category-table td { padding: .8rem .75rem; vertical-align: middle; }
+            .category-image { align-items: center; background: #f1f4f8; border: 1px solid #e5e9ee; border-radius: .45rem; display: flex; height: 52px; justify-content: center; overflow: hidden; width: 66px; }
+            .category-image img { height: 100%; object-fit: cover; width: 100%; }
+            .category-image-empty { color: #9aa5b1; font-size: 1.1rem; }
+            .category-name { color: #1f2937; display: block; font-weight: 700; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .category-slug { color: #6c757d; display: block; font-size: .8rem; margin-top: .15rem; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .category-action { align-items: center; display: inline-flex; gap: .35rem; justify-content: flex-end; min-width: 76px; }
+            .category-action .btn { align-items: center; border-radius: 7px; display: inline-flex; height: 34px; justify-content: center; padding: 0; width: 34px; }
+            .category-empty { display: grid; gap: .75rem; justify-items: center; padding: 3.5rem 1rem; }
+            @media (max-width: 1199.98px) { .category-filter-grid { grid-template-columns: repeat(3,minmax(0,1fr)); } .category-filter-grid .category-search { grid-column: span 3; } }
+            @media (max-width: 767.98px) { .category-metrics, .category-filter-grid { grid-template-columns: 1fr; } .category-filter-grid .category-search { grid-column: auto; } .category-hero .card-body > .d-flex { align-items: stretch !important; flex-direction: column; } }
+        </style>
+    </th:block>
 
-        <hr/>
-
-
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="row"> 
-
-                            <div class="col-sm-5 font-weight-bold "> <strong> <i class="bi bi-list-task"></i>  Category List [[${categories.size()}]] </strong> </div>
-                            <div class="col-sm-7 text-end ">
-                                <div class="btn-group ">
-                                    <a class="btn btn-success btn-sm " th:href="@{/productcategory/create}"> <i class="bi bi-plus-circle"></i> Add Product Category</a>
-                                    <a class="btn btn-danger btn-sm " th:href="@{/admin/index}"> <i class="bi bi-x-circle"></i> Close</a>
-                                </div>
-                            </div> 
+    <div layout:fragment="main_content">
+        <section class="py-4 category-workspace">
+            <header class="card shadow-sm mb-4 category-hero">
+                <div class="card-header d-flex align-items-center justify-content-between py-3">
+                    <span class="fw-semibold"><i class="bi bi-grid-1x2-fill text-warning me-2"></i>Catalog management</span>
+                    <span class="badge text-bg-light border border-white border-opacity-25" th:text="${categoryTotal + ' categories'}">0 categories</span>
+                </div>
+                <div class="card-body py-4">
+                    <div class="d-flex align-items-start justify-content-between gap-4">
+                        <div class="d-flex align-items-start gap-3">
+                            <span class="category-hero-icon"><i class="bi bi-tags-fill fs-4"></i></span>
+                            <div>
+                                <p class="category-kicker">Product taxonomy</p>
+                                <h1>Product Categories</h1>
+                                <p class="category-hero-copy">Maintain the marketplace category structure, discovery images, sorting, and storefront visibility from one place.</p>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 flex-shrink-0">
+                            <a class="btn btn-light" th:href="@{/admin/index}"><i class="bi bi-arrow-left me-1"></i> Dashboard</a>
+                            <a class="btn category-primary-action" th:href="@{/productcategory/create}"><i class="bi bi-plus-lg me-1"></i> Add Category</a>
                         </div>
                     </div>
-
-
-                    <div class="card-body table-responsive">
-                        <span th:if="${ not #strings.isEmpty(message)}">
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <span th:text="${message}" > </span>
-
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true"></span>
-                                </button>
-                            </div>
-                        </span>
-                        <table id="example" class="table table-bordered table-hover table-striped">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">Image</th>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">Parent</th>
-                                    <th scope="col"> Sort Order</th>
-                                    <th scope="col">Status</th>
-                                    <th scope="col">Featured</th>
-                                    <th scope="col">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="productcategorylists , status : ${categories}">
-
-                                    <td th:text="${status.count}"> </td>
-
-                                    <td>
-                                        <span th:if="${ not #strings.isEmpty(productcategorylists.imageName)}" class="badge bg-green pull-right"> 
-                                            <img  class="img-responsive" th:src="@{/files/}+${productcategorylists.imageName}" width="100px"  height="100px"/>
-                                        </span>
-
-                                        <span th:if="${#strings.isEmpty(productcategorylists.imageName)}" > Image Not Found </span>
-                                    </td>
-
-
-                                    <td th:text="${productcategorylists.name}"> </td>
-                                    <td >
-
-                                        <span th:if="${productcategorylists.parent != null}">
-                                            [[${productcategorylists.parent.name}]]
-                                            ->
-                                            [[${productcategorylists.name}]]
-                                        </span>
-
-                                        <span th:if="${productcategorylists.parent == null}">
-                                            <span class="text-danger">  No Parent</span>
-                                        </span>
-                                    </td>
-                                    <td th:text="${productcategorylists.orderno}"> </td>
-                                    <td th:text="${productcategorylists.status}"> </td>
-                                    <td th:text="${productcategorylists.featuredCat}"> </td>
-
-                                    <td><a  type="button" th:href="@{/productcategory/details/{id}(id=${productcategorylists.id})}">  <button class="btn btn-success btn-sm " > <i class="bi bi-eye-slash"></i> View </button>  </a></td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                    </div>
                 </div>
+            </header>
 
+            <div class="category-metrics mb-4">
+                <article class="card category-metric shadow-sm"><span class="category-metric-icon"><i class="bi bi-collection"></i></span><div class="category-metric-label">All categories</div><div class="category-metric-value" th:text="${categoryTotal}">0</div></article>
+                <article class="card category-metric shadow-sm"><span class="category-metric-icon"><i class="bi bi-check2-circle"></i></span><div class="category-metric-label">Active</div><div class="category-metric-value" th:text="${activeCategoryCount}">0</div></article>
+                <article class="card category-metric shadow-sm"><span class="category-metric-icon"><i class="bi bi-diagram-3"></i></span><div class="category-metric-label">Top-level</div><div class="category-metric-value" th:text="${rootCategoryCount}">0</div></article>
+                <article class="card category-metric shadow-sm"><span class="category-metric-icon"><i class="bi bi-star-fill"></i></span><div class="category-metric-label">Featured</div><div class="category-metric-value" th:text="${featuredCategoryCount}">0</div></article>
+            </div>
 
+            <div th:if="${message}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-check-circle me-2"></i><span th:text="${message}">Saved successfully.</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
 
+            <div class="card shadow-sm mb-4 category-filter-panel">
+                <div class="card-body p-3">
+                    <form class="category-filter-grid" method="get" th:action="@{/productcategory/index}">
+                        <div class="category-search">
+                            <label for="categorySearch" class="form-label small fw-semibold text-uppercase text-muted mb-1">Find category</label>
+                            <div class="input-group"><span class="input-group-text bg-white"><i class="bi bi-search"></i></span><input id="categorySearch" class="form-control" type="search" name="q" th:value="${selectedQ}" placeholder="Name or slug"></div>
+                        </div>
+                        <div>
+                            <label for="status" class="form-label small fw-semibold text-uppercase text-muted mb-1">Status</label>
+                            <select id="status" class="form-select" name="status"><option value="">All statuses</option><option th:each="item : ${statuses}" th:value="${item}" th:text="${item}" th:selected="${item == selectedStatus}">Active</option></select>
+                        </div>
+                        <div>
+                            <label for="hierarchy" class="form-label small fw-semibold text-uppercase text-muted mb-1">Level</label>
+                            <select id="hierarchy" class="form-select" name="hierarchy"><option value="">All levels</option><option value="ROOT" th:selected="${selectedHierarchy == 'ROOT'}">Top-level</option><option value="CHILD" th:selected="${selectedHierarchy == 'CHILD'}">Subcategory</option></select>
+                        </div>
+                        <div>
+                            <label for="featured" class="form-label small fw-semibold text-uppercase text-muted mb-1">Placement</label>
+                            <select id="featured" class="form-select" name="featured"><option value="">All placements</option><option value="FEATURED" th:selected="${selectedFeatured == 'FEATURED'}">Featured</option><option value="STANDARD" th:selected="${selectedFeatured == 'STANDARD'}">Standard</option></select>
+                        </div>
+                        <div>
+                            <label for="image" class="form-label small fw-semibold text-uppercase text-muted mb-1">Image</label>
+                            <select id="image" class="form-select" name="image"><option value="">All images</option><option value="WITH_IMAGE" th:selected="${selectedImage == 'WITH_IMAGE'}">With image</option><option value="WITHOUT_IMAGE" th:selected="${selectedImage == 'WITHOUT_IMAGE'}">Missing image</option></select>
+                        </div>
+                        <div class="d-flex gap-2"><button class="btn btn-primary" type="submit" title="Apply filters" aria-label="Apply filters"><i class="bi bi-funnel"></i></button><a class="btn btn-outline-secondary" th:href="@{/productcategory/index}" title="Clear filters" aria-label="Clear filters"><i class="bi bi-arrow-counterclockwise"></i></a></div>
+                    </form>
+                </div>
+            </div>
 
-
-
-            </div> 
-            <!--                        Main Content  end-->
-        </div>    
-        <!--Layout end-->
-    </div><!--  Main Content  end-->
-</div>   <!--  Layout end-->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 py-3">
+                    <div><h2 class="h5 mb-1">Category Directory</h2><p class="text-muted small mb-0" th:text="${page.totalElements + ' matching categories'}">0 matching categories</p></div>
+                    <span class="small text-muted" th:text="${'Page ' + (page.number + 1) + ' of ' + (page.totalPages == 0 ? 1 : page.totalPages)}">Page 1 of 1</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 category-table">
+                        <thead><tr><th>#</th><th>Category</th><th>Parent hierarchy</th><th>Products</th><th>Order</th><th>Status</th><th>Placement</th><th>Actions</th></tr></thead>
+                        <tbody th:if="${!categories.isEmpty()}">
+                            <tr th:each="category, stat : ${categories}">
+                                <td class="text-muted" th:text="${page.number * page.size + stat.count}">1</td>
+                                <td><div class="d-flex align-items-center gap-3"><span class="category-image"><img th:if="${!#strings.isEmpty(category.imageName)}" th:src="@{/files/}+${category.imageName}" th:alt="${category.name}"><i th:if="${#strings.isEmpty(category.imageName)}" class="bi bi-image category-image-empty"></i></span><div><span class="category-name" th:text="${category.name}">Category name</span><span class="category-slug" th:text="${category.slug == null ? 'No slug assigned' : category.slug}">category-slug</span></div></div></td>
+                                <td><span th:if="${category.parent != null}" class="badge text-bg-light border"><i class="bi bi-diagram-2 me-1 text-primary"></i><span th:text="${category.parent.name}">Parent</span></span><span th:if="${category.parent == null}" class="badge text-bg-secondary">Top-level</span></td>
+                                <td><span class="badge text-bg-light border" th:text="${productCountsByCategoryId.getOrDefault(category.id, 0) + ' products'}">0 products</span></td>
+                                <td><span class="fw-semibold" th:text="${category.orderno}">0</span></td>
+                                <td><span class="badge" th:classappend="${category.status.name() == 'Active'} ? ' text-bg-success' : (${category.status.name() == 'Block'} ? ' text-bg-danger' : ' text-bg-warning')" th:text="${category.status}">Active</span></td>
+                                <td><span th:if="${category.featuredCat}" class="badge text-bg-primary"><i class="bi bi-star-fill me-1"></i>Featured</span><span th:unless="${category.featuredCat}" class="text-muted small">Standard</span></td>
+                                <td><div class="category-action"><a class="btn btn-outline-primary" th:href="@{/productcategory/details/{id}(id=${category.id})}" title="View category" aria-label="View category"><i class="bi bi-eye"></i></a><a class="btn btn-outline-secondary" th:href="@{/productcategory/edit/{id}(id=${category.id})}" title="Edit category" aria-label="Edit category"><i class="bi bi-pencil"></i></a></div></td>
+                            </tr>
+                        </tbody>
+                        <tbody th:if="${categories.isEmpty()}"><tr><td colspan="8"><div class="category-empty"><span class="category-hero-icon"><i class="bi bi-search fs-5"></i></span><div class="text-center"><h3 class="h6 mb-1">No categories match these filters</h3><p class="text-muted small mb-0">Try clearing a filter or create a new category.</p></div><a class="btn btn-primary btn-sm" th:href="@{/productcategory/create}"><i class="bi bi-plus-lg me-1"></i>Add Category</a></div></td></tr></tbody>
+                    </table>
+                </div>
+                <div class="card-footer bg-white d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 py-3" th:if="${page.totalPages > 1}">
+                    <span class="small text-muted" th:text="${'Showing ' + (page.number * page.size + 1) + ' to ' + (page.number * page.size + categories.size()) + ' of ' + page.totalElements}">Showing entries</span>
+                    <nav aria-label="Category directory pagination"><ul class="pagination pagination-sm mb-0"><li class="page-item" th:classappend="${page.first} ? 'disabled'"><a class="page-link" th:href="@{/productcategory/index(q=${selectedQ},status=${selectedStatus},hierarchy=${selectedHierarchy},featured=${selectedFeatured},image=${selectedImage},page=0)}">First</a></li><li class="page-item" th:classappend="${page.first} ? 'disabled'"><a class="page-link" th:href="@{/productcategory/index(q=${selectedQ},status=${selectedStatus},hierarchy=${selectedHierarchy},featured=${selectedFeatured},image=${selectedImage},page=${page.number - 1})}">Previous</a></li><li class="page-item" th:each="number : ${#numbers.sequence(0, page.totalPages - 1)}" th:classappend="${number == page.number} ? 'active'"><a class="page-link" th:href="@{/productcategory/index(q=${selectedQ},status=${selectedStatus},hierarchy=${selectedHierarchy},featured=${selectedFeatured},image=${selectedImage},page=${number})}" th:text="${number + 1}">1</a></li><li class="page-item" th:classappend="${page.last} ? 'disabled'"><a class="page-link" th:href="@{/productcategory/index(q=${selectedQ},status=${selectedStatus},hierarchy=${selectedHierarchy},featured=${selectedFeatured},image=${selectedImage},page=${page.number + 1})}">Next</a></li><li class="page-item" th:classappend="${page.last} ? 'disabled'"><a class="page-link" th:href="@{/productcategory/index(q=${selectedQ},status=${selectedStatus},hierarchy=${selectedHierarchy},featured=${selectedFeatured},image=${selectedImage},page=${page.totalPages - 1})}">Last</a></li></ul></nav>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

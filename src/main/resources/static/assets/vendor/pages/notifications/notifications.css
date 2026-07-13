@@ -1,0 +1,44 @@
+.vendor-notification-workspace { --notification-navy: #113459; --notification-text: #182230; --notification-muted: #667085; --notification-border: rgba(15, 23, 42, .10); color: var(--notification-text); }
+.vendor-notification-hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.5rem; color: #fff; background: var(--notification-navy); border: 1px solid rgba(17, 52, 89, .32); border-radius: 8px; box-shadow: 0 .75rem 1.75rem rgba(15, 23, 42, .08); }
+.vendor-notification-kicker, .vendor-notification-panel-kicker { margin: 0 0 .3rem; font-size: .75rem; font-weight: 700; text-transform: uppercase; }
+.vendor-notification-kicker { color: #9fd8ff; }
+.vendor-notification-hero h1 { display: flex; align-items: center; gap: .75rem; margin: 0; font-size: 1.45rem; font-weight: 700; }
+.vendor-notification-hero > div > p:last-child { max-width: 720px; margin-top: .65rem; color: rgba(255, 255, 255, .78); }
+.vendor-notification-icon { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; color: var(--notification-navy); background: #fff; border-radius: 50%; }
+.vendor-notification-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .85rem; }
+.vendor-notification-stat { display: flex; align-items: center; gap: .85rem; padding: 1rem; background: #fff; border: 1px solid var(--notification-border); border-radius: 8px; }
+.vendor-notification-stat-icon, .vendor-notification-row-icon { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 40px; width: 40px; height: 40px; color: var(--notification-navy); background: #e6f4f1; border-radius: 8px; }
+.vendor-notification-stat div > span { display: block; color: var(--notification-muted); font-size: .78rem; }
+.vendor-notification-stat strong { display: block; color: var(--notification-text); font-size: .95rem; }
+.vendor-notification-panel { overflow: hidden; border: 1px solid var(--notification-border); border-radius: 8px; box-shadow: 0 .5rem 1.35rem rgba(15, 23, 42, .06); }
+.vendor-notification-panel .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.1rem; background: #fff; border-bottom: 1px solid var(--notification-border); }
+.vendor-notification-panel h2, .vendor-notification-detail h3, .vendor-notification-empty h3 { margin: 0; font-size: 1.15rem; font-weight: 700; }
+.vendor-notification-panel-kicker { color: #667085; }
+.vendor-notification-panel .card-body { padding: 1.1rem; }
+.vendor-notification-unread, .vendor-notification-status { display: inline-flex; align-items: center; min-height: 26px; padding: .2rem .55rem; color: #6b3b00; background: #fff3cd; border: 1px solid #ffda6a; border-radius: 999px; font-size: .72rem; font-weight: 700; white-space: nowrap; }
+.vendor-notification-status--read { color: #155477; background: #eef8ff; border-color: #b9d5e7; }
+.vendor-notification-tabs { display: flex; flex-wrap: wrap; gap: .45rem; padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--notification-border); }
+.vendor-notification-tabs a { padding: .45rem .7rem; color: #344054; border: 1px solid #cfd8e3; border-radius: 6px; font-size: .84rem; font-weight: 600; text-decoration: none; }
+.vendor-notification-tabs a:hover, .vendor-notification-tabs a.active { color: #fff; background: linear-gradient(135deg, #0d6efd 0%, #00a6c8 100%); border-color: transparent; }
+.vendor-notification-list { overflow: hidden; border: 1px solid #e2e8f0; border-radius: 8px; }
+.vendor-notification-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: .75rem; align-items: center; padding: .9rem; color: inherit; text-decoration: none; border-bottom: 1px solid #edf1f5; }
+.vendor-notification-row:last-child { border-bottom: 0; }
+.vendor-notification-row:hover { color: inherit; background: #f8fbfd; }
+.vendor-notification-row--unread { background: #f0f8ff; }
+.vendor-notification-row--unread .vendor-notification-row-icon { color: #0d6efd; background: #dceeff; }
+.vendor-notification-row-content { min-width: 0; }
+.vendor-notification-row-content strong, .vendor-notification-row-content span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vendor-notification-row-content strong { font-size: .92rem; }
+.vendor-notification-row-content span, .vendor-notification-row-meta small { color: var(--notification-muted); font-size: .76rem; }
+.vendor-notification-row-meta { display: grid; justify-items: end; gap: .35rem; }
+.vendor-notification-empty, .vendor-notification-detail--empty { display: grid; justify-items: center; padding: 3.25rem 1.5rem; color: var(--notification-muted); text-align: center; border: 1px dashed #cfd8e3; border-radius: 8px; }
+.vendor-notification-empty > i { margin-bottom: .75rem; font-size: 2rem; }
+.vendor-notification-empty p { max-width: 300px; }
+.vendor-notification-detail { min-height: 100%; padding: 1.25rem; background: #fbfcfe; border: 1px solid #e2e8f0; border-radius: 8px; }
+.vendor-notification-detail--empty .vendor-notification-icon { margin-bottom: .9rem; color: #fff; background: var(--notification-navy); }
+.vendor-notification-detail--empty p { max-width: 280px; margin-top: .6rem; }
+.vendor-notification-detail-meta { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1.25rem; color: var(--notification-muted); font-size: .8rem; }
+.vendor-notification-body { white-space: pre-wrap; line-height: 1.65; }
+.vendor-notification-timestamps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin: 1.5rem 0 0; padding-top: 1rem; border-top: 1px solid var(--notification-border); }
+.vendor-notification-timestamps div { min-width: 0; }.vendor-notification-timestamps dt { color: var(--notification-muted); font-size: .72rem; font-weight: 700; text-transform: uppercase; }.vendor-notification-timestamps dd { margin: .25rem 0 0; font-size: .85rem; }
+@media (max-width: 767.98px) { .vendor-notification-hero { flex-direction: column; }.vendor-notification-stats { grid-template-columns: 1fr; }.vendor-notification-row { grid-template-columns: auto minmax(0, 1fr); }.vendor-notification-row-meta { grid-column: 2; justify-items: start; grid-auto-flow: column; justify-content: start; }.vendor-notification-timestamps { grid-template-columns: 1fr; } }

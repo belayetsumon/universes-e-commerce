@@ -1,125 +1,105 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
-<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-customar-page">
-    <div layout:fragment = "main_content">
-        <div class="row">
-            <div class="col-sm-12">
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="front-layout-inner-customar-page">
+    <th:block layout:fragment="page_css">
+        <style>
+            .customer-orders-page { padding: .25rem 0 1.5rem; }
+            .customer-orders-hero { background: linear-gradient(135deg,#113459 0%,#0d6efd 100%); border: 0; border-radius: 1rem; color: #fff; overflow: hidden; position: relative; }
+            .customer-orders-hero::after { background: radial-gradient(circle,rgba(255,255,255,.15) 0,rgba(255,255,255,0) 69%); content: ''; height: 260px; pointer-events: none; position: absolute; right: -96px; top: -118px; width: 260px; }
+            .customer-orders-hero .card-body { position: relative; z-index: 1; }
+            .customer-orders-kicker { color: #a9e3ff; font-size: .75rem; font-weight: 700; letter-spacing: .06em; margin: 0 0 .35rem; text-transform: uppercase; }
+            .customer-orders-hero h1 { color: #fff; font-size: clamp(1.45rem,2.5vw,2rem); font-weight: 700; margin: 0; }
+            .customer-orders-copy { color: rgba(255,255,255,.8); margin: .45rem 0 0; max-width: 600px; }
+            .customer-orders-hero-icon { align-items: center; background: #fff; border-radius: 50%; color: #113459; display: inline-flex; flex: 0 0 52px; height: 52px; justify-content: center; width: 52px; }
+            .customer-orders-total { border: 1px solid rgba(255,255,255,.24); border-radius: .8rem; min-width: 130px; padding: .75rem 1rem; text-align: center; }
+            .customer-orders-total strong { display: block; font-size: 1.45rem; line-height: 1.1; }
+            .customer-orders-total span { color: rgba(255,255,255,.75); font-size: .75rem; text-transform: uppercase; }
+            .customer-orders-metrics { display: grid; gap: 1rem; grid-template-columns: repeat(4,minmax(0,1fr)); }
+            .customer-orders-metric { border: 1px solid rgba(17,52,89,.12); border-radius: .8rem; min-width: 0; padding: 1rem; }
+            .customer-orders-metric-icon { align-items: center; background: #eaf4ff; border-radius: .6rem; color: #0d6efd; display: inline-flex; height: 38px; justify-content: center; width: 38px; }
+            .customer-orders-metric-label { color: #6c757d; font-size: .72rem; font-weight: 700; letter-spacing: .05em; margin-top: .65rem; text-transform: uppercase; }
+            .customer-orders-metric-value { color: #1f2937; font-size: 1.35rem; font-weight: 700; line-height: 1.15; margin-top: .2rem; }
+            .customer-orders-directory { border: 1px solid rgba(17,52,89,.12); border-radius: .9rem; overflow: hidden; }
+            .customer-orders-directory-header { background: #fff; border-bottom: 1px solid rgba(17,52,89,.1); }
+            .customer-orders-search { max-width: 330px; }
+            .customer-orders-table { min-width: 1020px; }
+            .customer-orders-table th { background: #f4f7fa; color: #506070; font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+            .customer-orders-table th, .customer-orders-table td { padding: .85rem .75rem; vertical-align: middle; }
+            .customer-order-code { color: #0d6efd; font-weight: 700; text-decoration: none; }
+            .customer-order-meta { color: #6c757d; display: block; font-size: .78rem; margin-top: .12rem; }
+            .customer-orders-actions { display: flex; flex-wrap: wrap; gap: .35rem; min-width: 155px; }
+            .customer-orders-empty { padding: 4rem 1rem; text-align: center; }
+            .customer-orders-empty-icon { align-items: center; background: #eaf4ff; border-radius: 50%; color: #0d6efd; display: inline-flex; height: 54px; justify-content: center; width: 54px; }
+            @media (max-width: 991.98px) { .customer-orders-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+            @media (max-width: 767.98px) { .customer-orders-metrics { grid-template-columns: 1fr; } .customer-orders-hero .card-body > .d-flex { align-items: stretch !important; flex-direction: column; } .customer-orders-total { text-align: left; } .customer-orders-search { max-width: none; width: 100%; } }
+        </style>
+    </th:block>
 
-                <div class="card">
-                    <div class="card-header">
-                        <div class="row">  <div class="col-sm-5 font-weight-bold"><i class="fas fa-list"></i> Order List ,Total : [[${orderlist.size()}]]</div>
-
+    <div layout:fragment="main_content">
+        <section class="customer-orders-page">
+            <header class="card shadow-sm mb-4 customer-orders-hero">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start justify-content-between gap-4">
+                        <div class="d-flex align-items-start gap-3">
+                            <span class="customer-orders-hero-icon"><i class="bi bi-bag-check fs-4"></i></span>
+                            <div><p class="customer-orders-kicker">Purchase history</p><h1>My Orders</h1><p class="customer-orders-copy">Review order progress, download invoices, make payments, and follow up on returns from one place.</p></div>
                         </div>
-
+                        <div class="customer-orders-total"><strong th:text="${orderlist.size()}">0</strong><span>Total orders</span></div>
                     </div>
-                    <div class="card-body">
+                </div>
+            </header>
 
-                        <span th:if="${ not #strings.isEmpty(message)}">
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <span th:text="${message}" > </span>
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                        </span>
+            <div th:if="${not #strings.isEmpty(message)}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert"><i class="bi bi-check-circle me-2"></i><span th:text="${message}"></span><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+            <div th:if="${not #strings.isEmpty(successMessage)}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert"><i class="bi bi-check-circle me-2"></i><span th:text="${successMessage}"></span><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+            <div th:if="${not #strings.isEmpty(errorMessage)}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert"><i class="bi bi-exclamation-triangle me-2"></i><span th:text="${errorMessage}"></span><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
 
-                        <div th:if="${successMessage}" class="alert alert-success">
-                            <span th:text="${successMessage}"></span>
-                        </div>
+            <div class="customer-orders-metrics mb-4">
+                <article class="card shadow-sm customer-orders-metric"><span class="customer-orders-metric-icon"><i class="bi bi-receipt"></i></span><div class="customer-orders-metric-label">Order value</div><div class="customer-orders-metric-value" th:text="${#numbers.formatDecimal(orderGrandTotal, 0, 'COMMA', 2, 'POINT')}">0.00</div></article>
+                <article class="card shadow-sm customer-orders-metric"><span class="customer-orders-metric-icon"><i class="bi bi-hourglass-split"></i></span><div class="customer-orders-metric-label">In progress</div><div class="customer-orders-metric-value" th:text="${ordersInProgressCount}">0</div></article>
+                <article class="card shadow-sm customer-orders-metric"><span class="customer-orders-metric-icon"><i class="bi bi-check2-circle"></i></span><div class="customer-orders-metric-label">Delivered</div><div class="customer-orders-metric-value" th:text="${ordersDeliveredCount}">0</div></article>
+                <article class="card shadow-sm customer-orders-metric"><span class="customer-orders-metric-icon"><i class="bi bi-arrow-repeat"></i></span><div class="customer-orders-metric-label">Needs attention</div><div class="customer-orders-metric-value" th:text="${ordersAttentionCount}">0</div></article>
+            </div>
 
-                        <div th:if="${errorMessage}" class="alert alert-danger">
-                            <span th:text="${errorMessage}"></span>
-                        </div>
+            <div class="card shadow-sm customer-orders-directory">
+                <div class="card-header customer-orders-directory-header d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 py-3 px-3 px-md-4">
+                    <div><h2 class="h5 mb-1">Order Directory</h2><p class="text-muted small mb-0">Search orders by code, vendor, status, phone, or email.</p></div>
+                    <div class="input-group input-group-sm customer-orders-search"><span class="input-group-text bg-white"><i class="bi bi-search"></i></span><input id="customerOrderSearch" class="form-control" type="search" placeholder="Search orders"></div>
+                </div>
 
-                        <div class="table-responsive">
-                            <table class="table table-bordered" th:if="${ not #lists.isEmpty(orderlist)}">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th scope="col">#</th>
-                                        <th scope="col">Customer</th>
-                                        <th scope="col"> Vendor Name</th>
-                                        <th scope="col">C.Mobile</th>
-                                        <th scope="col">C.Email</th>
-                                        <th scope="col"> Status </th>
-                                        <th scope="col"> Discount Amount </th>
-                                        <th scope="col"> Vat Amount </th>
-                                        <th scope="col"> M.P.C.Amount</th>
-                                        <th scope="col"> Vendor Amount </th>
-                                        <th scope="col"> Shipping Charge </th>
-                                        <th scope="col"> Packaging Costs</th>
-                                        <th scope="col"> Grand Total </th>
-                                        <th scope="col"> Date Added </th>
-                                        <th scope="col"> Date Modified </th>
-                                        <th scope="col"> Action </th>
+                <div class="customer-orders-empty" th:if="${#lists.isEmpty(orderlist)}"><span class="customer-orders-empty-icon"><i class="bi bi-bag fs-4"></i></span><h3 class="h6 mt-3 mb-1">No orders yet</h3><p class="text-muted small mb-3">When you place an order, its details and delivery progress will appear here.</p><a class="btn btn-primary btn-sm" th:href="@{/public/product}"><i class="bi bi-grid me-1"></i>Browse products</a></div>
 
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="orderlists,status:${orderlist}">
-                                        <th th:text="${status.count}">1</th>
-                                        <td> <a  th:href="@{/customerorder/details/{oid}(oid=${orderlists.orderId})}" >  [[${orderlists.firstName}]] [[${orderlists.lastName}]]  </a></td>
-                                        <td th:text="${orderlists.vendorName}">Otto</td>
-                                        <td th:text="${orderlists.mobile}">Otto</td>
-                                        <td th:text="${orderlists.email}">Otto</td>
-                                        <td th:text="${orderlists.status}">Otto</td>
-                                        <td th:text="${orderlists.totalDiscountAmount}">Otto</td>
-                                        <td th:text="${orderlists.totalVatAmount}">Otto</td>
-                                        <td th:text="${orderlists.totalMarketPlaceCommissionAmount}">Otto</td>
-                                        <td th:text="${orderlists.totalVendorAmount}">Otto</td>
-                                        <td scope="col">[[${orderlists.deliveryCharge}]]</td>
-                                        <td scope="col">[[${orderlists.packingCharge}]]</td>
-                                        <td scope="col">[[${orderlists.grandTotal}]] </td>
-                                        <td th:text="${orderlists.created}">Otto</td>
-                                        <td th:text="${orderlists.modified}">@mdo</td>
-                                        <td>
-                                            <a class="btn btn-sm btn-outline-primary"
-                                               th:href="@{/customerorder/details/{oid}(oid=${orderlists.orderId})}">
-                                                Details
-                                            </a>
-                                            <a class="btn btn-sm btn-outline-danger ms-1"
-                                               th:href="@{/customerorder/orders/{id}/pdf(id=${orderlists.orderId})}">
-                                                <i class="bi bi-file-earmark-pdf"></i> PDF
-                                            </a>
-                                            <a class="btn btn-sm btn-info ms-1"
-                                               th:if="${emiPlanByOrderId != null and #maps.containsKey(emiPlanByOrderId, orderlists.orderId)}"
-                                               th:href="@{/customer-meritten-emi/details/{planId}(planId=${emiPlanByOrderId[orderlists.orderId]})}">
-                                                View Meritten EMI
-                                            </a>
-                                            <a class="btn btn-sm btn-success ms-1"
-                                               th:if="${emiPlanByOrderId == null
-                                                       or !#maps.containsKey(emiPlanByOrderId, orderlists.orderId)
-                                                       or (emiPlanBlocksPaymentByOrderId != null
-                                                           and #maps.containsKey(emiPlanBlocksPaymentByOrderId, orderlists.orderId)
-                                                           and !emiPlanBlocksPaymentByOrderId[orderlists.orderId])}"
-                                               th:href="@{/customerorder/payment/{orderid}(orderid=${orderlists.orderId})}">
-                                                Pay Now
-                                            </a>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <table class="table table-bordered" th:if="${ #lists.isEmpty(orderlist)}">
-                            <tr>
-                                <td> Sorry no order found ! </td>
+                <div class="table-responsive" th:if="${not #lists.isEmpty(orderlist)}">
+                    <table class="table table-hover mb-0 customer-orders-table">
+                        <thead><tr><th>Order</th><th>Vendor</th><th>Contact</th><th>Status</th><th class="text-end">Order total</th><th>Created</th><th>Actions</th></tr></thead>
+                        <tbody id="customerOrdersTableBody">
+                            <tr th:each="orderlists : ${orderlist}">
+                                <td><a class="customer-order-code" th:href="@{/customerorder/details/{oid}(oid=${orderlists.orderId})}" th:text="${orderlists.orderCode != null ? orderlists.orderCode : 'Order #' + orderlists.orderId}">Order</a><span class="customer-order-meta" th:text="${orderlists.uuid}">uuid</span></td>
+                                <td><span class="fw-semibold" th:text="${orderlists.vendorName != null ? orderlists.vendorName : 'Marketplace order'}">Vendor</span></td>
+                                <td><span th:text="${orderlists.mobile}">01700000000</span><span class="customer-order-meta" th:text="${orderlists.email}">email@example.com</span></td>
+                                <td><span class="badge text-bg-light border" th:text="${#strings.replace(orderlists.status.toString(), '_', ' ')}">PENDING</span></td>
+                                <td class="text-end"><strong th:text="${#numbers.formatDecimal(orderlists.grandTotal, 0, 'COMMA', 2, 'POINT')}">0.00</strong><span class="customer-order-meta" th:text="${'Shipping ' + #numbers.formatDecimal(orderlists.deliveryCharge, 0, 'COMMA', 2, 'POINT')}">Shipping 0.00</span></td>
+                                <td><span class="customer-order-meta" th:text="${orderlists.created}">Created date</span><span class="customer-order-meta" th:if="${orderlists.modified != null}" th:text="${'Updated ' + orderlists.modified}">Updated date</span></td>
+                                <td><div class="customer-orders-actions"><a class="btn btn-sm btn-outline-primary" th:href="@{/customerorder/details/{oid}(oid=${orderlists.orderId})}" title="View order details"><i class="bi bi-eye"></i></a><a class="btn btn-sm btn-outline-danger" th:href="@{/customerorder/orders/{id}/pdf(id=${orderlists.orderId})}" title="Download invoice"><i class="bi bi-file-earmark-pdf"></i></a><a class="btn btn-sm btn-info" th:if="${emiPlanByOrderId != null and #maps.containsKey(emiPlanByOrderId, orderlists.orderId)}" th:href="@{/customer-meritten-emi/details/{planId}(planId=${emiPlanByOrderId[orderlists.orderId]})}">EMI</a><a class="btn btn-sm btn-success" th:if="${emiPlanByOrderId == null or !#maps.containsKey(emiPlanByOrderId, orderlists.orderId) or (emiPlanBlocksPaymentByOrderId != null and #maps.containsKey(emiPlanBlocksPaymentByOrderId, orderlists.orderId) and !emiPlanBlocksPaymentByOrderId[orderlists.orderId])}" th:href="@{/customerorder/payment/{orderid}(orderid=${orderlists.orderId})}">Pay</a></div></td>
                             </tr>
-
-
-                        </table>
-
-
-                    </div><!--  Card body end-->
-
-
-                </div><!--  Card  end-->
-
-
-            </div><!--  Main Content  end-->
-
-        </div>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </div>
-</div>   <!--  Layout end-->
+
+    <th:block layout:fragment="page_js">
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const searchInput = document.getElementById('customerOrderSearch');
+                const rows = document.querySelectorAll('#customerOrdersTableBody tr');
+                if (!searchInput || !rows.length) return;
+                searchInput.addEventListener('input', function () {
+                    const query = searchInput.value.trim().toLowerCase();
+                    rows.forEach(function (row) { row.hidden = query && !row.textContent.toLowerCase().includes(query); });
+                });
+            });
+        </script>
+    </th:block>
+</div>

@@ -1,6 +1,7 @@
 package com.ecommerce.app.module.settings.services;
 
 import com.ecommerce.app.globalServices.ImageService;
+import com.ecommerce.app.globalServices.ImageUploadPolicy;
 import com.ecommerce.app.module.settings.form.BasicSiteSettingsForm;
 import com.ecommerce.app.module.settings.form.DeliverySettingsForm;
 import com.ecommerce.app.module.settings.form.MaintenanceSettingsForm;
@@ -11,8 +12,11 @@ import com.ecommerce.app.module.settings.form.SeoSettingsForm;
 import com.ecommerce.app.module.settings.form.SocialSettingsForm;
 import com.ecommerce.app.module.settings.form.StoreSettingsForm;
 import com.ecommerce.app.module.settings.model.GlobalSettings;
+import com.ecommerce.app.module.settings.model.SalesOrderMode;
+import com.ecommerce.app.module.settings.model.StoreMode;
 import com.ecommerce.app.module.settings.repository.GlobalSettingsRepository;
 import com.ecommerce.app.services.StorageProperties;
+import com.ecommerce.app.vendor.repository.VendorprofileRepository;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -41,7 +45,12 @@ public class GlobalSettingsService {
 
     private static final int SETTINGS_ID = 1;
     private static final long MAX_IMAGE_SIZE_BYTES = 5L * 1024L * 1024L;
+    private static final int MAX_IMAGE_WIDTH = 8000;
+    private static final int MAX_IMAGE_HEIGHT = 8000;
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
+    private static final Set<String> SETTINGS_IMAGE_CONTENT_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
+    private static final Set<String> SETTINGS_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
+    private static final Set<String> SETTINGS_IMAGE_FORMATS = Set.of("jpeg", "png", "webp");
 
     private static final String SETTINGS_IMAGE_DIR = "settings";
     private static final String SETTINGS_IMAGE_URL_PREFIX = "/files/" + SETTINGS_IMAGE_DIR + "/";
@@ -67,20 +76,37 @@ public class GlobalSettingsService {
     private static final String DEFAULT_INVOICE_PREFIX = "INV";
 
     private final GlobalSettingsRepository globalSettingsRepository;
+    private final VendorprofileRepository vendorprofileRepository;
     private final ImageService imageService;
     private final StorageProperties storageProperties;
+    private volatile GlobalSettings cachedActiveSettings;
 
     public GlobalSettingsService(
             GlobalSettingsRepository globalSettingsRepository,
+            VendorprofileRepository vendorprofileRepository,
             ImageService imageService,
             StorageProperties storageProperties
     ) {
         this.globalSettingsRepository = globalSettingsRepository;
+        this.vendorprofileRepository = vendorprofileRepository;
         this.imageService = imageService;
         this.storageProperties = storageProperties;
     }
 
     public GlobalSettings getActiveSettings() {
+        GlobalSettings cachedSettings = cachedActiveSettings;
+        if (cachedSettings != null) {
+            return cachedSettings;
+        }
+        synchronized (this) {
+            if (cachedActiveSettings == null) {
+                cachedActiveSettings = loadActiveSettings();
+            }
+            return cachedActiveSettings;
+        }
+    }
+
+    private GlobalSettings loadActiveSettings() {
         try {
             return globalSettingsRepository.findById(SETTINGS_ID)
                     .or(() -> globalSettingsRepository.findFirstByActiveTrueOrderByIdAsc())
@@ -115,7 +141,7 @@ public class GlobalSettingsService {
         requireFormData(formData);
         validateSettings(formData, siteLogoFile, faviconFile, ogImageFile);
 
-        GlobalSettings settings = getActiveSettings();
+        GlobalSettings settings = loadActiveSettings();
         assertVersionIsCurrent(formData, settings);
 
         applyAllSections(formData, settings);
@@ -124,6 +150,7 @@ public class GlobalSettingsService {
 
         try {
             GlobalSettings saved = globalSettingsRepository.save(settings);
+            cachedActiveSettings = saved;
             LOGGER.info("Global settings updated successfully. settingsId={}, version={}", saved.getId(), saved.getVersion());
             return saved;
         } catch (DataAccessException ex) {
@@ -139,13 +166,14 @@ public class GlobalSettingsService {
         }
         validateSection(formData, section);
 
-        GlobalSettings settings = getActiveSettings();
+        GlobalSettings settings = loadActiveSettings();
         assertVersionIsCurrent(formData, settings);
         section.apply(formData, settings, this);
         prepareForSave(settings);
 
         try {
             GlobalSettings saved = globalSettingsRepository.save(settings);
+            cachedActiveSettings = saved;
             LOGGER.info("Global settings section updated. section={}, settingsId={}, version={}",
                     section.name(), saved.getId(), saved.getVersion());
             return saved;
@@ -290,6 +318,7 @@ public class GlobalSettingsService {
 
         try {
             GlobalSettings saved = globalSettingsRepository.save(settings);
+            cachedActiveSettings = saved;
             LOGGER.info("Global settings image deleted. type={}, settingsId={}", imageType.name(), saved.getId());
             return saved;
         } catch (DataAccessException ex) {
@@ -301,6 +330,7 @@ public class GlobalSettingsService {
     private GlobalSettings saveSection(GlobalSettings settings, String sectionName) {
         try {
             GlobalSettings saved = globalSettingsRepository.save(settings);
+            cachedActiveSettings = saved;
             LOGGER.info("Global settings {} section updated. settingsId={}, version={}",
                     sectionName, saved.getId(), saved.getVersion());
             return saved;
@@ -336,7 +366,17 @@ public class GlobalSettingsService {
         settings.setTaxPercentage(form.getTaxPercentage());
         settings.setStockManagementEnabled(form.getStockManagementEnabled());
         settings.setLowStockAlertQty(form.getLowStockAlertQty());
+        settings.setSecureCheckoutEnabled(form.getSecureCheckoutEnabled());
         settings.setAllowGuestCheckout(form.getAllowGuestCheckout());
+        settings.setGuestMobileRequired(Boolean.TRUE.equals(form.getAllowGuestCheckout()));
+        settings.setGuestMobileOtpVerificationEnabled(form.getGuestMobileOtpVerificationEnabled());
+        settings.setGuestOtpExpiryMinutes(form.getGuestOtpExpiryMinutes());
+        settings.setGuestOtpMaximumAttempts(form.getGuestOtpMaximumAttempts());
+        settings.setGuestOtpResendCooldownSeconds(form.getGuestOtpResendCooldownSeconds());
+        settings.setGuestOtpDailySendLimit(form.getGuestOtpDailySendLimit());
+        settings.setGuestAutoCreateCustomerAccount(form.getGuestAutoCreateCustomerAccount());
+        settings.setStoreMode(form.getStoreMode());
+        settings.setPrimaryVendorId(form.getPrimaryVendorId());
         settings.setMinimumOrderAmount(form.getMinimumOrderAmount());
         settings.setMaximumOrderAmount(form.getMaximumOrderAmount());
         return settings;
@@ -372,6 +412,7 @@ public class GlobalSettingsService {
         settings.setInvoicePrefix(form.getInvoicePrefix());
         settings.setAutoConfirmOrder(form.getAutoConfirmOrder());
         settings.setAutoCancelUnpaidOrder(form.getAutoCancelUnpaidOrder());
+        settings.setSalesOrderMode(form.getSalesOrderMode());
         settings.setCancelOrderAfterMinutes(form.getCancelOrderAfterMinutes());
         settings.setReturnAllowedDays(form.getReturnAllowedDays());
         settings.setRefundAllowedDays(form.getRefundAllowedDays());
@@ -433,6 +474,7 @@ public class GlobalSettingsService {
         GlobalSettings settings = defaultSettings();
         try {
             GlobalSettings saved = globalSettingsRepository.save(settings);
+            cachedActiveSettings = saved;
             LOGGER.info("Created default global settings row. settingsId={}", saved.getId());
             return saved;
         } catch (DataAccessException ex) {
@@ -453,7 +495,17 @@ public class GlobalSettingsService {
         settings.setTaxPercentage(BigDecimal.ZERO);
         settings.setStockManagementEnabled(true);
         settings.setLowStockAlertQty(5);
+        settings.setSecureCheckoutEnabled(true);
         settings.setAllowGuestCheckout(true);
+        settings.setGuestMobileRequired(true);
+        settings.setGuestMobileOtpVerificationEnabled(true);
+        settings.setGuestOtpExpiryMinutes(5);
+        settings.setGuestOtpMaximumAttempts(5);
+        settings.setGuestOtpResendCooldownSeconds(60);
+        settings.setGuestOtpDailySendLimit(5);
+        settings.setGuestAutoCreateCustomerAccount(true);
+        settings.setStoreMode(StoreMode.MARKETPLACE);
+        settings.setSalesOrderMode(SalesOrderMode.SPLIT_BY_VENDOR);
         settings.setMinimumOrderAmount(BigDecimal.ZERO);
         settings.setCodEnabled(true);
         settings.setOnlinePaymentEnabled(false);
@@ -541,6 +593,23 @@ public class GlobalSettingsService {
         nonNegative(source.getMinimumOrderAmount(), "Minimum order amount", errors);
         nonNegative(source.getMaximumOrderAmount(), "Maximum order amount", errors);
         nonNegative(source.getLowStockAlertQty(), "Low stock alert quantity", errors);
+        if (Boolean.TRUE.equals(source.getAllowGuestCheckout())) {
+            source.setGuestMobileRequired(true);
+            positive(source.getGuestOtpExpiryMinutes(), "Guest OTP expiry minutes", errors);
+            positive(source.getGuestOtpMaximumAttempts(), "Guest OTP maximum attempts", errors);
+            positive(source.getGuestOtpDailySendLimit(), "Guest OTP daily send limit", errors);
+            nonNegative(source.getGuestOtpResendCooldownSeconds(), "Guest OTP resend cooldown seconds", errors);
+        }
+        if (source.getStoreMode() == null) {
+            errors.add("Store mode is required.");
+        }
+        if (source.getStoreMode() == StoreMode.SINGLE_VENDOR) {
+            if (source.getPrimaryVendorId() == null) {
+                errors.add("Primary vendor is required when store mode is single vendor.");
+            } else if (!vendorprofileRepository.existsById(source.getPrimaryVendorId())) {
+                errors.add("Selected primary vendor does not exist.");
+            }
+        }
         if (source.getMinimumOrderAmount() != null
                 && source.getMaximumOrderAmount() != null
                 && source.getMaximumOrderAmount().compareTo(source.getMinimumOrderAmount()) < 0) {
@@ -559,6 +628,9 @@ public class GlobalSettingsService {
     private void validateOrder(GlobalSettings source, List<String> errors) {
         max(source.getOrderPrefix(), 20, "Order prefix", errors);
         max(source.getInvoicePrefix(), 20, "Invoice prefix", errors);
+        if (source.getSalesOrderMode() == null) {
+            errors.add("Sales order mode is required.");
+        }
         nonNegative(source.getCancelOrderAfterMinutes(), "Cancel order after minutes", errors);
         nonNegative(source.getReturnAllowedDays(), "Return allowed days", errors);
         nonNegative(source.getRefundAllowedDays(), "Refund allowed days", errors);
@@ -595,6 +667,17 @@ public class GlobalSettingsService {
         }
         if (storageProperties.getRootPath() == null || storageProperties.getRootPath().isBlank()) {
             errors.add("Storage root path is not configured for image uploads.");
+        }
+        String originalFilename = file.getOriginalFilename();
+        String extension = "";
+        if (originalFilename != null) {
+            int extensionStart = originalFilename.lastIndexOf('.');
+            if (extensionStart >= 0 && extensionStart < originalFilename.length() - 1) {
+                extension = originalFilename.substring(extensionStart + 1).trim().toLowerCase(Locale.ROOT);
+            }
+        }
+        if (!SETTINGS_IMAGE_EXTENSIONS.contains(extension)) {
+            errors.add(label + " must use a .jpg, .jpeg, .png, or .webp extension.");
         }
     }
 
@@ -634,7 +717,18 @@ public class GlobalSettingsService {
         target.setTaxPercentage(nonNegativeAmount(source.getTaxPercentage(), BigDecimal.ZERO));
         target.setStockManagementEnabled(checked(source.getStockManagementEnabled()));
         target.setLowStockAlertQty(nonNegativeInteger(source.getLowStockAlertQty(), 0));
+        target.setSecureCheckoutEnabled(checked(source.getSecureCheckoutEnabled()));
         target.setAllowGuestCheckout(checked(source.getAllowGuestCheckout()));
+        target.setGuestMobileRequired(Boolean.TRUE.equals(target.getAllowGuestCheckout()));
+        target.setGuestMobileOtpVerificationEnabled(checked(source.getGuestMobileOtpVerificationEnabled()));
+        target.setGuestOtpExpiryMinutes(positiveInteger(source.getGuestOtpExpiryMinutes(), 5));
+        target.setGuestOtpMaximumAttempts(positiveInteger(source.getGuestOtpMaximumAttempts(), 5));
+        target.setGuestOtpResendCooldownSeconds(nonNegativeInteger(source.getGuestOtpResendCooldownSeconds(), 60));
+        target.setGuestOtpDailySendLimit(positiveInteger(source.getGuestOtpDailySendLimit(), 5));
+        target.setGuestAutoCreateCustomerAccount(checked(source.getGuestAutoCreateCustomerAccount()));
+        target.setStoreMode(source.getStoreMode() != null ? source.getStoreMode() : StoreMode.MARKETPLACE);
+        target.setPrimaryVendorId(target.getStoreMode() == StoreMode.SINGLE_VENDOR ? source.getPrimaryVendorId() : null);
+        enforceSingleVendorAccessRules(target);
         target.setMinimumOrderAmount(nonNegativeAmount(source.getMinimumOrderAmount(), BigDecimal.ZERO));
         target.setMaximumOrderAmount(optionalNonNegativeAmount(source.getMaximumOrderAmount()));
     }
@@ -661,6 +755,7 @@ public class GlobalSettingsService {
         target.setInvoicePrefix(defaultText(source.getInvoicePrefix(), DEFAULT_INVOICE_PREFIX));
         target.setAutoConfirmOrder(checked(source.getAutoConfirmOrder()));
         target.setAutoCancelUnpaidOrder(checked(source.getAutoCancelUnpaidOrder()));
+        target.setSalesOrderMode(source.getSalesOrderMode() != null ? source.getSalesOrderMode() : SalesOrderMode.SPLIT_BY_VENDOR);
         target.setCancelOrderAfterMinutes(nonNegativeInteger(source.getCancelOrderAfterMinutes(), 0));
         target.setReturnAllowedDays(nonNegativeInteger(source.getReturnAllowedDays(), 0));
         target.setRefundAllowedDays(nonNegativeInteger(source.getRefundAllowedDays(), 0));
@@ -693,6 +788,7 @@ public class GlobalSettingsService {
         target.setMaintenanceMessage(cleanText(source.getMaintenanceMessage()));
         target.setRegistrationEnabled(checked(source.getRegistrationEnabled()));
         target.setVendorRegistrationEnabled(checked(source.getVendorRegistrationEnabled()));
+        enforceSingleVendorAccessRules(target);
     }
 
     private void applyImages(
@@ -711,9 +807,9 @@ public class GlobalSettingsService {
             if (hasFile(ogImageFile)) {
                 replaceOgImage(target, ogImageFile);
             }
-        } catch (IOException ex) {
+        } catch (IOException | RuntimeException ex) {
             LOGGER.error("Failed to process global settings image upload", ex);
-            throw new SettingsOperationException("Image upload failed. Please verify the file type and storage permission.", ex);
+            throw settingsImageUploadFailure("Image upload", ex);
         }
     }
 
@@ -729,9 +825,9 @@ public class GlobalSettingsService {
             if (hasFile(faviconFile)) {
                 replaceFavicon(target, faviconFile);
             }
-        } catch (IOException ex) {
+        } catch (IOException | RuntimeException ex) {
             LOGGER.error("Failed to process basic site settings image upload", ex);
-            throw new SettingsOperationException("Image upload failed. Please verify the file type and storage permission.", ex);
+            throw settingsImageUploadFailure("Image upload", ex);
         }
     }
 
@@ -740,9 +836,9 @@ public class GlobalSettingsService {
             if (hasFile(ogImageFile)) {
                 replaceOgImage(target, ogImageFile);
             }
-        } catch (IOException ex) {
+        } catch (IOException | RuntimeException ex) {
             LOGGER.error("Failed to process SEO OG image upload", ex);
-            throw new SettingsOperationException("OG image upload failed. Please verify the file type and storage permission.", ex);
+            throw settingsImageUploadFailure("OG image upload", ex);
         }
     }
 
@@ -752,10 +848,10 @@ public class GlobalSettingsService {
         String previousMobileLogo = target.getSiteLogoMobile();
         String previousSquareLogo = target.getSiteLogoSquare();
 
-        String fileName = imageService.validateAndRename(file);
-        imageService.resizeAndUpload(file, SITE_LOGO_DESKTOP_WIDTH, SITE_LOGO_DESKTOP_HEIGHT, SETTINGS_LOGO_DESKTOP_DIR, fileName);
-        imageService.resizeAndUpload(file, SITE_LOGO_MOBILE_WIDTH, SITE_LOGO_MOBILE_HEIGHT, SETTINGS_LOGO_MOBILE_DIR, fileName);
-        imageService.resizeAndUpload(file, SITE_LOGO_SQUARE_SIZE, SITE_LOGO_SQUARE_SIZE, SETTINGS_LOGO_SQUARE_DIR, fileName);
+        String fileName = imageService.validateAndRename(file, settingsImageUploadPolicy());
+        imageService.resizeAndUploadHighQualityWebp(file, SITE_LOGO_DESKTOP_WIDTH, SITE_LOGO_DESKTOP_HEIGHT, SETTINGS_LOGO_DESKTOP_DIR, fileName);
+        imageService.resizeAndUploadHighQualityWebp(file, SITE_LOGO_MOBILE_WIDTH, SITE_LOGO_MOBILE_HEIGHT, SETTINGS_LOGO_MOBILE_DIR, fileName);
+        imageService.resizeAndUploadHighQualityWebp(file, SITE_LOGO_SQUARE_SIZE, SITE_LOGO_SQUARE_SIZE, SETTINGS_LOGO_SQUARE_DIR, fileName);
 
         String desktopUrl = buildSettingsFileUrl(SETTINGS_LOGO_DESKTOP_DIR, fileName);
         target.setSiteLogo(desktopUrl);
@@ -779,9 +875,29 @@ public class GlobalSettingsService {
     }
 
     private String storeImage(MultipartFile file, int width, int height) throws IOException {
-        String fileName = imageService.validateAndRename(file);
-        imageService.resizeAndUpload(file, width, height, SETTINGS_IMAGE_DIR, fileName);
+        String fileName = imageService.validateAndRename(file, settingsImageUploadPolicy());
+        imageService.resizeAndUploadHighQualityWebp(file, width, height, SETTINGS_IMAGE_DIR, fileName);
         return SETTINGS_IMAGE_URL_PREFIX + fileName;
+    }
+
+    private ImageUploadPolicy settingsImageUploadPolicy() {
+        return new ImageUploadPolicy(
+                SETTINGS_IMAGE_CONTENT_TYPES,
+                SETTINGS_IMAGE_EXTENSIONS,
+                SETTINGS_IMAGE_FORMATS,
+                MAX_IMAGE_SIZE_BYTES,
+                MAX_IMAGE_WIDTH,
+                MAX_IMAGE_HEIGHT,
+                "JPG, PNG, or WEBP images"
+        );
+    }
+
+    private SettingsOperationException settingsImageUploadFailure(String label, Exception ex) {
+        String detail = ex.getMessage();
+        if (detail == null || detail.isBlank()) {
+            detail = "Please verify the file type, image dimensions, and storage permission.";
+        }
+        return new SettingsOperationException(label + " failed: " + detail, ex);
     }
 
     private void clearSiteLogo(GlobalSettings settings) {
@@ -818,6 +934,8 @@ public class GlobalSettingsService {
         settings.setLowStockAlertQty(nonNegativeInteger(settings.getLowStockAlertQty(), 0));
         settings.setMinimumOrderAmount(nonNegativeAmount(settings.getMinimumOrderAmount(), BigDecimal.ZERO));
         settings.setMaximumOrderAmount(optionalNonNegativeAmount(settings.getMaximumOrderAmount()));
+        settings.setStoreMode(settings.getStoreMode() != null ? settings.getStoreMode() : StoreMode.MARKETPLACE);
+        settings.setSalesOrderMode(settings.getSalesOrderMode() != null ? settings.getSalesOrderMode() : SalesOrderMode.SPLIT_BY_VENDOR);
         settings.setFreeDeliveryMinAmount(nonNegativeAmount(settings.getFreeDeliveryMinAmount(), BigDecimal.ZERO));
         settings.setInsideDhakaDeliveryCharge(nonNegativeAmount(settings.getInsideDhakaDeliveryCharge(), BigDecimal.ZERO));
         settings.setOutsideDhakaDeliveryCharge(nonNegativeAmount(settings.getOutsideDhakaDeliveryCharge(), BigDecimal.ZERO));
@@ -827,7 +945,14 @@ public class GlobalSettingsService {
         settings.setCancelOrderAfterMinutes(nonNegativeInteger(settings.getCancelOrderAfterMinutes(), 0));
         settings.setReturnAllowedDays(nonNegativeInteger(settings.getReturnAllowedDays(), 0));
         settings.setRefundAllowedDays(nonNegativeInteger(settings.getRefundAllowedDays(), 0));
+        enforceSingleVendorAccessRules(settings);
         settings.setActive(true);
+    }
+
+    private void enforceSingleVendorAccessRules(GlobalSettings settings) {
+        if (settings != null && settings.getStoreMode() == StoreMode.SINGLE_VENDOR) {
+            settings.setVendorRegistrationEnabled(false);
+        }
     }
 
     private void copyMediaAndAuditFields(GlobalSettings source, GlobalSettings target) {
@@ -917,6 +1042,12 @@ public class GlobalSettingsService {
         }
     }
 
+    private void positive(Integer value, String label, List<String> errors) {
+        if (value == null || value < 1) {
+            errors.add(label + " must be at least 1.");
+        }
+    }
+
     private void nonNegative(BigDecimal value, String label, List<String> errors) {
         if (value != null && value.compareTo(BigDecimal.ZERO) < 0) {
             errors.add(label + " cannot be negative.");
@@ -960,6 +1091,11 @@ public class GlobalSettingsService {
     private Integer nonNegativeInteger(Integer value, Integer fallback) {
         Integer resolvedValue = value != null ? value : fallback;
         return resolvedValue != null && resolvedValue < 0 ? fallback : resolvedValue;
+    }
+
+    private Integer positiveInteger(Integer value, Integer fallback) {
+        Integer resolvedValue = value != null ? value : fallback;
+        return resolvedValue != null && resolvedValue > 0 ? resolvedValue : fallback;
     }
 
     private BigDecimal nonNegativeAmount(BigDecimal value, BigDecimal fallback) {

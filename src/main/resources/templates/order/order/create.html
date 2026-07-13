@@ -233,6 +233,27 @@
                 line-height: 1.35;
             }
 
+            .checkout-choice .form-check-input:disabled ~ label {
+                opacity: .62;
+                cursor: not-allowed;
+            }
+
+            .checkout-guest-note {
+                display: flex;
+                gap: 10px;
+                padding: 12px;
+                margin: 0 0 14px;
+                color: #174a63;
+                background: #eef8ff;
+                border: 1px solid #b9e4ff;
+                border-radius: 8px;
+                font-size: .9rem;
+            }
+
+            .checkout-guest-note .bi {
+                margin-top: 2px;
+            }
+
             .checkout-balance-strip {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
@@ -274,6 +295,34 @@
                 border: 1px solid transparent;
             }
 
+            .guest-delivery-strip {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 10px;
+                margin-bottom: 16px;
+            }
+
+            .guest-delivery-strip div {
+                border: 1px solid #dfe5ee;
+                border-radius: 8px;
+                padding: 10px;
+                background: #f8fafc;
+            }
+
+            .guest-delivery-strip span {
+                display: block;
+                color: #657084;
+                font-size: .78rem;
+                font-weight: 700;
+                text-transform: uppercase;
+            }
+
+            .guest-delivery-strip strong {
+                display: block;
+                margin-top: 3px;
+                color: #172033;
+            }
+
             @media (max-width: 991.98px) {
                 .checkout-grid {
                     grid-template-columns: 1fr;
@@ -291,6 +340,7 @@
                 }
 
                 .checkout-form-grid,
+                .guest-delivery-strip,
                 .checkout-balance-strip {
                     grid-template-columns: 1fr;
                 }
@@ -397,7 +447,63 @@
                             </div>
                         </div>
 
-                        <div class="checkout-panel">
+                        <div class="checkout-panel" th:if="${guestCheckout}">
+                            <div class="checkout-panel-header">
+                                <h2 class="checkout-panel-title">
+                                    <i class="bi bi-shield-check"></i>
+                                    Delivery details
+                                </h2>
+                                <span class="badge"
+                                      th:classappend="${guestMobileVerificationStatus == 'VERIFIED'} ? ' text-bg-success' : (${guestMobileVerificationRequired} ? ' text-bg-warning' : ' text-bg-info')"
+                                      th:text="${guestMobileVerificationStatus == 'VERIFIED'} ? 'Mobile verified' : (${guestMobileVerificationRequired} ? 'Mobile pending' : 'Mobile accepted')">Mobile verified</span>
+                            </div>
+                            <div class="checkout-panel-body">
+                                <div class="guest-delivery-strip">
+                                    <div>
+                                        <span>Mobile</span>
+                                        <strong th:text="${guestVerifiedMobileDisplay}">01XXXXXXXXX</strong>
+                                    </div>
+                                    <div>
+                                        <span>District</span>
+                                        <strong th:text="${selectedShippingLocation != null and selectedShippingLocation.parent != null ? selectedShippingLocation.parent.name : '-'}">Dhaka</strong>
+                                    </div>
+                                    <div>
+                                        <span>Thana</span>
+                                        <strong th:text="${selectedShippingLocation != null ? selectedShippingLocation.name : '-'}">Mirpur</strong>
+                                    </div>
+                                </div>
+                                <form th:action="@{/cart_address/guest_delivery_address}" method="post">
+                                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <div class="checkout-form-grid">
+                                        <div class="full">
+                                            <label class="form-label" for="guestRecipientName">Recipient name</label>
+                                            <input id="guestRecipientName" type="text" class="form-control" name="recipientName" required>
+                                        </div>
+                                        <div class="full">
+                                            <label class="form-label" for="guestAddressLineOne">Detailed street address</label>
+                                            <input id="guestAddressLineOne" type="text" class="form-control" name="addressLineOne" required>
+                                        </div>
+                                        <div class="full">
+                                            <label class="form-label" for="guestAddressLineTwo">House / Road / Block / Floor</label>
+                                            <input id="guestAddressLineTwo" type="text" class="form-control" name="addressLinetwo">
+                                        </div>
+                                        <div>
+                                            <label class="form-label" for="guestPostCode">Post code</label>
+                                            <input id="guestPostCode" type="text" class="form-control" name="postCode">
+                                        </div>
+                                    </div>
+                                    <div class="form-text mt-3">Billing address will be the same as the shipping address.</div>
+                                    <div class="checkout-actions">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-check2"></i>
+                                            Save delivery details
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="checkout-panel" th:unless="${guestCheckout}">
                             <div class="checkout-panel-header">
                                 <h2 class="checkout-panel-title">
                                     <i class="bi bi-receipt"></i>
@@ -469,7 +575,7 @@
                             </div>
                         </div>
 
-                        <div class="checkout-panel" th:if="${requiresShipping}">
+                        <div class="checkout-panel" th:if="${requiresShipping and !guestCheckout}">
                             <div class="checkout-panel-header">
                                 <h2 class="checkout-panel-title">
                                     <i class="bi bi-truck"></i>
@@ -561,6 +667,13 @@
 
                                 <form th:action="@{/order/savebyvendor}" method="post" class="mt-3">
                                     <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <div class="checkout-guest-note" th:if="${guestCheckout}">
+                                        <i class="bi bi-person-check"></i>
+                                        <div>
+                                            <strong>Guest checkout</strong>
+                                            <span>COD is available now. Login to use wallet, online payment, coupons, reward points, advance payment, or EMI.</span>
+                                        </div>
+                                    </div>
 
                                     <label class="form-label">Payment plan</label>
                                     <div class="checkout-radio-grid">
@@ -574,7 +687,7 @@
                                         </div>
                                         <div class="checkout-choice">
                                             <input class="form-check-input" type="radio" name="paymentPlan" id="addressCheckoutPlanAdvanceCod"
-                                                   value="PARTIAL_ADVANCE_COD" th:checked="${selectedPaymentPlan == 'PARTIAL_ADVANCE_COD'}">
+                                                   value="PARTIAL_ADVANCE_COD" th:checked="${selectedPaymentPlan == 'PARTIAL_ADVANCE_COD'}" th:disabled="${guestCheckout}">
                                             <label for="addressCheckoutPlanAdvanceCod">
                                                 Advance + COD
                                                 <span>Pay an advance now and keep the balance for delivery.</span>
@@ -582,7 +695,7 @@
                                         </div>
                                         <div class="checkout-choice">
                                             <input class="form-check-input" type="radio" name="paymentPlan" id="addressCheckoutPlanFullPrepaid"
-                                                   value="FULL_PREPAID" th:checked="${selectedPaymentPlan == 'FULL_PREPAID'}">
+                                                   value="FULL_PREPAID" th:checked="${selectedPaymentPlan == 'FULL_PREPAID'}" th:disabled="${guestCheckout}">
                                             <label for="addressCheckoutPlanFullPrepaid">
                                                 Full prepaid
                                                 <span>Pay the full amount through wallet or online gateway.</span>
@@ -590,7 +703,7 @@
                                         </div>
                                         <div class="checkout-choice">
                                             <input class="form-check-input" type="radio" name="paymentPlan" id="addressCheckoutPlanEmi"
-                                                   value="EMI" th:checked="${selectedPaymentPlan == 'EMI'}" th:disabled="${!emiEligible}">
+                                                   value="EMI" th:checked="${selectedPaymentPlan == 'EMI'}" th:disabled="${!emiEligible or guestCheckout}">
                                             <label for="addressCheckoutPlanEmi">
                                                 Meritten EMI
                                                 <span th:if="${emiEligible}">Submit the full order amount for EMI approval.</span>
@@ -603,22 +716,22 @@
                                     <div class="checkout-radio-grid">
                                         <div class="checkout-choice">
                                             <input class="form-check-input" type="radio" name="paymentMethod" id="addressCheckoutPaymentWallet"
-                                                   value="WALLET" th:checked="${selectedPaymentMethod == 'WALLET'}">
+                                                   value="WALLET" th:checked="${selectedPaymentMethod == 'WALLET'}" th:disabled="${guestCheckout}">
                                             <label for="addressCheckoutPaymentWallet">Wallet</label>
                                         </div>
                                         <div class="checkout-choice">
                                             <input class="form-check-input" type="radio" name="paymentMethod" id="addressCheckoutPaymentSslCommerz"
-                                                   value="SSLCOMMERZ" th:checked="${selectedPaymentMethod == 'SSLCOMMERZ'}">
+                                                   value="SSLCOMMERZ" th:checked="${selectedPaymentMethod == 'SSLCOMMERZ'}" th:disabled="${guestCheckout}">
                                             <label for="addressCheckoutPaymentSslCommerz">SSLCommerz</label>
                                         </div>
                                         <div class="checkout-choice">
                                             <input class="form-check-input" type="radio" name="paymentMethod" id="addressCheckoutPaymentBkash"
-                                                   value="BKASH" th:checked="${selectedPaymentMethod == 'BKASH'}">
+                                                   value="BKASH" th:checked="${selectedPaymentMethod == 'BKASH'}" th:disabled="${guestCheckout}">
                                             <label for="addressCheckoutPaymentBkash">bKash</label>
                                         </div>
                                     </div>
 
-                                    <div class="checkout-balance-strip">
+                                    <div class="checkout-balance-strip" th:unless="${guestCheckout}">
                                         <div class="checkout-balance">
                                             <span>Wallet</span>
                                             <strong th:text="'BDT ' + ${#numbers.formatDecimal(walletBalance, 0, 'COMMA', 2, 'POINT')}">BDT 0.00</strong>
@@ -629,7 +742,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="mb-3">
+                                    <div class="mb-3" th:unless="${guestCheckout}">
                                         <label class="form-label" for="addressCheckoutCouponCode">Coupon code</label>
                                         <input class="form-control"
                                                id="addressCheckoutCouponCode"
@@ -641,7 +754,7 @@
                                         <div class="form-text" data-checkout-coupon-message></div>
                                     </div>
 
-                                    <div class="mb-3">
+                                    <div class="mb-3" th:unless="${guestCheckout}">
                                         <label class="form-label" for="addressCheckoutRewardPointsToUse">Reward points to use</label>
                                         <input class="form-control"
                                                id="addressCheckoutRewardPointsToUse"
@@ -690,6 +803,7 @@
                                                min="0.01"
                                                step="0.01"
                                                th:attr="max=${subtotal}"
+                                               th:disabled="${guestCheckout}"
                                                th:value="${selectedAdvanceAmount}">
                                     </div>
 
@@ -698,7 +812,7 @@
                                         <select class="form-select"
                                                 id="addressCheckoutEmiTenure"
                                                 name="emiTenureMonths"
-                                                th:disabled="${!emiEligible}">
+                                                th:disabled="${!emiEligible or guestCheckout}">
                                             <option value="3" th:selected="${selectedEmiTenureMonths == 3}">3 Months</option>
                                             <option value="6" th:selected="${selectedEmiTenureMonths == 6}">6 Months</option>
                                             <option value="9" th:selected="${selectedEmiTenureMonths == 9}">9 Months</option>

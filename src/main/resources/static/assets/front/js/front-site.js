@@ -707,6 +707,76 @@ window.cartOnPackagingChange = async function (selectEl) {
         alert(err?.message || "Packaging update failed");
     }
 };
+
+function initCheckoutAvailabilityGate() {
+    const checkoutButtons = document.querySelectorAll('[data-checkout-start]');
+    if (!checkoutButtons.length) {
+        return;
+    }
+    const unavailableAlert = document.querySelector('[data-checkout-unavailable-alert]');
+    const authModalEl = document.getElementById('checkoutAuthModal');
+    const guestOption = document.querySelector('[data-checkout-guest-option]');
+    const guestDivider = document.querySelector('[data-checkout-guest-divider]');
+    const authCopy = document.querySelector('[data-checkout-auth-copy]');
+    const unavailableMessage = 'Checkout is currently unavailable. Purchasing has been temporarily disabled by the store administrator. Please try again later or contact customer support for assistance.';
+
+    function showUnavailable(message) {
+        if (unavailableAlert) {
+            unavailableAlert.textContent = message || unavailableMessage;
+            unavailableAlert.classList.remove('d-none');
+            unavailableAlert.scrollIntoView({behavior: 'smooth', block: 'center'});
+            return;
+        }
+        alert(message || unavailableMessage);
+    }
+
+    checkoutButtons.forEach(function (checkoutButton) {
+        checkoutButton.addEventListener('click', async function () {
+        checkoutButton.disabled = true;
+        if (unavailableAlert) {
+            unavailableAlert.classList.add('d-none');
+        }
+        try {
+            const response = await fetch('/cart/checkout/availability', {
+                credentials: 'same-origin',
+                headers: {'Accept': 'application/json'}
+            });
+            if (!response.ok) {
+                throw new Error(unavailableMessage);
+            }
+            const availability = await response.json();
+            if (!availability.checkoutAvailable) {
+                showUnavailable(availability.message);
+                return;
+            }
+            if (availability.showAuthenticationModal) {
+                if (guestOption) {
+                    guestOption.classList.toggle('d-none', !availability.guestAllowed);
+                }
+                if (guestDivider) {
+                    guestDivider.classList.toggle('d-none', !availability.guestAllowed);
+                }
+                if (authCopy) {
+                    authCopy.textContent = availability.guestAllowed
+                            ? 'Sign in to use your saved account details, or continue as a guest with mobile verification.'
+                            : 'Sign in to continue checkout. Guest checkout is currently disabled by the store administrator.';
+                }
+                if (authModalEl && window.bootstrap && window.bootstrap.Modal) {
+                    window.bootstrap.Modal.getOrCreateInstance(authModalEl).show();
+                    return;
+                }
+                window.location.href = availability.guestAllowed ? '/cart/checkout' : '/public/member-login';
+                return;
+            }
+            window.location.href = availability.nextUrl || '/cart/checkout';
+        } catch (error) {
+            showUnavailable(error && error.message ? error.message : unavailableMessage);
+        } finally {
+            checkoutButton.disabled = false;
+        }
+        });
+    });
+}
 /**
  * ============================================
  * Event handling for shipping & packaging selects
@@ -797,4 +867,4 @@ document.addEventListener('click', async function (e) {
     }
 });
 document.addEventListener('DOMContentLoaded', loadCart);
-
+document.addEventListener('DOMContentLoaded', initCheckoutAvailabilityGate);

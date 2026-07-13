@@ -1,221 +1,919 @@
-<!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
-<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
 
-    <div layout:fragment = "main_content">
-        <section>
-            <div class="row">
-                <div class="col-sm-3"><h4> Ads </h4></div>
-                <div class="col-sm-5">   <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="#" class="nav-link">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Ads</li>
-                            <li class="breadcrumb-item active" aria-current="page">Ads List</li>
-                        </ol>
-                    </nav>
-                </div></div>
-        </section>
-        <hr/>
-        <div class="row">
-            <div class="col-sm-12">
+    <th:block layout:fragment="page_css">
+        <style>
+            .ads-workspace {
+                --ads-panel: #ffffff;
+                --ads-border: rgba(15, 23, 42, .08);
+                --ads-muted: #667085;
+                --ads-text: #182230;
+                --ads-accent: #0d6efd;
+                --ads-accent-dark: #113459;
+                --ads-header-bg: #113459;
+                --ads-shadow: 0 .75rem 1.75rem rgba(15, 23, 42, .08);
+                background: #f4f7fb;
+                color: var(--ads-text);
+                margin: -1rem;
+                min-height: calc(100vh - 86px);
+                padding: 1.25rem;
+            }
 
-                <div class="card">
-                    <div class="card-header">
-                        <div class="row">
-                            <div class="col-sm-5 font-weight-bold "> <h4 th:text="${ads.id == null ? 'Create Ad' : 'Update Ad'}"></h4> </div>
+            .ads-hero {
+                background: var(--ads-header-bg);
+                border: 1px solid rgba(17, 52, 89, .32);
+                border-radius: 8px;
+                box-shadow: var(--ads-shadow);
+                color: #fff;
+                overflow: hidden;
+            }
 
-                            <div class="col-sm-7 text-end">
-                                <div class="btn-group ">
-                                    <a class="btn btn-success btn-sm " th:href="@{/admin/ads/create}"> <i class="bi bi-plus-circle"></i> Add Ads </a>
-                                    <a th:href="@{/admin/index}" type="button" class="btn  btn-danger btn-sm"> <i class="bi bi-x-circle"></i> Close</a>
-                                </div>
-                            </div>
+            .ads-hero .card-header {
+                background: rgba(255, 255, 255, .08);
+                border-bottom: 1px solid rgba(255, 255, 255, .12);
+            }
 
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <form th:action="@{/admin/ads/save}"
-                              th:object="${ads}"
-                              method="post"
-                              enctype="multipart/form-data">
+            .ads-hero .card-body {
+                background: var(--ads-header-bg);
+            }
 
-                            <!-- Global Error Box -->
-                            <div class="alert alert-danger" th:if="${#fields.hasErrors('*')}">
-                                <ul>
-                                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
-                                </ul>
-                            </div>
+            .ads-hero-main {
+                align-items: center;
+                display: flex;
+                gap: 1.5rem;
+                justify-content: space-between;
+            }
 
-                            <div class="row">
+            .ads-hero-title {
+                align-items: flex-start;
+                display: flex;
+                gap: .85rem;
+                min-width: 0;
+            }
 
-                                <!-- Hidden Fields -->
-                                <input type="hidden" th:field="*{id}">
-                                <input type="hidden" th:field="*{uuid}">
-                                <input type="hidden" th:field="*{version}">
+            .ads-hero-icon {
+                align-items: center;
+                background: #fff;
+                border-radius: 50%;
+                color: var(--ads-header-bg);
+                display: inline-flex;
+                flex: 0 0 48px;
+                height: 48px;
+                justify-content: center;
+                width: 48px;
+            }
 
-                                <!-- Title -->
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Title</label>
-                                    <input type="text" th:field="*{title}"
-                                           class="form-control"
-                                           th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'">
-                                    <div class="invalid-feedback" th:errors="*{title}"></div>
-                                </div>
+            .ads-kicker {
+                color: #9fd8ff;
+                font-size: .75rem;
+                font-weight: 700;
+                letter-spacing: 0;
+                margin: 0 0 .25rem;
+                text-transform: uppercase;
+            }
 
-                                <!-- Placement -->
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Placement</label>
-                                    <select th:field="*{placement}" class="form-select"
-                                            th:classappend="${#fields.hasErrors('placement')} ? 'is-invalid'">
-                                        <option value="">-- select --</option>
-                                        <option th:each="p : ${placements}"
-                                                th:value="${p}" th:text="${p.displayName}"></option>
-                                    </select>
-                                    <div class="invalid-feedback" th:errors="*{placement}"></div>
-                                </div>
+            .ads-hero h1 {
+                color: #fff;
+                font-size: 1.6rem;
+                font-weight: 700;
+                letter-spacing: 0;
+                line-height: 1.2;
+                margin: 0;
+            }
 
-                                <!-- Image Upload -->
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Upload Image</label>
-                                    <input type="file"
-                                            name="file"
-                                            class="form-control"
-                                            accept="image/*">
-                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('imageUrl')}" th:errors="*{imageUrl}"></div>
-                                    <div class="mt-2" th:if="${not #strings.isEmpty(ads.imageUrl)}">
-                                        <img class="img-thumbnail" th:src="@{/files/banner/}+${ads.imageUrl}" alt="Current ad image" style="max-width: 180px; max-height: 120px;" />
-                                    </div>
-                                </div>
+            .ads-subtitle {
+                color: rgba(255, 255, 255, .76);
+                font-size: .95rem;
+                margin: .4rem 0 0;
+                max-width: 760px;
+            }
 
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Width</label>
-                                    <input type="number"  min="100"  th:field="*{width}"
-                                           class="form-control"
-                                           th:classappend="${#fields.hasErrors('width')} ? 'is-invalid'" required="true">
-                                    <div class="invalid-feedback" th:errors="*{width}"></div>
+            .ads-hero-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: .55rem;
+                justify-content: flex-end;
+            }
 
-                                </div>
+            .ads-hero-actions .btn,
+            .ads-panel-actions .btn,
+            .ads-savebar .btn {
+                align-items: center;
+                border-radius: 8px;
+                display: inline-flex;
+                gap: .45rem;
+                font-weight: 700;
+            }
 
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Height</label>
-                                    <input type="number"  min="100"  th:field="*{height}"
-                                           class="form-control"
-                                           th:classappend="${#fields.hasErrors('height')} ? 'is-invalid'" required="true">
-                                    <div class="invalid-feedback" th:errors="*{height}"></div>
-                                </div>
+            .ads-hero-actions .btn-light {
+                background: #ffffff;
+                border-color: rgba(255, 255, 255, .7);
+                color: var(--ads-header-bg);
+            }
 
-                                <!-- Target Type -->
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Target Type</label>
-                                    <select th:field="*{targetType}" class="form-select" id="targetType"
-                                            onchange="toggleTargetFields()"
-                                            th:classappend="${#fields.hasErrors('targetType')} ? 'is-invalid'">
-                                        <option value="">-- select --</option>
-                                        <option th:each="t : ${targetTypes}"
-                                                th:value="${t}" th:text="${t}"></option>
-                                    </select>
-                                    <div class="invalid-feedback" th:errors="*{targetType}"></div>
-                                </div>
+            .ads-status-grid {
+                display: grid;
+                gap: .85rem;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                margin-bottom: 1rem;
+            }
 
-                                <!-- Category -->
-                                <div class="col-md-6 mb-3" id="categoryBox">
-                                    <label class="form-label">Category</label>
-                                    <select th:field="*{categoryId}" class="form-select"
-                                            th:classappend="${#fields.hasErrors('categoryId')} ? 'is-invalid'">
-                                        <option value="">-- select category --</option>
-                                        <option th:each="c : ${categoryList}"
-                                                th:value="${c.uuid}" th:text="${c.name}"></option>
-                                    </select>
-                                    <div class="invalid-feedback" th:errors="*{categoryId}"></div>
-                                </div>
+            .ads-status {
+                align-items: center;
+                background: var(--ads-panel);
+                border: 1px solid var(--ads-border);
+                border-radius: 8px;
+                display: flex;
+                gap: .85rem;
+                min-width: 0;
+                padding: 1rem;
+            }
 
-                                <!-- Product -->
-                                <div class="col-md-6 mb-3" id="productBox">
-                                    <label class="form-label">Product</label>
-                                    <select th:field="*{productId}" class="form-select"
-                                            th:classappend="${#fields.hasErrors('productId')} ? 'is-invalid'">
-                                        <option value="">-- select product --</option>
-                                        <option th:each="p : ${productList}"
-                                                th:value="${p.uuid}" th:text="${p.title}"></option>
-                                    </select>
-                                    <div class="invalid-feedback" th:errors="*{productId}"></div>
-                                </div>
+            .ads-status-icon {
+                align-items: center;
+                background: #e6f4f1;
+                border-radius: 8px;
+                color: var(--ads-accent-dark);
+                display: inline-flex;
+                flex: 0 0 40px;
+                height: 40px;
+                justify-content: center;
+                width: 40px;
+            }
 
-                                <!-- Vendor -->
-                                <div class="col-md-6 mb-3" id="vendorBox">
-                                    <label class="form-label">Vendor</label>
-                                    <select th:field="*{vendorId}" class="form-select"
-                                            th:classappend="${#fields.hasErrors('vendorId')} ? 'is-invalid'">
-                                        <option value="">-- select vendor --</option>
-                                        <option th:each="v : ${vendorList}"
-                                                th:value="${v.uuid}"
-                                                th:text="${v.vendorCode + ' - ' + v.companyName}"></option>
-                                    </select>
-                                    <div class="invalid-feedback" th:errors="*{vendorId}"></div>
-                                </div>
+            .ads-status span:not(.ads-status-icon) {
+                color: var(--ads-muted);
+                display: block;
+                font-size: .78rem;
+            }
 
-                                <!-- External URL -->
-                                <div class="col-md-12 mb-3" id="externalBox">
-                                    <label class="form-label">External URL</label>
-                                    <input type="text" th:field="*{externalUrl}" class="form-control"
-                                           th:classappend="${#fields.hasErrors('externalUrl')} ? 'is-invalid'">
-                                    <div class="invalid-feedback" th:errors="*{externalUrl}"></div>
-                                </div>
+            .ads-status strong {
+                color: var(--ads-text);
+                display: block;
+                font-size: .95rem;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
 
-                                <!-- Active -->
-                                <div class="col-md-3 mb-3">
-                                    <label class="form-label">Active</label>
-                                    <input type="checkbox" th:field="*{active}" class="form-check-input ms-2">
-                                </div>
+            .ads-layout {
+                align-items: start;
+                display: grid;
+                gap: 1.25rem;
+                grid-template-columns: minmax(0, 1fr) 360px;
+            }
 
-                                <!-- Display Order -->
-                                <div class="col-md-3 mb-3">
-                                    <label class="form-label">Display Order</label>
-                                    <input type="number" th:field="*{displayOrder}" class="form-control"
-                                           th:classappend="${#fields.hasErrors('displayOrder')} ? 'is-invalid'">
-                                    <div class="invalid-feedback" th:errors="*{displayOrder}"></div>
-                                </div>
+            .ads-panel {
+                background: #fff;
+                border: 1px solid #e4eaf2;
+                border-radius: 8px;
+                box-shadow: 0 .55rem 1.25rem rgba(15, 35, 57, .07);
+                overflow: hidden;
+            }
 
-                            </div>
+            .ads-panel + .ads-panel {
+                margin-top: 1rem;
+            }
 
-                            <button class="btn btn-primary mt-3" type="submit">Save</button>
-                            <a th:href="@{/admin/ads/list}" class="btn btn-secondary mt-3">Cancel</a>
-                        </form>
-                    </div>
-                </div>
+            .ads-panel-head {
+                align-items: center;
+                border-bottom: 1px solid #e8edf4;
+                display: flex;
+                gap: .85rem;
+                justify-content: space-between;
+                padding: 1rem 1.1rem;
+            }
 
-            </div> <!--  Card  end-->
+            .ads-panel-title {
+                display: flex;
+                gap: .72rem;
+                min-width: 0;
+            }
 
+            .ads-panel-title i {
+                align-items: center;
+                background: #eef6ff;
+                border-radius: 8px;
+                color: #113459;
+                display: inline-flex;
+                flex: 0 0 38px;
+                height: 38px;
+                justify-content: center;
+                width: 38px;
+            }
 
-        </div><!--  Main Content  end-->
-        <script th:inline="javascript">
-            function toggleTargetFields() {
-                const targetType = document.getElementById('targetType');
-                const selected = targetType ? targetType.value : '';
+            .ads-panel-title span {
+                color: #66758a;
+                display: block;
+                font-size: .78rem;
+                font-weight: 700;
+                margin-bottom: .08rem;
+            }
 
-                const categoryBox = document.getElementById('categoryBox');
-                const productBox = document.getElementById('productBox');
-                const vendorBox = document.getElementById('vendorBox');
-                const externalBox = document.getElementById('externalBox');
+            .ads-panel-title h2 {
+                color: #172033;
+                font-size: 1rem;
+                font-weight: 760;
+                letter-spacing: 0;
+                margin: 0;
+            }
 
-                if (categoryBox) {
-                    categoryBox.style.display = selected === 'CATEGORY' ? '' : 'none';
+            .ads-panel-body {
+                padding: 1.1rem;
+            }
+
+            .ads-field {
+                margin-bottom: 1rem;
+            }
+
+            .ads-field .form-label {
+                color: #26364c;
+                font-size: .86rem;
+                font-weight: 760;
+                margin-bottom: .42rem;
+            }
+
+            .ads-required::after {
+                color: #dc3545;
+                content: " *";
+            }
+
+            .ads-help {
+                color: #66758a;
+                font-size: .8rem;
+                line-height: 1.45;
+                margin-top: .35rem;
+            }
+
+            .ads-example {
+                background: #f7f9fc;
+                border: 1px dashed #ccd6e4;
+                border-radius: 8px;
+                color: #546276;
+                font-size: .78rem;
+                margin-top: .45rem;
+                padding: .55rem .65rem;
+            }
+
+            .ads-upload {
+                background: #f8fbff;
+                border: 1px dashed #b8c8dc;
+                border-radius: 8px;
+                padding: 1rem;
+            }
+
+            .ads-preview {
+                align-items: center;
+                background: #fff;
+                border: 1px solid #e4eaf2;
+                border-radius: 8px;
+                display: flex;
+                gap: .85rem;
+                margin-top: .9rem;
+                padding: .75rem;
+            }
+
+            .ads-preview .min-w-0 {
+                min-width: 0;
+            }
+
+            .ads-preview-frame {
+                align-items: center;
+                background: #eef3f9;
+                border-radius: 8px;
+                display: inline-flex;
+                flex: 0 0 168px;
+                height: 96px;
+                justify-content: center;
+                overflow: hidden;
+                width: 168px;
+            }
+
+            .ads-preview-frame img {
+                height: 100%;
+                object-fit: cover;
+                width: 100%;
+            }
+
+            .ads-preview-frame i {
+                color: #8290a3;
+                font-size: 1.5rem;
+            }
+
+            .ads-target-option {
+                background: #f9fbfd;
+                border: 1px solid #e5ebf3;
+                border-radius: 8px;
+                padding: .85rem;
+            }
+
+            .ads-target-option.is-active {
+                background: #f0f7ff;
+                border-color: #9fc9f2;
+            }
+
+            .ads-side {
+                display: grid;
+                gap: 1rem;
+            }
+
+            .ads-guide-list {
+                display: grid;
+                gap: .72rem;
+                margin: 0;
+                padding: 0;
+            }
+
+            .ads-guide-list li {
+                align-items: flex-start;
+                display: flex;
+                gap: .62rem;
+                list-style: none;
+            }
+
+            .ads-guide-list i {
+                color: #0d6efd;
+                margin-top: .1rem;
+            }
+
+            .ads-guide-list strong {
+                color: #26364c;
+                display: block;
+                font-size: .84rem;
+            }
+
+            .ads-guide-list span {
+                color: #66758a;
+                display: block;
+                font-size: .78rem;
+                line-height: 1.45;
+            }
+
+            .ads-switch-row {
+                align-items: center;
+                display: flex;
+                justify-content: space-between;
+                gap: 1rem;
+            }
+
+            .ads-savebar {
+                align-items: center;
+                background: #fff;
+                border: 1px solid #e4eaf2;
+                border-radius: 8px;
+                box-shadow: 0 .55rem 1.25rem rgba(15, 35, 57, .07);
+                display: flex;
+                gap: .75rem;
+                justify-content: space-between;
+                margin-top: 1rem;
+                padding: .85rem 1rem;
+                position: sticky;
+                bottom: 1rem;
+                z-index: 10;
+            }
+
+            .ads-submit {
+                background: linear-gradient(135deg, #0d6efd, #05a6df);
+                border: 0;
+                color: #fff;
+            }
+
+            .ads-submit:hover,
+            .ads-submit:focus {
+                color: #fff;
+                filter: brightness(.96);
+            }
+
+            .ads-alert {
+                border-radius: 8px;
+            }
+
+            @media (max-width: 1199.98px) {
+                .ads-layout {
+                    grid-template-columns: 1fr;
                 }
-                if (productBox) {
-                    productBox.style.display = selected === 'PRODUCT' ? '' : 'none';
-                }
-                if (vendorBox) {
-                    vendorBox.style.display = selected === 'VENDOR' ? '' : 'none';
-                }
-                if (externalBox) {
-                    externalBox.style.display = selected === 'EXTERNAL' ? '' : 'none';
+
+                .ads-status-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
                 }
             }
 
-            document.addEventListener('DOMContentLoaded', toggleTargetFields);
+            @media (max-width: 767.98px) {
+                .ads-workspace {
+                    margin: -.75rem;
+                    padding: .85rem;
+                }
+
+                .ads-hero-top,
+                .ads-panel-head,
+                .ads-savebar {
+                    align-items: stretch;
+                    flex-direction: column;
+                }
+
+                .ads-hero-actions,
+                .ads-savebar .d-flex {
+                    justify-content: stretch;
+                    width: 100%;
+                }
+
+                .ads-hero-main {
+                    align-items: stretch;
+                    flex-direction: column;
+                }
+
+                .ads-hero-actions .btn,
+                .ads-savebar .btn {
+                    justify-content: center;
+                    width: 100%;
+                }
+
+                .ads-status-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .ads-preview {
+                    align-items: stretch;
+                    flex-direction: column;
+                }
+
+                .ads-preview-frame {
+                    width: 100%;
+                }
+            }
+        </style>
+    </th:block>
+
+    <div layout:fragment="main_content">
+        <div class="ads-workspace">
+            <header class="card shadow-sm mb-4 ads-hero">
+                <div class="card-header d-flex justify-content-between align-items-center border-0 py-3">
+                    <div class="h5 mb-0 text-white">
+                        <i class="bi bi-megaphone me-2 text-warning"></i>
+                        Advertising control
+                    </div>
+                    <span class="badge text-bg-light border border-white border-opacity-25">Ads module</span>
+                </div>
+                <div class="card-body py-4">
+                    <div class="ads-hero-main">
+                        <div class="ads-hero-title">
+                            <span class="ads-hero-icon"><i class="bi bi-badge-ad fs-4"></i></span>
+                            <div>
+                                <p class="ads-kicker">Marketing operations</p>
+                                <h1 th:text="${ads.id == null ? 'Create Advertising Banner' : 'Update Advertising Banner'}">Create Advertising Banner</h1>
+                                <p class="ads-subtitle">Configure campaign creative, placement, destination routing, and publishing status from one controlled admin workflow.</p>
+                            </div>
+                        </div>
+                        <div class="ads-hero-actions">
+                            <a class="btn btn-light" th:href="@{/admin/ads/list}">
+                                <i class="bi bi-list-ul"></i>
+                                <span>Ads List</span>
+                            </a>
+                            <a class="btn btn-outline-light" th:href="@{/admin/index}">
+                                <i class="bi bi-x-circle"></i>
+                                <span>Close</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="ads-status-grid">
+                <div class="ads-status">
+                    <span class="ads-status-icon"><i class="bi bi-filetype-jpg"></i></span>
+                    <div>
+                        <span>Accepted Input</span>
+                        <strong>JPG, PNG, WEBP</strong>
+                    </div>
+                </div>
+                <div class="ads-status">
+                    <span class="ads-status-icon"><i class="bi bi-filetype-webp"></i></span>
+                    <div>
+                        <span>Stored Output</span>
+                        <strong>WEBP optimized</strong>
+                    </div>
+                </div>
+                <div class="ads-status">
+                    <span class="ads-status-icon"><i class="bi bi-aspect-ratio"></i></span>
+                    <div>
+                        <span>Dimension Range</span>
+                        <strong>100-2100px wide</strong>
+                    </div>
+                </div>
+                <div class="ads-status">
+                    <span class="ads-status-icon"><i class="bi bi-broadcast"></i></span>
+                    <div>
+                        <span>Publish State</span>
+                        <strong th:text="${ads.active} ? 'Active' : 'Inactive'">Active</strong>
+                    </div>
+                </div>
+            </div>
+
+            <form th:action="@{/admin/ads/save}"
+                  th:object="${ads}"
+                  method="post"
+                  enctype="multipart/form-data"
+                  novalidate>
+                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <input type="hidden" th:field="*{id}">
+                <input type="hidden" th:field="*{uuid}">
+                <input type="hidden" th:field="*{version}">
+
+                <div class="alert alert-danger ads-alert d-flex gap-2 align-items-start" th:if="${#fields.hasErrors('*')}" role="alert">
+                    <i class="bi bi-exclamation-triangle mt-1"></i>
+                    <div>
+                        <strong class="d-block">Please correct the highlighted fields.</strong>
+                        <ul class="mb-0 ps-3">
+                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Validation message</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="ads-layout">
+                    <main>
+                        <section class="ads-panel">
+                            <div class="ads-panel-head">
+                                <div class="ads-panel-title">
+                                    <i class="bi bi-card-heading"></i>
+                                    <div>
+                                        <span>Step 1</span>
+                                        <h2>Campaign Identity</h2>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ads-panel-body">
+                                <div class="row g-3">
+                                    <div class="col-lg-7">
+                                        <div class="ads-field">
+                                            <label class="form-label ads-required" for="title">Ad Title</label>
+                                            <input type="text"
+                                                   th:field="*{title}"
+                                                   class="form-control"
+                                                   th:classappend="${#fields.hasErrors('title')} ? ' is-invalid' : ''"
+                                                   placeholder="Summer Electronics Hero Banner"
+                                                   maxlength="100"
+                                                   required>
+                                            <div class="invalid-feedback" th:errors="*{title}">Title is required</div>
+                                            <div class="ads-help">Use a clear internal title that helps admins identify the campaign quickly.</div>
+                                            <div class="ads-example"><strong>Example:</strong> Eid Mega Sale - Homepage Hero</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-5">
+                                        <div class="ads-field">
+                                            <label class="form-label ads-required" for="placement">Placement</label>
+                                            <select th:field="*{placement}"
+                                                    class="form-select"
+                                                    th:classappend="${#fields.hasErrors('placement')} ? ' is-invalid' : ''"
+                                                    required>
+                                                <option value="">Select placement</option>
+                                                <option th:each="p : ${placements}" th:value="${p}" th:text="${p.displayName}">Homepage Hero</option>
+                                            </select>
+                                            <div class="invalid-feedback" th:errors="*{placement}">Placement is required</div>
+                                            <div class="ads-help">Choose the storefront slot where the banner will appear.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="ads-panel">
+                            <div class="ads-panel-head">
+                                <div class="ads-panel-title">
+                                    <i class="bi bi-image"></i>
+                                    <div>
+                                        <span>Step 2</span>
+                                        <h2>Creative Asset</h2>
+                                    </div>
+                                </div>
+                                <span class="badge text-bg-light border">Auto WebP conversion</span>
+                            </div>
+                            <div class="ads-panel-body">
+                                <div class="alert alert-info ads-alert d-flex gap-2 align-items-start" role="alert">
+                                    <i class="bi bi-info-circle mt-1"></i>
+                                    <div>
+                                        <strong class="d-block">Banner image policy</strong>
+                                        Upload JPG, JPEG, PNG, or WEBP only. New uploads are resized to the selected banner dimensions and stored as WEBP automatically.
+                                    </div>
+                                </div>
+
+                                <div class="row g-3">
+                                    <div class="col-xl-7">
+                                        <div class="ads-field">
+                                            <label class="form-label" for="adImageFile">Upload Image</label>
+                                            <div class="ads-upload">
+                                                <input type="file"
+                                                       id="adImageFile"
+                                                       name="file"
+                                                       class="form-control"
+                                                       accept="image/jpeg,image/png,image/webp"
+                                                       th:required="${ads.id == null and #strings.isEmpty(ads.imageUrl)}">
+                                                <div class="ads-help">Allowed formats: JPG, JPEG, PNG, WEBP. Recommended: upload a sharp source image at or above the configured dimensions.</div>
+                                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('imageUrl')}" th:errors="*{imageUrl}">Image error</div>
+
+                                                <div class="ads-preview" id="adPreviewPanel">
+                                                    <span class="ads-preview-frame">
+                                                        <img id="adImagePreview"
+                                                             th:if="${not #strings.isEmpty(ads.imageUrl)}"
+                                                             th:src="@{/files/banner/{fileName}(fileName=${ads.imageUrl})}"
+                                                             alt="Current ad image preview">
+                                                        <i id="adImageEmpty" th:if="${#strings.isEmpty(ads.imageUrl)}" class="bi bi-image"></i>
+                                                    </span>
+                                                    <div class="min-w-0">
+                                                        <strong class="d-block text-dark">Creative preview</strong>
+                                                        <span class="d-block text-muted small" th:if="${not #strings.isEmpty(ads.imageUrl)}">
+                                                            Current stored file: <span th:text="${ads.imageUrl}">banner.webp</span>
+                                                        </span>
+                                                        <span class="d-block text-muted small" th:if="${#strings.isEmpty(ads.imageUrl)}">No image uploaded yet.</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-5">
+                                        <div class="row g-3">
+                                            <div class="col-sm-6 col-xl-12">
+                                                <div class="ads-field">
+                                                    <label class="form-label ads-required" for="width">Width</label>
+                                                    <input type="number"
+                                                           min="100"
+                                                           max="2100"
+                                                           th:field="*{width}"
+                                                           class="form-control"
+                                                           th:classappend="${#fields.hasErrors('width')} ? ' is-invalid' : ''"
+                                                           placeholder="1200"
+                                                           required>
+                                                    <div class="invalid-feedback" th:errors="*{width}">Width is required</div>
+                                                    <div class="ads-help">Allowed range: 100 to 2100 pixels.</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-xl-12">
+                                                <div class="ads-field mb-0">
+                                                    <label class="form-label ads-required" for="height">Height</label>
+                                                    <input type="number"
+                                                           min="100"
+                                                           max="1000"
+                                                           th:field="*{height}"
+                                                           class="form-control"
+                                                           th:classappend="${#fields.hasErrors('height')} ? ' is-invalid' : ''"
+                                                           placeholder="420"
+                                                           required>
+                                                    <div class="invalid-feedback" th:errors="*{height}">Height is required</div>
+                                                    <div class="ads-help">Allowed range: 100 to 1000 pixels.</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="ads-panel">
+                            <div class="ads-panel-head">
+                                <div class="ads-panel-title">
+                                    <i class="bi bi-signpost-split"></i>
+                                    <div>
+                                        <span>Step 3</span>
+                                        <h2>Destination Routing</h2>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ads-panel-body">
+                                <div class="row g-3">
+                                    <div class="col-lg-5">
+                                        <div class="ads-field">
+                                            <label class="form-label ads-required" for="targetType">Target Type</label>
+                                            <select th:field="*{targetType}"
+                                                    class="form-select"
+                                                    id="targetType"
+                                                    onchange="toggleTargetFields()"
+                                                    th:classappend="${#fields.hasErrors('targetType')} ? ' is-invalid' : ''"
+                                                    required>
+                                                <option value="">Select target</option>
+                                                <option th:each="t : ${targetTypes}" th:value="${t}" th:text="${t}">CATEGORY</option>
+                                            </select>
+                                            <div class="invalid-feedback" th:errors="*{targetType}">Target type is required</div>
+                                            <div class="ads-help">Select where customers should land after clicking this banner.</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-7">
+                                        <div class="ads-target-option" id="categoryBox">
+                                            <label class="form-label ads-required" for="categoryId">Category</label>
+                                            <select th:field="*{categoryId}"
+                                                    class="form-select"
+                                                    th:classappend="${#fields.hasErrors('categoryId')} ? ' is-invalid' : ''">
+                                                <option value="">Select category</option>
+                                                <option th:each="c : ${categoryList}" th:value="${c.uuid}" th:text="${c.name}">Electronics</option>
+                                            </select>
+                                            <div class="invalid-feedback" th:errors="*{categoryId}">Category is required</div>
+                                            <div class="ads-help">Example: route campaign traffic to Electronics or Fashion category pages.</div>
+                                        </div>
+
+                                        <div class="ads-target-option" id="productBox">
+                                            <label class="form-label ads-required" for="productId">Product</label>
+                                            <select th:field="*{productId}"
+                                                    class="form-select"
+                                                    th:classappend="${#fields.hasErrors('productId')} ? ' is-invalid' : ''">
+                                                <option value="">Select product</option>
+                                                <option th:each="p : ${productList}" th:value="${p.uuid}" th:text="${p.title}">Featured Product</option>
+                                            </select>
+                                            <div class="invalid-feedback" th:errors="*{productId}">Product is required</div>
+                                            <div class="ads-help">Use this for single-product launches, hero promotions, and product-specific campaigns.</div>
+                                        </div>
+
+                                        <div class="ads-target-option" id="vendorBox">
+                                            <label class="form-label ads-required" for="vendorId">Vendor</label>
+                                            <select th:field="*{vendorId}"
+                                                    class="form-select"
+                                                    th:classappend="${#fields.hasErrors('vendorId')} ? ' is-invalid' : ''">
+                                                <option value="">Select vendor</option>
+                                                <option th:each="v : ${vendorList}"
+                                                        th:value="${v.uuid}"
+                                                        th:text="${v.vendorCode + ' - ' + v.companyName}">V-1001 - Vendor Name</option>
+                                            </select>
+                                            <div class="invalid-feedback" th:errors="*{vendorId}">Vendor is required</div>
+                                            <div class="ads-help">Route marketplace campaigns directly to a vendor storefront.</div>
+                                        </div>
+
+                                        <div class="ads-target-option" id="externalBox">
+                                            <label class="form-label ads-required" for="externalUrl">External URL</label>
+                                            <input type="url"
+                                                   th:field="*{externalUrl}"
+                                                   class="form-control"
+                                                   th:classappend="${#fields.hasErrors('externalUrl')} ? ' is-invalid' : ''"
+                                                   placeholder="https://example.com/campaign">
+                                            <div class="invalid-feedback" th:errors="*{externalUrl}">Valid URL is required</div>
+                                            <div class="ads-help">Use a full URL with https:// for partner or campaign landing pages.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div class="ads-savebar">
+                            <div>
+                                <strong class="d-block text-dark">Ready to publish?</strong>
+                                <span class="text-muted small">Review creative, destination, and active status before saving.</span>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a th:href="@{/admin/ads/list}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i>
+                                    <span>Cancel</span>
+                                </a>
+                                <button class="btn ads-submit" type="submit">
+                                    <i class="bi bi-save"></i>
+                                    <span>Save Ad</span>
+                                </button>
+                            </div>
+                        </div>
+                    </main>
+
+                    <aside class="ads-side">
+                        <section class="ads-panel">
+                            <div class="ads-panel-head">
+                                <div class="ads-panel-title">
+                                    <i class="bi bi-broadcast"></i>
+                                    <div>
+                                        <span>Status</span>
+                                        <h2>Publishing Control</h2>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ads-panel-body">
+                                <div class="ads-switch-row mb-3">
+                                    <div>
+                                        <label class="form-label mb-1">Active</label>
+                                        <div class="ads-help mt-0">Inactive ads remain saved but hidden from storefront placements.</div>
+                                    </div>
+                                    <div class="form-check form-switch m-0">
+                                        <input type="checkbox" th:field="*{active}" class="form-check-input" role="switch">
+                                    </div>
+                                </div>
+
+                                <div class="ads-field mb-0">
+                                    <label class="form-label" for="displayOrder">Display Order</label>
+                                    <input type="number"
+                                           min="0"
+                                           max="1000"
+                                           th:field="*{displayOrder}"
+                                           class="form-control"
+                                           th:classappend="${#fields.hasErrors('displayOrder')} ? ' is-invalid' : ''"
+                                           placeholder="0">
+                                    <div class="invalid-feedback" th:errors="*{displayOrder}">Display order error</div>
+                                    <div class="ads-help">Lower numbers appear first when multiple ads share the same placement.</div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="ads-panel">
+                            <div class="ads-panel-head">
+                                <div class="ads-panel-title">
+                                    <i class="bi bi-shield-check"></i>
+                                    <div>
+                                        <span>Quality</span>
+                                        <h2>Publishing Checklist</h2>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ads-panel-body">
+                                <ul class="ads-guide-list">
+                                    <li>
+                                        <i class="bi bi-check2-circle"></i>
+                                        <div>
+                                            <strong>Use readable creative</strong>
+                                            <span>Keep important text centered and visible on mobile screens.</span>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-check2-circle"></i>
+                                        <div>
+                                            <strong>Match placement size</strong>
+                                            <span>Use dimensions that fit the storefront placement to avoid cropping.</span>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-check2-circle"></i>
+                                        <div>
+                                            <strong>Choose one target</strong>
+                                            <span>The server keeps only the selected destination type when saving.</span>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-check2-circle"></i>
+                                        <div>
+                                            <strong>Image safety</strong>
+                                            <span>Uploads are restricted to JPG, PNG, and WEBP and stored as WEBP.</span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </section>
+                    </aside>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <th:block layout:fragment="page_js">
+        <script>
+            function toggleTargetFields() {
+                const targetType = document.getElementById('targetType');
+                const selected = targetType ? targetType.value : '';
+                const boxes = [
+                    {id: 'categoryBox', value: 'CATEGORY'},
+                    {id: 'productBox', value: 'PRODUCT'},
+                    {id: 'vendorBox', value: 'VENDOR'},
+                    {id: 'externalBox', value: 'EXTERNAL'}
+                ];
+
+                boxes.forEach((box) => {
+                    const element = document.getElementById(box.id);
+                    if (!element) {
+                        return;
+                    }
+                    const active = selected === box.value;
+                    element.style.display = active ? '' : 'none';
+                    element.classList.toggle('is-active', active);
+                    element.querySelectorAll('input, select').forEach((field) => {
+                        field.disabled = !active;
+                    });
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                toggleTargetFields();
+
+                const fileInput = document.getElementById('adImageFile');
+                if (!fileInput) {
+                    return;
+                }
+
+                fileInput.addEventListener('change', function () {
+                    const file = fileInput.files && fileInput.files[0];
+                    if (!file) {
+                        return;
+                    }
+
+                    let preview = document.getElementById('adImagePreview');
+                    const empty = document.getElementById('adImageEmpty');
+                    const frame = fileInput.closest('.ads-upload')?.querySelector('.ads-preview-frame');
+
+                    if (!preview && frame) {
+                        preview = document.createElement('img');
+                        preview.id = 'adImagePreview';
+                        preview.alt = 'Selected ad image preview';
+                        frame.appendChild(preview);
+                    }
+
+                    if (empty) {
+                        empty.style.display = 'none';
+                    }
+
+                    if (preview) {
+                        preview.src = URL.createObjectURL(file);
+                    }
+                });
+            });
         </script>
-    </div>   <!--  Layout end-->      </div><!--  Main Content  end-->
+    </th:block>
+</div>

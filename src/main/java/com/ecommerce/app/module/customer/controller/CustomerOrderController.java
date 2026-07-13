@@ -112,7 +112,29 @@ public class CustomerOrderController {
         userId.setId(loggedUserService.activeUserid());
 
         List<EmiPaymentPlan> customerEmiPlans = emiPaymentPlanService.findPlansForCustomer(userId.getId());
-        model.addAttribute("orderlist", salesOrderService.admin_all_Sales_order_list(null, userId.getId()));
+        List<Map<String, Object>> customerOrders = salesOrderService.admin_all_Sales_order_list(null, userId.getId());
+        model.addAttribute("orderlist", customerOrders);
+        model.addAttribute("orderGrandTotal", customerOrders.stream()
+                .map(orderRow -> orderRow.get("grandTotal"))
+                .filter(BigDecimal.class::isInstance)
+                .map(BigDecimal.class::cast)
+                .reduce(BigDecimal.ZERO, BigDecimal::add));
+        model.addAttribute("ordersInProgressCount", customerOrders.stream()
+                .map(this::orderStatus)
+                .filter(status -> status != null && status != OrderStatus.DELIVERED
+                && status != OrderStatus.COMPLETED && status != OrderStatus.CANCELLED
+                && status != OrderStatus.RETURNED)
+                .count());
+        model.addAttribute("ordersDeliveredCount", customerOrders.stream()
+                .map(this::orderStatus)
+                .filter(status -> status == OrderStatus.DELIVERED || status == OrderStatus.COMPLETED)
+                .count());
+        model.addAttribute("ordersAttentionCount", customerOrders.stream()
+                .map(this::orderStatus)
+                .filter(status -> status == OrderStatus.RETURN_REQUESTED
+                || status == OrderStatus.PARTIALLY_RETURNED || status == OrderStatus.RETURNED
+                || status == OrderStatus.CANCELLED)
+                .count());
         model.addAttribute(
                 "emiPlanByOrderId",
                 customerEmiPlans.stream()
@@ -129,6 +151,11 @@ public class CustomerOrderController {
         model.addAttribute("orderlist-panding", salesOrderRepository.findByCustomerAndStatusOrderByIdDesc(userId, OrderStatus.PENDING));
 
         return "customer/order/index";
+    }
+
+    private OrderStatus orderStatus(Map<String, Object> orderRow) {
+        Object status = orderRow.get("status");
+        return status instanceof OrderStatus ? (OrderStatus) status : null;
     }
 
     @GetMapping("/returns")

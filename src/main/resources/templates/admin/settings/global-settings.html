@@ -40,8 +40,36 @@
                 <div class="settings-status">
                     <span class="settings-status-icon"><i class="bi bi-shop"></i></span>
                     <div>
-                        <span>Storefront</span>
-                        <strong th:text="${settings.siteName ?: 'Universes Ecommerce'}">Universes Ecommerce</strong>
+                        <span>Store Mode</span>
+                        <strong th:text="${settings.storeMode != null and settings.storeMode.name() == 'SINGLE_VENDOR'} ? 'Single vendor' : 'Marketplace'">Marketplace</strong>
+                    </div>
+                </div>
+                <div class="settings-status">
+                    <span class="settings-status-icon"><i class="bi bi-diagram-3"></i></span>
+                    <div>
+                        <span>Sales Orders</span>
+                        <strong th:text="${settings.salesOrderMode != null and settings.salesOrderMode.name() == 'SINGLE_ORDER'} ? 'Single reference' : 'Split by vendor'">Split by vendor</strong>
+                    </div>
+                </div>
+                <div class="settings-status" th:classappend="${settings.secureCheckoutEnabled} ? '' : ' settings-status--warning'">
+                    <span class="settings-status-icon"><i class="bi bi-shield-lock"></i></span>
+                    <div>
+                        <span>Secure Checkout</span>
+                        <strong th:text="${settings.secureCheckoutEnabled} ? 'Enabled' : 'Disabled'">Enabled</strong>
+                    </div>
+                </div>
+                <div class="settings-status" th:classappend="${settings.allowGuestCheckout} ? '' : ' settings-status--warning'">
+                    <span class="settings-status-icon"><i class="bi bi-person-check"></i></span>
+                    <div>
+                        <span>Guest Checkout</span>
+                        <strong th:text="${settings.allowGuestCheckout} ? 'Enabled' : 'Disabled'">Enabled</strong>
+                    </div>
+                </div>
+                <div class="settings-status" th:classappend="${settings.guestMobileOtpVerificationEnabled} ? '' : ' settings-status--warning'">
+                    <span class="settings-status-icon"><i class="bi bi-phone"></i></span>
+                    <div>
+                        <span>Guest Mobile OTP</span>
+                        <strong th:text="${settings.guestMobileOtpVerificationEnabled} ? 'Enabled' : 'Disabled'">Enabled</strong>
                     </div>
                 </div>
                 <div class="settings-status">
@@ -233,22 +261,77 @@
                     </section>
 
                     <section class="tab-pane fade settings-panel" id="store" role="tabpanel" aria-labelledby="store-tab">
-                        <form th:action="@{/admin/settings/store}" th:object="${storeSettingsForm}" method="post" class="settings-section-form" novalidate>
+                        <form th:action="@{/admin/settings/store}" th:object="${storeSettingsForm}" method="post" class="settings-section-form" data-checkout-settings-form novalidate>
                             <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                             <input type="hidden" th:field="*{version}">
                             <div class="settings-panel-head"><div><p>Store Settings</p><h2>Currency, Tax, Stock, and Checkout</h2></div><button type="submit" class="btn btn-primary"><i class="bi bi-save"></i><span>Save Store</span></button></div>
+                            <div class="settings-mode-guide">
+                                <div>
+                                    <span class="settings-mode-icon"><i class="bi bi-buildings"></i></span>
+                                    <strong>Marketplace</strong>
+                                    <small>Products may belong to many vendors. Vendor orders, payout, shipment, and commission stay vendor-based.</small>
+                                </div>
+                                <div>
+                                    <span class="settings-mode-icon"><i class="bi bi-shop-window"></i></span>
+                                    <strong>Single Vendor</strong>
+                                    <small>Admin products lock to the selected primary vendor and public vendor registration is turned off.</small>
+                                </div>
+                                <div>
+                                    <span class="settings-mode-icon"><i class="bi bi-person-badge"></i></span>
+                                    <strong>Guest Checkout</strong>
+                                    <small>Secure Checkout controls login requirements. Guest Checkout controls mobile-based guest orders.</small>
+                                </div>
+                            </div>
                             <div class="alert alert-danger settings-alert" th:if="${#fields.hasErrors('*')}"><ul class="mb-0"><li th:each="err : ${#fields.errors('*')}" th:text="${err}">Validation message</li></ul></div>
                             <div class="settings-grid">
+                                <div class="settings-field">
+                                    <label class="form-label required">Store Mode</label>
+                                    <select th:field="*{storeMode}" class="form-select" required>
+                                        <option value="MARKETPLACE">Marketplace</option>
+                                        <option value="SINGLE_VENDOR">Single Vendor</option>
+                                    </select>
+                                    <div class="form-text">Single vendor mode uses one owner vendor and disables public vendor registration.</div>
+                                </div>
+                                <div class="settings-field">
+                                    <label class="form-label">Primary Vendor</label>
+                                    <select th:field="*{primaryVendorId}" class="form-select">
+                                        <option value="">Select owner vendor</option>
+                                        <option th:each="vendor : ${vendorProfiles}"
+                                                th:value="${vendor.id}"
+                                                th:text="${(vendor.companyName ?: 'Vendor #' + vendor.id) + ' (' + (vendor.vendorCode ?: 'No code') + ')'}">Vendor</option>
+                                    </select>
+                                    <div class="form-text">Required when Store Mode is Single Vendor.</div>
+                                </div>
                                 <div class="settings-field"><label class="form-label">Default Currency</label><select th:field="*{defaultCurrency}" class="form-select"><option value="BDT">BDT</option><option value="USD">USD</option><option value="EUR">EUR</option></select></div>
                                 <div class="settings-field"><label class="form-label">Tax Percentage (%)</label><input type="number" step="0.01" min="0" max="100" th:field="*{taxPercentage}" class="form-control"></div>
                                 <div class="settings-field"><label class="form-label">Low Stock Alert Qty</label><input type="number" th:field="*{lowStockAlertQty}" class="form-control" min="0"></div>
                                 <div class="settings-field"><label class="form-label">Minimum Order Amount</label><div class="input-group"><span class="input-group-text" th:text="*{defaultCurrency}">BDT</span><input type="number" step="0.01" min="0" th:field="*{minimumOrderAmount}" class="form-control"></div></div>
                                 <div class="settings-field"><label class="form-label">Maximum Order Amount</label><div class="input-group"><span class="input-group-text" th:text="*{defaultCurrency}">BDT</span><input type="number" step="0.01" min="0" th:field="*{maximumOrderAmount}" class="form-control"></div></div>
+                                <div class="settings-field">
+                                    <label class="form-label">Guest OTP Expiry Minutes</label>
+                                    <input type="number" min="1" th:field="*{guestOtpExpiryMinutes}" class="form-control">
+                                </div>
+                                <div class="settings-field">
+                                    <label class="form-label">Guest OTP Max Attempts</label>
+                                    <input type="number" min="1" th:field="*{guestOtpMaximumAttempts}" class="form-control">
+                                </div>
+                                <div class="settings-field">
+                                    <label class="form-label">Guest OTP Resend Cooldown Seconds</label>
+                                    <input type="number" min="0" th:field="*{guestOtpResendCooldownSeconds}" class="form-control">
+                                </div>
+                                <div class="settings-field">
+                                    <label class="form-label">Guest OTP Daily Send Limit</label>
+                                    <input type="number" min="1" th:field="*{guestOtpDailySendLimit}" class="form-control">
+                                </div>
                                 <div class="settings-toggle-group settings-field--wide">
                                     <label><input class="form-check-input" type="checkbox" th:field="*{taxEnabled}"> <span>Enable Tax</span></label>
                                     <label><input class="form-check-input" type="checkbox" th:field="*{stockManagementEnabled}"> <span>Enable Stock Management</span></label>
-                                    <label><input class="form-check-input" type="checkbox" th:field="*{allowGuestCheckout}"> <span>Allow Guest Checkout</span></label>
+                                    <label><input class="form-check-input" type="checkbox" th:field="*{secureCheckoutEnabled}"> <span><strong>Secure Checkout</strong><small>Require customer login before checkout.</small></span></label>
+                                    <label><input class="form-check-input" type="checkbox" th:field="*{allowGuestCheckout}"> <span><strong>Guest Checkout</strong><small>Allow checkout without logging into an existing account.</small></span></label>
+                                    <label><input class="form-check-input" type="checkbox" th:field="*{guestMobileOtpVerificationEnabled}"> <span>Guest Checkout Mobile OTP Verification</span></label>
+                                    <label><input class="form-check-input" type="checkbox" th:field="*{guestAutoCreateCustomerAccount}"> <span>Auto-create Customer Account</span></label>
                                 </div>
+                                <input type="hidden" th:field="*{guestMobileRequired}" value="true">
                             </div>
                         </form>
                     </section>
@@ -292,10 +375,30 @@
                             <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                             <input type="hidden" th:field="*{version}">
                             <div class="settings-panel-head"><div><p>Order Settings</p><h2>Order Codes and Automation</h2></div><button type="submit" class="btn btn-primary"><i class="bi bi-save"></i><span>Save Order</span></button></div>
+                            <div class="settings-mode-guide settings-mode-guide--two">
+                                <div>
+                                    <span class="settings-mode-icon"><i class="bi bi-receipt"></i></span>
+                                    <strong>Single Sales Order</strong>
+                                    <small>Customer sees one order reference through the order group. Vendor child orders remain available internally.</small>
+                                </div>
+                                <div>
+                                    <span class="settings-mode-icon"><i class="bi bi-diagram-3"></i></span>
+                                    <strong>Split By Vendor</strong>
+                                    <small>Each vendor gets its own fulfillment order. This is the safest default for marketplace operations.</small>
+                                </div>
+                            </div>
                             <div class="alert alert-danger settings-alert" th:if="${#fields.hasErrors('*')}"><ul class="mb-0"><li th:each="err : ${#fields.errors('*')}" th:text="${err}">Validation message</li></ul></div>
                             <div class="settings-grid">
                                 <div class="settings-field"><label class="form-label">Order Prefix</label><input type="text" th:field="*{orderPrefix}" class="form-control" placeholder="ORD" maxlength="20"></div>
                                 <div class="settings-field"><label class="form-label">Invoice Prefix</label><input type="text" th:field="*{invoicePrefix}" class="form-control" placeholder="INV" maxlength="20"></div>
+                                <div class="settings-field settings-field--wide">
+                                    <label class="form-label required">Sales Order Mode</label>
+                                    <select th:field="*{salesOrderMode}" class="form-select" required>
+                                        <option value="SINGLE_ORDER">Single Sales Order</option>
+                                        <option value="SPLIT_BY_VENDOR">Split By Vendor</option>
+                                    </select>
+                                    <div class="form-text">Marketplace single-order display should use an order group while keeping vendor-level sales orders internally.</div>
+                                </div>
                                 <div class="settings-field"><label class="form-label">Cancel Unpaid After Minutes</label><input type="number" th:field="*{cancelOrderAfterMinutes}" class="form-control" min="0"></div>
                                 <div class="settings-field"><label class="form-label">Return Allowed Days</label><input type="number" th:field="*{returnAllowedDays}" class="form-control" min="0"></div>
                                 <div class="settings-field"><label class="form-label">Refund Allowed Days</label><input type="number" th:field="*{refundAllowedDays}" class="form-control" min="0"></div>

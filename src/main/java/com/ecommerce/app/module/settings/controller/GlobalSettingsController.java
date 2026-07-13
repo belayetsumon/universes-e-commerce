@@ -14,20 +14,25 @@ import com.ecommerce.app.module.settings.services.GlobalSettingsService;
 import com.ecommerce.app.module.settings.services.GlobalSettingsService.SettingsImageType;
 import com.ecommerce.app.module.settings.services.GlobalSettingsService.SettingsOperationException;
 import com.ecommerce.app.module.settings.services.GlobalSettingsService.SettingsValidationException;
+import com.ecommerce.app.vendor.repository.VendorprofileRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.UUID;
+import org.springframework.data.domain.Sort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -54,9 +59,14 @@ public class GlobalSettingsController {
     private static final String ACTIVE_SECTION_ATTRIBUTE = "activeSettingsSection";
 
     private final GlobalSettingsService globalSettingsService;
+    private final VendorprofileRepository vendorprofileRepository;
 
-    public GlobalSettingsController(GlobalSettingsService globalSettingsService) {
+    public GlobalSettingsController(
+            GlobalSettingsService globalSettingsService,
+            VendorprofileRepository vendorprofileRepository
+    ) {
         this.globalSettingsService = globalSettingsService;
+        this.vendorprofileRepository = vendorprofileRepository;
     }
 
     @GetMapping("/index")
@@ -74,6 +84,13 @@ public class GlobalSettingsController {
     public String updatePageFallback(RedirectAttributes redirectAttributes) {
         redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE, "Use a section save button to update settings.");
         return REDIRECT;
+    }
+
+    @GetMapping({"/basic", "/seo", "/store", "/payment", "/delivery", "/order", "/social", "/policy", "/maintenance"})
+    public String sectionPageFallback(HttpServletRequest request, RedirectAttributes redirectAttributes) {
+        String sectionId = resolveSectionId(request);
+        redirectAttributes.addFlashAttribute(ACTIVE_SECTION_ATTRIBUTE, sectionId);
+        return REDIRECT + "#" + sectionId;
     }
 
     @PostMapping("/update")
@@ -227,6 +244,19 @@ public class GlobalSettingsController {
         return VIEW;
     }
 
+    @ExceptionHandler({MaxUploadSizeExceededException.class, MultipartException.class})
+    public String handleUploadError(Exception ex, HttpServletRequest request, Model model) {
+        String sectionId = resolveSectionId(request);
+        LOGGER.warn("Settings upload rejected. section={}, uri={}", sectionId, request.getRequestURI(), ex);
+        GlobalSettings settings = loadSettingsForView(model);
+        model.addAttribute(SETTINGS_ATTRIBUTE, settings);
+        addSectionForms(model, settings);
+        model.addAttribute(ACTIVE_SECTION_ATTRIBUTE, sectionId);
+        model.addAttribute(ERROR_ATTRIBUTE,
+                settingsUploadErrorMessage(sectionId) + " Please upload a JPG, PNG, or WEBP image within the configured upload size limit.");
+        return VIEW;
+    }
+
     private String saveSection(
             String sectionName,
             String sectionId,
@@ -275,6 +305,7 @@ public class GlobalSettingsController {
     }
 
     private void addSectionForms(Model model, GlobalSettings settings) {
+        model.addAttribute("vendorProfiles", vendorprofileRepository.findAll(Sort.by(Sort.Direction.ASC, "companyName")));
         if (!model.containsAttribute(BASIC_FORM_ATTRIBUTE)) {
             model.addAttribute(BASIC_FORM_ATTRIBUTE, BasicSiteSettingsForm.from(settings));
         }
@@ -324,6 +355,48 @@ public class GlobalSettingsController {
 
     private String errorReference() {
         return UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    private String resolveSectionId(HttpServletRequest request) {
+        if (request == null || request.getRequestURI() == null) {
+            return "basic";
+        }
+        String uri = request.getRequestURI().toLowerCase();
+        if (uri.endsWith("/seo")) {
+            return "seo";
+        }
+        if (uri.endsWith("/store")) {
+            return "store";
+        }
+        if (uri.endsWith("/payment")) {
+            return "payment";
+        }
+        if (uri.endsWith("/delivery")) {
+            return "delivery";
+        }
+        if (uri.endsWith("/order")) {
+            return "order";
+        }
+        if (uri.endsWith("/social")) {
+            return "social";
+        }
+        if (uri.endsWith("/policy")) {
+            return "policy";
+        }
+        if (uri.endsWith("/maintenance")) {
+            return "maintenance";
+        }
+        return "basic";
+    }
+
+    private String settingsUploadErrorMessage(String sectionId) {
+        if ("seo".equals(sectionId)) {
+            return "SEO settings could not be saved because the OG image upload was rejected.";
+        }
+        if ("basic".equals(sectionId)) {
+            return "Basic site settings could not be saved because the image upload was rejected.";
+        }
+        return "Settings could not be saved because the upload was rejected.";
     }
 
     @FunctionalInterface

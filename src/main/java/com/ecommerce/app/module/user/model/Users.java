@@ -43,7 +43,6 @@ public class Users implements Serializable {
     private String lastName;
 
     @Column(name = "email", unique = true)
-    @NotBlank(message = "*Please provide your email")
     @Email(message = "Invalid email format")
     private String email;
 
@@ -55,6 +54,22 @@ public class Users implements Serializable {
     @Column(length = 60)
     @JsonIgnore
     private String password;
+
+    @Column(name = "mobile_verified", nullable = false)
+    private boolean mobileVerified = false;
+
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "registration_source", length = 30)
+    private RegistrationSource registrationSource;
+
+    @Column(name = "guest_account", nullable = false)
+    private boolean guestAccount = false;
+
+    @Column(name = "password_configured", nullable = false)
+    private boolean passwordConfigured = true;
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "parent_id")
@@ -192,6 +207,46 @@ public class Users implements Serializable {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public boolean isMobileVerified() {
+        return mobileVerified;
+    }
+
+    public void setMobileVerified(boolean mobileVerified) {
+        this.mobileVerified = mobileVerified;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
+    public RegistrationSource getRegistrationSource() {
+        return registrationSource;
+    }
+
+    public void setRegistrationSource(RegistrationSource registrationSource) {
+        this.registrationSource = registrationSource;
+    }
+
+    public boolean isGuestAccount() {
+        return guestAccount;
+    }
+
+    public void setGuestAccount(boolean guestAccount) {
+        this.guestAccount = guestAccount;
+    }
+
+    public boolean isPasswordConfigured() {
+        return passwordConfigured;
+    }
+
+    public void setPasswordConfigured(boolean passwordConfigured) {
+        this.passwordConfigured = passwordConfigured;
     }
 
     public Users getParent() {

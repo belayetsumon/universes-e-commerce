@@ -102,6 +102,10 @@ public class ManualCommunicationPermissionService {
         if (!allowedAudiences(actor.getActorType()).contains(request.getAudience())) {
             throw new AccessDeniedException("This sender is not allowed to use audience " + request.getAudience() + ".");
         }
+        if (request.getAudience() == ManualAudience.SELECTED_OWN_CUSTOMERS
+                && (request.getRecipientIds() == null || request.getRecipientIds().stream().noneMatch(java.util.Objects::nonNull))) {
+            throw new IllegalArgumentException("Select at least one of your customers before sending a selected-customer message.");
+        }
     }
 
     public Set<ManualAudience> allowedAudiences(ManualActorType actorType) {

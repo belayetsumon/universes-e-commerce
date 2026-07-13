@@ -1,438 +1,120 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
-    <div layout:fragment = "main_content">
-        <section>
-            <div class="d-flex justify-content-start align-items-center mb-4">
-                <h2 class="mb-0 me-3">Sales</h2>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a  class="nav-link"href="#">Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Sales Order Details</li>
-                    </ol>
-                </nav>
-            </div>
-        </section>
-        <div class="row">
-            <div class="col-sm-12">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="row"> <div class="col-sm-5 font-weight-bold  ">
-                                <i class="bi bi-list-task"></i> Order Details (#[[${orderdetails.orderCode}]])
+    <th:block layout:fragment="page_css">
+        <link rel="stylesheet" th:href="@{/assets/admin/pages/order-details/order-details.css}">
+    </th:block>
+    <div layout:fragment="main_content">
+        <main class="order-workspace">
+            <section class="card order-hero mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center border-0 py-3">
+                    <div class="h5 mb-0 text-white"><i class="bi bi-receipt-cutoff me-2 text-warning"></i>Order operations</div>
+                    <span class="badge text-bg-light border border-white border-opacity-25">Sales order</span>
+                </div>
+                <div class="card-body py-4 px-4">
+                    <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                        <div class="order-hero-title">
+                            <span class="order-hero-icon"><i class="bi bi-box-seam fs-4"></i></span>
+                            <div>
+                            <nav aria-label="Breadcrumb">
+                                <ol class="breadcrumb mb-2 small">
+                                    <li class="breadcrumb-item"><a th:href="@{/admin-customer/orderlist}">Sales orders</a></li>
+                                    <li class="breadcrumb-item active" aria-current="page">Order details</li>
+                                </ol>
+                            </nav>
+                            <div class="d-flex align-items-center flex-wrap gap-2">
+                                <h1 class="order-code mb-0" th:text="${orderdetails.orderCode}">ORD-0001</h1>
+                                <span class="order-status" th:text="${orderdetails.status}">PENDING</span>
                             </div>
-                            <div class="col-sm-7 text-end">
-                                <div class="btn-group ">
-                                    <a class="btn btn-primary btn-sm"
-                                       th:if="${shipmentEligible}"
-                                       th:href="@{/admin/shipments/create(orderUuid=${orderdetails.uuid})}">
-                                        <i class="bi bi-truck"></i> Create Shipment
-                                    </a>
-                                    <a class="btn btn-outline-primary btn-sm"
-                                       th:if="${existingShipmentId != null}"
-                                       th:href="@{/admin/shipments/edit/{id}(id=${existingShipmentId})}">
-                                        <i class="bi bi-pencil"></i> Edit Shipment
-                                    </a>
-                                    <a class="btn btn-success btn-sm float-right" th:href="@{/admin-customer/orders/{id}/pdf(id=${orderdetails.id})}">
-                                        <i class="bi bi-file-earmark-pdf"></i> PDF
-                                    </a>
-                                    <a th:href="@{/admin-customer/orderlist}" type="button" class="btn  btn-danger btn-sm"><i class="bi bi-x-circle"></i> Close</a></div>
+                            <p class="mb-0 mt-2 order-hero-subtitle">Review fulfilment, customer delivery details, and the complete order record.</p>
                             </div>
+                        </div>
+                        <div class="d-flex align-items-start justify-content-lg-end flex-wrap gap-2">
+                            <a class="btn btn-light btn-sm" th:href="@{/admin-customer/orders/{id}/pdf(id=${orderdetails.id})}">
+                                <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
+                            </a>
+                            <a class="btn btn-outline-light btn-sm" th:if="${shipmentEligible}"
+                               th:href="@{/admin/shipments/create(orderUuid=${orderdetails.uuid})}">
+                                <i class="bi bi-truck me-1"></i> Create shipment
+                            </a>
+                            <a class="btn btn-outline-light btn-sm" th:if="${existingShipmentId != null}"
+                               th:href="@{/admin/shipments/edit/{id}(id=${existingShipmentId})}">
+                                <i class="bi bi-pencil-square me-1"></i> Edit shipment
+                            </a>
+                            <a class="btn btn-outline-light btn-sm" th:href="@{/admin-customer/orderlist}">
+                                <i class="bi bi-arrow-left me-1"></i> Back to orders
+                            </a>
                         </div>
                     </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-sm-3">
-                                <div class="card">
-                                    <div class="card-header ">
-                                        <i class="fas fa-shopping-cart"></i> Order Details
-                                    </div>
-                                    <ul class="list-group  list-group-flush">
-                                        <li class="list-group-item"> Order No:  <span th:text="${orderdetails.orderCode}"></span></li>
-                                        <li class="list-group-item"> Date:<span th:text="${orderdetails.created}"></span>
-                                            <!--                                            <span th:text="${#dates.format(orderdetails.created, 'dd-MM-yyyy hh:mm:ss a', 'Asia/Dhaka')}"></span>-->
-                                        </li>
-                                    </ul>
-                                </div>
+                </div>
+            </section>
 
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="card">
-                                    <div class="card-header ">
-                                        <i class="fas fa-user"></i> Customer Details
-                                    </div>
-                                    <ul class="list-group list-group-flush">
-                                        <li class="list-group-item">Customer Name: <span>   [[${orderdetails.customer.firstName}]] [[${orderdetails.customer.lastName}]] </span> </li>
-                                        <li class="list-group-item">Email: <span th:text="${orderdetails.customer.email}"></span></li>
-                                        <li class="list-group-item">Mobile: <span th:text="${orderdetails.customer.mobile}"></span></li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <div class="col-sm-5">
-                                <div class="card">
-                                    <div class="card-header ">
-                                        Status
-                                    </div>
-                                    <table class="table ">
-                                        <thead>
-                                            <tr>
-
-                                                <th scope="col"> Present Order Status</th>
-                                                <td scope="col"><span th:text="${orderdetails.status}"></span></td>
-
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td colspan="2">
-
-                                                    <label class="my-2" > Update Status </label>
-
-                                                    <form  th:action="@{/admin-customer/statuschange}">
-
-                                                        <input type="hidden" name="id" th:value="${orderdetails.id}"  />
-                                                        <select id="" class="form-control col-sm-3"  name="status" required>
-                                                            <option value=""> Select one</option>
-                                                            <option th:each =" statusTypes : ${statusType}"
-                                                                    th:value="${statusTypes} "
-                                                                    th:text="${statusTypes}"> Select one</option>
-                                                        </select>
-                                                        <div class="form-group">
-                                                            <label class="my-2" >Remark </label>
-                                                            <input type="text" class="form-control col-sm-3" name="remark"  />
-                                                        </div>
-                                                        <div class="form-group  mt-2 text-center">
-                                                            <button type="submit"  id="submitBtn" class="btn btn-success"> <i class="bi bi-check-circle"></i>  Update</button>
-                                                        </div>
-                                                    </form>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                            </div>
-                            <div class="col-sm-12">
-                                <div class="card mt-3 mb-3">
-                                    <div class="card-header d-flex justify-content-between align-items-center">
-                                        <!-- Left Button -->
-                                        <div>
-                                            <i class="bi bi-list-task me-1"></i> Product Line
-                                        </div>
-                                        <!-- Right Button -->
-                                        <div>
-                                            <a href="#" class="btn btn-success btn-sm">
-                                                Add shipping Charge
-                                            </a>
-                                            <a href="#" class="btn btn-success btn-sm">
-                                                Add Packaging Cost
-                                            </a>
-                                        </div>
-                                    </div>
-
-
-
-
-
-                                    <div class="card-body">
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered"
-                                                   th:if="${not #lists.isEmpty(orderdetails.orderItem)}">
-                                                <thead class="table-light">
-                                                    <tr>
-                                                        <th scope="col">#</th>
-                                                        <th scope="col">Product</th>
-                                                        <th scope="col">Photo</th>
-                                                        <th scope="col">Sales price</th>
-                                                        <th scope="col">Quantity</th>
-                                                        <th scope="col">Discount Rate %</th>
-                                                        <th scope="col">Discount Amount</th>
-                                                        <th scope="col">Market Place Commission Rate %</th>
-                                                        <th scope="col">Market Place Commission Amount</th>
-                                                        <th scope="col">Vendor Amount</th>
-                                                        <th scope="col">Vat Rate %</th>
-                                                        <th scope="col">Vat Amount</th>
-                                                        <th scope="col">Item Total</th>
-                                                        <th scope="col">Action</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr th:each="orderItems,status:${orderitem}">
-                                                        <th>[[${status.count}]]</th>
-                                                        <td>
-                                                            <a class="nav-link"
-                                                               th:href="@{/public/single-product/{prodid}(prodid=${orderItems.productid})}">
-                                                                <span th:text="${orderItems.title}"></span>
-                                                            </a>
-                                                        </td>
-                                                        <td>
-                                                            <span th:if="${not #strings.isEmpty(orderItems.imageName)}">
-                                                                <img th:src="@{/files/}+${orderItems.imageName}"
-                                                                     class="img-fluid rounded" width="100" height="100"/>
-                                                            </span>
-                                                            <span th:if="${#strings.isEmpty(orderItems.imageName)}">Image Not Found</span>
-                                                        </td>
-                                                        <td th:text="${orderItems.salesPrice}"></td>
-                                                        <td th:text="${orderItems.quantity}"></td>
-                                                        <td th:text="${orderItems.discountRate}"></td>
-                                                        <td th:text="${orderItems.discountAmount}"></td>
-                                                        <td th:text="${orderItems.marketPlaceCommissionRate}"></td>
-                                                        <td th:text="${orderItems.marketPlaceCommissionAmount}"></td>
-                                                        <td th:text="${orderItems.vendorAmount}"></td>
-                                                        <td th:text="${orderItems.vatRate}"></td>
-                                                        <td th:text="${orderItems.vatAmount}"></td>
-                                                        <td th:text="${orderItems.itemTotal}"></td>
-                                                        <td><button class="btn btn-sm btn-danger">Delete</button></td>
-                                                    </tr>
-
-                                                    <!-- Totals Row -->
-                                                    <tr class="fw-bold table-light">
-                                                        <td></td><td></td><td></td>
-                                                        <td>[[${total_sales_price}]]</td>
-                                                        <td>[[${total_quantity}]]</td>
-                                                        <td></td>
-                                                        <td>[[${total_discount}]]</td>
-                                                        <td></td>
-                                                        <td>[[${total_company_profit}]]</td>
-                                                        <td>[[${total_vendorAmount}]]</td>
-                                                        <td></td>
-                                                        <td>[[${total_vat}]]</td>
-                                                        <td>[[${item_total}]]</td>
-                                                        <td></td>
-                                                    </tr>
-
-                                                    <!-- Packaging -->
-                                                    <tr>
-                                                        <td colspan="10"></td>
-                                                        <td colspan="3">Packaging Cost</td>
-                                                        <td>Edit</td>
-                                                    </tr>
-
-                                                    <!-- Shipping -->
-                                                    <tr>
-                                                        <td colspan="10"></td>
-                                                        <td colspan="3">Shipping Charge</td>
-                                                        <td>Edit</td>
-                                                    </tr>
-
-                                                    <!-- Grand Total -->
-                                                    <tr class="fw-bold table-success">
-                                                        <td colspan="10"></td>
-                                                        <td colspan="2">Grand Total</td>
-                                                        <td>[[${item_total}]]</td>
-                                                        <td></td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-
-                                        <!-- If no orders -->
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered" th:if="${#lists.isEmpty(orderdetails.orderItem)}">
-                                                <tr>
-                                                    <td>Sorry, no order found!</td>
-                                                </tr>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-
-                                <div class="card mt-3 mb-3">
-                                    <div class="card-header ">
-                                        <i class="far fa-comment"></i><i class="bi bi-list-task"></i> Billing Address
-                                    </div>
-                                    <div th:if="${billingAddress != null}">
-                                        <table class="table table-bordered">
-                                            <thead>
-                                                <tr>
-                                                    <th scope="col">First Name</th><td scope="col"> [[${billingAddress.firstName}]]</td>
-                                                </tr> <tr>
-                                                    <th scope="col">Last name</th><td scope="col"> [[${billingAddress.lastName}]] </td>
-                                                </tr>
-                                                <tr>
-                                                    <th scope="col">Company</th><td scope="col">[[${billingAddress.company}]]</td>
-                                                </tr>
-                                                <tr>
-                                                    <th scope="col">Address Line One</th><td scope="col">[[${billingAddress.addressLineOne}]]</td>
-                                                </tr>
-                                                <tr>
-                                                    <th scope="col">address Line Two</th><td scope="col">[[${billingAddress.addressLinetwo}]]</td>
-                                                </tr>
-                                                <tr>
-                                                    <th scope="col">City</th><td scope="col">[[${billingAddress.city}]]</td>
-                                                </tr>
-                                                <tr>
-                                                    <th scope="col">District</th><td scope="col">[[${billingAddress.district}]]</td>
-                                                </tr>
-                                                <tr>
-                                                    <th scope="col">country</th><td scope="col">[[${billingAddress.country}]]</td>
-                                                </tr>
-                                                <tr>
-                                                    <th scope="col">Post Code</th><td scope="col">[[${billingAddress.postCode}]]</td>
-                                                </tr>
-                                                <tr>
-                                                    <th scope="col">Mobile</th><td scope="col">[[${billingAddress.mobile}]]</td>
-                                                </tr>
-                                                <tr>
-                                                    <th scope="col">Email</th><td scope="col">[[${billingAddress.email}]]</td>
-                                                </tr>
-                                            </thead>
-
-                                        </table>
-                                    </div>
-                                    <div th:unless="${billingAddress != null}">
-                                        <p>No billing address available.</p>
-                                    </div>
-                                </div>
-
-
-                            </div>
-
-                            <div class="col-sm-6">
-
-                                <div class="card mt-3 mb-3">
-                                    <div class="card-header ">
-                                        <i class="bi bi-list-task"></i>Shiping Address
-                                    </div>
-                                    <div th:if="${shippingAddress != null}">
-                                        <table class="table table-bordered">
-                                            <thead>
-                                                <tr>
-                                                    <th scope="col">First Name</th><td scope="col"> [[${shippingAddress.firstName}]]</td>
-                                                </tr> <tr>
-                                                    <th scope="col">Last name</th><td scope="col"> [[${shippingAddress.lastName}]] </td>
-                                                </tr>
-                                                <tr>
-                                                    <th scope="col">Company</th><td scope="col">[[${shippingAddress.company}]]</td>
-                                                </tr>
-                                                <tr>
-                                                    <th scope="col">Address Line One</th><td scope="col">[[${shippingAddress.addressLineOne}]]</td>
-                                                </tr>
-                                                <tr>
-                                                    <th scope="col">address Line Two</th><td scope="col">[[${shippingAddress.addressLinetwo}]]</td>
-                                                </tr>
-                                                <tr>
-                                                    <th scope="col">City</th><td scope="col">[[${shippingAddress.city}]]</td>
-                                                </tr>
-                                                <tr>
-                                                    <th scope="col">District</th><td scope="col">[[${shippingAddress.district}]]</td>
-                                                </tr>
-                                                <tr>
-                                                    <th scope="col">country</th><td scope="col">[[${shippingAddress.country}]]</td>
-                                                </tr>
-                                                <tr>
-                                                    <th scope="col">Post Code</th><td scope="col">[[${shippingAddress.postCode}]]</td>
-                                                </tr>
-                                                <tr>
-                                                    <th scope="col">Mobile</th><td scope="col">[[${shippingAddress.mobile}]]</td>
-                                                </tr>
-                                                <tr>
-                                                    <th scope="col">Email</th><td scope="col">[[${shippingAddress.email}]]</td>
-                                                </tr>
-                                            </thead>
-
-                                        </table>
-                                    </div>
-                                    <div th:unless="${shippingAddress != null}">
-                                        <p>No billing address available.</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-sm-12">
-
-                                <div class="card mt-3 mb-3">
-                                    <div class="card-header ">
-                                        <i class="bi bi-list-task"></i>Order History
-                                    </div>
-                                    <table class="table table-bordered" th:if="${ not #lists.isEmpty(orderhistory)}">
-
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">#</th>
-                                                <th scope="col">Status</th>
-                                                <th scope="col">Remark</th>
-                                                <th scope="col">Order Status Changed By</th>
-                                                <th scope="col">Created</th>
-                                                <th scope="col">Created By</th>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody>
-                                            <tr th:each="orderhistorys,status:${orderhistory}">
-                                                <th> [[${status.count}]]</th>
-                                                <td th:text="${orderhistorys.status}">Otto</td>
-                                                <td th:text="${orderhistorys.remark}">Otto</td>
-                                                <td th:text="${orderhistorys.OrderStatusChanged}">Otto</td>
-                                                <td th:text="${orderhistorys.created}">Otto</td>
-                                                <td th:text="${orderhistorys.createdBy}">Otto</td>
-                                            </tr>
-                                        </tbody>
-
-                                    </table>
-
-                                    <table class="table table-bordered" th:if="${ #lists.isEmpty(orderhistory)}">
-                                        <tr>
-                                            <td> Sorry no order found ! </td>
-                                        </tr>
-                                    </table>
-                                </div>
-
-                                <div class="card mt-3 mb-3">
-                                    <div class="card-header ">
-                                        <i class="bi bi-list-task"></i>Audit
-                                    </div>
-                                    <table class="table table-bordered" >
-
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">Created</th>
-                                                <th scope="col">Created By</th>
-                                                <th scope="col">Updated</th>
-                                                <th scope="col">Updated By</th>
-
-                                            </tr>
-                                        </thead>
-
-                                        <tbody>
-                                            <tr>
-                                                <td th:text="${orderdetails.created}">Otto</td>
-                                                <td th:text="${orderdetails.createdBy}">Otto</td>
-                                                <td th:text="${orderdetails.modified}">Otto</td>
-                                                <td th:text="${orderdetails.modifiedBy}">Otto</td>
-                                            </tr>
-                                        </tbody>
-
-                                    </table>
-
-                                    <table class="table table-bordered" th:if="${ #lists.isEmpty(orderhistory)}">
-                                        <tr>
-                                            <td> Sorry no order found ! </td>
-                                        </tr>
-                                    </table>
-                                </div>
-                            </div>
-
-                        </div>
-
-
-
-                    </div><!--  Card body end-->
-
-
-
-
-
-
-                </div><!--  Card  end-->
-
-
+            <div th:if="${not #strings.isEmpty(successMessage)}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i><span th:text="${successMessage}">Order status updated successfully.</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-        </div>
-    </div></div>
+            <div th:if="${not #strings.isEmpty(errorMessage)}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${errorMessage}">The order could not be updated.</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${existingShipmentId == null and shipmentBlockReason != null}" class="alert alert-light border d-flex gap-2 mb-4" role="status">
+                <i class="bi bi-info-circle text-primary"></i><span th:text="${shipmentBlockReason}">Shipment guidance</span>
+            </div>
+
+            <section class="order-status-grid mb-4">
+                <div class="order-status-card"><span class="order-status-icon"><i class="bi bi-person"></i></span><div><span>Customer</span><strong th:text="${orderdetails.customer.firstName + ' ' + orderdetails.customer.lastName}">Customer</strong></div></div>
+                <div class="order-status-card"><span class="order-status-icon"><i class="bi bi-telephone"></i></span><div><span>Mobile</span><strong th:text="${orderdetails.customer.mobile}">Mobile</strong></div></div>
+                <div class="order-status-card"><span class="order-status-icon"><i class="bi bi-boxes"></i></span><div><span>Order items</span><strong th:text="${total_quantity}">0</strong></div></div>
+                <div class="order-status-card"><span class="order-status-icon"><i class="bi bi-cash-stack"></i></span><div><span>Grand total</span><strong th:text="${orderdetails.grandTotal}">0.00</strong></div></div>
+            </section>
+
+            <div class="row g-4 mb-4">
+                <div class="col-lg-8">
+                    <section class="card order-panel h-100">
+                        <div class="card-header d-flex align-items-center justify-content-between"><span><i class="bi bi-box-seam me-2 text-primary"></i>Order items</span><span class="text-muted fw-normal small" th:text="${total_quantity + ' items'}">0 items</span></div>
+                        <div class="table-responsive">
+                            <table class="table order-table mb-0" th:if="${not #lists.isEmpty(orderitem)}">
+                                <thead><tr><th>#</th><th>Product</th><th class="text-end">Unit price</th><th class="text-end">Qty</th><th class="text-end">Discount</th><th class="text-end">VAT</th><th class="text-end">Total</th></tr></thead>
+                                <tbody>
+                                    <tr th:each="item, itemStatus : ${orderitem}">
+                                        <td class="text-muted" th:text="${itemStatus.count}">1</td>
+                                        <td><div class="d-flex align-items-center gap-2"><img th:if="${not #strings.isEmpty(item.imageName)}" class="order-product-image" th:src="@{/files/}+${item.imageName}" alt="Product image"/><span th:unless="${not #strings.isEmpty(item.imageName)}" class="order-contact-icon"><i class="bi bi-image"></i></span><div><a class="fw-semibold text-decoration-none" th:href="@{/public/single-product/{prodid}(prodid=${item.productid})}" th:text="${item.title}">Product</a><div class="small text-muted" th:if="${item.variantSummary != null}" th:text="${item.variantSummary}">Variant</div></div></div></td>
+                                        <td class="order-amount" th:text="${item.salesPrice}">0</td><td class="order-amount" th:text="${item.quantity}">0</td><td class="order-amount" th:text="${item.discountAmount}">0</td><td class="order-amount" th:text="${item.vatAmount}">0</td><td class="order-amount fw-semibold" th:text="${item.itemTotal}">0</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot><tr><td colspan="2">Line totals</td><td class="order-amount" th:text="${total_sales_price}">0</td><td class="order-amount" th:text="${total_quantity}">0</td><td class="order-amount" th:text="${total_discount}">0</td><td class="order-amount" th:text="${total_vat}">0</td><td class="order-amount" th:text="${item_total}">0</td></tr></tfoot>
+                            </table>
+                            <div th:if="${#lists.isEmpty(orderitem)}" class="p-5 text-center text-muted"><i class="bi bi-inbox fs-3 d-block mb-2"></i>No order items are available.</div>
+                        </div>
+                    </section>
+                </div>
+                <div class="col-lg-4">
+                    <section class="card order-panel mb-4">
+                        <div class="card-header"><i class="bi bi-arrow-repeat me-2 text-primary"></i>Update order status</div>
+                        <div class="card-body">
+                            <form method="post" th:action="@{/admin-customer/statuschange}">
+                                <input type="hidden" name="id" th:value="${orderdetails.id}" />
+                                <label class="form-label small fw-semibold" for="status">New status</label>
+                                <select id="status" class="form-select" name="status" required><option value="">Select a status</option><option th:each="statusType : ${statusType}" th:value="${statusType}" th:text="${statusType}">Status</option></select>
+                                <label class="form-label small fw-semibold mt-3" for="remark">Internal remark <span class="text-muted fw-normal">(optional)</span></label>
+                                <textarea id="remark" class="form-control" name="remark" rows="3" maxlength="500" placeholder="Explain the reason for this update"></textarea>
+                                <button class="btn btn-primary w-100 mt-3" type="submit"><i class="bi bi-check2-circle me-1"></i> Save status update</button>
+                            </form>
+                        </div>
+                    </section>
+                    <section class="card order-panel">
+                        <div class="card-header"><i class="bi bi-receipt me-2 text-primary"></i>Order summary</div>
+                        <div class="card-body"><div class="order-summary-row"><span class="text-muted">Item total</span><strong th:text="${item_total}">0</strong></div><div class="order-summary-row"><span class="text-muted">Discount</span><strong th:text="${total_discount}">0</strong></div><div class="order-summary-row"><span class="text-muted">VAT</span><strong th:text="${total_vat}">0</strong></div><div class="order-summary-row"><span class="text-muted">Shipping</span><strong th:text="${orderdetails.deliveryCharge}">0</strong></div><div class="order-summary-row"><span class="text-muted">Packaging</span><strong th:text="${orderdetails.packingCharge}">0</strong></div><div class="order-summary-row order-summary-total"><span>Grand total</span><strong th:text="${orderdetails.grandTotal}">0</strong></div></div>
+                    </section>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-lg-6"><section class="card order-panel h-100"><div class="card-header"><i class="bi bi-person-vcard me-2 text-primary"></i>Billing address</div><div class="card-body order-address" th:if="${billingAddress != null}"><div class="fw-semibold text-dark" th:text="${billingAddress.firstName + ' ' + billingAddress.lastName}">Name</div><div th:if="${not #strings.isEmpty(billingAddress.company)}" th:text="${billingAddress.company}">Company</div><div th:text="${billingAddress.addressLineOne}">Address</div><div th:if="${not #strings.isEmpty(billingAddress.addressLinetwo)}" th:text="${billingAddress.addressLinetwo}">Address line 2</div><div><span th:text="${billingAddress.city}">City</span><span th:if="${not #strings.isEmpty(billingAddress.district)}" th:text="${', ' + billingAddress.district}"></span><span th:if="${not #strings.isEmpty(billingAddress.postCode)}" th:text="${' ' + billingAddress.postCode}"></span></div><div th:text="${billingAddress.country}">Country</div><hr/><div><i class="bi bi-telephone me-2"></i><span th:text="${billingAddress.mobile}">Mobile</span></div><div><i class="bi bi-envelope me-2"></i><span th:text="${billingAddress.email}">Email</span></div></div><div class="card-body text-muted" th:unless="${billingAddress != null}">No billing address is available for this order.</div></section></div>
+                <div class="col-lg-6"><section class="card order-panel h-100"><div class="card-header"><i class="bi bi-truck me-2 text-primary"></i>Shipping address</div><div class="card-body order-address" th:if="${shippingAddress != null}"><div class="fw-semibold text-dark" th:text="${shippingAddress.firstName + ' ' + shippingAddress.lastName}">Name</div><div th:if="${not #strings.isEmpty(shippingAddress.company)}" th:text="${shippingAddress.company}">Company</div><div th:text="${shippingAddress.addressLineOne}">Address</div><div th:if="${not #strings.isEmpty(shippingAddress.addressLinetwo)}" th:text="${shippingAddress.addressLinetwo}">Address line 2</div><div><span th:text="${shippingAddress.city}">City</span><span th:if="${not #strings.isEmpty(shippingAddress.district)}" th:text="${', ' + shippingAddress.district}"></span><span th:if="${not #strings.isEmpty(shippingAddress.postCode)}" th:text="${' ' + shippingAddress.postCode}"></span></div><div th:text="${shippingAddress.country}">Country</div><hr/><div><i class="bi bi-telephone me-2"></i><span th:text="${shippingAddress.mobile}">Mobile</span></div><div><i class="bi bi-envelope me-2"></i><span th:text="${shippingAddress.email}">Email</span></div></div><div class="card-body text-muted" th:unless="${shippingAddress != null}">No shipping address is available for this order.</div></section></div>
+            </div>
+
+            <section class="card order-panel mb-4"><div class="card-header"><i class="bi bi-clock-history me-2 text-primary"></i>Order activity</div><div class="table-responsive"><table class="table order-table mb-0" th:if="${not #lists.isEmpty(orderhistory)}"><thead><tr><th>When</th><th>Status</th><th>Changed by</th><th>Remark</th><th>Recorded by</th></tr></thead><tbody><tr th:each="history : ${orderhistory}"><td th:text="${history.created}">Date</td><td><span class="order-history-status" th:text="${history.status}">Status</span></td><td th:text="${history.orderStatusChanged}">Marketplace</td><td th:text="${history.remark}">Remark</td><td th:text="${history.createdBy}">System</td></tr></tbody></table><div th:if="${#lists.isEmpty(orderhistory)}" class="p-4 text-center text-muted">No status history has been recorded yet.</div></div></section>
+            <section class="card order-panel mb-4"><div class="card-header"><i class="bi bi-shield-check me-2 text-primary"></i>Audit trail</div><div class="card-body"><div class="row g-3"><div class="col-md-3"><span class="order-metric-label">Created</span><span class="small" th:text="${orderdetails.created}">Date</span></div><div class="col-md-3"><span class="order-metric-label">Created by</span><span class="small" th:text="${orderdetails.createdBy}">User</span></div><div class="col-md-3"><span class="order-metric-label">Last updated</span><span class="small" th:text="${orderdetails.modified}">Date</span></div><div class="col-md-3"><span class="order-metric-label">Updated by</span><span class="small" th:text="${orderdetails.modifiedBy}">User</span></div></div></div></section>
+        </main>
+    </div>
+</div>

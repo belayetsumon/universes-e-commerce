@@ -11,6 +11,11 @@ import com.ecommerce.app.module.ReferralRewards.model.Wallet;
 import com.ecommerce.app.module.ReferralRewards.repository.RewardAccountRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.WalletRepository;
 import com.ecommerce.app.module.ReferralRewards.services.CheckoutIncentiveService;
+import com.ecommerce.app.module.checkout.availability.CheckoutAvailability;
+import com.ecommerce.app.module.checkout.availability.CheckoutAvailabilityService;
+import com.ecommerce.app.module.checkout.guest.services.GuestCheckoutSessionService;
+import com.ecommerce.app.module.checkout.guest.services.MobileNumberNormalizationService;
+import com.ecommerce.app.module.checkout.guest.session.GuestCheckoutSession;
 import com.ecommerce.app.module.cart.model.CartItem;
 import com.ecommerce.app.module.cart.services.CartService;
 import com.ecommerce.app.module.shipping.dto.ShippingOption;
@@ -18,6 +23,7 @@ import com.ecommerce.app.module.shipping.model.ShippingLocation;
 import com.ecommerce.app.module.shipping.model.PackagingRate;
 import com.ecommerce.app.module.shipping.services.PackagingRateService;
 import com.ecommerce.app.module.shipping.services.ShippingQuoteService;
+import com.ecommerce.app.module.settings.services.StoreOperationModeService;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.services.LoggedUserService;
@@ -88,6 +94,18 @@ public class CartController {
 
     @Autowired
     CheckoutIncentiveService checkoutIncentiveService;
+
+    @Autowired
+    StoreOperationModeService storeOperationModeService;
+
+    @Autowired
+    CheckoutAvailabilityService checkoutAvailabilityService;
+
+    @Autowired
+    GuestCheckoutSessionService guestCheckoutSessionService;
+
+    @Autowired
+    MobileNumberNormalizationService mobileNumberNormalizationService;
 
     private static final Logger log = LoggerFactory.getLogger(CartService.class);
 
@@ -201,8 +219,17 @@ public class CartController {
     }
 
     @GetMapping("/checkout")
-    public String checkout(Model model, HttpSession session) {
+    public String checkout(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
         final BigDecimal defaultAdvanceRatio = new BigDecimal("0.20");
+        boolean authenticatedCustomer = loggedUserService.isAuthenticatedUser();
+        CheckoutAvailability availability = checkoutAvailabilityService.availability(authenticatedCustomer);
+        if (!availability.isCheckoutAvailable()) {
+            redirectAttributes.addFlashAttribute("errorMessage", CheckoutAvailabilityService.CHECKOUT_UNAVAILABLE_MESSAGE);
+            return "redirect:/cart/index";
+        }
+        if (!authenticatedCustomer && availability.isLoginRequired() && !availability.isGuestAllowed()) {
+            return "redirect:/public/member-login";
+        }
         List<CartItem> cart = cartService.getCartFromSession(session);
 
         if (cart == null || cart.isEmpty()) {
@@ -271,14 +298,25 @@ public class CartController {
         model.addAttribute("vendorShippingCost", vendorShippingCost);
         model.addAttribute("vendorPackagingCost", vendorPackagingCost);
         model.addAttribute("grandTotal", grandTotal);
-        model.addAttribute("walletBalance", resolveWalletBalance());
-        model.addAttribute("rewardBalance", resolveRewardBalance());
-        model.addAttribute("emiEligible", cartService.cartSupportsEmi(cart));
+        model.addAttribute("guestCheckout", !authenticatedCustomer);
+        var guestSession = guestCheckoutSessionService.current(session).orElse(null);
+        model.addAttribute("guestCheckoutSession", guestSession);
+        model.addAttribute("guestCheckoutVerificationRequired", !authenticatedCustomer && guestSession == null);
+        model.addAttribute("guestMobileOtpVerificationEnabled", storeOperationModeService.isGuestMobileOtpVerificationEnabled());
+        model.addAttribute("guestVerifiedMobileDisplay", guestSession == null ? "" : mobileNumberNormalizationService.toLocalDisplay(guestSession.getVerifiedMobile()));
+        String guestMobileVerificationStatus = guestSession == null || guestSession.getMobileVerificationStatus() == null
+                ? ""
+                : guestSession.getMobileVerificationStatus().name();
+        model.addAttribute("guestMobileVerificationStatus", guestMobileVerificationStatus);
+        model.addAttribute("selectedShippingLocation", currentShippingLocation(session));
+        model.addAttribute("walletBalance", authenticatedCustomer ? resolveWalletBalance() : BigDecimal.ZERO);
+        model.addAttribute("rewardBalance", authenticatedCustomer ? resolveRewardBalance() : BigDecimal.ZERO);
+        model.addAttribute("emiEligible", authenticatedCustomer && cartService.cartSupportsEmi(cart));
         if (!model.containsAttribute("selectedPaymentPlan")) {
             model.addAttribute("selectedPaymentPlan", "FULL_COD");
         }
         if (!model.containsAttribute("selectedPaymentMethod")) {
-            model.addAttribute("selectedPaymentMethod", "SSLCOMMERZ");
+            model.addAttribute("selectedPaymentMethod", authenticatedCustomer ? "SSLCOMMERZ" : "COD");
         }
         if (!model.containsAttribute("selectedAdvanceAmount")) {
             BigDecimal suggestedAdvance = grandTotal.multiply(defaultAdvanceRatio).setScale(2, RoundingMode.HALF_UP);
@@ -309,6 +347,12 @@ public class CartController {
         return "cart/checkout";
     }
 
+    @GetMapping("/checkout/availability")
+    @ResponseBody
+    public CheckoutAvailability checkoutAvailability() {
+        return checkoutAvailabilityService.availability(loggedUserService.isAuthenticatedUser());
+    }
+
     @PostMapping("/checkout/incentives/preview")
     @ResponseBody
     public Map<String, Object> previewCheckoutIncentives(
@@ -319,6 +363,14 @@ public class CartController {
             HttpSession session) {
 
         Map<String, Object> response = new HashMap<>();
+        CheckoutAvailability availability = checkoutAvailabilityService.availability(loggedUserService.isAuthenticatedUser());
+        if (!availability.isCheckoutAvailable()) {
+            response.put("valid", false);
+            response.put("message", CheckoutAvailabilityService.CHECKOUT_UNAVAILABLE_MESSAGE);
+            response.put("checkoutUnavailable", true);
+            return response;
+        }
+
         List<CartItem> cart = cartService.getCartFromSession(session);
         if (cart == null || cart.isEmpty()) {
             response.put("valid", false);
@@ -649,6 +701,11 @@ public class CartController {
             Model model,
             HttpSession session) {
 
+        if (checkoutFragmentUpdateBlocked()) {
+            model.addAttribute("checkoutUnavailableMessage", CheckoutAvailabilityService.CHECKOUT_UNAVAILABLE_MESSAGE);
+            return "cart/vendorSummary :: vendorSummary";
+        }
+
         String vendorUuid = resolveVendorUuid(vendorId);
         if (vendorUuid == null || vendorUuid.isBlank()) {
             return "cart/vendorSummary :: vendorSummary";
@@ -708,6 +765,11 @@ public class CartController {
             @RequestParam(required = false) String packaging,
             Model model,
             HttpSession session) {
+
+        if (checkoutFragmentUpdateBlocked()) {
+            model.addAttribute("checkoutUnavailableMessage", CheckoutAvailabilityService.CHECKOUT_UNAVAILABLE_MESSAGE);
+            return "cart/vendorSummary :: vendorSummary";
+        }
 
         String vendorUuid = resolveVendorUuid(vendorId);
         if (vendorUuid == null || vendorUuid.isBlank()) {
@@ -803,6 +865,13 @@ public class CartController {
         } catch (NumberFormatException ignored) {
             return null;
         }
+    }
+
+    private boolean checkoutFragmentUpdateBlocked() {
+        boolean authenticated = loggedUserService.isAuthenticatedUser();
+        CheckoutAvailability availability = checkoutAvailabilityService.availability(authenticated);
+        return !availability.isCheckoutAvailable()
+                || (!authenticated && availability.isLoginRequired() && !availability.isGuestAllowed());
     }
 
     @RequestMapping("/shipping")

@@ -128,10 +128,11 @@
                                     <strong><span id="orderTotal" th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 2, 'POINT')}">10.00</span> /-</strong>
                                 </div>
                             </div>
-                            <a type="button" class="btn btn-danger order-checkout-btn" th:href="@{/order/create}">
-                                Proceed to checkout
+                            <div class="checkout-unavailable-alert d-none" data-checkout-unavailable-alert role="alert"></div>
+                            <button type="button" class="btn btn-danger order-checkout-btn" data-checkout-start>
+                                Proceed to Secure Checkout
                                 <i class="bi bi-arrow-right"></i>
-                            </a>
+                            </button>
                             <div class="order-summary-note">
                                 <i class="bi bi-lock"></i>
                                 Shipping and packaging totals update after your selections.

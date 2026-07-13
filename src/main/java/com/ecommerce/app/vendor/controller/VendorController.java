@@ -52,10 +52,8 @@ public class VendorController {
         Vendorprofile vendorprofiles = vendorprofile.get();
         vendorUserContext.setActiveVendor(vendorprofiles);
         VendorDashboardDto dashboard = vendorDashboardService.buildDashboard(vendorprofiles);
-
         model.addAttribute("dashboard", dashboard);
         model.addAttribute("vendorprofile", vendorUserContext.getActiveVendor());
-
         return "vendor/dashboards";
     }
 

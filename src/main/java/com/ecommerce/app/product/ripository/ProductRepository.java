@@ -41,6 +41,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             + "ORDER BY p.id DESC")
     List<Product> findActiveProductsByCategoryOrChildren(@Param("categoryId") Long categoryId);
 
+    @Query("SELECT p.productcategory.id, COUNT(p.id) FROM Product p "
+            + "WHERE p.productcategory.id IN :categoryIds GROUP BY p.productcategory.id")
+    List<Object[]> countProductsByCategoryIds(@Param("categoryIds") List<Long> categoryIds);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM Product p WHERE p.id = :id")
     Optional<Product> findByIdForUpdate(@Param("id") Long id);

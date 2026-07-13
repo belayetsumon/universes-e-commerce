@@ -5,6 +5,7 @@
  */
 package com.ecommerce.app.order.model;
 
+import com.ecommerce.app.module.checkout.guest.model.MobileVerificationStatus;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.order.controller.PaymentReaceiveBy;
 import jakarta.persistence.*;
@@ -39,9 +40,31 @@ public class SalesOrder {
     @Column(length = 30, unique = true, nullable = false)
     private String orderCode;
 
-    @NotNull(message = "User cannot be blank.")
     @ManyToOne(optional = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = true)
     public Users customer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private CustomerOrderGroup orderGroup;
+
+    @Column(name = "guest_checkout", nullable = false)
+    private boolean guestCheckout = false;
+
+    @Column(name = "mobile_number", length = 20)
+    private String mobileNumber;
+
+    @Column(name = "mobile_verification_required", nullable = false)
+    private boolean mobileVerificationRequired = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "mobile_verification_status", length = 30)
+    private MobileVerificationStatus mobileVerificationStatus;
+
+    @Column(name = "mobile_verified_at")
+    private LocalDateTime mobileVerifiedAt;
+
+    @Column(name = "checkout_session_id", length = 80)
+    private String checkoutSessionId;
 
     public Long vendorId;
 
@@ -165,6 +188,62 @@ public class SalesOrder {
 
     public void setCustomer(Users customer) {
         this.customer = customer;
+    }
+
+    public CustomerOrderGroup getOrderGroup() {
+        return orderGroup;
+    }
+
+    public void setOrderGroup(CustomerOrderGroup orderGroup) {
+        this.orderGroup = orderGroup;
+    }
+
+    public boolean isGuestCheckout() {
+        return guestCheckout;
+    }
+
+    public void setGuestCheckout(boolean guestCheckout) {
+        this.guestCheckout = guestCheckout;
+    }
+
+    public String getMobileNumber() {
+        return mobileNumber;
+    }
+
+    public void setMobileNumber(String mobileNumber) {
+        this.mobileNumber = mobileNumber;
+    }
+
+    public boolean isMobileVerificationRequired() {
+        return mobileVerificationRequired;
+    }
+
+    public void setMobileVerificationRequired(boolean mobileVerificationRequired) {
+        this.mobileVerificationRequired = mobileVerificationRequired;
+    }
+
+    public MobileVerificationStatus getMobileVerificationStatus() {
+        return mobileVerificationStatus;
+    }
+
+    public void setMobileVerificationStatus(MobileVerificationStatus mobileVerificationStatus) {
+        this.mobileVerificationStatus = mobileVerificationStatus;
+    }
+
+    public LocalDateTime getMobileVerifiedAt() {
+        return mobileVerifiedAt;
+    }
+
+    public void setMobileVerifiedAt(LocalDateTime mobileVerifiedAt) {
+        this.mobileVerifiedAt = mobileVerifiedAt;
+    }
+
+    public String getCheckoutSessionId() {
+        return checkoutSessionId;
+    }
+
+    public void setCheckoutSessionId(String checkoutSessionId) {
+        this.checkoutSessionId = checkoutSessionId;
     }
 
     public Long getVendorId() {

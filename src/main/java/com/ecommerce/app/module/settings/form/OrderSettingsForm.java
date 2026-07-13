@@ -1,6 +1,7 @@
 package com.ecommerce.app.module.settings.form;
 
 import com.ecommerce.app.module.settings.model.GlobalSettings;
+import com.ecommerce.app.module.settings.model.SalesOrderMode;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 
@@ -16,6 +17,8 @@ public class OrderSettingsForm {
 
     private Boolean autoConfirmOrder;
     private Boolean autoCancelUnpaidOrder;
+
+    private SalesOrderMode salesOrderMode;
 
     @Min(value = 0, message = "Cancel unpaid after minutes cannot be negative.")
     private Integer cancelOrderAfterMinutes;
@@ -33,6 +36,7 @@ public class OrderSettingsForm {
         form.setInvoicePrefix(settings.getInvoicePrefix());
         form.setAutoConfirmOrder(settings.getAutoConfirmOrder());
         form.setAutoCancelUnpaidOrder(settings.getAutoCancelUnpaidOrder());
+        form.setSalesOrderMode(settings.getSalesOrderMode());
         form.setCancelOrderAfterMinutes(settings.getCancelOrderAfterMinutes());
         form.setReturnAllowedDays(settings.getReturnAllowedDays());
         form.setRefundAllowedDays(settings.getRefundAllowedDays());
@@ -77,6 +81,14 @@ public class OrderSettingsForm {
 
     public void setAutoCancelUnpaidOrder(Boolean autoCancelUnpaidOrder) {
         this.autoCancelUnpaidOrder = autoCancelUnpaidOrder;
+    }
+
+    public SalesOrderMode getSalesOrderMode() {
+        return salesOrderMode;
+    }
+
+    public void setSalesOrderMode(SalesOrderMode salesOrderMode) {
+        this.salesOrderMode = salesOrderMode;
     }
 
     public Integer getCancelOrderAfterMinutes() {

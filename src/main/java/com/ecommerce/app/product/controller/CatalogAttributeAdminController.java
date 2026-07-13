@@ -1,5 +1,6 @@
 package com.ecommerce.app.product.controller;
 
+import com.ecommerce.app.product.dto.CatalogAttributeListView;
 import com.ecommerce.app.product.model.Attribute;
 import com.ecommerce.app.product.model.AttributeInputType;
 import com.ecommerce.app.product.model.AttributeOption;
@@ -60,7 +61,7 @@ public class CatalogAttributeAdminController {
             @RequestParam(required = false, defaultValue = "false") boolean comparable,
             @RequestParam(required = false, defaultValue = "false") boolean allowMultipleValues,
             Model model) {
-        model.addAttribute("attributes", attributeService.findListRows(
+        List<CatalogAttributeListView> attributes = attributeService.findListRows(
                 keyword,
                 active,
                 filterable,
@@ -68,7 +69,9 @@ public class CatalogAttributeAdminController {
                 searchable,
                 comparable,
                 allowMultipleValues
-        ));
+        );
+        model.addAttribute("attributes", attributes);
+        addAttributeListSummary(model, attributes);
         model.addAttribute("keyword", keyword);
         model.addAttribute("active", active);
         model.addAttribute("filterable", filterable);
@@ -77,6 +80,24 @@ public class CatalogAttributeAdminController {
         model.addAttribute("comparable", comparable);
         model.addAttribute("allowMultipleValues", allowMultipleValues);
         return "product/attribute/list";
+    }
+
+    private void addAttributeListSummary(Model model, List<CatalogAttributeListView> attributes) {
+        List<CatalogAttributeListView> safeAttributes = attributes == null ? List.of() : attributes;
+        long activeAttributes = safeAttributes.stream()
+                .filter(CatalogAttributeListView::isActive)
+                .count();
+        long variantAttributes = safeAttributes.stream()
+                .filter(CatalogAttributeListView::isVariantCapable)
+                .count();
+        long mappedAttributes = safeAttributes.stream()
+                .filter(attribute -> attribute.getCategoryMappingCount() > 0)
+                .count();
+
+        model.addAttribute("attributeTotal", safeAttributes.size());
+        model.addAttribute("activeAttributeCount", activeAttributes);
+        model.addAttribute("variantAttributeCount", variantAttributes);
+        model.addAttribute("mappedAttributeCount", mappedAttributes);
     }
 
     @GetMapping("/create")
@@ -186,6 +207,7 @@ public class CatalogAttributeAdminController {
             @RequestParam(required = false) String editUuid,
             Model model) {
         List<Productcategory> categories = productcategoryRepository.findByStatus(ProductStatusEnum.Active);
+        List<Attribute> attributes = attributeService.findAll();
         String activeCategoryUuid = categoryUuid;
         if ((activeCategoryUuid == null || activeCategoryUuid.isBlank()) && !categories.isEmpty()) {
             activeCategoryUuid = categories.get(0).getUuid();
@@ -203,16 +225,42 @@ public class CatalogAttributeAdminController {
             categoryAttribute.setCategory(activeCategory);
         }
 
+        List<CategoryAttribute> mappings = activeCategoryUuid == null || activeCategoryUuid.isBlank()
+                ? List.of()
+                : categoryAttributeService.findByCategoryUuid(activeCategoryUuid);
         model.addAttribute("activeCategoryUuid", activeCategoryUuid);
         model.addAttribute("activeCategoryName", activeCategory != null ? activeCategory.getName() : "");
         model.addAttribute("categories", categories);
-        model.addAttribute("attributes", attributeService.findAll());
+        model.addAttribute("attributes", attributes);
         model.addAttribute("categoryAttribute", categoryAttribute);
-        model.addAttribute("mappings",
-                activeCategoryUuid == null || activeCategoryUuid.isBlank()
-                        ? List.of()
-                        : categoryAttributeService.findByCategoryUuid(activeCategoryUuid));
+        model.addAttribute("mappings", mappings);
+        addMappingSummary(model, categories, attributes, mappings);
         return "product/attribute/category_mappings";
+    }
+
+    private void addMappingSummary(Model model,
+            List<Productcategory> categories,
+            List<Attribute> attributes,
+            List<CategoryAttribute> mappings) {
+        List<Productcategory> safeCategories = categories == null ? List.of() : categories;
+        List<Attribute> safeAttributes = attributes == null ? List.of() : attributes;
+        List<CategoryAttribute> safeMappings = mappings == null ? List.of() : mappings;
+        long requiredMappings = safeMappings.stream()
+                .filter(mapping -> Boolean.TRUE.equals(mapping.getRequired()))
+                .count();
+        long variantMappings = safeMappings.stream()
+                .filter(mapping -> Boolean.TRUE.equals(mapping.getVariantAttribute()))
+                .count();
+        long activeMappings = safeMappings.stream()
+                .filter(mapping -> Boolean.TRUE.equals(mapping.getActive()))
+                .count();
+
+        model.addAttribute("mappingTotal", safeMappings.size());
+        model.addAttribute("requiredMappingCount", requiredMappings);
+        model.addAttribute("variantMappingCount", variantMappings);
+        model.addAttribute("activeMappingCount", activeMappings);
+        model.addAttribute("availableCategoryCount", safeCategories.size());
+        model.addAttribute("availableAttributeCount", safeAttributes.size());
     }
 
     @PostMapping("/category-mappings/save")
@@ -252,14 +300,18 @@ public class CatalogAttributeAdminController {
             Productcategory activeCategory = resolvedCategoryUuid.isBlank()
                     ? null
                     : productcategoryRepository.findByUuid(resolvedCategoryUuid).orElse(null);
+            List<Productcategory> categories = productcategoryRepository.findByStatus(ProductStatusEnum.Active);
+            List<Attribute> attributes = attributeService.findAll();
+            List<CategoryAttribute> mappings = resolvedCategoryUuid.isBlank()
+                    ? List.of()
+                    : categoryAttributeService.findByCategoryUuid(resolvedCategoryUuid);
             model.addAttribute("activeCategoryUuid", resolvedCategoryUuid);
             model.addAttribute("activeCategoryName", activeCategory != null ? activeCategory.getName() : "");
-            model.addAttribute("categories", productcategoryRepository.findByStatus(ProductStatusEnum.Active));
-            model.addAttribute("attributes", attributeService.findAll());
-            model.addAttribute("mappings",
-                    resolvedCategoryUuid.isBlank()
-                            ? List.of()
-                            : categoryAttributeService.findByCategoryUuid(resolvedCategoryUuid));
+            model.addAttribute("categories", categories);
+            model.addAttribute("attributes", attributes);
+            model.addAttribute("categoryAttribute", categoryAttribute);
+            model.addAttribute("mappings", mappings);
+            addMappingSummary(model, categories, attributes, mappings);
             model.addAttribute("errorMessage", firstValidationMessage(result, "Please correct the category mapping form and try again."));
             return "product/attribute/category_mappings";
         }
@@ -273,14 +325,18 @@ public class CatalogAttributeAdminController {
             Productcategory activeCategory = resolvedCategoryUuid.isBlank()
                     ? null
                     : productcategoryRepository.findByUuid(resolvedCategoryUuid).orElse(null);
+            List<Productcategory> categories = productcategoryRepository.findByStatus(ProductStatusEnum.Active);
+            List<Attribute> attributes = attributeService.findAll();
+            List<CategoryAttribute> mappings = resolvedCategoryUuid.isBlank()
+                    ? List.of()
+                    : categoryAttributeService.findByCategoryUuid(resolvedCategoryUuid);
             model.addAttribute("activeCategoryUuid", resolvedCategoryUuid);
             model.addAttribute("activeCategoryName", activeCategory != null ? activeCategory.getName() : "");
-            model.addAttribute("categories", productcategoryRepository.findByStatus(ProductStatusEnum.Active));
-            model.addAttribute("attributes", attributeService.findAll());
-            model.addAttribute("mappings",
-                    resolvedCategoryUuid.isBlank()
-                            ? List.of()
-                            : categoryAttributeService.findByCategoryUuid(resolvedCategoryUuid));
+            model.addAttribute("categories", categories);
+            model.addAttribute("attributes", attributes);
+            model.addAttribute("categoryAttribute", categoryAttribute);
+            model.addAttribute("mappings", mappings);
+            addMappingSummary(model, categories, attributes, mappings);
             model.addAttribute("errorMessage", ex.getMessage());
             return "product/attribute/category_mappings";
         }

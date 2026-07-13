@@ -103,7 +103,7 @@
 
 .settings-status-grid {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: .85rem;
     margin-bottom: 1rem;
 }
@@ -225,6 +225,54 @@
     border-radius: 999px;
     font-size: .78rem;
     font-weight: 700;
+}
+
+.settings-mode-guide {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .75rem;
+    margin-bottom: 1rem;
+}
+
+.settings-mode-guide--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.settings-mode-guide > div {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: .15rem .75rem;
+    min-width: 0;
+    padding: .85rem;
+    background: #f8fafc;
+    border: 1px solid var(--settings-border);
+    border-radius: 8px;
+}
+
+.settings-mode-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    grid-row: span 2;
+    width: 40px;
+    height: 40px;
+    color: var(--settings-accent-dark);
+    background: #edf7f5;
+    border-radius: 8px;
+}
+
+.settings-mode-guide strong {
+    display: block;
+    min-width: 0;
+    color: #182230;
+    font-size: .92rem;
+}
+
+.settings-mode-guide small {
+    display: block;
+    min-width: 0;
+    color: var(--settings-muted);
+    line-height: 1.35;
 }
 
 .settings-grid {
@@ -380,10 +428,6 @@
 }
 
 @media (max-width: 1199.98px) {
-    .settings-status-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
     .settings-layout {
         grid-template-columns: 1fr;
     }
@@ -413,6 +457,8 @@
     .settings-status-grid,
     .settings-grid,
     .settings-toggle-group,
+    .settings-mode-guide,
+    .settings-mode-guide--two,
     .settings-nav {
         grid-template-columns: 1fr;
     }

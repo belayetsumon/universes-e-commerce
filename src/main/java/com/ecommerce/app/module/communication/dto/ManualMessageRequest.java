@@ -4,7 +4,9 @@ import com.ecommerce.app.module.communication.model.ManualAudience;
 import com.ecommerce.app.module.communication.model.MessageChannel;
 import com.ecommerce.app.module.communication.model.MessageType;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -20,7 +22,7 @@ public class ManualMessageRequest {
 
     private List<Long> recipientIds = new ArrayList<>();
 
-    @NotNull(message = "Select at least one channel.")
+    @NotEmpty(message = "Select at least one delivery channel.")
     private Set<MessageChannel> channels = new LinkedHashSet<>();
 
     private MessageType messageType = MessageType.CUSTOM;
@@ -29,11 +31,14 @@ public class ManualMessageRequest {
     private String subject;
 
     @NotBlank(message = "Message body is required.")
+    @Size(max = 5000, message = "Message body must be 5000 characters or fewer.")
     private String body;
 
     @Size(max = 10)
     private String language;
 
+    @Size(max = 64, message = "Invalid message submission token.")
+    @Pattern(regexp = "[A-Za-z0-9-]{16,64}", message = "Invalid message submission token.")
     private String batchId;
 
     public ManualAudience getAudience() {

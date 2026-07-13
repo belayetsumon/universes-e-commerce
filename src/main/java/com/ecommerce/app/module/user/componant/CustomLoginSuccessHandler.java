@@ -38,7 +38,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
     }
 
     protected void handle(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        String targetUrl = determineTargetUrl(authentication);
+        String targetUrl = determineTargetUrl(authentication, request);
 
         if (response.isCommitted()) {
             return;
@@ -47,7 +47,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
         response.sendRedirect(targetUrl);
     }
 
-    protected String determineTargetUrl(Authentication authentication) {
+    protected String determineTargetUrl(Authentication authentication, HttpServletRequest request) {
         String username = authentication.getName();
 
         Users users = usersRepository.findByEmail(username).orElse(null);
@@ -61,9 +61,27 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
             case systemadmin:
                 return "/admin";
             case customer:
+                String checkoutRedirect = safeCheckoutRedirect(request);
+                if (checkoutRedirect != null) {
+                    return checkoutRedirect;
+                }
                 return "/customer/index";
             default:
                 return "/access-denied";
         }
+    }
+
+    private String safeCheckoutRedirect(HttpServletRequest request) {
+        if (request == null) {
+            return null;
+        }
+        String redirect = request.getParameter("checkoutRedirect");
+        if (redirect == null || redirect.isBlank()) {
+            return null;
+        }
+        String cleanRedirect = redirect.trim();
+        return cleanRedirect.equals("/order/create") || cleanRedirect.equals("/cart/checkout")
+                ? cleanRedirect
+                : null;
     }
 }

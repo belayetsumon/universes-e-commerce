@@ -34,7 +34,10 @@ CREATE TABLE IF NOT EXISTS global_settings (
     tax_percentage DECIMAL(5,2) NULL DEFAULT 0.00,
     stock_management_enabled BIT NOT NULL DEFAULT 1,
     low_stock_alert_qty INT NULL DEFAULT 5,
+    secure_checkout_enabled BIT NOT NULL DEFAULT 1,
     allow_guest_checkout BIT NOT NULL DEFAULT 1,
+    store_mode VARCHAR(30) NOT NULL DEFAULT 'MARKETPLACE',
+    primary_vendor_id BIGINT NULL,
     minimum_order_amount DECIMAL(19,2) NULL DEFAULT 0.00,
     maximum_order_amount DECIMAL(19,2) NULL,
     cod_enabled BIT NOT NULL DEFAULT 1,
@@ -52,6 +55,7 @@ CREATE TABLE IF NOT EXISTS global_settings (
     invoice_prefix VARCHAR(20) NULL,
     auto_confirm_order BIT NOT NULL DEFAULT 0,
     auto_cancel_unpaid_order BIT NOT NULL DEFAULT 1,
+    sales_order_mode VARCHAR(30) NOT NULL DEFAULT 'SPLIT_BY_VENDOR',
     cancel_order_after_minutes INT NULL DEFAULT 60,
     return_allowed_days INT NULL DEFAULT 7,
     refund_allowed_days INT NULL DEFAULT 7,
@@ -88,7 +92,7 @@ CREATE TABLE IF NOT EXISTS global_settings (
 INSERT INTO global_settings (
     id, uuid, site_name, admin_email, timezone, currency, language, default_currency,
     tax_enabled, tax_percentage, stock_management_enabled, low_stock_alert_qty,
-    allow_guest_checkout, minimum_order_amount, cod_enabled, online_payment_enabled,
+    secure_checkout_enabled, allow_guest_checkout, store_mode, sales_order_mode, minimum_order_amount, cod_enabled, online_payment_enabled,
     partial_payment_enabled, emi_enabled, delivery_enabled, free_delivery_enabled,
     free_delivery_min_amount, inside_dhaka_delivery_charge, outside_dhaka_delivery_charge,
     cash_on_delivery_charge, order_prefix, invoice_prefix, auto_confirm_order,
@@ -99,7 +103,7 @@ INSERT INTO global_settings (
 SELECT
     1, UUID(), 'Universes Ecommerce', 'admin@gmail.com', 'Asia/Dhaka', 'BDT', 'en', 'BDT',
     0, 0.00, 1, 5,
-    1, 0.00, 1, 0,
+    1, 1, 'MARKETPLACE', 'SPLIT_BY_VENDOR', 0.00, 1, 0,
     0, 0, 1, 0,
     0.00, 0.00, 0.00,
     0.00, 'ORD', 'INV', 0,
@@ -107,6 +111,23 @@ SELECT
     7, 0, 1,
     1, 1, 0, CURRENT_TIMESTAMP(6)
 WHERE NOT EXISTS (SELECT 1 FROM global_settings WHERE id = 1);
+
+SET @global_settings_secure_checkout_column_exists = (
+    SELECT COUNT(*)
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'global_settings'
+      AND COLUMN_NAME = 'secure_checkout_enabled'
+);
+
+SET @global_settings_secure_checkout_sql = IF(
+    @global_settings_secure_checkout_column_exists = 0,
+    'ALTER TABLE global_settings ADD COLUMN secure_checkout_enabled BIT NOT NULL DEFAULT 1',
+    'SELECT 1'
+);
+PREPARE global_settings_secure_checkout_stmt FROM @global_settings_secure_checkout_sql;
+EXECUTE global_settings_secure_checkout_stmt;
+DEALLOCATE PREPARE global_settings_secure_checkout_stmt;
 
 SET @global_settings_version_column_exists = (
     SELECT COUNT(*)
@@ -132,3 +153,65 @@ WHERE version IS NULL;
 
 ALTER TABLE global_settings
     MODIFY COLUMN version BIGINT NOT NULL DEFAULT 0;
+
+SET @global_settings_store_mode_column_exists = (
+    SELECT COUNT(*)
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'global_settings'
+      AND COLUMN_NAME = 'store_mode'
+);
+
+SET @global_settings_store_mode_sql = IF(
+    @global_settings_store_mode_column_exists = 0,
+    'ALTER TABLE global_settings ADD COLUMN store_mode VARCHAR(30) NOT NULL DEFAULT ''MARKETPLACE''',
+    'SELECT 1'
+);
+
+PREPARE global_settings_store_mode_stmt FROM @global_settings_store_mode_sql;
+EXECUTE global_settings_store_mode_stmt;
+DEALLOCATE PREPARE global_settings_store_mode_stmt;
+
+SET @global_settings_primary_vendor_column_exists = (
+    SELECT COUNT(*)
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'global_settings'
+      AND COLUMN_NAME = 'primary_vendor_id'
+);
+
+SET @global_settings_primary_vendor_sql = IF(
+    @global_settings_primary_vendor_column_exists = 0,
+    'ALTER TABLE global_settings ADD COLUMN primary_vendor_id BIGINT NULL',
+    'SELECT 1'
+);
+
+PREPARE global_settings_primary_vendor_stmt FROM @global_settings_primary_vendor_sql;
+EXECUTE global_settings_primary_vendor_stmt;
+DEALLOCATE PREPARE global_settings_primary_vendor_stmt;
+
+SET @global_settings_sales_order_mode_column_exists = (
+    SELECT COUNT(*)
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'global_settings'
+      AND COLUMN_NAME = 'sales_order_mode'
+);
+
+SET @global_settings_sales_order_mode_sql = IF(
+    @global_settings_sales_order_mode_column_exists = 0,
+    'ALTER TABLE global_settings ADD COLUMN sales_order_mode VARCHAR(30) NOT NULL DEFAULT ''SPLIT_BY_VENDOR''',
+    'SELECT 1'
+);
+
+PREPARE global_settings_sales_order_mode_stmt FROM @global_settings_sales_order_mode_sql;
+EXECUTE global_settings_sales_order_mode_stmt;
+DEALLOCATE PREPARE global_settings_sales_order_mode_stmt;
+
+UPDATE global_settings
+SET store_mode = 'MARKETPLACE'
+WHERE store_mode IS NULL OR store_mode = '';
+
+UPDATE global_settings
+SET sales_order_mode = 'SPLIT_BY_VENDOR'
+WHERE sales_order_mode IS NULL OR sales_order_mode = '';

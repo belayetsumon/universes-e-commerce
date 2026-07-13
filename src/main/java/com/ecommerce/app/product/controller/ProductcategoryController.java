@@ -10,17 +10,21 @@ import com.ecommerce.app.model.enumvalue.Status;
 import com.ecommerce.app.product.model.ProductStatusEnum;
 
 import com.ecommerce.app.product.model.Productcategory;
+import com.ecommerce.app.product.ripository.ProductRepository;
 import com.ecommerce.app.product.ripository.ProductcategoryRepository;
+import com.ecommerce.app.product.services.ProductImageStorageService;
 import com.ecommerce.app.product.services.ProductcategoryService;
 import com.ecommerce.app.services.StorageProperties;
 import jakarta.validation.Valid;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import javax.imageio.ImageIO;
-import net.coobird.thumbnailator.Thumbnails;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -47,18 +51,60 @@ public class ProductcategoryController {
     ProductcategoryRepository productcategoryRepository;
 
     @Autowired
+    ProductRepository productRepository;
+
+    @Autowired
     private SlagGenerator slagGenerator;
 
     @Autowired
     ProductcategoryService productcategoryService;
 
+    @Autowired
+    ProductImageStorageService productImageStorageService;
+
     @RequestMapping(value = {"", "/", "/index"})
-    public String index(Model model) {
-        // model.addAttribute("productcategorylist", productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
-        // Retrieve all root-level categories (those with no parent)
-        List<Productcategory> rootCategories = productcategoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
-        // Add root categories to the model
-        model.addAttribute("categories", rootCategories);
+    public String index(
+            Model model,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String hierarchy,
+            @RequestParam(required = false) String image,
+            @RequestParam(required = false) String featured,
+            @RequestParam(defaultValue = "0") int page) {
+        int pageNumber = Math.max(page, 0);
+        ProductStatusEnum selectedStatus = productcategoryService.resolveStatus(status);
+        Page<Productcategory> categoryPage = productcategoryService.findCategories(
+                q,
+                selectedStatus,
+                hierarchy,
+                image,
+                featured,
+                PageRequest.of(pageNumber, 20, Sort.by(Sort.Direction.DESC, "id")));
+
+        Map<Long, Long> productCountsByCategoryId = categoryPage.getContent().isEmpty()
+                ? Collections.emptyMap()
+                : productRepository.countProductsByCategoryIds(categoryPage.getContent().stream()
+                        .map(Productcategory::getId)
+                        .collect(Collectors.toList()))
+                        .stream()
+                        .collect(Collectors.toMap(
+                                count -> (Long) count[0],
+                                count -> ((Number) count[1]).longValue(),
+                                Long::sum));
+
+        model.addAttribute("categories", categoryPage.getContent());
+        model.addAttribute("productCountsByCategoryId", productCountsByCategoryId);
+        model.addAttribute("page", categoryPage);
+        model.addAttribute("statuses", ProductStatusEnum.values());
+        model.addAttribute("categoryTotal", productcategoryService.countAllCategories());
+        model.addAttribute("activeCategoryCount", productcategoryService.countActiveCategories());
+        model.addAttribute("rootCategoryCount", productcategoryService.countRootCategories());
+        model.addAttribute("featuredCategoryCount", productcategoryService.countFeaturedCategories());
+        model.addAttribute("selectedQ", q);
+        model.addAttribute("selectedStatus", selectedStatus);
+        model.addAttribute("selectedHierarchy", hierarchy);
+        model.addAttribute("selectedImage", image);
+        model.addAttribute("selectedFeatured", featured);
 
         return "product/productcategory/index";
     }
@@ -66,7 +112,7 @@ public class ProductcategoryController {
     // Recursive function to generate all paths
     // private void generatePaths(Productcategory node, String currentPath, List<String> paths) {
     //     // Add current node to the path
-    //     String path = currentPath.isEmpty() ? node.getName() : currentPath + " → " + node.getName();
+    //     String path = currentPath.isEmpty() ? node.getName() : currentPath + " -> " + node.getName();
     //     paths.add(path);
     //     // If the node has children, recursively generate paths for them
     //     if (node.getChildren() != null) {
@@ -111,26 +157,7 @@ public class ProductcategoryController {
 
         if (!pic.isEmpty()) {
             try {
-                // byte[] bytes = pic.getBytes();
-
-                // Creating the directory to store file
-                File dir = new File(properties.getRootPath());
-                if (!dir.exists()) {
-                    dir.mkdirs();
-                }
-                long datenow = System.currentTimeMillis();
-                String filename = datenow + "_" + pic.getOriginalFilename();
-                // Create the file on server
-                File serverFile = new File(dir.getAbsolutePath()
-                        + File.separator + filename);
-
-//                BufferedOutputStream stream = new BufferedOutputStream(
-//                        new FileOutputStream(serverFile));
-//                stream.write(bytes);
-//                stream.close();
-                BufferedImage originalImage;
-                originalImage = ImageIO.read(pic.getInputStream());
-                Thumbnails.of(originalImage).forceSize(300, 225).toFile(serverFile);
+                String filename = productImageStorageService.storeCategoryImage(pic);
                 model.addAttribute("message", "You successfully uploaded");
 
                 productcategory.setImageName(filename);
@@ -145,7 +172,7 @@ public class ProductcategoryController {
             } catch (Exception e) {
 
                 model.addAttribute("statuslist", Status.values());
-                redirectAttributes.addFlashAttribute("message", pic.getOriginalFilename() + " => " + e.getMessage());
+                redirectAttributes.addFlashAttribute("message", "Image upload failed: " + e.getMessage());
                 return "redirect:/productcategory/index";
             }
         } else if (pic.isEmpty() && productcategory.getId() != null) {

@@ -104,6 +104,44 @@ public class ImageService {
         return fileName;
     }
 
+    public String resizeAndUploadHighQualityWebp(MultipartFile file,
+            ImageUploadPolicy policy,
+            int maxWidth,
+            int maxHeight,
+            String subDir) throws IOException {
+        String fileName = validateAndRename(file, policy);
+        return resizeAndUploadHighQualityWebp(file, maxWidth, maxHeight, subDir, fileName);
+    }
+
+    public String resizeAndUploadHighQualityWebp(MultipartFile file,
+            int maxWidth,
+            int maxHeight,
+            String subDir,
+            String fileName) throws IOException {
+        if (maxWidth <= 0 || maxHeight <= 0) {
+            throw new IOException("Image resize dimensions must be valid.");
+        }
+
+        BufferedImage originalImage = ImageIO.read(file.getInputStream());
+        if (originalImage == null) {
+            throw new IOException("Invalid image file");
+        }
+
+        File dir = new File(storageProperties.getRootPath(), subDir == null ? "" : subDir);
+        if (!dir.exists() && !dir.mkdirs()) {
+            throw new IOException("Failed to create directory: " + dir.getAbsolutePath());
+        }
+
+        Thumbnails.of(originalImage)
+                .size(maxWidth, maxHeight)
+                .keepAspectRatio(true)
+                .outputQuality(1.0)
+                .outputFormat("webp")
+                .toFile(new File(dir, fileName));
+
+        return fileName;
+    }
+
     private void validateDecodedImage(MultipartFile file, ImageUploadPolicy policy) throws IOException {
         try (ImageInputStream imageInput = ImageIO.createImageInputStream(file.getInputStream())) {
             if (imageInput == null) {

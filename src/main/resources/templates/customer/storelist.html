@@ -1,50 +1,70 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
-<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-customar-page">
-    <div layout:fragment = "main_content">
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="front-layout-inner-customar-page">
+    <th:block layout:fragment="page_css">
+        <style>
+            .customer-stores-page { padding: .25rem 0 1.5rem; }
+            .customer-stores-hero { background: linear-gradient(135deg,#113459 0%,#0d6efd 100%); border: 0; border-radius: 1rem; color: #fff; overflow: hidden; position: relative; }
+            .customer-stores-hero::after { background: radial-gradient(circle,rgba(255,255,255,.15) 0,rgba(255,255,255,0) 69%); content: ''; height: 260px; pointer-events: none; position: absolute; right: -96px; top: -118px; width: 260px; }
+            .customer-stores-hero .card-body { position: relative; z-index: 1; }
+            .customer-stores-kicker { color: #a9e3ff; font-size: .75rem; font-weight: 700; letter-spacing: .06em; margin: 0 0 .35rem; text-transform: uppercase; }
+            .customer-stores-hero h1 { color: #fff; font-size: clamp(1.45rem,2.5vw,2rem); font-weight: 700; margin: 0; }
+            .customer-stores-copy { color: rgba(255,255,255,.8); margin: .45rem 0 0; max-width: 650px; }
+            .customer-stores-hero-icon { align-items: center; background: #fff; border-radius: 50%; color: #113459; display: inline-flex; flex: 0 0 52px; height: 52px; justify-content: center; width: 52px; }
+            .customer-stores-total { border: 1px solid rgba(255,255,255,.24); border-radius: .8rem; min-width: 120px; padding: .75rem 1rem; text-align: center; }
+            .customer-stores-total strong { display: block; font-size: 1.45rem; line-height: 1.1; }
+            .customer-stores-total span { color: rgba(255,255,255,.75); font-size: .75rem; text-transform: uppercase; }
+            .customer-stores-metrics { display: grid; gap: 1rem; grid-template-columns: repeat(3,minmax(0,1fr)); }
+            .customer-stores-metric { border: 1px solid rgba(17,52,89,.12); border-radius: .8rem; min-width: 0; padding: 1rem; }
+            .customer-stores-metric-icon { align-items: center; background: #eaf4ff; border-radius: .6rem; color: #0d6efd; display: inline-flex; height: 38px; justify-content: center; width: 38px; }
+            .customer-stores-metric-label { color: #6c757d; font-size: .72rem; font-weight: 700; letter-spacing: .05em; margin-top: .65rem; text-transform: uppercase; }
+            .customer-stores-metric-value { color: #1f2937; font-size: 1.45rem; font-weight: 700; line-height: 1.1; margin-top: .2rem; }
+            .customer-stores-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill,minmax(290px,1fr)); }
+            .customer-store-card { border: 1px solid rgba(17,52,89,.13); border-radius: .9rem; height: 100%; overflow: hidden; }
+            .customer-store-card .card-body { padding: 1.2rem; }
+            .customer-store-logo { align-items: center; background: #eaf4ff; border-radius: .75rem; color: #0d6efd; display: inline-flex; flex: 0 0 54px; height: 54px; justify-content: center; overflow: hidden; width: 54px; }
+            .customer-store-logo img { height: 100%; object-fit: cover; width: 100%; }
+            .customer-store-name { color: #1f2937; font-size: 1.05rem; font-weight: 700; margin: 0; }
+            .customer-store-code { color: #6c757d; font-size: .78rem; margin-top: .2rem; }
+            .customer-store-details { border-top: 1px solid rgba(17,52,89,.1); margin-top: 1rem; padding-top: .9rem; }
+            .customer-store-detail { align-items: flex-start; color: #56616e; display: flex; font-size: .84rem; gap: .45rem; margin-top: .55rem; }
+            .customer-store-detail i { color: #0d6efd; margin-top: .1rem; }
+            .customer-store-actions { border-top: 1px solid rgba(17,52,89,.1); margin-top: 1rem; padding-top: 1rem; }
+            .customer-stores-empty { padding: 4rem 1rem; text-align: center; }
+            .customer-stores-empty-icon { align-items: center; background: #eaf4ff; border-radius: 50%; color: #0d6efd; display: inline-flex; height: 54px; justify-content: center; width: 54px; }
+            @media (max-width: 767.98px) { .customer-stores-metrics { grid-template-columns: 1fr; } .customer-stores-hero .card-body > .d-flex { align-items: stretch !important; flex-direction: column; } .customer-stores-total { text-align: left; } }
+        </style>
+    </th:block>
 
-        <section class=" d-none d-sm-block">
-            <div class="card">
-                <div class="card-header bg-info">
-                    <div class="row">  
-                        <div class="col-sm-7 font-weight-bold ">
-                            <h5 class="font-weight-bold text-white"><i class="fas fa-list"></i> Customer Dashboards . <small>Welcome Mr.<span th:text="${username}"> </span></small></h5>
-                        </div>
-                        <div class="col-sm-5 text-end"> 
-                            <div class="btn-group ">
-                                <a class="btn btn-success btn-sm " th:href="@{/customer/create}"> <i class="bi bi-plus-circle"></i> Create Store </a>
-                            </div>
-                        </div>
-                    </div>  
-                </div>
-
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <table class="table">
-                                <ul class="list-unstyled" th:each="storelists,status:${storelist}">
-                                    <li>
-                                        <a  type="button" class="btn btn-success btn-sm " th:href="@{/vendor/{id}(id=${storelists.id})}"  >  [[${storelists.companyName}]]</a>
-                                    </li>
-                                </ul>
-                            </table>
-                        </div>     
+    <div layout:fragment="main_content">
+        <section class="customer-stores-page">
+            <header class="card shadow-sm mb-4 customer-stores-hero">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start justify-content-between gap-4">
+                        <div class="d-flex align-items-start gap-3"><span class="customer-stores-hero-icon"><i class="bi bi-shop fs-4"></i></span><div><p class="customer-stores-kicker">Seller workspace</p><h1>My Stores</h1><p class="customer-stores-copy">Welcome back, <span th:text="${username}">Customer</span>. Manage your marketplace stores and open a store workspace when you are ready to sell.</p></div></div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap justify-content-md-end"><div class="customer-stores-total"><strong th:text="${storelist.size()}">0</strong><span>Stores</span></div><a class="btn btn-light" th:href="@{/customer/create}"><i class="bi bi-plus-lg me-1"></i>Create Store</a></div>
                     </div>
                 </div>
+            </header>
+
+            <div class="customer-stores-metrics mb-4">
+                <article class="card shadow-sm customer-stores-metric"><span class="customer-stores-metric-icon"><i class="bi bi-shop-window"></i></span><div class="customer-stores-metric-label">All stores</div><div class="customer-stores-metric-value" th:text="${storelist.size()}">0</div></article>
+                <article class="card shadow-sm customer-stores-metric"><span class="customer-stores-metric-icon"><i class="bi bi-check2-circle"></i></span><div class="customer-stores-metric-label">Active stores</div><div class="customer-stores-metric-value" th:text="${activeStoreCount}">0</div></article>
+                <article class="card shadow-sm customer-stores-metric"><span class="customer-stores-metric-icon"><i class="bi bi-hourglass-split"></i></span><div class="customer-stores-metric-label">Pending review</div><div class="customer-stores-metric-value" th:text="${pendingStoreCount}">0</div></article>
             </div>
 
+            <div class="customer-stores-grid" th:if="${not #lists.isEmpty(storelist)}">
+                <article class="card shadow-sm customer-store-card" th:each="store : ${storelist}">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start justify-content-between gap-3"><div class="d-flex align-items-center gap-3"><span class="customer-store-logo"><img th:if="${store.vendorLogo != null and !#strings.isEmpty(store.vendorLogo)}" th:src="@{/files/}+${store.vendorLogo}" th:alt="${store.companyName}"><i th:if="${store.vendorLogo == null or #strings.isEmpty(store.vendorLogo)}" class="bi bi-shop fs-4"></i></span><div><h2 class="customer-store-name" th:text="${store.companyName}">Store name</h2><div class="customer-store-code" th:text="${store.vendorCode}">VEN-XX-0000-0000</div></div></div><span class="badge" th:classappend="${store.vendorStatusEnum != null and store.vendorStatusEnum.name() == 'Active'} ? ' text-bg-success' : (${store.vendorStatusEnum != null and store.vendorStatusEnum.name() == 'Block'} ? ' text-bg-danger' : ' text-bg-warning')" th:text="${store.vendorStatusEnum}">Pending</span></div>
+                        <div class="customer-store-details"><div class="customer-store-detail"><i class="bi bi-person-badge"></i><span th:text="${store.designation}">Owner</span></div><div class="customer-store-detail" th:if="${store.email != null and !#strings.isEmpty(store.email)}"><i class="bi bi-envelope"></i><span th:text="${store.email}">email@example.com</span></div><div class="customer-store-detail" th:if="${store.phone != null and !#strings.isEmpty(store.phone)}"><i class="bi bi-telephone"></i><span th:text="${store.phone}">01700000000</span></div><div class="customer-store-detail" th:if="${store.address != null and !#strings.isEmpty(store.address)}"><i class="bi bi-geo-alt"></i><span th:text="${store.address}">Address</span></div></div>
+                        <div class="customer-store-actions"><a class="btn btn-primary btn-sm w-100" th:href="@{/vendor/{id}(id=${store.id})}"><i class="bi bi-box-arrow-up-right me-1"></i>Open Store Workspace</a></div>
+                    </div>
+                </article>
+            </div>
+
+            <div class="card shadow-sm" th:if="${#lists.isEmpty(storelist)}"><div class="customer-stores-empty"><span class="customer-stores-empty-icon"><i class="bi bi-shop fs-4"></i></span><h2 class="h6 mt-3 mb-1">Create your first store</h2><p class="text-muted small mb-3">Set up a store profile to begin your marketplace selling journey.</p><a class="btn btn-primary btn-sm" th:href="@{/customer/create}"><i class="bi bi-plus-lg me-1"></i>Create Store</a></div></div>
         </section>
-
-
-
-
-
-
-
-
     </div>
 </div>

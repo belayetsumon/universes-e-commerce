@@ -133,7 +133,8 @@ and open the template in the editor.
                                 <label for="exampleInputEmail1">Image<span class="text-danger"> </span></label>
                                 <input type="hidden"  th:value="${productcategory.imageName}">
 
-                                <input type="file" id="catimagefile" minlength=" 5 "class="form-control col-sm-5" name="pic" aria-describedby="emailHelp">
+                                <input type="file" id="catimagefile" minlength=" 5 " class="form-control col-sm-5" name="pic" accept="image/jpeg,image/png,image/webp" aria-describedby="emailHelp">
+                                <div class="form-text">Allowed: JPG, PNG, or WEBP. New uploads are converted to high-quality WEBP.</div>
                                 <img id="catimagePreview" alt="Image Preview" style="max-width: 300px; margin-top: 10px; display: none;" />
 
                                 <div>   <button type="button" id="catDeleteImageBtn"  class="btn btn-danger btn-sm"style="display:none; margin-top: 10px;">Delete Preview</button></div>

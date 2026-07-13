@@ -110,9 +110,16 @@ public class AdsController {
 
         normalizeTargetFields(ads);
 
-        if ((existingAds == null) && (file == null || file.isEmpty())) {
+        boolean hasImageUpload = file != null && !file.isEmpty();
+        if ((existingAds == null) && !hasImageUpload) {
             bindingResult.rejectValue("imageUrl", "error.ads", "Banner image is required for new ads");
-        } else if (file != null && !file.isEmpty()) {
+        }
+
+        if (bindingResult.hasErrors()) {
+            return "ads/ads_form";
+        }
+
+        if (hasImageUpload) {
             try {
                 String bannerFileName = imageUtils.saveBannerImage(
                         file,
@@ -123,17 +130,14 @@ public class AdsController {
                 ads.setImageUrl(bannerFileName);
             } catch (IOException e) {
                 bindingResult.rejectValue("imageUrl", "error.ads", "Image upload failed: " + e.getMessage());
+                return "ads/ads_form";
             }
         } else if (existingAds != null) {
             ads.setImageUrl(existingAds.getImageUrl());
         }
 
-        if (bindingResult.hasErrors()) {
-            return "ads/ads_form";
-        }
-
         adsService.save(ads);
-        redirectAttributes.addFlashAttribute("successMessage", "Ad saved successfully!");
+        redirectAttributes.addFlashAttribute("successMessage", "Ad saved successfully. Uploaded banners are stored as WEBP.");
 
         return "redirect:/admin/ads/list";
     }

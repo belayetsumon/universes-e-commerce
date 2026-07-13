@@ -294,7 +294,14 @@ public class CustomerController {
 
         session.removeAttribute("vendorprofile");
 
-        model.addAttribute("storelist", vendorprofileRepository.findByUserId(userId));
+        List<Vendorprofile> stores = vendorprofileRepository.findByUserId(userId);
+        model.addAttribute("storelist", stores);
+        model.addAttribute("activeStoreCount", stores.stream()
+                .filter(store -> store.getVendorStatusEnum() == VendorStatusEnum.Active)
+                .count());
+        model.addAttribute("pendingStoreCount", stores.stream()
+                .filter(store -> store.getVendorStatusEnum() == VendorStatusEnum.Pending)
+                .count());
 
         return "customer/storelist";
     }

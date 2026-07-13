@@ -1,77 +1,266 @@
-<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <style>
+            .main-content > section.attribute-form-workspace:first-child { background: transparent; border: 0; box-shadow: none; padding: 0; }
+            .attribute-form-hero { background: #113459; border: 0; color: #fff; overflow: hidden; }
+            .attribute-form-hero .card-header { background: rgba(255,255,255,.08); border-bottom-color: rgba(255,255,255,.12); }
+            .attribute-form-kicker { color: #9fd8ff; font-size: .75rem; font-weight: 700; letter-spacing: 0; margin: 0 0 .35rem; text-transform: uppercase; }
+            .attribute-form-hero h1 { color: #fff; font-size: 1.65rem; font-weight: 700; letter-spacing: 0; margin: 0; }
+            .attribute-form-copy { color: rgba(255,255,255,.78); margin: .45rem 0 0; max-width: 760px; }
+            .attribute-form-icon { align-items: center; background: #fff; border-radius: 50%; color: #113459; display: inline-flex; flex: 0 0 48px; height: 48px; justify-content: center; width: 48px; }
+            .attribute-form-primary { background: linear-gradient(135deg,#0d6efd 0%,#00a6c8 100%); border: 0; box-shadow: 0 .55rem 1rem rgba(0,166,200,.24); color: #fff; }
+            .attribute-form-primary:hover, .attribute-form-primary:focus { background: linear-gradient(135deg,#0b5ed7 0%,#0089a8 100%); color: #fff; }
+            .attribute-form-layout { align-items: start; display: grid; gap: 1rem; grid-template-columns: minmax(0,1fr) 330px; }
+            .attribute-form-panel, .attribute-form-guide { border: 1px solid rgba(17,52,89,.13); border-radius: .5rem; box-shadow: 0 .5rem 1.25rem rgba(15,23,42,.06); }
+            .attribute-form-panel .card-header, .attribute-form-guide .card-header { background: #fff; }
+            .attribute-form-section-title { color: #1f2937; font-size: 1.05rem; font-weight: 700; margin: 0; }
+            .attribute-form-label { color: #506070; font-size: .75rem; font-weight: 700; letter-spacing: 0; margin-bottom: .35rem; text-transform: uppercase; }
+            .attribute-form-label.required::after { color: #dc3545; content: " *"; }
+            .attribute-form-note { color: #6c757d; font-size: .8rem; margin-top: .35rem; }
+            .attribute-form-example { align-items: center; background: #edf7f5; border: 1px solid #b7ddd7; border-radius: 999px; color: #113459; display: inline-flex; font-size: .76rem; font-weight: 700; gap: .35rem; margin-top: .45rem; padding: .28rem .55rem; }
+            .attribute-form-checks { display: grid; gap: .75rem; grid-template-columns: repeat(2,minmax(0,1fr)); }
+            .attribute-form-check { background: #f8fafc; border: 1px solid #e5e9ee; border-radius: .45rem; padding: .8rem; }
+            .attribute-form-check .form-check { margin-bottom: .25rem; }
+            .attribute-form-check small { color: #6c757d; display: block; font-size: .78rem; line-height: 1.4; padding-left: 1.6rem; }
+            .attribute-form-guide { position: sticky; top: 1rem; }
+            .attribute-form-guide-list { display: grid; gap: .75rem; }
+            .attribute-form-guide-item { align-items: flex-start; background: #f8fafc; border: 1px solid #e5e9ee; border-radius: .45rem; display: flex; gap: .7rem; padding: .8rem; }
+            .attribute-form-guide-item i { color: #113459; margin-top: .1rem; }
+            .attribute-form-guide-item strong { color: #1f2937; display: block; font-size: .9rem; }
+            .attribute-form-guide-item small { color: #6c757d; display: block; font-size: .78rem; line-height: 1.4; margin-top: .15rem; }
+            .attribute-form-savebar { align-items: center; background: rgba(255,255,255,.95); border: 1px solid rgba(17,52,89,.13); border-radius: .5rem; box-shadow: 0 -.5rem 1.2rem rgba(15,23,42,.06); display: flex; gap: 1rem; justify-content: space-between; margin-top: 1rem; padding: .85rem 1rem; position: sticky; bottom: 0; z-index: 5; }
+            .attribute-form-alert { align-items: center; display: flex; gap: .6rem; }
+            @media (max-width: 1199.98px) { .attribute-form-layout { grid-template-columns: 1fr; } .attribute-form-guide { position: static; } }
+            @media (max-width: 767.98px) { .attribute-form-hero .card-body > .d-flex, .attribute-form-savebar { align-items: stretch !important; flex-direction: column; } .attribute-form-checks { grid-template-columns: 1fr; } }
+            @media print { .attribute-form-hero .btn, .attribute-form-savebar, .attribute-form-guide { display: none !important; } .attribute-form-layout { display: block; } .attribute-form-hero, .attribute-form-panel { box-shadow: none; } }
+        </style>
+    </th:block>
+
     <div layout:fragment="main_content">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-                <h4 th:text="${attribute.uuid == null ? 'Create Attribute' : 'Edit Attribute'}">Create Attribute</h4>
-                <p class="text-muted mb-0">Define reusable fields once and assign them to categories later.</p>
-            </div>
-            <a class="btn btn-outline-secondary btn-sm" th:href="@{/catalog-attributes/list}">Back</a>
-        </div>
-
-        <div class="card">
-            <div class="card-body">
-                <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
-                <form th:action="@{/catalog-attributes/save}" th:object="${attribute}" method="post">
-                    <input type="hidden" th:field="*{id}">
-                    <input type="hidden" th:field="*{uuid}">
-                    <input type="hidden" th:field="*{version}">
-
-                    <div class="row g-3">
-                        <div class="col-md-12">
-                            <label class="form-label">Name</label>
-                            <input type="text" class="form-control" th:field="*{name}" required>
-                            <div class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+        <section class="py-4 attribute-form-workspace">
+            <header class="card shadow-sm mb-4 attribute-form-hero">
+                <div class="card-header d-flex align-items-center justify-content-between py-3">
+                    <span class="fw-semibold"><i class="bi bi-ui-checks-grid text-warning me-2"></i>Catalog management</span>
+                    <span class="badge text-bg-light border border-white border-opacity-25"
+                          th:text="${attribute.id == null ? 'New attribute' : 'Edit attribute'}">New attribute</span>
+                </div>
+                <div class="card-body py-4">
+                    <div class="d-flex align-items-start justify-content-between gap-4">
+                        <div class="d-flex align-items-start gap-3">
+                            <span class="attribute-form-icon"><i class="bi bi-sliders fs-4"></i></span>
+                            <div>
+                                <p class="attribute-form-kicker">Product specification library</p>
+                                <h1 th:text="${attribute.id == null ? 'Create Catalog Attribute' : 'Edit Catalog Attribute'}">Create Catalog Attribute</h1>
+                                <p class="attribute-form-copy">Define reusable product fields once, then map them to categories for product forms, storefront filters, comparison tables, and variant generation.</p>
+                            </div>
                         </div>
-                        <div class="col-12">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" rows="3" th:field="*{description}"></textarea>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Input Type</label>
-                            <select class="form-select" th:field="*{inputType}" required>
-                                <option value="">Select one</option>
-                                <option th:each="type : ${inputTypes}" th:value="${type}" th:text="${type}"></option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Value Type</label>
-                            <select class="form-select" th:field="*{valueType}" required>
-                                <option value="">Select one</option>
-                                <option th:each="type : ${valueTypes}" th:value="${type}" th:text="${type}"></option>
-                            </select>
-                        </div>
-                        <div class="col-md-3 form-check">
-                            <input class="form-check-input" type="checkbox" th:field="*{allowMultipleValues}" id="allowMultipleValues">
-                            <label class="form-check-label" for="allowMultipleValues">Allow multiple values</label>
-                        </div>
-                        <div class="col-md-3 form-check">
-                            <input class="form-check-input" type="checkbox" th:field="*{variantCapable}" id="variantCapable">
-                            <label class="form-check-label" for="variantCapable">Variant capable</label>
-                        </div>
-                        <div class="col-md-2 form-check">
-                            <input class="form-check-input" type="checkbox" th:field="*{filterable}" id="filterable">
-                            <label class="form-check-label" for="filterable">Filterable</label>
-                        </div>
-                        <div class="col-md-2 form-check">
-                            <input class="form-check-input" type="checkbox" th:field="*{searchable}" id="searchable">
-                            <label class="form-check-label" for="searchable">Searchable</label>
-                        </div>
-                        <div class="col-md-2 form-check">
-                            <input class="form-check-input" type="checkbox" th:field="*{comparable}" id="comparable">
-                            <label class="form-check-label" for="comparable">Comparable</label>
-                        </div>
-                        <div class="col-md-2 form-check">
-                            <input class="form-check-input" type="checkbox" th:field="*{active}" id="active">
-                            <label class="form-check-label" for="active">Active</label>
+                        <div class="d-flex flex-wrap gap-2 flex-shrink-0">
+                            <a class="btn btn-light" th:href="@{/catalog-attributes/list}"><i class="bi bi-arrow-left me-1"></i> Attributes</a>
+                            <a class="btn btn-outline-light" th:href="@{/catalog-attributes/category-mappings}"><i class="bi bi-diagram-3 me-1"></i> Mappings</a>
                         </div>
                     </div>
+                </div>
+            </header>
 
-                    <div class="mt-4">
-                        <button type="submit" class="btn btn-success">Save Attribute</button>
-                        <a class="btn btn-outline-secondary" th:href="@{/catalog-attributes/list}">Cancel</a>
-                    </div>
-                </form>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show shadow-sm attribute-form-alert" role="alert">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span th:text="${errorMessage}">Unable to save attribute.</span>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-        </div>
+
+            <form th:action="@{/catalog-attributes/save}" th:object="${attribute}" method="post" novalidate>
+                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <input type="hidden" th:field="*{id}">
+                <input type="hidden" th:field="*{uuid}">
+                <input type="hidden" th:field="*{version}">
+
+                <div class="attribute-form-layout">
+                    <main>
+                        <section class="card attribute-form-panel mb-3">
+                            <div class="card-header py-3">
+                                <p class="attribute-form-kicker text-primary mb-1">Identity</p>
+                                <h2 class="attribute-form-section-title">Name, Code, and Description</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-lg-7">
+                                        <label class="attribute-form-label required" for="name">Attribute Name</label>
+                                        <input id="name" type="text" class="form-control"
+                                               th:field="*{name}"
+                                               th:classappend="${#fields.hasErrors('name')} ? ' is-invalid' : ''"
+                                               placeholder="Example: Battery Capacity"
+                                               maxlength="120" required>
+                                        <div class="attribute-form-note">Use a clear buyer-facing label within 120 characters.</div>
+                                        <span class="attribute-form-example"><i class="bi bi-check2-circle"></i>Example: Battery Capacity</span>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Name error</div>
+                                    </div>
+                                    <div class="col-lg-5">
+                                        <label class="attribute-form-label" for="code">Attribute Code</label>
+                                        <input id="code" type="text" class="form-control"
+                                               th:field="*{code}"
+                                               th:classappend="${#fields.hasErrors('code')} ? ' is-invalid' : ''"
+                                               placeholder="Example: battery_capacity"
+                                               maxlength="120">
+                                        <div class="attribute-form-note">Optional. Leave blank to generate from the name. Codes are normalized and must be unique.</div>
+                                        <span class="attribute-form-example"><i class="bi bi-code-slash"></i>Example: battery_capacity</span>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('code')}" th:errors="*{code}">Code error</div>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="attribute-form-label" for="description">Description</label>
+                                        <textarea id="description" class="form-control" rows="4"
+                                                  th:field="*{description}"
+                                                  placeholder="Example: Captures the rated battery capacity shown on product detail pages."></textarea>
+                                        <div class="attribute-form-note">Explain where this attribute appears and how merchandisers should maintain it.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="card attribute-form-panel mb-3">
+                            <div class="card-header py-3">
+                                <p class="attribute-form-kicker text-primary mb-1">Data behavior</p>
+                                <h2 class="attribute-form-section-title">Input and Value Types</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="attribute-form-label required" for="inputType">Input Type</label>
+                                        <select id="inputType" class="form-select"
+                                                th:field="*{inputType}"
+                                                th:classappend="${#fields.hasErrors('inputType')} ? ' is-invalid' : ''"
+                                                required>
+                                            <option value="">Select input type</option>
+                                            <option th:each="type : ${inputTypes}" th:value="${type}" th:text="${type}">TEXT</option>
+                                        </select>
+                                        <div class="attribute-form-note">Controls how admins and vendors enter values on product forms.</div>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('inputType')}" th:errors="*{inputType}">Input type error</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="attribute-form-label required" for="valueType">Value Type</label>
+                                        <select id="valueType" class="form-select"
+                                                th:field="*{valueType}"
+                                                th:classappend="${#fields.hasErrors('valueType')} ? ' is-invalid' : ''"
+                                                required>
+                                            <option value="">Select value type</option>
+                                            <option th:each="type : ${valueTypes}" th:value="${type}" th:text="${type}">TEXT</option>
+                                        </select>
+                                        <div class="attribute-form-note">Controls validation, sorting, and future analytics behavior.</div>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('valueType')}" th:errors="*{valueType}">Value type error</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="card attribute-form-panel">
+                            <div class="card-header py-3">
+                                <p class="attribute-form-kicker text-primary mb-1">Usage flags</p>
+                                <h2 class="attribute-form-section-title">Storefront, Search, and Variant Behavior</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="attribute-form-checks">
+                                    <div class="attribute-form-check">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" th:field="*{allowMultipleValues}" id="allowMultipleValues">
+                                            <label class="form-check-label fw-semibold" for="allowMultipleValues">Allow multiple values</label>
+                                        </div>
+                                        <small>Use for attributes like colors, compatible models, or supported features.</small>
+                                    </div>
+                                    <div class="attribute-form-check">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" th:field="*{variantCapable}" id="variantCapable">
+                                            <label class="form-check-label fw-semibold" for="variantCapable">Variant capable</label>
+                                        </div>
+                                        <small>Allow this attribute to drive SKU/variant combinations when mapped to a category.</small>
+                                    </div>
+                                    <div class="attribute-form-check">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" th:field="*{filterable}" id="filterable">
+                                            <label class="form-check-label fw-semibold" for="filterable">Filterable</label>
+                                        </div>
+                                        <small>Expose this attribute as a storefront or admin product-filter dimension.</small>
+                                    </div>
+                                    <div class="attribute-form-check">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" th:field="*{searchable}" id="searchable">
+                                            <label class="form-check-label fw-semibold" for="searchable">Searchable</label>
+                                        </div>
+                                        <small>Include values in search indexing and product discovery workflows.</small>
+                                    </div>
+                                    <div class="attribute-form-check">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" th:field="*{comparable}" id="comparable">
+                                            <label class="form-check-label fw-semibold" for="comparable">Comparable</label>
+                                        </div>
+                                        <small>Show this field in product comparison tables and specification grids.</small>
+                                    </div>
+                                    <div class="attribute-form-check">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" th:field="*{active}" id="active">
+                                            <label class="form-check-label fw-semibold" for="active">Active</label>
+                                        </div>
+                                        <small>Keep enabled for attributes that are ready to be mapped and maintained.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div class="attribute-form-savebar">
+                            <span class="text-muted small"><i class="bi bi-info-circle me-1"></i>Review input/value compatibility before saving.</span>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a class="btn btn-outline-secondary" th:href="@{/catalog-attributes/list}">
+                                    <i class="bi bi-x-circle me-1"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn attribute-form-primary">
+                                    <i class="bi bi-save me-1"></i>
+                                    <span th:text="${attribute.id == null ? 'Save Attribute' : 'Update Attribute'}">Save Attribute</span>
+                                </button>
+                            </div>
+                        </div>
+                    </main>
+
+                    <aside class="card attribute-form-guide">
+                        <div class="card-header py-3">
+                            <p class="attribute-form-kicker text-primary mb-1">Readiness</p>
+                            <h2 class="attribute-form-section-title">Attribute Checklist</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="attribute-form-guide-list">
+                                <div class="attribute-form-guide-item">
+                                    <i class="bi bi-type"></i>
+                                    <div>
+                                        <strong>Readable label</strong>
+                                        <small>Use customer-friendly labels that product teams recognize quickly.</small>
+                                    </div>
+                                </div>
+                                <div class="attribute-form-guide-item">
+                                    <i class="bi bi-code-slash"></i>
+                                    <div>
+                                        <strong>Stable code</strong>
+                                        <small>Leave blank for auto-generation, or set a durable code before integrations use it.</small>
+                                    </div>
+                                </div>
+                                <div class="attribute-form-guide-item">
+                                    <i class="bi bi-menu-button-wide"></i>
+                                    <div>
+                                        <strong>Correct input</strong>
+                                        <small>Dropdown-style inputs should generally have option values configured after save.</small>
+                                    </div>
+                                </div>
+                                <div class="attribute-form-guide-item">
+                                    <i class="bi bi-diagram-3"></i>
+                                    <div>
+                                        <strong>Map to categories</strong>
+                                        <small>After saving, assign this attribute to relevant categories from the mappings screen.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </form>
+        </section>
     </div>
 </div>

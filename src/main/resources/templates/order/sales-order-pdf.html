@@ -18,10 +18,11 @@
                 margin: 0;
             }
             .header {
-                border-bottom: 2px solid #1b5f8f;
+                background: #f7fafc;
+                border-bottom: 3px solid #d79b2b;
                 display: table;
                 margin-bottom: 16px;
-                padding-bottom: 12px;
+                padding: 14px;
                 width: 100%;
             }
             .header-left,
@@ -43,6 +44,20 @@
                 font-weight: 700;
                 margin: 0;
                 text-transform: uppercase;
+            }
+            .document-label {
+                color: #65738a;
+                font-size: 9px;
+                font-weight: 700;
+                letter-spacing: 1px;
+                margin: 0 0 4px;
+                text-transform: uppercase;
+            }
+            .document-number {
+                color: #12324f;
+                font-size: 17px;
+                font-weight: 700;
+                margin: 0 0 8px;
             }
             .muted {
                 color: #65738a;
@@ -118,8 +133,8 @@
                 white-space: nowrap;
             }
             .status {
-                background: #eef5fb;
-                border: 1px solid #c9ddec;
+                background: #eaf3f9;
+                border: 1px solid #b9d5e7;
                 color: #12324f;
                 display: inline-block;
                 font-size: 10px;
@@ -146,6 +161,7 @@
                 margin-top: 18px;
                 padding-top: 8px;
             }
+            .footer-note { color: #12324f; font-weight: 700; }
         </style>
     </head>
     <body>
@@ -161,11 +177,10 @@
             </div>
             <div class="header-right right">
                 <img class="qr" th:if="${qrBase64 != null}" th:src="${qrBase64}" alt="Order QR" />
-                <p>
-                    <strong>Order:</strong> <span th:text="${order.orderCode}">ORD-0001</span><br />
-                    <strong>Status:</strong> <span th:text="${order.status}">PENDING</span><br />
-                    <strong>Date:</strong> <span th:text="${order.created}">Date</span>
-                </p>
+                <p class="document-label">Order reference</p>
+                <p class="document-number" th:text="${order.orderCode}">ORD-0001</p>
+                <p class="muted"><strong>Status:</strong> <span class="status" th:text="${order.status}">PENDING</span><br />
+                    <strong>Order date:</strong> <span th:text="${order.created}">Date</span></p>
             </div>
         </div>
 
@@ -329,7 +344,7 @@
         </div>
 
         <div class="footer">
-            This PDF is generated from the order record in Universes Ecommerce. Verify payment, shipment, and return state in the application before settlement or delivery action.
+            <span class="footer-note">Official order record.</span> This PDF is generated from Universes Ecommerce. Verify payment, shipment, and return state in the application before settlement or delivery action.
         </div>
     </body>
 </html>

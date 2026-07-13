@@ -1,118 +1,240 @@
-<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <style>
+            .main-content > section.attribute-workspace:first-child { background: transparent; border: 0; box-shadow: none; padding: 0; }
+            .attribute-hero { background: #113459; border: 0; color: #fff; overflow: hidden; }
+            .attribute-hero .card-header { background: rgba(255,255,255,.08); border-bottom-color: rgba(255,255,255,.12); }
+            .attribute-kicker { color: #9fd8ff; font-size: .75rem; font-weight: 700; letter-spacing: 0; margin: 0 0 .35rem; text-transform: uppercase; }
+            .attribute-hero h1 { color: #fff; font-size: 1.65rem; font-weight: 700; letter-spacing: 0; margin: 0; }
+            .attribute-hero-copy { color: rgba(255,255,255,.78); margin: .45rem 0 0; max-width: 720px; }
+            .attribute-hero-icon { align-items: center; background: #fff; border-radius: 50%; color: #113459; display: inline-flex; flex: 0 0 48px; height: 48px; justify-content: center; width: 48px; }
+            .attribute-primary-action { background: linear-gradient(135deg,#0d6efd 0%,#00a6c8 100%); border: 0; box-shadow: 0 .55rem 1rem rgba(0,166,200,.24); color: #fff; }
+            .attribute-primary-action:hover, .attribute-primary-action:focus { background: linear-gradient(135deg,#0b5ed7 0%,#0089a8 100%); color: #fff; }
+            .attribute-metrics { display: grid; gap: 1rem; grid-template-columns: repeat(4,minmax(0,1fr)); }
+            .attribute-metric { border: 1px solid rgba(17,52,89,.12); border-radius: .5rem; min-width: 0; padding: 1rem; }
+            .attribute-metric-icon { align-items: center; background: #eaf4ff; border-radius: .5rem; color: #0d6efd; display: inline-flex; height: 38px; justify-content: center; width: 38px; }
+            .attribute-metric-label { color: #6c757d; font-size: .75rem; font-weight: 700; letter-spacing: 0; margin-top: .7rem; text-transform: uppercase; }
+            .attribute-metric-value { color: #212529; font-size: 1.45rem; font-weight: 700; line-height: 1.1; margin-top: .2rem; }
+            .attribute-filter-panel { border-color: rgba(17,52,89,.13); }
+            .attribute-filter-grid { align-items: end; display: grid; gap: .85rem; grid-template-columns: minmax(220px,2fr) minmax(140px,1fr) minmax(260px,2fr) auto; }
+            .attribute-flag-set { align-items: center; background: #f8fafc; border: 1px solid #e5e9ee; border-radius: .45rem; display: flex; flex-wrap: wrap; gap: .75rem 1rem; min-height: 38px; padding: .45rem .7rem; }
+            .attribute-flag-set .form-check { margin: 0; }
+            .attribute-flag-set .form-check-input { margin-top: .2rem; }
+            .attribute-table { min-width: 1040px; }
+            .attribute-table th { background: #f4f7fa; color: #506070; font-size: .75rem; letter-spacing: 0; text-transform: uppercase; white-space: nowrap; }
+            .attribute-table th, .attribute-table td { padding: .8rem .75rem; vertical-align: middle; }
+            .attribute-name { color: #1f2937; display: block; font-weight: 700; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .attribute-description { color: #6c757d; display: block; font-size: .8rem; margin-top: .15rem; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .attribute-code-icon { align-items: center; background: #f1f4f8; border: 1px solid #e5e9ee; border-radius: .45rem; color: #506070; display: inline-flex; height: 44px; justify-content: center; width: 44px; }
+            .attribute-usage-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .45rem; max-width: 360px; }
+            .attribute-action { align-items: center; display: inline-flex; gap: .35rem; justify-content: flex-end; min-width: 116px; }
+            .attribute-action .btn { align-items: center; border-radius: 7px; display: inline-flex; height: 34px; justify-content: center; padding: 0; width: 34px; }
+            .attribute-empty { display: grid; gap: .75rem; justify-items: center; padding: 3.5rem 1rem; }
+            .attribute-alert { align-items: center; display: flex; gap: .6rem; }
+            @media (max-width: 1199.98px) { .attribute-filter-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } .attribute-filter-grid .attribute-search, .attribute-filter-grid .attribute-flags { grid-column: span 2; } }
+            @media (max-width: 767.98px) { .attribute-metrics, .attribute-filter-grid { grid-template-columns: 1fr; } .attribute-filter-grid .attribute-search, .attribute-filter-grid .attribute-flags { grid-column: auto; } .attribute-hero .card-body > .d-flex { align-items: stretch !important; flex-direction: column; } }
+        </style>
+    </th:block>
+
     <div layout:fragment="main_content">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-                <h4>Catalog Attributes</h4>
-                <p class="text-muted mb-0">Reusable attributes for category-driven product specifications and variants.</p>
-            </div>
-            <div class="d-flex gap-2">
-                <a class="btn btn-outline-primary btn-sm" th:href="@{/catalog-attributes/category-mappings}">Category Mappings</a>
-                <a class="btn btn-success btn-sm" th:href="@{/catalog-attributes/create}">Add Attribute</a>
-            </div>
-        </div>
-
-        <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
-        <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
-
-        <div class="card">
-            <div class="card-body border-bottom">
-                <form th:action="@{/catalog-attributes/list}" method="get" class="row g-3 align-items-end">
-                    <div class="col-lg-4">
-                        <label class="form-label">Search by Name</label>
-                        <input type="text" class="form-control" name="keyword" th:value="${keyword}" placeholder="Battery, Display, Storage">
-                    </div>
-                    <div class="col-lg-2">
-                        <label class="form-label">Status</label>
-                        <select class="form-select" name="active">
-                            <option value="" th:selected="${active == null}">All</option>
-                            <option value="true" th:selected="${active != null and active}">Active</option>
-                            <option value="false" th:selected="${active != null and !active}">Inactive</option>
-                        </select>
-                    </div>
-                    <div class="col-lg-6">
-                        <label class="form-label d-block">Flags</label>
-                        <div class="d-flex flex-wrap gap-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="filterable" name="filterable" value="true" th:checked="${filterable}">
-                                <label class="form-check-label" for="filterable">Filterable</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="variantCapable" name="variantCapable" value="true" th:checked="${variantCapable}">
-                                <label class="form-check-label" for="variantCapable">Variant</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="searchable" name="searchable" value="true" th:checked="${searchable}">
-                                <label class="form-check-label" for="searchable">Searchable</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="comparable" name="comparable" value="true" th:checked="${comparable}">
-                                <label class="form-check-label" for="comparable">Comparable</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="allowMultipleValues" name="allowMultipleValues" value="true" th:checked="${allowMultipleValues}">
-                                <label class="form-check-label" for="allowMultipleValues">Multi-value</label>
+        <section class="py-4 attribute-workspace">
+            <header class="card shadow-sm mb-4 attribute-hero">
+                <div class="card-header d-flex align-items-center justify-content-between py-3">
+                    <span class="fw-semibold"><i class="bi bi-sliders text-warning me-2"></i>Catalog management</span>
+                    <span class="badge text-bg-light border border-white border-opacity-25" th:text="${attributeTotal + ' attributes'}">0 attributes</span>
+                </div>
+                <div class="card-body py-4">
+                    <div class="d-flex align-items-start justify-content-between gap-4">
+                        <div class="d-flex align-items-start gap-3">
+                            <span class="attribute-hero-icon"><i class="bi bi-ui-checks-grid fs-4"></i></span>
+                            <div>
+                                <p class="attribute-kicker">Product specifications</p>
+                                <h1>Catalog Attributes</h1>
+                                <p class="attribute-hero-copy">Manage reusable product specification fields, category mappings, storefront filters, comparison flags, and variant-ready options.</p>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <small class="text-muted" th:text="${#lists.size(attributes)} + ' attribute(s) found'">0 attribute(s) found</small>
-                        <div class="d-flex gap-2">
-                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/catalog-attributes/list}">Reset</a>
-                            <button type="submit" class="btn btn-primary btn-sm">Apply Filters</button>
+                        <div class="d-flex flex-wrap gap-2 flex-shrink-0">
+                            <a class="btn btn-light" th:href="@{/admin/index}"><i class="bi bi-arrow-left me-1"></i> Dashboard</a>
+                            <a class="btn btn-outline-light" th:href="@{/catalog-attributes/category-mappings}"><i class="bi bi-diagram-3 me-1"></i> Category Mappings</a>
+                            <a class="btn attribute-primary-action" th:href="@{/catalog-attributes/create}"><i class="bi bi-plus-lg me-1"></i> Add Attribute</a>
                         </div>
                     </div>
-                </form>
+                </div>
+            </header>
+
+            <div class="attribute-metrics mb-4">
+                <article class="card attribute-metric shadow-sm">
+                    <span class="attribute-metric-icon"><i class="bi bi-collection"></i></span>
+                    <div class="attribute-metric-label">Matching attributes</div>
+                    <div class="attribute-metric-value" th:text="${attributeTotal}">0</div>
+                </article>
+                <article class="card attribute-metric shadow-sm">
+                    <span class="attribute-metric-icon"><i class="bi bi-check2-circle"></i></span>
+                    <div class="attribute-metric-label">Active</div>
+                    <div class="attribute-metric-value" th:text="${activeAttributeCount}">0</div>
+                </article>
+                <article class="card attribute-metric shadow-sm">
+                    <span class="attribute-metric-icon"><i class="bi bi-boxes"></i></span>
+                    <div class="attribute-metric-label">Variant ready</div>
+                    <div class="attribute-metric-value" th:text="${variantAttributeCount}">0</div>
+                </article>
+                <article class="card attribute-metric shadow-sm">
+                    <span class="attribute-metric-icon"><i class="bi bi-diagram-3"></i></span>
+                    <div class="attribute-metric-label">Mapped</div>
+                    <div class="attribute-metric-value" th:text="${mappedAttributeCount}">0</div>
+                </article>
             </div>
-            <div class="card-body table-responsive">
-                <table class="table table-bordered table-striped align-middle">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Input Type</th>
-                            <th>Value Type</th>
-                            <th>Usage</th>
-                            <th>Flags</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="attribute : ${attributes}">
-                            <td>
-                                <div class="fw-semibold" th:text="${attribute.name}">Attribute</div>
-                                <small class="text-muted" th:text="${attribute.description}">Description</small>
-                            </td>
-                            <td th:text="${attribute.inputType}">TEXT</td>
-                            <td th:text="${attribute.valueType}">TEXT</td>
-                            <td>
-                                <div class="fw-semibold" th:text="${attribute.categoryMappingCount} + ' category map(s)'">0 category map(s)</div>
-                                <div class="d-flex flex-wrap gap-1 mt-2" th:if="${attribute.categoryNames != null and !#lists.isEmpty(attribute.categoryNames)}">
-                                    <span class="badge bg-light text-dark border"
-                                          th:each="categoryName : ${attribute.categoryNames}"
-                                          th:text="${categoryName}">Mobile</span>
+
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show shadow-sm attribute-alert" role="alert">
+                <i class="bi bi-check-circle"></i>
+                <span th:text="${successMessage}">Saved successfully.</span>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show shadow-sm attribute-alert" role="alert">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span th:text="${errorMessage}">Unable to complete request.</span>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div class="card shadow-sm mb-4 attribute-filter-panel">
+                <div class="card-body p-3">
+                    <form class="attribute-filter-grid" th:action="@{/catalog-attributes/list}" method="get">
+                        <div class="attribute-search">
+                            <label for="attributeSearch" class="form-label small fw-semibold text-uppercase text-muted mb-1">Find attribute</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                                <input id="attributeSearch" class="form-control" type="search" name="keyword" th:value="${keyword}" placeholder="Battery, Display, Storage">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="active" class="form-label small fw-semibold text-uppercase text-muted mb-1">Status</label>
+                            <select id="active" class="form-select" name="active">
+                                <option value="" th:selected="${active == null}">All statuses</option>
+                                <option value="true" th:selected="${active != null and active}">Active</option>
+                                <option value="false" th:selected="${active != null and !active}">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="attribute-flags">
+                            <label class="form-label small fw-semibold text-uppercase text-muted mb-1">Attribute flags</label>
+                            <div class="attribute-flag-set">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="filterable" name="filterable" value="true" th:checked="${filterable}">
+                                    <label class="form-check-label small" for="filterable">Filterable</label>
                                 </div>
-                                <small class="text-warning" th:if="${attribute.categoryMappingCount == 0}">Unused in category mappings</small>
-                            </td>
-                            <td>
-                                <span class="badge bg-info text-dark me-1" th:if="${attribute.filterable}">Filterable</span>
-                                <span class="badge bg-warning text-dark me-1" th:if="${attribute.variantCapable}">Variant</span>
-                                <span class="badge bg-secondary me-1" th:if="${attribute.searchable}">Searchable</span>
-                                <span class="badge bg-dark me-1" th:if="${attribute.comparable}">Comparable</span>
-                                <span class="badge bg-primary me-1" th:if="${attribute.allowMultipleValues}">Multi</span>
-                                <span class="badge bg-success" th:if="${attribute.active}">Active</span>
-                                <span class="badge bg-light text-dark border" th:if="${!attribute.active}">Inactive</span>
-                            </td>
-                            <td class="text-nowrap">
-                                <a class="btn btn-sm btn-outline-primary" th:href="@{/catalog-attributes/edit/{uuid}(uuid=${attribute.uuid})}">Edit</a>
-                                <a class="btn btn-sm btn-outline-secondary" th:href="@{/catalog-attributes/options/{uuid}(uuid=${attribute.uuid})}">Options</a>
-                                <a class="btn btn-sm btn-outline-danger" th:href="@{/catalog-attributes/delete/{uuid}(uuid=${attribute.uuid})}">Delete</a>
-                            </td>
-                        </tr>
-                        <tr th:if="${#lists.isEmpty(attributes)}">
-                            <td colspan="6" class="text-center text-muted">No attributes matched the current filters.</td>
-                        </tr>
-                    </tbody>
-                </table>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="variantCapable" name="variantCapable" value="true" th:checked="${variantCapable}">
+                                    <label class="form-check-label small" for="variantCapable">Variant</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="searchable" name="searchable" value="true" th:checked="${searchable}">
+                                    <label class="form-check-label small" for="searchable">Searchable</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="comparable" name="comparable" value="true" th:checked="${comparable}">
+                                    <label class="form-check-label small" for="comparable">Comparable</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="allowMultipleValues" name="allowMultipleValues" value="true" th:checked="${allowMultipleValues}">
+                                    <label class="form-check-label small" for="allowMultipleValues">Multi-value</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" type="submit" title="Apply filters" aria-label="Apply filters"><i class="bi bi-funnel"></i></button>
+                            <a class="btn btn-outline-secondary" th:href="@{/catalog-attributes/list}" title="Clear filters" aria-label="Clear filters"><i class="bi bi-arrow-counterclockwise"></i></a>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 py-3">
+                    <div>
+                        <h2 class="h5 mb-1">Attribute Directory</h2>
+                        <p class="text-muted small mb-0" th:text="${attributeTotal + ' matching attributes'}">0 matching attributes</p>
+                    </div>
+                    <span class="small text-muted">Reusable catalog specification library</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 attribute-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Attribute</th>
+                                <th>Input type</th>
+                                <th>Value type</th>
+                                <th>Usage</th>
+                                <th>Flags</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody th:if="${!#lists.isEmpty(attributes)}">
+                            <tr th:each="attribute, stat : ${attributes}">
+                                <td class="text-muted" th:text="${stat.count}">1</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <span class="attribute-code-icon"><i class="bi bi-braces"></i></span>
+                                        <div>
+                                            <span class="attribute-name" th:text="${attribute.name}">Attribute</span>
+                                            <span class="attribute-description" th:text="${#strings.isEmpty(attribute.description) ? 'No description provided' : attribute.description}">Description</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge text-bg-light border" th:text="${attribute.inputType}">TEXT</span></td>
+                                <td><span class="badge text-bg-light border" th:text="${attribute.valueType}">TEXT</span></td>
+                                <td>
+                                    <div class="fw-semibold" th:text="${attribute.categoryMappingCount + ' category map(s)'}">0 category map(s)</div>
+                                    <div class="attribute-usage-tags" th:if="${attribute.categoryNames != null and !#lists.isEmpty(attribute.categoryNames)}">
+                                        <span class="badge bg-light text-dark border"
+                                              th:each="categoryName : ${attribute.categoryNames}"
+                                              th:text="${categoryName}">Mobile</span>
+                                    </div>
+                                    <small class="text-warning" th:if="${attribute.categoryMappingCount == 0}"><i class="bi bi-exclamation-triangle me-1"></i>Unused in category mappings</small>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        <span class="badge text-bg-info" th:if="${attribute.filterable}">Filterable</span>
+                                        <span class="badge text-bg-warning" th:if="${attribute.variantCapable}">Variant</span>
+                                        <span class="badge text-bg-secondary" th:if="${attribute.searchable}">Searchable</span>
+                                        <span class="badge text-bg-dark" th:if="${attribute.comparable}">Comparable</span>
+                                        <span class="badge text-bg-primary" th:if="${attribute.allowMultipleValues}">Multi</span>
+                                        <span class="text-muted small" th:if="${!attribute.filterable and !attribute.variantCapable and !attribute.searchable and !attribute.comparable and !attribute.allowMultipleValues}">No flags</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge text-bg-success" th:if="${attribute.active}"><i class="bi bi-check2-circle me-1"></i>Active</span>
+                                    <span class="badge text-bg-light border text-dark" th:if="${!attribute.active}">Inactive</span>
+                                </td>
+                                <td>
+                                    <div class="attribute-action">
+                                        <a class="btn btn-outline-primary" th:href="@{/catalog-attributes/edit/{uuid}(uuid=${attribute.uuid})}" title="Edit attribute" aria-label="Edit attribute"><i class="bi bi-pencil"></i></a>
+                                        <a class="btn btn-outline-secondary" th:href="@{/catalog-attributes/options/{uuid}(uuid=${attribute.uuid})}" title="Manage options" aria-label="Manage options"><i class="bi bi-list-check"></i></a>
+                                        <a class="btn btn-outline-danger" th:href="@{/catalog-attributes/delete/{uuid}(uuid=${attribute.uuid})}" title="Delete attribute" aria-label="Delete attribute"><i class="bi bi-trash3"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody th:if="${#lists.isEmpty(attributes)}">
+                            <tr>
+                                <td colspan="8">
+                                    <div class="attribute-empty">
+                                        <span class="attribute-hero-icon"><i class="bi bi-search fs-5"></i></span>
+                                        <div class="text-center">
+                                            <h3 class="h6 mb-1">No attributes match these filters</h3>
+                                            <p class="text-muted small mb-0">Try clearing a filter or create a new catalog attribute.</p>
+                                        </div>
+                                        <a class="btn btn-primary btn-sm" th:href="@{/catalog-attributes/create}"><i class="bi bi-plus-lg me-1"></i>Add Attribute</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </div>
 </div>

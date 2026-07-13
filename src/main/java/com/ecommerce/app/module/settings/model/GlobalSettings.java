@@ -7,6 +7,8 @@ package com.ecommerce.app.module.settings.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Lob;
@@ -179,8 +181,43 @@ public class GlobalSettings implements Serializable {
     @Column(name = "low_stock_alert_qty")
     private Integer lowStockAlertQty = 5;
 
+    @Column(name = "secure_checkout_enabled", nullable = false)
+    private Boolean secureCheckoutEnabled = true;
+
     @Column(name = "allow_guest_checkout", nullable = false)
     private Boolean allowGuestCheckout = true;
+
+    @Column(name = "guest_mobile_required", nullable = false)
+    private Boolean guestMobileRequired = true;
+
+    @Column(name = "guest_mobile_otp_verification_enabled", nullable = false)
+    private Boolean guestMobileOtpVerificationEnabled = true;
+
+    @Min(1)
+    @Column(name = "guest_otp_expiry_minutes", nullable = false)
+    private Integer guestOtpExpiryMinutes = 5;
+
+    @Min(1)
+    @Column(name = "guest_otp_maximum_attempts", nullable = false)
+    private Integer guestOtpMaximumAttempts = 5;
+
+    @Min(0)
+    @Column(name = "guest_otp_resend_cooldown_seconds", nullable = false)
+    private Integer guestOtpResendCooldownSeconds = 60;
+
+    @Min(1)
+    @Column(name = "guest_otp_daily_send_limit", nullable = false)
+    private Integer guestOtpDailySendLimit = 5;
+
+    @Column(name = "guest_auto_create_customer_account", nullable = false)
+    private Boolean guestAutoCreateCustomerAccount = true;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "store_mode", nullable = false, length = 30)
+    private StoreMode storeMode = StoreMode.MARKETPLACE;
+
+    @Column(name = "primary_vendor_id")
+    private Long primaryVendorId;
 
     @DecimalMin("0.00")
     @Column(name = "minimum_order_amount", precision = 19, scale = 2)
@@ -244,6 +281,10 @@ public class GlobalSettings implements Serializable {
 
     @Column(name = "auto_cancel_unpaid_order", nullable = false)
     private Boolean autoCancelUnpaidOrder = true;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sales_order_mode", nullable = false, length = 30)
+    private SalesOrderMode salesOrderMode = SalesOrderMode.SPLIT_BY_VENDOR;
 
     @Min(0)
     @Column(name = "cancel_order_after_minutes")
@@ -687,12 +728,92 @@ public class GlobalSettings implements Serializable {
         this.lowStockAlertQty = lowStockAlertQty;
     }
 
+    public Boolean getSecureCheckoutEnabled() {
+        return secureCheckoutEnabled;
+    }
+
+    public void setSecureCheckoutEnabled(Boolean secureCheckoutEnabled) {
+        this.secureCheckoutEnabled = secureCheckoutEnabled;
+    }
+
     public Boolean getAllowGuestCheckout() {
         return allowGuestCheckout;
     }
 
     public void setAllowGuestCheckout(Boolean allowGuestCheckout) {
         this.allowGuestCheckout = allowGuestCheckout;
+    }
+
+    public Boolean getGuestMobileRequired() {
+        return guestMobileRequired;
+    }
+
+    public void setGuestMobileRequired(Boolean guestMobileRequired) {
+        this.guestMobileRequired = guestMobileRequired;
+    }
+
+    public Boolean getGuestMobileOtpVerificationEnabled() {
+        return guestMobileOtpVerificationEnabled;
+    }
+
+    public void setGuestMobileOtpVerificationEnabled(Boolean guestMobileOtpVerificationEnabled) {
+        this.guestMobileOtpVerificationEnabled = guestMobileOtpVerificationEnabled;
+    }
+
+    public Integer getGuestOtpExpiryMinutes() {
+        return guestOtpExpiryMinutes;
+    }
+
+    public void setGuestOtpExpiryMinutes(Integer guestOtpExpiryMinutes) {
+        this.guestOtpExpiryMinutes = guestOtpExpiryMinutes;
+    }
+
+    public Integer getGuestOtpMaximumAttempts() {
+        return guestOtpMaximumAttempts;
+    }
+
+    public void setGuestOtpMaximumAttempts(Integer guestOtpMaximumAttempts) {
+        this.guestOtpMaximumAttempts = guestOtpMaximumAttempts;
+    }
+
+    public Integer getGuestOtpResendCooldownSeconds() {
+        return guestOtpResendCooldownSeconds;
+    }
+
+    public void setGuestOtpResendCooldownSeconds(Integer guestOtpResendCooldownSeconds) {
+        this.guestOtpResendCooldownSeconds = guestOtpResendCooldownSeconds;
+    }
+
+    public Integer getGuestOtpDailySendLimit() {
+        return guestOtpDailySendLimit;
+    }
+
+    public void setGuestOtpDailySendLimit(Integer guestOtpDailySendLimit) {
+        this.guestOtpDailySendLimit = guestOtpDailySendLimit;
+    }
+
+    public Boolean getGuestAutoCreateCustomerAccount() {
+        return guestAutoCreateCustomerAccount;
+    }
+
+    public void setGuestAutoCreateCustomerAccount(Boolean guestAutoCreateCustomerAccount) {
+        this.guestAutoCreateCustomerAccount = guestAutoCreateCustomerAccount;
+    }
+
+    public StoreMode getStoreMode() {
+        return storeMode;
+    }
+
+    public void setStoreMode(StoreMode storeMode) {
+        this.storeMode = storeMode;
+    }
+
+    public Long getPrimaryVendorId() {
+        return primaryVendorId;
+    }
+
+    public void setPrimaryVendorId(Long primaryVendorId) {
+        this.primaryVendorId = primaryVendorId;
     }
 
     public BigDecimal getMinimumOrderAmount() {
@@ -829,6 +950,14 @@ public class GlobalSettings implements Serializable {
 
     public void setAutoCancelUnpaidOrder(Boolean autoCancelUnpaidOrder) {
         this.autoCancelUnpaidOrder = autoCancelUnpaidOrder;
+    }
+
+    public SalesOrderMode getSalesOrderMode() {
+        return salesOrderMode;
+    }
+
+    public void setSalesOrderMode(SalesOrderMode salesOrderMode) {
+        this.salesOrderMode = salesOrderMode;
     }
 
     public Integer getCancelOrderAfterMinutes() {

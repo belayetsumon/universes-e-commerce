@@ -25,6 +25,7 @@ import com.ecommerce.app.product.ripository.ProductcategoryRepository;
 import com.ecommerce.app.product.ripository.WarrantyRepository;
 import com.ecommerce.app.product.services.CatalogProductAttributeService;
 import com.ecommerce.app.product.services.ProductDimensionService;
+import com.ecommerce.app.product.services.ProductImageStorageService;
 import com.ecommerce.app.product.services.ProductService;
 import com.ecommerce.app.product.services.ProductVariantCatalogService;
 import com.ecommerce.app.product.services.UnitsOfMeasureService;
@@ -34,15 +35,12 @@ import com.ecommerce.app.vendor.model.Vendorprofile;
 import com.ecommerce.app.vendor.user.componant.VendorUserContext;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import javax.imageio.ImageIO;
-import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -94,6 +92,9 @@ public class VendorProductController {
 
     @Autowired
     ProductImageRepository productImageRepository;
+
+    @Autowired
+    ProductImageStorageService productImageStorageService;
 
     @Autowired
     AvailableDeliveryAreaRepository availableDeliveryAreaRepository;
@@ -350,28 +351,7 @@ public class VendorProductController {
 
         if (pic != null && !pic.isEmpty()) {
             try {
-                // byte[] bytes = pic.getBytes();
-
-                // Creating the directory to store file
-                File dir = new File(properties.getRootPath());
-                if (!dir.exists()) {
-                    dir.mkdirs();
-                }
-                long datenow = System.currentTimeMillis();
-                String filename = datenow + "_" + pic.getOriginalFilename();
-                // Create the file on server
-                File serverFile = new File(dir.getAbsolutePath()
-                        + File.separator + filename);
-
-//                BufferedOutputStream stream = new BufferedOutputStream(
-//                        new FileOutputStream(serverFile));
-//                stream.write(bytes);
-//                stream.close();
-                BufferedImage originalImage;
-
-                originalImage = ImageIO.read(pic.getInputStream());
-
-                Thumbnails.of(originalImage).forceSize(800, 600).toFile(serverFile);
+                String filename = productImageStorageService.storeProductImage(pic);
 
                 model.addAttribute("message", "You successfully uploaded");
 
@@ -388,7 +368,7 @@ public class VendorProductController {
             } catch (Exception e) {
                 loadProductFormData(model);
 
-                redirectAttributes.addFlashAttribute("message", pic.getOriginalFilename() + " => " + e.getMessage());
+                redirectAttributes.addFlashAttribute("message", "Image upload failed: " + e.getMessage());
                 return "redirect:/productvendor/index";
             }
         } else if ((pic == null || pic.isEmpty()) && product.getId() != null) {

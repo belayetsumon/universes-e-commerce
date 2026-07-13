@@ -1,63 +1,209 @@
-﻿<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
+    <th:block layout:fragment="page_css">
+        <link rel="stylesheet" th:href="@{/assets/vendor/pages/communication/manual-compose.css}">
+    </th:block>
+
     <div layout:fragment="main_content">
-        <section class="mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
-            <div>
-                <h4 class="mb-1"><i class="bi bi-send me-2 text-primary"></i>Manual Message</h4>
-                <p class="text-muted mb-0">Send messages to admin or customers who ordered from your store.</p>
-            </div>
-            <div class="btn-group btn-group-sm">
-                <a class="btn btn-outline-primary" th:href="@{/vendor/communication/manual/inbox}">Inbox</a>
-                <a class="btn btn-outline-primary" th:href="@{/vendor/communication/manual/sent}">Sent</a>
-            </div>
-        </section>
-        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
-        <form th:action="@{/vendor/communication/manual/send}" th:object="${manualMessage}" method="post" class="card">
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Audience</label>
-                        <select class="form-select" th:field="*{audience}" required>
-                            <option value="">Select audience</option>
-                            <option th:each="audience : ${manualAudiences}" th:value="${audience}" th:text="${audience.displayName}"></option>
-                        </select>
+        <main class="vendor-message-workspace">
+            <section class="vendor-message-hero">
+                <div class="vendor-message-hero__content">
+                    <p class="vendor-message-kicker">Vendor communication</p>
+                    <h1><span class="vendor-message-icon"><i class="bi bi-send"></i></span>Manual Message</h1>
+                    <p>Send focused updates to marketplace administrators or customers who have ordered from your store.</p>
+                </div>
+                <div class="vendor-message-hero__aside">
+                    <div class="vendor-message-stat">
+                        <span class="vendor-message-stat__value" th:text="${#lists.size(customerOptions)}">0</span>
+                        <span class="vendor-message-stat__label">Eligible customers</span>
                     </div>
-                    <div class="col-md-8">
-                        <label class="form-label">Selected own customers</label>
-                        <select class="form-select" th:field="*{recipientIds}" multiple size="7">
-                            <option th:each="customer : ${customerOptions}" th:value="${customer.id}" th:text="${(customer.firstName != null ? customer.firstName : '') + ' ' + (customer.lastName != null ? customer.lastName : '') + ' - ' + customer.email}"></option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label d-block">Channels</label>
-                        <div class="d-flex flex-wrap gap-3">
-                            <label class="form-check" th:each="channel : ${messageChannels}">
-                                <input class="form-check-input" type="checkbox" th:field="*{channels}" th:value="${channel}">
-                                <span class="form-check-label" th:text="${channel.displayName}"></span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col-md-8">
-                        <label class="form-label">Subject</label>
-                        <input class="form-control" th:field="*{subject}" maxlength="250">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Message type</label>
-                        <select class="form-select" th:field="*{messageType}">
-                            <option th:each="type : ${messageTypes}" th:value="${type}" th:text="${type}"></option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Message</label>
-                        <textarea class="form-control" th:field="*{body}" rows="7" required></textarea>
+                    <div class="vendor-message-actions" aria-label="Message history">
+                        <a class="btn btn-light btn-sm" th:href="@{/vendor/communication/manual/inbox}">
+                            <i class="bi bi-inbox me-1"></i>Inbox
+                        </a>
+                        <a class="btn btn-outline-light btn-sm" th:href="@{/vendor/communication/manual/sent}">
+                            <i class="bi bi-clock-history me-1"></i>Sent
+                        </a>
                     </div>
                 </div>
-            </div>
-            <div class="card-footer d-flex justify-content-end gap-2">
-                <a class="btn btn-outline-secondary" th:href="@{/vendor/communication/manual/sent}">Sent</a>
-                <button class="btn btn-primary" type="submit"><i class="bi bi-send me-1"></i>Send Message</button>
-            </div>
-        </form>
-    </div>
-</div>
+            </section>
 
+            <div class="vendor-message-alerts">
+                <div class="vendor-message-notice">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Customer audiences are limited to people who have ordered from your store.</span>
+                </div>
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i><span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+
+            <form th:action="@{/vendor/communication/manual/send}" th:object="${manualMessage}" method="post" class="vendor-message-card">
+                <input type="hidden" th:field="*{batchId}">
+
+                <div class="vendor-message-card__header">
+                    <div>
+                        <p class="vendor-message-kicker text-primary">Compose</p>
+                        <h2>Message setup</h2>
+                    </div>
+                    <span class="vendor-message-chip"><i class="bi bi-lock me-1"></i>Vendor scope</span>
+                </div>
+
+                <div class="vendor-message-card__body">
+                    <div class="alert alert-danger" th:if="${#fields.hasErrors('*')}" role="alert">
+                        <div class="fw-semibold mb-1"><i class="bi bi-exclamation-triangle me-1"></i>Please correct the message details.</div>
+                        <ul class="mb-0 ps-3">
+                            <li th:each="error : ${#fields.errors('*')}" th:text="${error}">Validation error</li>
+                        </ul>
+                    </div>
+
+                    <div class="vendor-message-grid">
+                        <section class="vendor-message-panel">
+                            <div class="vendor-message-panel__header">
+                                <span class="vendor-message-step">1</span>
+                                <div>
+                                    <h3>Audience</h3>
+                                    <p>Choose who should receive this message.</p>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label" for="audience">Audience <span class="text-danger">*</span></label>
+                                <select id="audience" class="form-select form-select-lg" th:field="*{audience}" th:classappend="${#fields.hasErrors('audience')} ? ' is-invalid'" required data-audience-select>
+                                    <option value="">Select audience</option>
+                                    <option th:each="audience : ${manualAudiences}" th:value="${audience}" th:text="${audience.displayName}"></option>
+                                </select>
+                                <div class="invalid-feedback" th:errors="*{audience}">Audience is required.</div>
+                            </div>
+
+                            <div class="vendor-message-recipient-panel" data-recipient-panel>
+                                <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                                    <label class="form-label mb-0" for="recipientIds">Selected own customers</label>
+                                    <span class="vendor-message-count" th:text="${#lists.size(customerOptions)} + ' available'">0 available</span>
+                                </div>
+                                <select id="recipientIds" class="form-select" th:field="*{recipientIds}" multiple size="9" aria-describedby="recipientHelp" data-recipient-select>
+                                    <option th:each="customer : ${customerOptions}"
+                                            th:value="${customer.id}"
+                                            th:text="${(customer.firstName != null ? customer.firstName : '') + ' ' + (customer.lastName != null ? customer.lastName : '') + ' - ' + customer.email}">
+                                        Customer
+                                    </option>
+                                </select>
+                                <div id="recipientHelp" class="form-text">Hold Ctrl or Shift to select more than one customer.</div>
+                            </div>
+
+                            <div class="vendor-message-empty" data-recipient-empty>
+                                <i class="bi bi-people"></i>
+                                <span>Select <strong>Selected own customers</strong> only when this message is for specific customers.</span>
+                            </div>
+                        </section>
+
+                        <section class="vendor-message-panel">
+                            <div class="vendor-message-panel__header">
+                                <span class="vendor-message-step">2</span>
+                                <div>
+                                    <h3>Delivery</h3>
+                                    <p>Select delivery channels and message type.</p>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label d-block">Channels <span class="text-danger">*</span></label>
+                                <div class="vendor-channel-grid">
+                                    <label class="vendor-channel-option" th:each="channel : ${messageChannels}">
+                                        <input class="form-check-input" type="checkbox" th:field="*{channels}" th:value="${channel}" th:classappend="${#fields.hasErrors('channels')} ? ' is-invalid'">
+                                        <span class="vendor-channel-option__icon"><i class="bi bi-broadcast"></i></span>
+                                        <span class="vendor-channel-option__text" th:text="${channel.displayName}">Channel</span>
+                                    </label>
+                                </div>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('channels')}" th:errors="*{channels}">Select at least one delivery channel.</div>
+                            </div>
+
+                            <div>
+                                <label class="form-label" for="messageType">Message type</label>
+                                <select id="messageType" class="form-select" th:field="*{messageType}">
+                                    <option th:each="type : ${messageTypes}" th:value="${type}" th:text="${type}"></option>
+                                </select>
+                            </div>
+                        </section>
+                    </div>
+
+                    <section class="vendor-message-panel vendor-message-panel--wide">
+                        <div class="vendor-message-panel__header">
+                            <span class="vendor-message-step">3</span>
+                            <div>
+                                <h3>Message</h3>
+                                <p>Write a clear update for the selected audience.</p>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-lg-5">
+                                <label class="form-label" for="subject">Subject</label>
+                                <input id="subject" class="form-control" th:field="*{subject}" th:classappend="${#fields.hasErrors('subject')} ? ' is-invalid'" maxlength="250" placeholder="Short, clear subject">
+                                <div class="invalid-feedback" th:errors="*{subject}">Subject is too long.</div>
+                            </div>
+                            <div class="col-lg-7">
+                                <label class="form-label" for="body">Message <span class="text-danger">*</span></label>
+                                <textarea id="body" class="form-control vendor-message-body" th:field="*{body}" th:classappend="${#fields.hasErrors('body')} ? ' is-invalid'" rows="8" maxlength="5000" required placeholder="Write the message your recipients should receive." data-message-body></textarea>
+                                <div class="invalid-feedback" th:errors="*{body}">Message body is required.</div>
+                                <div class="vendor-message-meta">
+                                    <span>Do not include passwords, payment details, or other sensitive information.</span>
+                                    <span><span data-message-count>0</span>/5000</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="vendor-message-card__footer">
+                    <span class="small text-muted"><i class="bi bi-info-circle me-1"></i>Delivery is recorded in Sent history.</span>
+                    <div class="vendor-message-footer-actions">
+                        <a class="btn btn-outline-secondary" th:href="@{/vendor/communication/manual/sent}">Cancel</a>
+                        <button class="btn vendor-message-send" type="submit"><i class="bi bi-send me-1"></i>Send message</button>
+                    </div>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <th:block layout:fragment="page_js">
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const audienceSelect = document.querySelector('[data-audience-select]');
+                const recipientPanel = document.querySelector('[data-recipient-panel]');
+                const recipientEmpty = document.querySelector('[data-recipient-empty]');
+                const messageBody = document.querySelector('[data-message-body]');
+                const messageCount = document.querySelector('[data-message-count]');
+
+                function syncRecipients() {
+                    const selectedOwnCustomers = audienceSelect && audienceSelect.value === 'SELECTED_OWN_CUSTOMERS';
+                    if (recipientPanel) {
+                        recipientPanel.classList.toggle('is-visible', selectedOwnCustomers);
+                    }
+                    if (recipientEmpty) {
+                        recipientEmpty.classList.toggle('is-hidden', selectedOwnCustomers);
+                    }
+                }
+
+                function syncCount() {
+                    if (messageBody && messageCount) {
+                        messageCount.textContent = String(messageBody.value.length);
+                    }
+                }
+
+                if (audienceSelect) {
+                    audienceSelect.addEventListener('change', syncRecipients);
+                    syncRecipients();
+                }
+                if (messageBody) {
+                    messageBody.addEventListener('input', syncCount);
+                    syncCount();
+                }
+            });
+        </script>
+    </th:block>
+</div>

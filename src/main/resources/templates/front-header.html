@@ -223,10 +223,73 @@
                                 <a class="btn btn-outline-secondary btn-sm" th:href="@{/cart/index}">
                                     View cart
                                 </a>
-                                <a class="btn btn-danger btn-sm" th:href="@{/order/create}">
+                                <button type="button" class="btn btn-danger btn-sm" data-checkout-start>
                                     Checkout
                                     <i class="bi bi-arrow-right"></i>
-                                </a>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade checkout-auth-modal" id="checkoutAuthModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <div>
+                                    <p class="checkout-auth-kicker">Checkout access</p>
+                                    <h5 class="modal-title">Continue to checkout</h5>
+                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p class="checkout-auth-copy" data-checkout-auth-copy>Sign in to use your saved account details, or continue as a guest when guest checkout is enabled.</p>
+                                <form class="checkout-auth-form" th:action="@{/public/member-login}" method="post">
+                                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                    <input type="hidden" name="checkoutRedirect" value="/order/create">
+                                    <div class="checkout-auth-field">
+                                        <label for="checkoutLoginEmail">Email address</label>
+                                        <div class="checkout-auth-input">
+                                            <i class="bi bi-envelope"></i>
+                                            <input type="email"
+                                                   name="username"
+                                                   id="checkoutLoginEmail"
+                                                   class="form-control"
+                                                   placeholder="name@example.com"
+                                                   autocomplete="email"
+                                                   required>
+                                        </div>
+                                    </div>
+                                    <div class="checkout-auth-field">
+                                        <div class="checkout-auth-label-row">
+                                            <label for="checkoutLoginPassword">Password</label>
+                                            <a th:href="@{/public/forgot-password}">Forgot password?</a>
+                                        </div>
+                                        <div class="checkout-auth-input">
+                                            <i class="bi bi-key"></i>
+                                            <input type="password"
+                                                   name="password"
+                                                   id="checkoutLoginPassword"
+                                                   class="form-control"
+                                                   placeholder="Enter your password"
+                                                   autocomplete="current-password"
+                                                   required>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-danger checkout-auth-submit">
+                                        <i class="bi bi-box-arrow-in-right"></i>
+                                        Sign in and continue
+                                    </button>
+                                </form>
+                                <div class="checkout-auth-divider" data-checkout-guest-divider>
+                                    <span>or</span>
+                                </div>
+                                <div class="checkout-auth-actions">
+                                    <a class="btn btn-outline-primary" th:href="@{/cart/checkout}" data-checkout-guest-option>
+                                        <i class="bi bi-phone"></i>
+                                        Continue as Guest
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>

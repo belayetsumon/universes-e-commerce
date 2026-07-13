@@ -85,7 +85,7 @@ public class ManualCommunicationAudienceResolverService {
         if (vendorId == null) {
             return List.of();
         }
-        return salesOrderRepository.findDistinctCustomersByVendorId(vendorId);
+        return vendorCustomerUsers(vendorId, null);
     }
 
     private List<ManualRecipient> adminRecipients() {
@@ -103,10 +103,17 @@ public class ManualCommunicationAudienceResolverService {
         if (vendorId == null) {
             return List.of();
         }
-        List<Users> users = selectedCustomerIds == null || selectedCustomerIds.isEmpty()
-                ? salesOrderRepository.findDistinctCustomersByVendorId(vendorId)
-                : salesOrderRepository.findDistinctCustomersByVendorIdAndCustomerIds(vendorId, selectedCustomerIds);
-        return userRecipients(users, ManualRecipientType.CUSTOMER);
+        return userRecipients(vendorCustomerUsers(vendorId, selectedCustomerIds), ManualRecipientType.CUSTOMER);
+    }
+
+    private List<Users> vendorCustomerUsers(Long vendorId, Collection<Long> selectedCustomerIds) {
+        List<Long> customerIds = selectedCustomerIds == null || selectedCustomerIds.isEmpty()
+                ? salesOrderRepository.findDistinctCustomerIdsByVendorId(vendorId)
+                : salesOrderRepository.findDistinctCustomerIdsByVendorIdAndCustomerIds(vendorId, selectedCustomerIds);
+        if (customerIds.isEmpty()) {
+            return List.of();
+        }
+        return usersRepository.findByIdsAndUserTypeAndStatus(customerIds, UserType.customer, Status.Active);
     }
 
     private List<ManualRecipient> userRecipients(Collection<Users> users, ManualRecipientType type) {

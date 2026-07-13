@@ -588,7 +588,7 @@
                                 <div class="chart-wrap">
                                     <canvas id="salesTrendChart"></canvas>
                                 </div>
-                                <p class="chart-note">Net sales deduct processed return refunds on the day the return was completed.</p>
+                                <p class="chart-note">Net sales deduct processed return refunds on the day the return was completed. The latest non-zero gross and net values are labelled directly on the chart.</p>
                             </div>
                         </div>
                     </div>
@@ -606,7 +606,7 @@
                                 <div class="chart-wrap chart-wrap--compact">
                                     <canvas id="orderStatusChart"></canvas>
                                 </div>
-                                <p class="chart-note">Use this view to spot fulfillment bottlenecks, return spikes, or delivery backlog quickly.</p>
+                                <p class="chart-note">Each segment includes its order count so fulfillment bottlenecks, return spikes, or delivery backlog are immediately visible.</p>
                             </div>
                         </div>
                     </div>
@@ -885,6 +885,96 @@
                 maximumFractionDigits: 0
             });
 
+            const wholeNumberFormatter = new Intl.NumberFormat('en-BD', {
+                maximumFractionDigits: 0
+            });
+
+            const adminDashboardDataLabels = {
+                id: 'adminDashboardDataLabels',
+                afterDatasetsDraw(chart, args, options) {
+                    if (!options || options.display === false) {
+                        return;
+                    }
+
+                    const mode = options.mode || 'bar';
+                    const formatter = options.format === 'money'
+                            ? value => moneyFormatter.format(value)
+                            : value => wholeNumberFormatter.format(value);
+                    const context = chart.ctx;
+                    const chartArea = chart.chartArea;
+
+                    context.save();
+                    context.textBaseline = 'middle';
+
+                    chart.data.datasets.forEach((dataset, datasetIndex) => {
+                        const metadata = chart.getDatasetMeta(datasetIndex);
+                        if (metadata.hidden || dataset.adminDataLabelFallback) {
+                            return;
+                        }
+
+                        if (mode === 'latest-money' && dataset.yAxisID !== 'yMoney') {
+                            return;
+                        }
+
+                        const indexes = mode === 'latest-money'
+                                ? [findLastPositiveIndex(dataset.data)]
+                                : dataset.data.map((value, index) => Number(value) > 0 ? index : -1);
+
+                        indexes.forEach(index => {
+                            if (index < 0 || !metadata.data[index]) {
+                                return;
+                            }
+
+                            const value = Number(dataset.data[index]);
+                            if (!Number.isFinite(value) || value <= 0) {
+                                return;
+                            }
+
+                            const position = metadata.data[index].tooltipPosition();
+                            const label = formatter(value);
+
+                            if (mode === 'doughnut') {
+                                context.font = '700 11px system-ui, -apple-system, "Segoe UI", sans-serif';
+                                context.fillStyle = '#ffffff';
+                                context.textAlign = 'center';
+                                context.fillText(label, position.x, position.y);
+                                return;
+                            }
+
+                            if (mode === 'latest-money') {
+                                context.font = '700 11px system-ui, -apple-system, "Segoe UI", sans-serif';
+                                context.fillStyle = dataset.borderColor || '#123a63';
+                                context.textAlign = 'center';
+                                const offset = datasetIndex % 2 === 0 ? -12 : 14;
+                                context.fillText(label, position.x, position.y + offset);
+                                return;
+                            }
+
+                            context.font = '700 12px system-ui, -apple-system, "Segoe UI", sans-serif';
+                            context.fillStyle = '#334155';
+                            context.textAlign = 'left';
+                            const maxX = chartArea.right - context.measureText(label).width - 4;
+                            context.fillText(label, Math.min(position.x + 8, maxX), position.y);
+                        });
+                    });
+
+                    context.restore();
+                }
+            };
+
+            function findLastPositiveIndex(values) {
+                if (!Array.isArray(values)) {
+                    return -1;
+                }
+
+                for (let index = values.length - 1; index >= 0; index--) {
+                    if (Number(values[index]) > 0) {
+                        return index;
+                    }
+                }
+                return -1;
+            }
+
             function hasPositiveValues(values) {
                 return Array.isArray(values) && values.some(value => Number(value) > 0);
             }
@@ -895,6 +985,7 @@
                         labels: [fallbackLabel],
                         datasets: [{
                                 data: [1],
+                                adminDataLabelFallback: true,
                                 backgroundColor: ['#d0d7e2'],
                                 borderWidth: 0
                             }]
@@ -912,6 +1003,7 @@
             }
 
             if (typeof Chart !== 'undefined') {
+                Chart.register(adminDashboardDataLabels);
                 const salesCanvas = document.getElementById('salesTrendChart');
                 if (salesCanvas) {
                     new Chart(salesCanvas, {
@@ -964,6 +1056,10 @@
                                 intersect: false
                             },
                             plugins: {
+                                adminDashboardDataLabels: {
+                                    mode: 'latest-money',
+                                    format: 'money'
+                                },
                                 legend: {
                                     position: 'top',
                                     labels: {
@@ -1031,6 +1127,10 @@
                             maintainAspectRatio: false,
                             cutout: '64%',
                             plugins: {
+                                adminDashboardDataLabels: {
+                                    mode: 'doughnut',
+                                    format: 'number'
+                                },
                                 legend: {
                                     position: 'bottom',
                                     labels: {
@@ -1075,6 +1175,10 @@
                             maintainAspectRatio: false,
                             indexAxis: 'y',
                             plugins: {
+                                adminDashboardDataLabels: {
+                                    mode: 'bar',
+                                    format: 'number'
+                                },
                                 legend: {
                                     display: false
                                 }

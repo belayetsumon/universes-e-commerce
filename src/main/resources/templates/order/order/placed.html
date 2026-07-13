@@ -1,0 +1,137 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="front-layout-inner-page">
+    <th:block layout:fragment="page_css">
+        <style>
+            .order-received-page {
+                background: #f5f7fa;
+                padding: 48px 0 64px;
+            }
+
+            .order-received-panel {
+                background: #fff;
+                border: 1px solid #dfe5ee;
+                border-radius: 8px;
+                box-shadow: 0 14px 34px rgba(23, 32, 51, .08);
+                overflow: hidden;
+            }
+
+            .order-received-head {
+                display: flex;
+                align-items: flex-start;
+                gap: 14px;
+                padding: 28px;
+                color: #fff;
+                background: #113459;
+            }
+
+            .order-received-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                flex: 0 0 48px;
+                width: 48px;
+                height: 48px;
+                color: #113459;
+                background: #fff;
+                border-radius: 50%;
+            }
+
+            .order-received-head h1 {
+                margin: 0;
+                color: #fff;
+                font-size: 1.65rem;
+                font-weight: 700;
+                letter-spacing: 0;
+            }
+
+            .order-received-head p {
+                margin: 6px 0 0;
+                color: rgba(255, 255, 255, .78);
+            }
+
+            .order-received-body {
+                padding: 28px;
+            }
+
+            .order-reference-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+                margin-bottom: 18px;
+            }
+
+            .order-reference-item {
+                padding: 14px;
+                background: #f8fafc;
+                border: 1px solid #dfe5ee;
+                border-radius: 8px;
+            }
+
+            .order-reference-item span {
+                display: block;
+                color: #657084;
+                font-size: .78rem;
+                font-weight: 700;
+                text-transform: uppercase;
+            }
+
+            .order-reference-item strong {
+                display: block;
+                margin-top: 4px;
+                color: #172033;
+                font-size: 1.02rem;
+            }
+
+            @media (max-width: 575.98px) {
+                .order-reference-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .order-received-head {
+                    flex-direction: column;
+                }
+            }
+        </style>
+    </th:block>
+    <section layout:fragment="main_content" class="order-received-page">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="order-received-panel">
+                        <div class="order-received-head">
+                            <span class="order-received-icon"><i class="bi bi-check2-circle fs-4"></i></span>
+                            <div>
+                                <h1>Order received</h1>
+                                <p>We saved your checkout request successfully. Keep the reference for support and delivery updates.</p>
+                            </div>
+                        </div>
+                        <div class="order-received-body">
+
+                            <div th:if="${orderGroup != null}" class="order-reference-grid">
+                                <div class="order-reference-item">
+                                    <span>Order reference</span>
+                                    <strong th:text="${orderGroup.orderGroupCode}">CO-00000</strong>
+                                </div>
+                                <div class="order-reference-item">
+                                    <span>Total</span>
+                                    <strong th:text="'BDT ' + ${#numbers.formatDecimal(orderGroup.grandTotal, 1, 'COMMA', 2, 'POINT')}">BDT 0.00</strong>
+                                </div>
+                            </div>
+
+                            <div th:if="${orderGroup == null}" class="alert alert-info mb-4">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Order details are not available for this link. Please contact support with your checkout information.
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-2">
+                                <a th:href="@{/}" class="btn btn-primary"><i class="bi bi-bag me-1"></i> Continue Shopping</a>
+                                <a th:href="@{/cart/index}" class="btn btn-outline-secondary"><i class="bi bi-cart me-1"></i> Back to Cart</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

@@ -20,6 +20,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +38,84 @@ public class ProductcategoryService {
 
     @Autowired
     ProductcategoryRepository productcategoryRepository;
+
+    public ProductStatusEnum resolveStatus(String rawStatus) {
+        if (rawStatus == null || rawStatus.isBlank()) {
+            return null;
+        }
+        try {
+            return ProductStatusEnum.valueOf(rawStatus);
+        } catch (IllegalArgumentException exception) {
+            return null;
+        }
+    }
+
+    public Page<Productcategory> findCategories(
+            String query,
+            ProductStatusEnum status,
+            String hierarchy,
+            String imageState,
+            String featuredState,
+            Pageable pageable) {
+        Specification<Productcategory> specification = Specification.where(null);
+
+        if (query != null && !query.isBlank()) {
+            String searchTerm = "%" + query.trim().toLowerCase() + "%";
+            specification = specification.and((root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.or(
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), searchTerm),
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("slug")), searchTerm)
+            ));
+        }
+        if (status != null) {
+            specification = specification.and((root, criteriaQuery, criteriaBuilder)
+                    -> criteriaBuilder.equal(root.get("status"), status));
+        }
+        if ("ROOT".equals(hierarchy)) {
+            specification = specification.and((root, criteriaQuery, criteriaBuilder)
+                    -> criteriaBuilder.isNull(root.get("parent")));
+        } else if ("CHILD".equals(hierarchy)) {
+            specification = specification.and((root, criteriaQuery, criteriaBuilder)
+                    -> criteriaBuilder.isNotNull(root.get("parent")));
+        }
+        if ("WITH_IMAGE".equals(imageState)) {
+            specification = specification.and((root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.and(
+                    criteriaBuilder.isNotNull(root.get("imageName")),
+                    criteriaBuilder.notEqual(criteriaBuilder.trim(root.get("imageName")), "")
+            ));
+        } else if ("WITHOUT_IMAGE".equals(imageState)) {
+            specification = specification.and((root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.or(
+                    criteriaBuilder.isNull(root.get("imageName")),
+                    criteriaBuilder.equal(criteriaBuilder.trim(root.get("imageName")), "")
+            ));
+        }
+        if ("FEATURED".equals(featuredState)) {
+            specification = specification.and((root, criteriaQuery, criteriaBuilder)
+                    -> criteriaBuilder.isTrue(root.get("featuredCat")));
+        } else if ("STANDARD".equals(featuredState)) {
+            specification = specification.and((root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.or(
+                    criteriaBuilder.isFalse(root.get("featuredCat")),
+                    criteriaBuilder.isNull(root.get("featuredCat"))
+            ));
+        }
+
+        return productcategoryRepository.findAll(specification, pageable);
+    }
+
+    public long countAllCategories() {
+        return productcategoryRepository.count();
+    }
+
+    public long countActiveCategories() {
+        return productcategoryRepository.countByStatus(ProductStatusEnum.Active);
+    }
+
+    public long countRootCategories() {
+        return productcategoryRepository.countByParentIsNull();
+    }
+
+    public long countFeaturedCategories() {
+        return productcategoryRepository.countByFeaturedCatTrue();
+    }
 // Method to fetch the root nodes and build the tree recursively
 
     public List<Productcategory> getRootNodes() {

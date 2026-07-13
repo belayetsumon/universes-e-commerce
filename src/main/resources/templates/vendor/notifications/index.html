@@ -1,12 +1,64 @@
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
-    <div layout:fragment="admin_content">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-            <div>
-                <h3 class="mb-1">Notifications</h3>
-                <p class="text-muted mb-0">Admin messages, order updates, payment notices, and system alerts.</p>
-            </div>
-            <span class="badge text-bg-danger" th:if="${unreadCount > 0}" th:text="${unreadCount + ' unread'}">0 unread</span>
-        </div>
-        <div th:replace="customer/notifications/index :: notificationList"></div>
+    <th:block layout:fragment="page_css">
+        <link rel="stylesheet" th:href="@{/assets/vendor/pages/notifications/notifications.css}">
+    </th:block>
+    <div layout:fragment="main_content">
+        <main class="vendor-notification-workspace">
+            <header class="vendor-notification-hero mb-4">
+                <div>
+                    <p class="vendor-notification-kicker">Vendor operations</p>
+                    <h1><span class="vendor-notification-icon"><i class="bi bi-bell"></i></span>Notifications</h1>
+                    <p class="mb-0">Review marketplace messages, order updates, payment notices, and system alerts for your business.</p>
+                </div>
+                <a class="btn btn-light" th:href="@{/vendor/communication/manual/compose}"><i class="bi bi-send me-1"></i>Compose message</a>
+            </header>
+
+            <section class="vendor-notification-stats mb-4">
+                <div class="vendor-notification-stat"><span class="vendor-notification-stat-icon"><i class="bi bi-bell-fill"></i></span><div><span>Unread</span><strong th:text="${unreadCount}">0</strong></div></div>
+                <div class="vendor-notification-stat"><span class="vendor-notification-stat-icon"><i class="bi bi-inbox"></i></span><div><span>Visible messages</span><strong th:text="${notifications != null ? #lists.size(notifications) : 0}">0</strong></div></div>
+                <div class="vendor-notification-stat"><span class="vendor-notification-stat-icon"><i class="bi bi-shield-check"></i></span><div><span>Message scope</span><strong>Vendor only</strong></div></div>
+            </section>
+
+            <section class="card vendor-notification-panel">
+                <div class="card-header">
+                    <div>
+                        <p class="vendor-notification-panel-kicker">Message centre</p>
+                        <h2>Inbox</h2>
+                    </div>
+                    <span class="vendor-notification-unread" th:if="${unreadCount > 0}" th:text="${unreadCount + ' unread'}">0 unread</span>
+                </div>
+                <div class="card-body">
+                    <nav class="vendor-notification-tabs" aria-label="Notification filter">
+                        <a th:class="${activeView == 'all' ? 'active' : ''}" th:href="${basePath + '?view=all'}"><i class="bi bi-grid me-1"></i>All</a>
+                        <a th:class="${activeView == 'unread' ? 'active' : ''}" th:href="${basePath + '?view=unread'}"><i class="bi bi-envelope me-1"></i>Unread</a>
+                        <a th:class="${activeView == 'read' ? 'active' : ''}" th:href="${basePath + '?view=read'}"><i class="bi bi-check2-all me-1"></i>Read</a>
+                    </nav>
+
+                    <div class="row g-4">
+                        <div class="col-lg-7">
+                            <div class="vendor-notification-list" th:if="${notifications != null and not #lists.isEmpty(notifications)}">
+                                <a class="vendor-notification-row" th:each="item : ${notifications}"
+                                   th:classappend="${!item.readStatus ? ' vendor-notification-row--unread' : ''}"
+                                   th:href="${basePath + '/' + item.id}">
+                                    <span class="vendor-notification-row-icon"><i th:class="${item.readStatus ? 'bi bi-envelope-open' : 'bi bi-envelope-fill'}"></i></span>
+                                    <span class="vendor-notification-row-content"><strong th:text="${item.message.subject}">Notification subject</strong><span th:text="${item.message.messageType}">SYSTEM</span></span>
+                                    <span class="vendor-notification-row-meta"><span th:class="${item.readStatus ? 'vendor-notification-status vendor-notification-status--read' : 'vendor-notification-status'}" th:text="${item.readStatus ? 'Read' : 'Unread'}">Unread</span><small th:text="${item.message.createdAt != null ? #temporals.format(item.message.createdAt, 'dd MMM yyyy HH:mm') : '-'}">-</small></span>
+                                </a>
+                            </div>
+                            <div class="vendor-notification-empty" th:if="${notifications == null or #lists.isEmpty(notifications)}"><i class="bi bi-bell-slash"></i><h3>No notifications here</h3><p class="mb-0">New vendor messages and alerts will appear in this inbox.</p></div>
+                        </div>
+                        <div class="col-lg-5">
+                            <article class="vendor-notification-detail" th:if="${selectedNotification != null}">
+                                <div class="d-flex justify-content-between align-items-start gap-2 mb-3"><div><span class="vendor-notification-status vendor-notification-status--read">Read</span><h3 th:text="${selectedNotification.message.subject}">Notification subject</h3></div><i class="bi bi-envelope-open fs-4 text-primary"></i></div>
+                                <div class="vendor-notification-detail-meta"><span th:text="${selectedNotification.message.messageType}">SYSTEM</span><span th:text="${selectedNotification.message.createdAt != null ? #temporals.format(selectedNotification.message.createdAt, 'dd MMM yyyy HH:mm') : '-'}">-</span></div>
+                                <p class="vendor-notification-body" th:text="${selectedNotification.message.messageBody}">Message body</p>
+                                <dl class="vendor-notification-timestamps"><div><dt>Delivered</dt><dd th:text="${selectedNotification.deliveredAt != null ? #temporals.format(selectedNotification.deliveredAt, 'dd MMM yyyy HH:mm') : '-'}">-</dd></div><div><dt>Read</dt><dd th:text="${selectedNotification.readAt != null ? #temporals.format(selectedNotification.readAt, 'dd MMM yyyy HH:mm') : '-'}">-</dd></div></dl>
+                            </article>
+                            <div class="vendor-notification-detail vendor-notification-detail--empty" th:if="${selectedNotification == null}"><span class="vendor-notification-icon"><i class="bi bi-arrow-left-right"></i></span><h3>Select a notification</h3><p class="mb-0">Choose a message from the inbox to read its full details. Opening a message marks it as read.</p></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
 </div>

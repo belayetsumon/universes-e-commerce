@@ -9,19 +9,14 @@ import com.ecommerce.app.product.model.ProductImage;
 import com.ecommerce.app.product.ripository.ProductImageRepository;
 import com.ecommerce.app.product.ripository.ProductRepository;
 import com.ecommerce.app.product.services.ProductImageService;
+import com.ecommerce.app.product.services.ProductImageStorageService;
 import com.ecommerce.app.services.StorageProperties;
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import com.ecommerce.app.vendor.user.componant.VendorUserContext;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import javax.imageio.ImageIO;
-import net.coobird.thumbnailator.Thumbnails;
-import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -54,14 +49,13 @@ public class Vendor_ProductImageController {
     ProductRepository productRepository;
     @Autowired
     VendorUserContext vendorUserContext;
+    @Autowired
+    ProductImageStorageService productImageStorageService;
 
     @PostMapping("/upload")
     public ResponseEntity<String> save(@ModelAttribute ProductImage productImage,
             @RequestParam("product") Product product,
             @RequestParam("productimg") MultipartFile productimg) {
-
-        // Allowed file extensions
-        List<String> allowedExtensions = Arrays.asList("jpg", "jpeg", "png");
 
         try {
             Product existingProduct = product != null && product.getId() != null
@@ -70,34 +64,7 @@ public class Vendor_ProductImageController {
             if (!isOwnedByActiveVendor(existingProduct)) {
                 return ResponseEntity.ok("<div class='alert alert-danger'>Product not found for the active vendor.</div>");
             }
-            // Check file extension
-            String originalFilename = productimg.getOriginalFilename();
-            if (productimg.isEmpty() || originalFilename == null) {
-                return ResponseEntity.ok("<div class='alert alert-danger'>Invalid file format. Only JPG and PNG files are allowed.</div>");
-            }
-            String fileExtension = FilenameUtils.getExtension(originalFilename).toLowerCase();
-
-            if (!allowedExtensions.contains(fileExtension)) {
-                return ResponseEntity.ok("<div class='alert alert-danger'>Invalid file format. Only JPG and PNG files are allowed.</div>");
-            }
-
-            // Ensure the directory exists
-            File dir = new File(properties.getRootPath());
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-
-            long datenow = System.currentTimeMillis();
-            String filename = datenow + "_" + productimg.getOriginalFilename();
-
-            File serverFile = new File(dir.getAbsolutePath() + File.separator + filename);
-
-            // Process and save the image
-            BufferedImage originalImage = ImageIO.read(productimg.getInputStream());
-            if (originalImage == null) {
-                return ResponseEntity.ok("<div class='alert alert-danger'>Invalid image file.</div>");
-            }
-            Thumbnails.of(originalImage).forceSize(800, 600).toFile(serverFile);
+            String filename = productImageStorageService.storeProductImage(productimg);
 
             // Save file details to the database
             productImage.setProduct(existingProduct);

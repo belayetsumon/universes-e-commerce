@@ -45,6 +45,18 @@
                     return;
                 }
 
+                if (form.matches('[data-checkout-settings-form]')) {
+                    var secureCheckout = form.querySelector('input[type="checkbox"][name="secureCheckoutEnabled"]');
+                    var guestCheckout = form.querySelector('input[type="checkbox"][name="allowGuestCheckout"]');
+                    if (secureCheckout && guestCheckout && !secureCheckout.checked && !guestCheckout.checked) {
+                        var warningMessage = 'Disabling both Secure Checkout and Guest Checkout will prevent all customers from placing new orders. Existing carts will remain available, but checkout and order placement will be completely disabled.';
+                        if (!window.confirm(warningMessage)) {
+                            event.preventDefault();
+                            return;
+                        }
+                    }
+                }
+
                 var firstInvalid = null;
                 form.querySelectorAll('[required]').forEach(function (field) {
                     var invalid = !field.value || !field.value.trim();

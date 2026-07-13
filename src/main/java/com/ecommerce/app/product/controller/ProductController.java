@@ -10,6 +10,7 @@ import com.ecommerce.app.globalComponant.SlagGenerator;
 import com.ecommerce.app.globalComponant.UnixTimeComponent;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.services.LoggedUserService;
+import com.ecommerce.app.module.settings.services.StoreOperationModeService;
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.ProductImage;
 import com.ecommerce.app.product.model.ProductStatusEnum;
@@ -24,21 +25,20 @@ import com.ecommerce.app.product.ripository.ProductcategoryRepository;
 import com.ecommerce.app.product.ripository.WarrantyRepository;
 import com.ecommerce.app.product.services.CatalogProductAttributeService;
 import com.ecommerce.app.product.services.ProductDimensionService;
+import com.ecommerce.app.product.services.ProductImageStorageService;
 import com.ecommerce.app.product.services.ProductService;
+import com.ecommerce.app.product.services.ProductVendorAssignmentService;
 import com.ecommerce.app.product.services.ProductVariantCatalogService;
 import com.ecommerce.app.product.services.UnitsOfMeasureService;
 import com.ecommerce.app.services.StorageProperties;
 import com.ecommerce.app.vendor.repository.VendorprofileRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import javax.imageio.ImageIO;
-import net.coobird.thumbnailator.Thumbnails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +98,9 @@ public class ProductController {
     ProductImageRepository productImageRepository;
 
     @Autowired
+    ProductImageStorageService productImageStorageService;
+
+    @Autowired
     AvailableDeliveryAreaRepository availableDeliveryAreaRepository;
 
     @Autowired
@@ -120,6 +123,12 @@ public class ProductController {
 
     @Autowired
     ProductCommissionApplierService productCommissionApplierService;
+
+    @Autowired
+    ProductVendorAssignmentService productVendorAssignmentService;
+
+    @Autowired
+    StoreOperationModeService storeOperationModeService;
 
     private static final Logger log = LoggerFactory.getLogger(ProductController.class);
 
@@ -161,7 +170,7 @@ public class ProductController {
             @RequestParam(value = "hasDeliveryCharges", required = false) Boolean hasDeliveryCharges,
             @RequestParam(value = "hasDeliveryTimelines", required = false) Boolean hasDeliveryTimelines,
             @RequestParam(value = "hasWarranty", required = false) Boolean hasWarranty) {
-        model.addAttribute("productlist", productService.all_Product_for_admin(
+        List<Map<String, Object>> products = productService.all_Product_for_admin(
                 keyword,
                 categoryId,
                 vendorId,
@@ -198,7 +207,9 @@ public class ProductController {
                 hasDeliveryCharges,
                 hasDeliveryTimelines,
                 hasWarranty
-        ));
+        );
+        model.addAttribute("productlist", products);
+        addProductIndexSummary(model, products);
         loadProductIndexFilterData(model);
         model.addAttribute("keyword", keyword);
         model.addAttribute("categoryId", categoryId);
@@ -237,6 +248,8 @@ public class ProductController {
         model.addAttribute("hasDeliveryTimelines", hasDeliveryTimelines);
         model.addAttribute("hasWarranty", hasWarranty);
         model.addAttribute("advancedFiltersApplied", hasAdvancedProductFilters(
+                minPrice,
+                maxPrice,
                 featuredProduct,
                 newProduct,
                 manageStock,
@@ -269,6 +282,31 @@ public class ProductController {
         return "product/index";
     }
 
+    private void addProductIndexSummary(Model model, List<Map<String, Object>> products) {
+        List<Map<String, Object>> safeProducts = products == null ? List.of() : products;
+        long activeProducts = safeProducts.stream()
+                .filter(product -> ProductStatusEnum.Active.equals(product.get("status")))
+                .count();
+        long onlineProducts = safeProducts.stream()
+                .filter(product -> Boolean.TRUE.equals(product.get("onlineShow")))
+                .count();
+        long stockManagedProducts = safeProducts.stream()
+                .filter(product -> Boolean.TRUE.equals(product.get("manageStock")))
+                .count();
+        long missingImageProducts = safeProducts.stream()
+                .filter(product -> {
+                    Object imageName = product.get("imageName");
+                    return imageName == null || imageName.toString().isBlank();
+                })
+                .count();
+
+        model.addAttribute("productTotal", safeProducts.size());
+        model.addAttribute("activeProductCount", activeProducts);
+        model.addAttribute("onlineProductCount", onlineProducts);
+        model.addAttribute("stockManagedProductCount", stockManagedProducts);
+        model.addAttribute("missingImageProductCount", missingImageProducts);
+    }
+
     @RequestMapping("/create")
     public String create(Model model, Product product) {
 
@@ -283,6 +321,7 @@ public class ProductController {
         Users userss = new Users();
         userss.setId(loggedUserService.activeUserid());
         product.setUserId(userss);
+        productVendorAssignmentService.applyAdminProductVendorRule(product);
         productCommissionApplierService.prefillCommissionForForm(product);
         loadProductFormData(model);
 
@@ -311,6 +350,8 @@ public class ProductController {
             Users user = new Users();
             user.setId(loggedUserService.activeUserid());
             product.setUserId(user);
+            productVendorAssignmentService.applyAdminProductVendorRule(product);
+            productVendorAssignmentService.validateProductVendor(product);
 
             // EDIT MODE: keep old image and slug if not changed
             if (product.getId() != null) {
@@ -318,6 +359,7 @@ public class ProductController {
 
                 if (oldProduct != null) {
                     product.setUuid(oldProduct.getUuid());
+                    productVendorAssignmentService.applyAdminProductVendorRule(product);
                     if (product.getSlug() == null || product.getSlug().isBlank()) {
                         product.setSlug(oldProduct.getSlug());
                     }
@@ -335,35 +377,7 @@ public class ProductController {
 
             // Image upload
             if (pic != null && !pic.isEmpty()) {
-
-                File dir = new File(properties.getRootPath());
-                if (!dir.exists()) {
-                    dir.mkdirs();
-                }
-
-                String originalName = pic.getOriginalFilename();
-                String extension = "";
-
-                if (originalName != null && originalName.contains(".")) {
-                    extension = originalName.substring(originalName.lastIndexOf("."));
-                }
-
-                String filename = System.currentTimeMillis() + extension;
-
-                File serverFile = new File(dir, filename);
-
-                BufferedImage originalImage = ImageIO.read(pic.getInputStream());
-
-                if (originalImage == null) {
-                    redirectAttributes.addFlashAttribute("message", "Invalid image file.");
-                    return "redirect:/product/index";
-                }
-
-                Thumbnails.of(originalImage)
-                        .forceSize(800, 600)
-                        .toFile(serverFile);
-
-                product.setImageName(filename);
+                product.setImageName(productImageStorageService.storeProductImage(pic));
             }
 
             productCommissionApplierService.applyCommissionBeforeSave(product);
@@ -373,8 +387,8 @@ public class ProductController {
 
         } catch (Exception e) {
             loadProductFormData(model);
-            log.error("❌ Save failed: {}", e.getMessage(), e);
-            model.addAttribute("error", "❌ Save failed: " + e.getMessage());
+            log.error("Save failed: {}", e.getMessage(), e);
+            model.addAttribute("error", "Save failed: " + e.getMessage());
             return "product/add";
         }
     }
@@ -439,6 +453,7 @@ public class ProductController {
         userss.setId(loggedUserService.activeUserid());
         if (existingProduct != null) {
             existingProduct.setUserId(userss);
+            productVendorAssignmentService.applyAdminProductVendorRule(existingProduct);
         }
 
         return "product/add";
@@ -473,6 +488,8 @@ public class ProductController {
         model.addAttribute("productcategorylist",
                 productcategoryRepository.findByStatus(ProductStatusEnum.Active));
         model.addAttribute("vendorprofiles", vendorprofileRepository.findAll(Sort.by(Sort.Direction.ASC, "companyName")));
+        model.addAttribute("singleVendorMode", storeOperationModeService.isSingleVendorMode());
+        model.addAttribute("primaryVendor", storeOperationModeService.primaryVendor().orElse(null));
         model.addAttribute("manufacturerlist", manufacturerRepository.findAll());
     }
 
@@ -484,7 +501,9 @@ public class ProductController {
         model.addAttribute("filterUoms", unitsOfMeasureService.getAllUnits());
     }
 
-    private boolean hasAdvancedProductFilters(Boolean featuredProduct,
+    private boolean hasAdvancedProductFilters(BigDecimal minPrice,
+            BigDecimal maxPrice,
+            Boolean featuredProduct,
             Boolean newProduct,
             Boolean manageStock,
             Boolean allowPreorder,
@@ -512,7 +531,9 @@ public class ProductController {
             Boolean hasDeliveryCharges,
             Boolean hasDeliveryTimelines,
             Boolean hasWarranty) {
-        return featuredProduct != null
+        return minPrice != null
+                || maxPrice != null
+                || featuredProduct != null
                 || newProduct != null
                 || manageStock != null
                 || allowPreorder != null

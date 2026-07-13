@@ -1,151 +1,612 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
-<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
-    <div layout:fragment = "main_content">
-        <section>
-            <div class="d-flex justify-content-start align-items-center mb-4">
-                <h2 class="mb-0 me-3">Users</h2>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item"><a href="#">Users</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">User Registration</li>
-                    </ol>
-                </nav>
-            </div>
-        </section>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <style>
+            .user-form-workspace {
+                --user-form-panel: #ffffff;
+                --user-form-border: rgba(15, 23, 42, .08);
+                --user-form-muted: #667085;
+                --user-form-text: #182230;
+                --user-form-accent-dark: #113459;
+                --user-form-shadow: 0 .75rem 1.75rem rgba(15, 23, 42, .08);
+                color: var(--user-form-text);
+            }
 
-        <div class="card">
-            <div class="card-header row">
+            .user-form-header {
+                overflow: hidden;
+                color: #ffffff;
+                background: var(--user-form-accent-dark);
+                border: 1px solid rgba(17, 52, 89, .32);
+                border-radius: 8px;
+                box-shadow: var(--user-form-shadow);
+            }
 
-                <div class="col-sm-5">  <strong>  <i class="fas fa-list"></i>User Registration</strong></div>
-                <div class="col-sm-7 text-end">
-                    <a th:href="@{/users/index}" type="button" class="btn  btn-danger btn-sm">Close</a>
+            .user-form-header .card-header {
+                background: rgba(255, 255, 255, .08);
+                border-bottom: 1px solid rgba(255, 255, 255, .12);
+            }
+
+            .user-form-header-main {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 1.5rem;
+            }
+
+            .user-form-header-title {
+                display: flex;
+                align-items: flex-start;
+                gap: .85rem;
+                min-width: 0;
+            }
+
+            .user-form-header-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                flex: 0 0 48px;
+                width: 48px;
+                height: 48px;
+                color: var(--user-form-accent-dark);
+                background: #ffffff;
+                border-radius: 50%;
+            }
+
+            .user-form-kicker,
+            .user-form-panel-head p {
+                margin: 0 0 .25rem;
+                color: var(--user-form-muted);
+                font-size: .75rem;
+                font-weight: 700;
+                letter-spacing: 0;
+                text-transform: uppercase;
+            }
+
+            .user-form-header .user-form-kicker {
+                color: #9fd8ff;
+            }
+
+            .user-form-header h1 {
+                margin: 0;
+                color: #ffffff;
+                font-size: 1.6rem;
+                font-weight: 700;
+                letter-spacing: 0;
+            }
+
+            .user-form-subtitle {
+                max-width: 760px;
+                margin: .4rem 0 0;
+                color: rgba(255, 255, 255, .76);
+                font-size: .95rem;
+            }
+
+            .user-form-header-actions,
+            .user-form-alert {
+                display: flex;
+                align-items: center;
+                gap: .6rem;
+            }
+
+            .user-form-header-actions {
+                flex-wrap: wrap;
+            }
+
+            .user-form-header-actions .btn-light {
+                color: var(--user-form-accent-dark);
+                background: #ffffff;
+                border-color: rgba(255, 255, 255, .7);
+            }
+
+            .user-form-layout {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 330px;
+                gap: 1rem;
+                align-items: start;
+                margin-top: 1rem;
+            }
+
+            .user-form-panel,
+            .user-form-guide {
+                background: var(--user-form-panel);
+                border: 1px solid var(--user-form-border);
+                border-radius: 8px;
+                box-shadow: var(--user-form-shadow);
+            }
+
+            .user-form-panel {
+                padding: 1.1rem;
+            }
+
+            .user-form-panel + .user-form-panel {
+                margin-top: 1rem;
+            }
+
+            .user-form-panel-head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 1rem;
+                padding-bottom: 1rem;
+                margin-bottom: 1rem;
+                border-bottom: 1px solid var(--user-form-border);
+            }
+
+            .user-form-panel-head h2 {
+                margin: 0;
+                font-size: 1.15rem;
+                font-weight: 700;
+                letter-spacing: 0;
+            }
+
+            .user-form-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 1rem;
+            }
+
+            .user-form-field--wide {
+                grid-column: 1 / -1;
+            }
+
+            .user-form-field .form-label {
+                color: #344054;
+                font-size: .86rem;
+                font-weight: 700;
+            }
+
+            .user-form-field .required::after {
+                content: " *";
+                color: #b42318;
+            }
+
+            .user-form-workspace .form-control,
+            .user-form-workspace .form-select {
+                border-color: #cfd8e3;
+                border-radius: 6px;
+            }
+
+            .user-form-workspace .form-control:focus,
+            .user-form-workspace .form-select:focus {
+                border-color: #0d6efd;
+                box-shadow: 0 0 0 .2rem rgba(15, 107, 99, .14);
+            }
+
+            .user-form-hint {
+                margin-top: .35rem;
+                color: var(--user-form-muted);
+                font-size: .8rem;
+                line-height: 1.45;
+            }
+
+            .user-form-example {
+                display: inline-flex;
+                align-items: center;
+                gap: .35rem;
+                margin-top: .4rem;
+                padding: .28rem .55rem;
+                color: var(--user-form-accent-dark);
+                background: #edf7f5;
+                border: 1px solid #b7ddd7;
+                border-radius: 999px;
+                font-size: .76rem;
+                font-weight: 700;
+            }
+
+            .user-form-error {
+                display: block;
+                margin-top: .35rem;
+                color: #b42318;
+                font-size: .82rem;
+                font-weight: 600;
+            }
+
+            .user-form-guide {
+                position: sticky;
+                top: 1rem;
+                padding: 1rem;
+            }
+
+            .user-form-guide h2 {
+                margin: 0 0 .35rem;
+                font-size: 1.05rem;
+                font-weight: 700;
+            }
+
+            .user-form-guide p,
+            .user-form-checklist small {
+                color: var(--user-form-muted);
+                font-size: .84rem;
+            }
+
+            .user-form-checklist {
+                display: grid;
+                gap: .7rem;
+                margin-top: 1rem;
+            }
+
+            .user-form-check {
+                display: flex;
+                align-items: flex-start;
+                gap: .7rem;
+                padding: .8rem;
+                background: #f8fafc;
+                border: 1px solid var(--user-form-border);
+                border-radius: 8px;
+            }
+
+            .user-form-check i {
+                color: var(--user-form-accent-dark);
+                font-size: 1rem;
+                margin-top: .1rem;
+            }
+
+            .user-form-check strong {
+                display: block;
+                color: var(--user-form-text);
+                font-size: .9rem;
+            }
+
+            .user-form-savebar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                position: sticky;
+                bottom: 0;
+                padding: .85rem 1rem;
+                margin-top: 1rem;
+                background: rgba(255, 255, 255, .94);
+                border: 1px solid var(--user-form-border);
+                border-radius: 8px;
+                box-shadow: 0 -8px 20px rgba(15, 23, 42, .08);
+                backdrop-filter: blur(8px);
+                z-index: 5;
+            }
+
+            .user-form-savebar span {
+                color: var(--user-form-muted);
+                font-size: .84rem;
+            }
+
+            [data-bs-theme="dark"] .user-form-workspace,
+            .user-form-workspace[data-bs-theme="dark"] {
+                --user-form-panel: #101828;
+                --user-form-border: rgba(255, 255, 255, .12);
+                --user-form-muted: #b7c4d4;
+                --user-form-text: #f8fafc;
+                --user-form-shadow: 0 .75rem 1.75rem rgba(0, 0, 0, .22);
+            }
+
+            [data-bs-theme="dark"] .user-form-panel,
+            [data-bs-theme="dark"] .user-form-guide,
+            [data-bs-theme="dark"] .user-form-savebar,
+            .user-form-workspace[data-bs-theme="dark"] .user-form-panel,
+            .user-form-workspace[data-bs-theme="dark"] .user-form-guide,
+            .user-form-workspace[data-bs-theme="dark"] .user-form-savebar {
+                background: var(--user-form-panel);
+            }
+
+            [data-bs-theme="dark"] .user-form-field .form-label,
+            [data-bs-theme="dark"] .user-form-panel-head h2,
+            [data-bs-theme="dark"] .user-form-check strong,
+            .user-form-workspace[data-bs-theme="dark"] .user-form-field .form-label,
+            .user-form-workspace[data-bs-theme="dark"] .user-form-panel-head h2,
+            .user-form-workspace[data-bs-theme="dark"] .user-form-check strong {
+                color: var(--user-form-text);
+            }
+
+            [data-bs-theme="dark"] .user-form-check,
+            .user-form-workspace[data-bs-theme="dark"] .user-form-check {
+                background: rgba(255, 255, 255, .04);
+            }
+
+            @media print {
+                .user-form-header-actions,
+                .user-form-savebar,
+                .user-form-guide {
+                    display: none !important;
+                }
+
+                .user-form-layout {
+                    display: block;
+                }
+
+                .user-form-header,
+                .user-form-panel {
+                    box-shadow: none;
+                }
+            }
+
+            @media (max-width: 1199.98px) {
+                .user-form-layout {
+                    grid-template-columns: 1fr;
+                }
+
+                .user-form-guide {
+                    position: static;
+                }
+            }
+
+            @media (max-width: 767.98px) {
+                .user-form-header-main,
+                .user-form-panel-head,
+                .user-form-savebar {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .user-form-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </th:block>
+
+    <div layout:fragment="main_content">
+        <div class="user-form-workspace">
+            <header class="card shadow-sm user-form-header">
+                <div class="card-header d-flex justify-content-between align-items-center border-0 py-3">
+                    <div class="h5 mb-0 text-white">
+                        <i class="bi bi-person-plus me-2 text-warning"></i>
+                        User control
+                    </div>
+                    <span class="badge text-bg-light border border-white border-opacity-25"
+                          th:text="${users != null and users.id != null ? 'Edit account' : 'New account'}">New account</span>
                 </div>
+                <div class="card-body py-4">
+                    <div class="user-form-header-main">
+                        <div class="user-form-header-title">
+                            <span class="user-form-header-icon"><i class="bi bi-person-vcard fs-4"></i></span>
+                            <div>
+                                <p class="user-form-kicker">Administration</p>
+                                <h1 th:text="${users != null and users.id != null ? 'Update User Account' : 'User Registration'}">User Registration</h1>
+                                <p class="user-form-subtitle">Create a clean, auditable user profile with role, status, account type, and secure sign-in details.</p>
+                            </div>
+                        </div>
+                        <div class="user-form-header-actions">
+                            <a th:href="@{/users/index}" class="btn btn-light">
+                                <i class="bi bi-people"></i>
+                                <span>User List</span>
+                            </a>
+                            <a th:href="@{/users/login-history}" class="btn btn-outline-light">
+                                <i class="bi bi-clock-history"></i>
+                                <span>Login History</span>
+                            </a>
+                            <a th:href="@{/admin/index}" class="btn btn-outline-light">
+                                <i class="bi bi-x-circle"></i>
+                                <span>Close</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
 
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show user-form-alert mt-3" role="alert">
+                <i class="bi bi-check-circle"></i>
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show user-form-alert mt-3" role="alert">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${message}" class="alert alert-warning user-form-alert mt-3" role="alert">
+                <i class="bi bi-info-circle"></i>
+                <span th:text="${message}"></span>
             </div>
 
-            <div class="card-body">
+            <form th:action="@{/users/save}" th:object="${users}" method="post" novalidate>
+                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <input type="hidden" th:field="*{id}">
 
-                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
-                <form  th:action="@{/users/save}"   th:object="${users}"  method="post" >
+                <div class="user-form-layout">
+                    <main>
+                        <section class="user-form-panel">
+                            <div class="user-form-panel-head">
+                                <div>
+                                    <p>Profile Details</p>
+                                    <h2>Identity and Contact</h2>
+                                </div>
+                                <span class="user-form-example"><i class="bi bi-lightbulb"></i>Use official account details</span>
+                            </div>
 
-                    <div th:text="${message}"> </div>
+                            <div class="user-form-grid">
+                                <div class="user-form-field">
+                                    <label class="form-label required" for="firstName">First Name</label>
+                                    <input id="firstName" type="text" class="form-control"
+                                           th:field="*{firstName}"
+                                           th:classappend="${#fields.hasErrors('firstName')} ? ' is-invalid' : ''"
+                                           placeholder="Example: Belayet" minlength="3" maxlength="50" required>
+                                    <div class="user-form-hint">3-50 characters. Letters, numbers, spaces, underscores, and hyphens are allowed.</div>
+                                    <span class="user-form-example"><i class="bi bi-check2-circle"></i>Example: Belayet</span>
+                                    <span class="user-form-error" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}">First name error</span>
+                                </div>
 
+                                <div class="user-form-field">
+                                    <label class="form-label" for="lastName">Last Name</label>
+                                    <input id="lastName" type="text" class="form-control"
+                                           th:field="*{lastName}"
+                                           th:classappend="${#fields.hasErrors('lastName')} ? ' is-invalid' : ''"
+                                           placeholder="Example: Hossain" maxlength="50">
+                                    <div class="user-form-hint">Optional. Keep the name consistent with payroll, admin, or support records.</div>
+                                    <span class="user-form-example"><i class="bi bi-check2-circle"></i>Example: Hossain</span>
+                                    <span class="user-form-error" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}">Last name error</span>
+                                </div>
 
-                    <div class="form-group row">
-                        <input type="hidden" class="form-control "  th:field="*{id}" />
-                    </div>
+                                <div class="user-form-field">
+                                    <label class="form-label required" for="mobile">Mobile Number</label>
+                                    <input id="mobile" type="tel" class="form-control"
+                                           th:field="*{mobile}"
+                                           th:classappend="${#fields.hasErrors('mobile')} ? ' is-invalid' : ''"
+                                           placeholder="Example: +8801718114224" maxlength="15" required>
+                                    <div class="user-form-hint">Use 10-15 digits. A leading plus sign is allowed for international numbers.</div>
+                                    <span class="user-form-example"><i class="bi bi-check2-circle"></i>Example: +8801718114224</span>
+                                    <span class="user-form-error" th:if="${#fields.hasErrors('mobile')}" th:errors="*{mobile}">Mobile error</span>
+                                </div>
 
-                    <div class="form-group row mb-3">
-                        <label for="colFormLabel" class="col-sm-2 col-form-label text-right">First Name<span class="text-danger">*</span>:</label>
-                        <div class="col-sm-5">
-                            <input type="text" class="form-control col-sm-3" th:required="required" id="colFormLabel" placeholder=" First name" th:field="*{firstName}">
-                            <span  class="help-block text-danger col-sm-8" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}">First Name Error</span>
+                                <div class="user-form-field">
+                                    <label class="form-label required" for="email">Email</label>
+                                    <input id="email" type="email" class="form-control"
+                                           th:field="*{email}"
+                                           th:classappend="${#fields.hasErrors('email')} ? ' is-invalid' : ''"
+                                           placeholder="Example: admin@example.com" maxlength="150" required>
+                                    <div class="user-form-hint">Must be unique and valid. This is used for account communication and audit lookup.</div>
+                                    <span class="user-form-example"><i class="bi bi-check2-circle"></i>Example: admin@example.com</span>
+                                    <span class="user-form-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Email error</span>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="user-form-panel">
+                            <div class="user-form-panel-head">
+                                <div>
+                                    <p>Access Control</p>
+                                    <h2>Role, Status, and Account Type</h2>
+                                </div>
+                                <span class="user-form-example"><i class="bi bi-shield-check"></i>Least privilege recommended</span>
+                            </div>
+
+                            <div class="user-form-grid">
+                                <div class="user-form-field">
+                                    <label class="form-label required" for="role">Role</label>
+                                    <select id="role" class="form-select"
+                                            th:field="*{role}"
+                                            th:classappend="${#fields.hasErrors('role')} ? ' is-invalid' : ''"
+                                            required>
+                                        <option value="">Select a role</option>
+                                        <option th:each="role : ${roles}" th:value="${role.id}" th:text="${role.name}">Administrator</option>
+                                    </select>
+                                    <div class="user-form-hint">Assign only the role needed for this user's daily work.</div>
+                                    <span class="user-form-example"><i class="bi bi-check2-circle"></i>Example: Admin or Customer</span>
+                                    <span class="user-form-error" th:if="${#fields.hasErrors('role')}" th:errors="*{role}">Role error</span>
+                                </div>
+
+                                <div class="user-form-field">
+                                    <label class="form-label required" for="status">Status</label>
+                                    <select id="status" class="form-select"
+                                            th:field="*{status}"
+                                            th:classappend="${#fields.hasErrors('status')} ? ' is-invalid' : ''"
+                                            required>
+                                        <option value="">Select a status</option>
+                                        <option th:each="statusOption : ${status}" th:value="${statusOption}" th:text="${statusOption}">Active</option>
+                                    </select>
+                                    <div class="user-form-hint">Use Active for approved users, Pending for review, and Block for restricted access.</div>
+                                    <span class="user-form-example"><i class="bi bi-check2-circle"></i>Example: Active</span>
+                                    <span class="user-form-error" th:if="${#fields.hasErrors('status')}" th:errors="*{status}">Status error</span>
+                                </div>
+
+                                <div class="user-form-field">
+                                    <label class="form-label required" for="userType">User Type</label>
+                                    <select id="userType" class="form-select"
+                                            th:field="*{userType}"
+                                            th:classappend="${#fields.hasErrors('userType')} ? ' is-invalid' : ''"
+                                            required>
+                                        <option value="">Select a user type</option>
+                                        <option th:each="userTypeOption : ${userTypes}" th:value="${userTypeOption}" th:text="${userTypeOption}">administrator</option>
+                                    </select>
+                                    <div class="user-form-hint">Select customer for buyers, administrator for staff, and systemadmin only for trusted platform operators.</div>
+                                    <span class="user-form-example"><i class="bi bi-check2-circle"></i>Example: administrator</span>
+                                    <span class="user-form-error" th:if="${#fields.hasErrors('userType')}" th:errors="*{userType}">User type error</span>
+                                </div>
+
+                                <div class="user-form-field">
+                                    <label class="form-label" for="remarks">Internal Remark</label>
+                                    <textarea id="remarks" class="form-control" rows="4"
+                                              th:field="*{remarks}"
+                                              th:classappend="${#fields.hasErrors('remarks')} ? ' is-invalid' : ''"
+                                              placeholder="Example: Support team member for customer order follow-up."></textarea>
+                                    <div class="user-form-hint">Optional admin-only note. Do not store passwords, OTPs, card data, or private tokens.</div>
+                                    <span class="user-form-error" th:if="${#fields.hasErrors('remarks')}" th:errors="*{remarks}">Remark error</span>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="user-form-panel">
+                            <div class="user-form-panel-head">
+                                <div>
+                                    <p>Security</p>
+                                    <h2>Password Setup</h2>
+                                </div>
+                                <span class="user-form-example"><i class="bi bi-key"></i>Required for new users</span>
+                            </div>
+
+                            <div class="user-form-grid">
+                                <div class="user-form-field user-form-field--wide">
+                                    <label class="form-label" th:classappend="${users == null or users.id == null ? ' required' : ''}" for="password">Password</label>
+                                    <input id="password" name="password" type="password" class="form-control"
+                                           th:classappend="${#fields.hasErrors('password')} ? ' is-invalid' : ''"
+                                           th:placeholder="${users == null or users.id == null ? 'Create a secure password' : 'Leave blank to keep current password'}"
+                                           th:required="${users == null or users.id == null}"
+                                           autocomplete="new-password" minlength="8" maxlength="100">
+                                    <div class="user-form-hint">Use at least 8 characters. Mix uppercase, lowercase, numbers, and symbols where your policy allows.</div>
+                                    <span class="user-form-example"><i class="bi bi-check2-circle"></i>Example: StoreAdmin2026</span>
+                                    <span class="user-form-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Password error</span>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div class="user-form-savebar">
+                            <span><i class="bi bi-info-circle me-1"></i>Review role, status, and contact details before saving.</span>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a th:href="@{/users/index}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i>
+                                    <span>Cancel</span>
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i>
+                                    <span th:text="${users != null and users.id != null ? 'Update User' : 'Save User'}">Save User</span>
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    </main>
 
-                    <div class="form-group row mb-3">
-                        <label for="colFormLabel" class="col-sm-2 col-form-label text-right">Last Name<span class="text-danger">*</span>:</label>
-                        <div class="col-sm-5">
-                            <input type="text" class="form-control col-sm-3" th:required="required" id="colFormLabel" placeholder="Last name" th:field="*{lastName}">
-                            <span  class="help-block text-danger col-sm-8" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}">First Name Error</span>
+                    <aside class="user-form-guide" aria-label="User registration guidance">
+                        <h2><i class="bi bi-clipboard-check me-1"></i>Form Readiness</h2>
+                        <p>Use this checklist to keep user records clean, secure, and production-ready.</p>
+                        <div class="user-form-checklist">
+                            <div class="user-form-check">
+                                <i class="bi bi-person-badge"></i>
+                                <div>
+                                    <strong>Identity</strong>
+                                    <small>Use the user's real operational name so audit logs and assignments stay readable.</small>
+                                </div>
+                            </div>
+                            <div class="user-form-check">
+                                <i class="bi bi-phone"></i>
+                                <div>
+                                    <strong>Contact</strong>
+                                    <small>Mobile and email must be unique. Example mobile format: +8801718114224.</small>
+                                </div>
+                            </div>
+                            <div class="user-form-check">
+                                <i class="bi bi-shield-lock"></i>
+                                <div>
+                                    <strong>Access</strong>
+                                    <small>Choose the lowest role and account type that can complete the user's job.</small>
+                                </div>
+                            </div>
+                            <div class="user-form-check">
+                                <i class="bi bi-key"></i>
+                                <div>
+                                    <strong>Password</strong>
+                                    <small>For edits, leave the password blank when you do not want to change it.</small>
+                                </div>
+                            </div>
+                            <div class="user-form-check">
+                                <i class="bi bi-journal-text"></i>
+                                <div>
+                                    <strong>Remarks</strong>
+                                    <small>Record business context only. Never store sensitive credentials or payment data.</small>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="form-group row mb-3">
-                        <label for="colFormLabel" class="col-sm-2 col-form-label text-right">Mobile Number<span class="text-danger">*</span>:</label>
-                        <div class="col-sm-5">
-                            <input type="text" class="form-control col-sm-3" th:required="required" id="colFormLabel" placeholder="Mobile" th:field="*{mobile}">
-                            <span  class="help-block text-danger col-sm-8" th:if="${#fields.hasErrors('mobile')}" th:errors="*{mobile}">First Name Error</span>
-                        </div>
-                    </div>
-
-                    <div class="form-group row mb-3">
-                        <label for="colFormLabel" class="col-sm-2 col-form-label text-right">Email<span class="text-danger">*</span>:</label>
-                        <div class="col-sm-5">
-                            <input type="text" class="form-control col-sm-3" th:required="required" id="colFormLabel" placeholder="Email" th:field="*{email}">
-                            <span  class="help-block text-danger col-sm-8" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">First Name Error</span>
-                        </div>
-                    </div>
-
-                    <div class="form-group row mb-3">
-                        <label for="colFormLabel" class="col-sm-2 col-form-label text-right">Password<span class="text-danger">*</span>:</label>
-                        <div class="col-sm-5">
-                            <input type="password" class="form-control col-sm-3" th:if="${users.id==null}"  th:required="required" minlength=8 maxlength="100" th:field="*{password}"  />
-
-                            <input type="password" class="form-control col-sm-3" th:unless="${users.id==null}"   minlength=8 maxlength="100" th:field="*{password}"  />
-                            <span  class="help-block text-danger col-sm-8" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">First Name Error</span>
-                            <small id="passwordHelpBlock" class="form-text text-muted">
-                                Your password must be 8-20 characters long, contain letters and numbers, and must not contain spaces, special characters, or emoji.
-                            </small>
-
-                            <input type="hidden"  name="password2" th:value="${users.password}" />
-                        </div>
-                    </div>
-
-                    <div class="form-group row mb-3">
-                        <label  class="col-sm-2 col-form-label text-right " for="inputState">Role<span class="text-danger">*</span>:</label>
-
-                        <div class=" col-sm-3">
-                            <select id="inputState" class="form-control col-sm-3"  th:field="*{role}">
-
-                                <option th:each =" role: ${roles}"
-                                        th:value="${role.id} "
-                                        th:text="${role.name}"> Select one</option>
-                            </select>
-                        </div>  </div>
-                    <div class="form-group row mb-3">
-                        <label  class="col-sm-2 col-form-label text-right " for="inputState">Status<span class="text-danger">*</span>:</label>
-                        <div class=" col-sm-3">
-                            <select id="inputState" class="form-control"  th:field="*{status}">
-                                <option value=" "> Select one</option>
-                                <option th:each =" status :${status}"
-                                        th:value=" ${status}"
-                                        th:text="${status}"> Select one</option>
-                            </select>
-                            <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('status')}" th:errors="*{status}">First Name Error</span>
-                        </div>    </div>
-
-
-                    <div class="form-group row mb-3">
-                        <label  class="col-sm-2 col-form-label text-right " for="inputState">User Type<span class="text-danger">*</span>:</label>
-                        <div class=" col-sm-3">
-                            <select id="inputState" class="form-control"  th:field="*{userType}">
-                                <option value=" "> Select one</option>
-                                <option th:each =" userType :${userTypes}"
-                                        th:value=" ${userType}"
-                                        th:text="${userType}"> Select one</option>
-                            </select>
-                            <span  class="help-block has-error text-danger" th:if="${#fields.hasErrors('status')}" th:errors="*{status}">First Name Error</span>
-                        </div></div>
-
-
-
-                    <div class="form-group row mb-3">
-                        <label for="colFormLabel" class="col-sm-2 col-form-label text-right">Remark<span class="text-danger"></span>:</label>
-                        <div class="col-sm-6">
-                            <textarea class="form-control col-sm-3" rows="3"  cols="4" id="colFormLabel" placeholder="Remark" th:field="*{remarks}"></textarea>
-                            <span  class="help-block text-danger col-sm-8" th:if="${#fields.hasErrors('remarks')}" th:errors="*{remarks}">First Name Error</span>
-                        </div>
-                    </div>
-                    <div class="text-center mb-3">
-                        <button type="submit" class="btn btn-success">Save</button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="card-footer">
-
-            </div>
+                    </aside>
+                </div>
+            </form>
         </div>
-
-    </div></div>
-
-
-
+    </div>
+</div>

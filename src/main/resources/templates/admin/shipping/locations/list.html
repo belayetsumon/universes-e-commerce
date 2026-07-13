@@ -7,9 +7,19 @@
                     <h4 class="mb-1"><i class="bi bi-globe2 me-2 text-primary"></i>Shipping Locations</h4>
                     <div class="text-muted small">Manage country, division/state, district/city, and thana/upazila coverage data.</div>
                 </div>
-                <a class="btn btn-success btn-sm" th:href="@{/admin/shipping-locations/create}">
-                    <i class="bi bi-plus-circle"></i> Add Location
-                </a>
+                <div class="d-flex align-items-center gap-2">
+                    <form th:action="@{/admin/system/seed/bangladesh-locations}" method="post" class="d-inline"
+                          onsubmit="return confirm('Install the Bangladesh demo locations and all Dhaka metropolitan thanas? Existing seed records will not be duplicated.');">
+                        <input type="hidden" name="returnTo" value="shipping-locations" />
+                        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button class="btn btn-outline-primary btn-sm" type="submit">
+                            <i class="bi bi-cloud-download"></i> Install thana demo data
+                        </button>
+                    </form>
+                    <a class="btn btn-success btn-sm" th:href="@{/admin/shipping-locations/create}">
+                        <i class="bi bi-plus-circle"></i> Add Location
+                    </a>
+                </div>
             </div>
         </section>
 
@@ -18,7 +28,7 @@
 
         <div class="card">
             <div class="card-body table-responsive">
-                <table class="table table-bordered table-striped table-sm align-middle">
+                <table id="shippingLocationsTable" class="table table-bordered table-striped table-sm align-middle w-100">
                     <thead class="table-light">
                         <tr>
                             <th>#</th>
@@ -32,9 +42,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:if="${#lists.isEmpty(locations)}">
-                            <td colspan="9" class="text-center text-muted">No shipping locations found.</td>
-                        </tr>
                         <tr th:each="location, stat : ${locations}">
                             <td th:text="${stat.count}"></td>
                             <td><span class="badge bg-info text-dark" th:text="${location.type}"></span></td>
@@ -67,4 +74,53 @@
             </div>
         </div>
     </div>
+
+    <th:block layout:fragment="page_js">
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const initializeShippingLocationsTable = function () {
+                    if (!window.jQuery || !jQuery.fn || !jQuery.fn.DataTable) {
+                        window.setTimeout(initializeShippingLocationsTable, 180);
+                        return;
+                    }
+
+                    const tableElement = document.getElementById('shippingLocationsTable');
+                    if (!tableElement || jQuery.fn.DataTable.isDataTable(tableElement)) {
+                        return;
+                    }
+
+                    jQuery(tableElement).DataTable({
+                        ordering: true,
+                        order: [[1, 'asc'], [2, 'asc']],
+                        pageLength: 25,
+                        lengthMenu: [
+                            [10, 25, 50, 100, -1],
+                            [10, 25, 50, 100, 'All']
+                        ],
+                        autoWidth: false,
+                        scrollX: true,
+                        layout: {
+                            topStart: 'pageLength',
+                            topEnd: 'search',
+                            bottomStart: 'info',
+                            bottomEnd: 'paging'
+                        },
+                        columnDefs: [
+                            {targets: 0, width: '56px', searchable: false},
+                            {targets: 7, orderable: false, searchable: false, width: '150px'}
+                        ],
+                        language: {
+                            emptyTable: 'No shipping locations found.',
+                            zeroRecords: 'No locations match your search.',
+                            info: '_START_ to _END_ of _TOTAL_ locations',
+                            infoEmpty: '0 locations',
+                            lengthMenu: 'Rows _MENU_'
+                        }
+                    });
+                };
+
+                initializeShippingLocationsTable();
+            });
+        </script>
+    </th:block>
 </div>

@@ -1,0 +1,52 @@
+.order-workspace {
+    --order-panel: #ffffff;
+    --order-border: rgba(15, 23, 42, .08);
+    --order-muted: #667085;
+    --order-text: #182230;
+    --order-accent: #0d6efd;
+    --order-navy: #113459;
+    --order-shadow: 0 .75rem 1.75rem rgba(15, 23, 42, .08);
+    color: var(--order-text);
+}
+
+.order-hero {
+    overflow: hidden;
+    color: #fff;
+    background: var(--order-navy);
+    border: 1px solid rgba(17, 52, 89, .32);
+    border-radius: 8px;
+    box-shadow: var(--order-shadow);
+}
+
+.order-hero .card-header { background: rgba(255, 255, 255, .08); border-bottom: 1px solid rgba(255, 255, 255, .12) !important; }
+.order-hero .card-body { background: var(--order-navy); }
+.order-hero .breadcrumb-item + .breadcrumb-item::before { color: rgba(255,255,255,.55); }
+.order-hero a, .order-hero .breadcrumb-item.active { color: rgba(255,255,255,.78); }
+.order-hero-title { display: flex; align-items: flex-start; gap: .85rem; min-width: 0; }
+.order-hero-icon { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 48px; width: 48px; height: 48px; color: var(--order-navy); background: #fff; border-radius: 50%; }
+.order-code { font-size: 1.6rem; font-weight: 700; letter-spacing: 0; }
+.order-status { display: inline-flex; padding: .25rem .65rem; color: var(--order-navy); background: #e6f4f1; border: 1px solid #b7ddd7; border-radius: 999px; font-size: .78rem; font-weight: 700; }
+.order-hero-subtitle { max-width: 720px; color: rgba(255,255,255,.76); font-size: .95rem; }
+
+.order-status-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .85rem; }
+.order-status-card { display: flex; align-items: center; gap: .85rem; min-width: 0; padding: 1rem; background: var(--order-panel); border: 1px solid var(--order-border); border-radius: 8px; }
+.order-status-icon, .order-contact-icon { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 40px; width: 40px; height: 40px; color: var(--order-navy); background: #e6f4f1; border-radius: 8px; }
+.order-status-card span:not(.order-status-icon) { display: block; color: var(--order-muted); font-size: .78rem; }
+.order-status-card strong { display: block; overflow: hidden; color: var(--order-text); font-size: .95rem; text-overflow: ellipsis; white-space: nowrap; }
+
+.order-panel { background: var(--order-panel); border: 1px solid var(--order-border); border-radius: 8px; box-shadow: none; }
+.order-panel > .card-header { padding: .9rem 1.1rem; font-size: .9rem; font-weight: 700; background: #fff; border-bottom: 1px solid var(--order-border); }
+.order-panel .card-body { padding: 1.1rem; }
+.order-metric-label { display: block; color: var(--order-muted); font-size: .7rem; font-weight: 700; letter-spacing: .055em; text-transform: uppercase; }
+.order-address { color: #475467; line-height: 1.65; }
+.order-table thead th { padding: .75rem; color: #475467; font-size: .7rem; letter-spacing: .045em; text-transform: uppercase; white-space: nowrap; background: #f7f9fc; border-bottom: 1px solid #dce4ed; }
+.order-table td { padding: .8rem .75rem; vertical-align: middle; border-color: #edf1f5; }
+.order-table tfoot td { font-weight: 700; background: #f8fafc; border-top: 1px solid #dce4ed; }
+.order-product-image { width: 44px; height: 44px; object-fit: cover; background: #f3f6f9; border-radius: 6px; }
+.order-amount { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.order-summary-row { display: flex; justify-content: space-between; padding: .5rem 0; }
+.order-summary-total { padding: .8rem; margin-top: .5rem; color: #fff; background: var(--order-navy); border-radius: 6px; }
+.order-history-status { display: inline-block; padding: .3rem .55rem; color: var(--order-navy); background: #edf7f5; border: 1px solid #b7ddd7; border-radius: 999px; font-size: .7rem; font-weight: 700; }
+
+@media (max-width: 991.98px) { .order-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 575.98px) { .order-status-grid { grid-template-columns: 1fr; } .order-hero-title { gap: .65rem; } .order-hero-icon { flex-basis: 42px; width: 42px; height: 42px; } .order-code { font-size: 1.35rem; } }

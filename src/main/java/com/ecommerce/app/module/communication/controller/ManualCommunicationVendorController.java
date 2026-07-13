@@ -13,7 +13,9 @@ import com.ecommerce.app.module.communication.services.ManualCommunicationHistor
 import com.ecommerce.app.module.communication.services.ManualCommunicationPermissionService;
 import jakarta.validation.Valid;
 import java.util.Set;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -31,14 +33,23 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/vendor/communication/manual")
 public class ManualCommunicationVendorController {
 
-    @Autowired
-    private ManualCommunicationPermissionService permissionService;
-    @Autowired
-    private ManualCommunicationAudienceResolverService audienceResolverService;
-    @Autowired
-    private ManualCommunicationDispatchService dispatchService;
-    @Autowired
-    private ManualCommunicationHistoryService historyService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManualCommunicationVendorController.class);
+
+    private final ManualCommunicationPermissionService permissionService;
+    private final ManualCommunicationAudienceResolverService audienceResolverService;
+    private final ManualCommunicationDispatchService dispatchService;
+    private final ManualCommunicationHistoryService historyService;
+
+    public ManualCommunicationVendorController(
+            ManualCommunicationPermissionService permissionService,
+            ManualCommunicationAudienceResolverService audienceResolverService,
+            ManualCommunicationDispatchService dispatchService,
+            ManualCommunicationHistoryService historyService) {
+        this.permissionService = permissionService;
+        this.audienceResolverService = audienceResolverService;
+        this.dispatchService = dispatchService;
+        this.historyService = historyService;
+    }
 
     @ModelAttribute
     public void common(Model model) {
@@ -69,10 +80,16 @@ public class ManualCommunicationVendorController {
         }
         try {
             ManualMessageResponse response = (ManualMessageResponse) dispatchService.send(actor, request);
-            redirectAttributes.addFlashAttribute("successMessage", summary(response));
+            addDispatchFeedback(response, redirectAttributes);
             return "redirect:/vendor/communication/manual/sent";
-        } catch (RuntimeException ex) {
+        } catch (IllegalArgumentException ex) {
             model.addAttribute("errorMessage", ex.getMessage());
+            prepareCompose(model, actor, request);
+            return "vendor/communication/manual-compose";
+        } catch (RuntimeException ex) {
+            LOGGER.error("Vendor manual message failed. batchId={}, vendorId={}",
+                    request.getBatchId(), actor.getVendorId(), ex);
+            model.addAttribute("errorMessage", "The message could not be processed. Please try again or contact support.");
             prepareCompose(model, actor, request);
             return "vendor/communication/manual-compose";
         }
@@ -108,6 +125,9 @@ public class ManualCommunicationVendorController {
         if (request.getChannels().isEmpty()) {
             request.setChannels(Set.of(MessageChannel.IN_APP));
         }
+        if (request.getBatchId() == null || request.getBatchId().isBlank()) {
+            request.setBatchId(UUID.randomUUID().toString());
+        }
         model.addAttribute("manualMessage", request);
         model.addAttribute("customerOptions", audienceResolverService.selectableCustomersForVendor(actor.getVendorId()));
     }
@@ -127,5 +147,16 @@ public class ManualCommunicationVendorController {
         return "Manual message processed for " + response.getRecipientCount() + " recipient(s): "
                 + response.getSentCount() + " sent, " + response.getQueuedCount() + " queued, "
                 + response.getSkippedCount() + " skipped, " + response.getFailedCount() + " failed.";
+    }
+
+    private void addDispatchFeedback(ManualMessageResponse response, RedirectAttributes redirectAttributes) {
+        String message = summary(response);
+        if (response.getFailedCount() > 0 && response.getSentCount() == 0 && response.getQueuedCount() == 0) {
+            redirectAttributes.addFlashAttribute("errorMessage", message);
+        } else if (response.getFailedCount() > 0 || response.getSkippedCount() > 0) {
+            redirectAttributes.addFlashAttribute("warningMessage", message);
+        } else {
+            redirectAttributes.addFlashAttribute("successMessage", message);
+        }
     }
 }

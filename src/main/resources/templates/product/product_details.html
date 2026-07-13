@@ -334,7 +334,8 @@ and open the template in the editor.
 
                                             <div class=" col-12">
                                                 <input type="hidden" class="form-control" th:field="*{productImageName}" />
-                                                <input type="file" name="productimg" id="productImage" class="form-control" aria-describedby="fileHelpInline" required>
+                                                <input type="file" name="productimg" id="productImage" class="form-control" accept="image/jpeg,image/png,image/webp" aria-describedby="fileHelpInline" required>
+                                                <div class="form-text">Allowed: JPG, PNG, or WEBP. New uploads are converted to high-quality WEBP.</div>
                                             </div>
 
 

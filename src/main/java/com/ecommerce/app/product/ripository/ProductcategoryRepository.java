@@ -9,14 +9,23 @@ import com.ecommerce.app.product.model.Productcategory;
 import com.ecommerce.app.product.model.ProductStatusEnum;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.domain.Specification;
 
 /**
  *
  * @author User
  */
-public interface ProductcategoryRepository extends JpaRepository<Productcategory, Long> {
+public interface ProductcategoryRepository extends JpaRepository<Productcategory, Long>, JpaSpecificationExecutor<Productcategory> {
+
+    @Override
+    @EntityGraph(attributePaths = "parent")
+    Page<Productcategory> findAll(Specification<Productcategory> specification, Pageable pageable);
 
     List<Productcategory> findByStatus(ProductStatusEnum status);
     
@@ -37,6 +46,12 @@ public interface ProductcategoryRepository extends JpaRepository<Productcategory
     
     // Fetch root categories (those with no parent)
     List<Productcategory> findByParentIsNull();
+
+    long countByStatus(ProductStatusEnum status);
+
+    long countByParentIsNull();
+
+    long countByFeaturedCatTrue();
 
     // Use EntityGraph to fetch categories with all their children
 //    @EntityGraph(attributePaths = "children")
