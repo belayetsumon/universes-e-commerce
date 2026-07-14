@@ -7,9 +7,12 @@
               content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta name="google-site-verification" content="heb7DbEV8OfK4Hk0PVraKZ2WTOSS4um_zW9s_9lH2mI" />
 
-        <meta name="description" th:content="${pageDescription != null ? pageDescription : (session.globalSettings.metaDescription != null ? session.globalSettings.metaDescription : 'Shop featured products, latest arrivals, and top deals.')}" content="">
         <meta name="keywords" th:content="${session.globalSettings.metaKeywords}" content="">
         <meta name="author" th:content="${session.globalSettings.siteName}" content="">
+        <meta th:if="${_csrf != null}" name="_csrf" th:content="${_csrf.token}">
+        <meta th:if="${_csrf != null}" name="_csrf_header" th:content="${_csrf.headerName}">
+        <th:block th:replace="~{fronttheme/fragments/social-metadata :: metadata}"></th:block>
+        <th:block th:replace="~{fronttheme/fragments/tracking :: head}"></th:block>
 
 
         <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.1/css/bootstrap.min.css}">
@@ -36,13 +39,9 @@
         <link rel="stylesheet" th:href="@{/assets/front/css/front-site.css}"/>
         <link rel="icon" th:if="${session.globalSettings.favicon != null}" th:href="@{${session.globalSettings.favicon}}">
     <th:block layout:fragment="page_css"></th:block>
-    <noscript><img height="1" width="1" class="facebook-pixel-fallback"
-                   src="https://www.facebook.com/tr?id=1365852474985195&ev=PageView&noscript=1"
-                   /></noscript>
-    <!-- End Meta Pixel Code -->
-    <title th:text="${pageTitle != null ? pageTitle : (session.globalSettings.siteTitle != null ? session.globalSettings.siteTitle : session.globalSettings.siteName)}">Universal e-Commerce Platform</title>
 </head>
 <body class="front-app front-site-layout">
+    <th:block th:replace="~{fronttheme/fragments/tracking :: body-noscript}"></th:block>
     <div class="site-loading-overlay" data-site-loader role="status" aria-live="polite" aria-label="Loading page">
         <div class="site-loading-panel">
             <div class="site-loading-brand">
@@ -94,6 +93,7 @@
     <!--    <script th:src="@{/plugin/owlcarousel/owl.carousel.min.js}"></script>-->
 
     <script th:src="@{/assets/front/js/front-site.js}"></script>
+    <script th:src="@{/assets/front/js/app-tracking.js}" defer></script>
 <th:block layout:fragment="page_js"></th:block>
 </body>
 </html>

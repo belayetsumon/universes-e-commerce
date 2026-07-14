@@ -1,0 +1,13 @@
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="head">
+    <script th:inline="javascript">
+        window.dataLayer = window.dataLayer || [];
+        window.AppTrackingConfig = /*[[${publicTracking}]]*/ {};
+    </script>
+</th:block>
+
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="body-noscript">
+    <noscript th:if="${publicTracking != null and publicTracking.googleTagManagerEnabled and publicTracking.gtmContainerId != null}">
+        <iframe th:src="${'https://www.googletagmanager.com/ns.html?id=' + publicTracking.gtmContainerId}"
+                height="0" width="0" style="display:none;visibility:hidden" title="Google Tag Manager"></iframe>
+    </noscript>
+</th:block>

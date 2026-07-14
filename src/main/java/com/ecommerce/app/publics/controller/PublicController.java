@@ -61,6 +61,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -540,6 +541,7 @@ public class PublicController {
         model.addAttribute("currentSort", sort);
         model.addAttribute("currentCategoryUuid", activeCategory.getUuid());
         model.addAttribute("selectedKeyword", q);
+        addCategoryMetadataModel(model, activeCategory, request, sortedProducts.size());
 
         model.addAttribute("child_category_list", productcategoryRepository.findByStatusAndParent(ProductStatusEnum.Active, activeCategory));
         return "frontview/product-by-category";
@@ -567,6 +569,7 @@ public class PublicController {
 
         model.addAttribute("product_details", product_details);
         addProductShareModel(model, activeProduct, product_details, request);
+        addProductMetadataModel(model, activeProduct, product_details, request);
         model.addAttribute("productSpecifications",
                 catalogProductAttributeService.buildSpecificationViews(getString(product_details, "uuid")));
 
@@ -706,12 +709,17 @@ public class PublicController {
 
     private void addProductShareModel(Model model, Product product, Map<String, Object> productDetails, HttpServletRequest request) {
         Users currentUser = getAuthenticatedUser();
+        GlobalSettings settings = globalSettingsService.getActiveSettings();
         String referralCode = currentUser == null ? null
                 : referralRepository.findByUsers(currentUser)
                         .map(Referral::getReferralCode)
                         .orElse(null);
+        if (!Boolean.TRUE.equals(settings.getReferralLinksEnabled())) {
+            referralCode = null;
+        }
         String shareUrl = buildProductShareUrl(request, product.getUuid(), referralCode);
         String productTitle = getString(productDetails, "title");
+        String productDescription = plainText(getString(productDetails, "shortDescription"));
         String shareMessage = (productTitle == null || productTitle.isBlank() ? "Check this product" : "Check this product: " + productTitle)
                 + " " + shareUrl;
 
@@ -720,17 +728,84 @@ public class PublicController {
         model.addAttribute("productShareMessage", shareMessage);
         model.addAttribute("productShareWhatsAppUrl", "https://wa.me/?text=" + encodeUrl(shareMessage));
         model.addAttribute("productShareFacebookUrl", "https://www.facebook.com/sharer/sharer.php?u=" + encodeUrl(shareUrl));
+        model.addAttribute("shareUrl", shareUrl);
+        model.addAttribute("shareTitle", productTitle);
+        model.addAttribute("shareDescription", productDescription);
+        model.addAttribute("sharePageType", "PRODUCT");
+        model.addAttribute("shareEntityReference", product.getSku() > 0 ? "SKU-" + product.getSku() : product.getUuid());
+    }
+
+    private void addProductMetadataModel(Model model, Product product, Map<String, Object> productDetails, HttpServletRequest request) {
+        GlobalSettings settings = globalSettingsService.getActiveSettings();
+        String productTitle = textOrDefault(getString(productDetails, "metaTitle"), getString(productDetails, "title"));
+        String productDescription = textOrDefault(plainText(getString(productDetails, "metaDescription")),
+                plainText(getString(productDetails, "shortDescription")));
+        String canonicalUrl = buildProductShareUrl(request, product.getUuid(), null);
+        String imageName = getString(productDetails, "imageName");
+        String imageUrl = imageName.isBlank() ? null : absolutePublicAssetUrl(settings, "/files/" + imageName);
+        if (imageUrl == null) {
+            imageUrl = absolutePublicAssetUrl(settings, settings.getOgImage());
+        }
+
+        model.addAttribute("pageTitle", productTitle);
+        model.addAttribute("pageDescription", productDescription);
+        model.addAttribute("pageCanonicalUrl", canonicalUrl);
+        model.addAttribute("pageOgType", "product");
+        model.addAttribute("pageOgTitle", productTitle);
+        model.addAttribute("pageOgDescription", productDescription);
+        model.addAttribute("pageOgImageUrl", imageUrl);
+        model.addAttribute("trackingProduct", Map.of(
+                "item_id", product.getSku() > 0 ? "SKU-" + product.getSku() : product.getUuid(),
+                "item_name", productTitle,
+                "item_brand", getString(productDetails, "manufacturerName"),
+                "item_category", getString(productDetails, "category"),
+                "price", getBigDecimal(productDetails, "afterDiscountRemainingAmount", "salesPrice"),
+                "currency", textOrDefault(settings.getCurrency(), "BDT"),
+                "availability", getString(productDetails, "availabilityLabel")
+        ));
+    }
+
+    private void addCategoryMetadataModel(Model model, Productcategory category, HttpServletRequest request, int productCount) {
+        GlobalSettings settings = globalSettingsService.getActiveSettings();
+        String categoryName = textOrDefault(category.getName(), "Products");
+        String title = categoryName + " Products";
+        String description = "Browse " + productCount + " products in " + categoryName + ".";
+        String canonicalUrl = buildPublicUrl(request, "/public/product-by-category/" + category.getUuid());
+        model.addAttribute("pageTitle", title);
+        model.addAttribute("pageDescription", description);
+        model.addAttribute("pageCanonicalUrl", canonicalUrl);
+        model.addAttribute("pageOgType", "website");
+        model.addAttribute("pageOgTitle", title);
+        model.addAttribute("pageOgDescription", description);
+        model.addAttribute("pageOgImageUrl", absolutePublicAssetUrl(settings, settings.getOgImage()));
+        model.addAttribute("shareUrl", canonicalUrl);
+        model.addAttribute("shareTitle", title);
+        model.addAttribute("shareDescription", description);
+        model.addAttribute("sharePageType", "CATEGORY");
+        model.addAttribute("shareEntityReference", category.getUuid());
     }
 
     private String buildProductShareUrl(HttpServletRequest request, String productUuid, String referralCode) {
         String path = request.getContextPath() + "/public/single-product/" + productUuid;
-        var builder = ServletUriComponentsBuilder.fromRequest(request)
-                .replacePath(path)
-                .replaceQuery(null);
+        var builder = publicUrlBuilder(request, path);
         if (referralCode != null && !referralCode.isBlank()) {
             builder.queryParam("ref", referralCode.trim());
         }
         return builder.build().toUriString();
+    }
+
+    private String buildPublicUrl(HttpServletRequest request, String publicPath) {
+        String path = request.getContextPath() + publicPath;
+        return publicUrlBuilder(request, path).build().toUriString();
+    }
+
+    private org.springframework.web.util.UriComponentsBuilder publicUrlBuilder(HttpServletRequest request, String path) {
+        String publicBaseUrl = safePublicBaseUrl(globalSettingsService.getActiveSettings().getPublicBaseUrl());
+        var builder = publicBaseUrl != null
+                ? ServletUriComponentsBuilder.fromUriString(publicBaseUrl)
+                : ServletUriComponentsBuilder.fromRequest(request);
+        builder.replacePath(path).replaceQuery(null);
+        return builder;
     }
 
     private String encodeUrl(String value) {
@@ -744,6 +819,52 @@ public class PublicController {
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
     }
+
+    private String absolutePublicAssetUrl(GlobalSettings settings, String pathOrUrl) {
+        String value = trimToNull(pathOrUrl);
+        String baseUrl = safePublicBaseUrl(settings == null ? null : settings.getPublicBaseUrl());
+        if (value == null || baseUrl == null) {
+            return null;
+        }
+        if (safePublicBaseUrl(value) != null) {
+            return value;
+        }
+        if (value.startsWith("/")) {
+            return baseUrl + value;
+        }
+        return null;
+    }
+
+    private String safePublicBaseUrl(String value) {
+        String cleanValue = trimToNull(value);
+        if (cleanValue == null || !cleanValue.startsWith("https://")) {
+            return null;
+        }
+        String lowerValue = cleanValue.toLowerCase(Locale.ROOT);
+        if (lowerValue.contains("localhost")
+                || lowerValue.contains("127.0.0.1")
+                || lowerValue.contains("0.0.0.0")
+                || lowerValue.matches("https://10\\..*")
+                || lowerValue.matches("https://172\\.(1[6-9]|2[0-9]|3[0-1])\\..*")
+                || lowerValue.matches("https://192\\.168\\..*")) {
+            return null;
+        }
+        while (cleanValue.endsWith("/")) {
+            cleanValue = cleanValue.substring(0, cleanValue.length() - 1);
+        }
+        return cleanValue;
+    }
+
+    private String plainText(String value) {
+        String cleanValue = trimToNull(value);
+        if (cleanValue == null) {
+            return null;
+        }
+        return HtmlUtils.htmlUnescape(cleanValue.replaceAll("<[^>]+>", " "))
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+
     private Productcategory resolveCategoryReference(String categoryRef) {
         if (categoryRef == null || categoryRef.isBlank()) {
             return null;

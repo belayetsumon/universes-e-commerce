@@ -281,6 +281,109 @@
     gap: 1rem;
 }
 
+.settings-grid--compact {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.settings-card-stack {
+    display: grid;
+    gap: 1rem;
+}
+
+.settings-card-section {
+    padding: 1rem;
+    background: #fbfcfe;
+    border: 1px solid var(--settings-border);
+    border-radius: 8px;
+}
+
+.settings-card-section h3 {
+    margin: 0 0 .85rem;
+    color: #182230;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.settings-card-section .form-check {
+    min-width: 0;
+    padding: .85rem .85rem .85rem 2.65rem;
+    background: #ffffff;
+    border: 1px solid var(--settings-border);
+    border-radius: 8px;
+}
+
+.settings-card-section .form-check-input {
+    margin-left: -1.8rem;
+}
+
+.settings-card-section .form-check-label {
+    color: #344054;
+    font-weight: 650;
+}
+
+.settings-diagnostics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .85rem;
+}
+
+.settings-diagnostic-card {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: .75rem;
+    min-width: 0;
+    padding: .9rem;
+    background: #ffffff;
+    border: 1px solid var(--settings-border);
+    border-radius: 8px;
+}
+
+.settings-diagnostic-card--warning {
+    background: #fffbeb;
+    border-color: #fedf89;
+}
+
+.settings-diagnostic-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    color: var(--settings-accent-dark);
+    background: #edf7f5;
+    border-radius: 8px;
+}
+
+.settings-diagnostic-card strong,
+.settings-diagnostic-card p,
+.settings-diagnostic-card small {
+    display: block;
+    min-width: 0;
+}
+
+.settings-diagnostic-card p {
+    overflow: hidden;
+    margin: .2rem 0;
+    color: #182230;
+    font-size: .9rem;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.settings-diagnostic-card small {
+    color: var(--settings-muted);
+    line-height: 1.35;
+}
+
+.settings-diagnostic-actions {
+    display: flex;
+    gap: .6rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
 .settings-field,
 .settings-upload {
     min-width: 0;
@@ -456,6 +559,8 @@
 
     .settings-status-grid,
     .settings-grid,
+    .settings-grid--compact,
+    .settings-diagnostics-grid,
     .settings-toggle-group,
     .settings-mode-guide,
     .settings-mode-guide--two,

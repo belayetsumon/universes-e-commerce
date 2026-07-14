@@ -153,6 +153,25 @@ public class GlobalSettings implements Serializable {
     @Column(name = "og_image", length = 500)
     private String ogImage;
 
+    @Column(name = "open_graph_enabled", nullable = false)
+    private Boolean openGraphEnabled = true;
+
+    @Size(max = 150)
+    @Column(name = "og_site_name", length = 150)
+    private String ogSiteName;
+
+    @Size(max = 500)
+    @Column(name = "public_base_url", length = 500)
+    private String publicBaseUrl;
+
+    @Size(max = 100)
+    @Column(name = "facebook_app_id", length = 100)
+    private String facebookAppId;
+
+    @Size(max = 50)
+    @Column(name = "twitter_card_type", length = 50)
+    private String twitterCardType = "summary_large_image";
+
     @Size(max = 100)
     @Column(name = "google_analytics_id", length = 100)
     private String googleAnalyticsId;
@@ -160,6 +179,90 @@ public class GlobalSettings implements Serializable {
     @Size(max = 100)
     @Column(name = "facebook_pixel_id", length = 100)
     private String facebookPixelId;
+
+    @Column(name = "social_sharing_enabled", nullable = false)
+    private Boolean socialSharingEnabled = true;
+
+    @Column(name = "facebook_sharing_enabled", nullable = false)
+    private Boolean facebookSharingEnabled = true;
+
+    @Column(name = "messenger_sharing_enabled", nullable = false)
+    private Boolean messengerSharingEnabled = true;
+
+    @Column(name = "whatsapp_sharing_enabled", nullable = false)
+    private Boolean whatsappSharingEnabled = true;
+
+    @Column(name = "linkedin_sharing_enabled", nullable = false)
+    private Boolean linkedinSharingEnabled = true;
+
+    @Column(name = "twitter_sharing_enabled", nullable = false)
+    private Boolean twitterSharingEnabled = true;
+
+    @Column(name = "email_sharing_enabled", nullable = false)
+    private Boolean emailSharingEnabled = true;
+
+    @Column(name = "copy_link_sharing_enabled", nullable = false)
+    private Boolean copyLinkSharingEnabled = true;
+
+    @Column(name = "native_share_enabled", nullable = false)
+    private Boolean nativeShareEnabled = true;
+
+    @Column(name = "referral_links_enabled", nullable = false)
+    private Boolean referralLinksEnabled = true;
+
+    @Min(1)
+    @Column(name = "referral_cookie_expiry_days", nullable = false)
+    private Integer referralCookieExpiryDays = 30;
+
+    @Column(name = "facebook_pixel_enabled", nullable = false)
+    private Boolean facebookPixelEnabled = false;
+
+    @Column(name = "facebook_browser_tracking_enabled", nullable = false)
+    private Boolean facebookBrowserTrackingEnabled = true;
+
+    @Column(name = "facebook_conversion_api_enabled", nullable = false)
+    private Boolean facebookConversionApiEnabled = false;
+
+    @Size(max = 500)
+    @Column(name = "facebook_conversion_api_access_token", length = 500)
+    private String facebookConversionApiAccessToken;
+
+    @Size(max = 100)
+    @Column(name = "facebook_test_event_code", length = 100)
+    private String facebookTestEventCode;
+
+    @Column(name = "facebook_debug_mode", nullable = false)
+    private Boolean facebookDebugMode = false;
+
+    @Column(name = "google_analytics_enabled", nullable = false)
+    private Boolean googleAnalyticsEnabled = false;
+
+    @Column(name = "ga4_enhanced_ecommerce_enabled", nullable = false)
+    private Boolean ga4EnhancedEcommerceEnabled = true;
+
+    @Column(name = "ga4_debug_mode", nullable = false)
+    private Boolean ga4DebugMode = false;
+
+    @Column(name = "google_consent_mode_enabled", nullable = false)
+    private Boolean googleConsentModeEnabled = true;
+
+    @Column(name = "google_tag_manager_enabled", nullable = false)
+    private Boolean googleTagManagerEnabled = false;
+
+    @Size(max = 50)
+    @Column(name = "gtm_container_id", length = 50)
+    private String gtmContainerId;
+
+    @Size(max = 500)
+    @Column(name = "server_side_gtm_url", length = 500)
+    private String serverSideGtmUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tracking_implementation_mode", nullable = false, length = 30)
+    private TrackingImplementationMode trackingImplementationMode = TrackingImplementationMode.DIRECT;
+
+    @Column(name = "cookie_consent_enabled", nullable = false)
+    private Boolean cookieConsentEnabled = true;
 
     // STORE SETTINGS
     @Size(max = 10)
@@ -672,6 +775,46 @@ public class GlobalSettings implements Serializable {
         this.ogImage = ogImage;
     }
 
+    public Boolean getOpenGraphEnabled() {
+        return openGraphEnabled;
+    }
+
+    public void setOpenGraphEnabled(Boolean openGraphEnabled) {
+        this.openGraphEnabled = openGraphEnabled;
+    }
+
+    public String getOgSiteName() {
+        return ogSiteName;
+    }
+
+    public void setOgSiteName(String ogSiteName) {
+        this.ogSiteName = ogSiteName;
+    }
+
+    public String getPublicBaseUrl() {
+        return publicBaseUrl;
+    }
+
+    public void setPublicBaseUrl(String publicBaseUrl) {
+        this.publicBaseUrl = publicBaseUrl;
+    }
+
+    public String getFacebookAppId() {
+        return facebookAppId;
+    }
+
+    public void setFacebookAppId(String facebookAppId) {
+        this.facebookAppId = facebookAppId;
+    }
+
+    public String getTwitterCardType() {
+        return twitterCardType;
+    }
+
+    public void setTwitterCardType(String twitterCardType) {
+        this.twitterCardType = twitterCardType;
+    }
+
     public String getGoogleAnalyticsId() {
         return googleAnalyticsId;
     }
@@ -686,6 +829,214 @@ public class GlobalSettings implements Serializable {
 
     public void setFacebookPixelId(String facebookPixelId) {
         this.facebookPixelId = facebookPixelId;
+    }
+
+    public Boolean getSocialSharingEnabled() {
+        return socialSharingEnabled;
+    }
+
+    public void setSocialSharingEnabled(Boolean socialSharingEnabled) {
+        this.socialSharingEnabled = socialSharingEnabled;
+    }
+
+    public Boolean getFacebookSharingEnabled() {
+        return facebookSharingEnabled;
+    }
+
+    public void setFacebookSharingEnabled(Boolean facebookSharingEnabled) {
+        this.facebookSharingEnabled = facebookSharingEnabled;
+    }
+
+    public Boolean getMessengerSharingEnabled() {
+        return messengerSharingEnabled;
+    }
+
+    public void setMessengerSharingEnabled(Boolean messengerSharingEnabled) {
+        this.messengerSharingEnabled = messengerSharingEnabled;
+    }
+
+    public Boolean getWhatsappSharingEnabled() {
+        return whatsappSharingEnabled;
+    }
+
+    public void setWhatsappSharingEnabled(Boolean whatsappSharingEnabled) {
+        this.whatsappSharingEnabled = whatsappSharingEnabled;
+    }
+
+    public Boolean getLinkedinSharingEnabled() {
+        return linkedinSharingEnabled;
+    }
+
+    public void setLinkedinSharingEnabled(Boolean linkedinSharingEnabled) {
+        this.linkedinSharingEnabled = linkedinSharingEnabled;
+    }
+
+    public Boolean getTwitterSharingEnabled() {
+        return twitterSharingEnabled;
+    }
+
+    public void setTwitterSharingEnabled(Boolean twitterSharingEnabled) {
+        this.twitterSharingEnabled = twitterSharingEnabled;
+    }
+
+    public Boolean getEmailSharingEnabled() {
+        return emailSharingEnabled;
+    }
+
+    public void setEmailSharingEnabled(Boolean emailSharingEnabled) {
+        this.emailSharingEnabled = emailSharingEnabled;
+    }
+
+    public Boolean getCopyLinkSharingEnabled() {
+        return copyLinkSharingEnabled;
+    }
+
+    public void setCopyLinkSharingEnabled(Boolean copyLinkSharingEnabled) {
+        this.copyLinkSharingEnabled = copyLinkSharingEnabled;
+    }
+
+    public Boolean getNativeShareEnabled() {
+        return nativeShareEnabled;
+    }
+
+    public void setNativeShareEnabled(Boolean nativeShareEnabled) {
+        this.nativeShareEnabled = nativeShareEnabled;
+    }
+
+    public Boolean getReferralLinksEnabled() {
+        return referralLinksEnabled;
+    }
+
+    public void setReferralLinksEnabled(Boolean referralLinksEnabled) {
+        this.referralLinksEnabled = referralLinksEnabled;
+    }
+
+    public Integer getReferralCookieExpiryDays() {
+        return referralCookieExpiryDays;
+    }
+
+    public void setReferralCookieExpiryDays(Integer referralCookieExpiryDays) {
+        this.referralCookieExpiryDays = referralCookieExpiryDays;
+    }
+
+    public Boolean getFacebookPixelEnabled() {
+        return facebookPixelEnabled;
+    }
+
+    public void setFacebookPixelEnabled(Boolean facebookPixelEnabled) {
+        this.facebookPixelEnabled = facebookPixelEnabled;
+    }
+
+    public Boolean getFacebookBrowserTrackingEnabled() {
+        return facebookBrowserTrackingEnabled;
+    }
+
+    public void setFacebookBrowserTrackingEnabled(Boolean facebookBrowserTrackingEnabled) {
+        this.facebookBrowserTrackingEnabled = facebookBrowserTrackingEnabled;
+    }
+
+    public Boolean getFacebookConversionApiEnabled() {
+        return facebookConversionApiEnabled;
+    }
+
+    public void setFacebookConversionApiEnabled(Boolean facebookConversionApiEnabled) {
+        this.facebookConversionApiEnabled = facebookConversionApiEnabled;
+    }
+
+    public String getFacebookConversionApiAccessToken() {
+        return facebookConversionApiAccessToken;
+    }
+
+    public void setFacebookConversionApiAccessToken(String facebookConversionApiAccessToken) {
+        this.facebookConversionApiAccessToken = facebookConversionApiAccessToken;
+    }
+
+    public String getFacebookTestEventCode() {
+        return facebookTestEventCode;
+    }
+
+    public void setFacebookTestEventCode(String facebookTestEventCode) {
+        this.facebookTestEventCode = facebookTestEventCode;
+    }
+
+    public Boolean getFacebookDebugMode() {
+        return facebookDebugMode;
+    }
+
+    public void setFacebookDebugMode(Boolean facebookDebugMode) {
+        this.facebookDebugMode = facebookDebugMode;
+    }
+
+    public Boolean getGoogleAnalyticsEnabled() {
+        return googleAnalyticsEnabled;
+    }
+
+    public void setGoogleAnalyticsEnabled(Boolean googleAnalyticsEnabled) {
+        this.googleAnalyticsEnabled = googleAnalyticsEnabled;
+    }
+
+    public Boolean getGa4EnhancedEcommerceEnabled() {
+        return ga4EnhancedEcommerceEnabled;
+    }
+
+    public void setGa4EnhancedEcommerceEnabled(Boolean ga4EnhancedEcommerceEnabled) {
+        this.ga4EnhancedEcommerceEnabled = ga4EnhancedEcommerceEnabled;
+    }
+
+    public Boolean getGa4DebugMode() {
+        return ga4DebugMode;
+    }
+
+    public void setGa4DebugMode(Boolean ga4DebugMode) {
+        this.ga4DebugMode = ga4DebugMode;
+    }
+
+    public Boolean getGoogleConsentModeEnabled() {
+        return googleConsentModeEnabled;
+    }
+
+    public void setGoogleConsentModeEnabled(Boolean googleConsentModeEnabled) {
+        this.googleConsentModeEnabled = googleConsentModeEnabled;
+    }
+
+    public Boolean getGoogleTagManagerEnabled() {
+        return googleTagManagerEnabled;
+    }
+
+    public void setGoogleTagManagerEnabled(Boolean googleTagManagerEnabled) {
+        this.googleTagManagerEnabled = googleTagManagerEnabled;
+    }
+
+    public String getGtmContainerId() {
+        return gtmContainerId;
+    }
+
+    public void setGtmContainerId(String gtmContainerId) {
+        this.gtmContainerId = gtmContainerId;
+    }
+
+    public String getServerSideGtmUrl() {
+        return serverSideGtmUrl;
+    }
+
+    public void setServerSideGtmUrl(String serverSideGtmUrl) {
+        this.serverSideGtmUrl = serverSideGtmUrl;
+    }
+
+    public TrackingImplementationMode getTrackingImplementationMode() {
+        return trackingImplementationMode;
+    }
+
+    public void setTrackingImplementationMode(TrackingImplementationMode trackingImplementationMode) {
+        this.trackingImplementationMode = trackingImplementationMode;
+    }
+
+    public Boolean getCookieConsentEnabled() {
+        return cookieConsentEnabled;
+    }
+
+    public void setCookieConsentEnabled(Boolean cookieConsentEnabled) {
+        this.cookieConsentEnabled = cookieConsentEnabled;
     }
 
     public String getDefaultCurrency() {

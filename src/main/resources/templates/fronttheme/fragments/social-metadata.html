@@ -1,0 +1,25 @@
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="metadata">
+    <title th:text="${pageTitle != null ? pageTitle : defaultPageTitle}">Universal e-Commerce Platform</title>
+    <meta name="description" th:if="${pageDescription != null or defaultPageDescription != null}" th:content="${pageDescription != null ? pageDescription : defaultPageDescription}">
+    <meta name="robots" th:if="${pageRobots != null}" th:content="${pageRobots}">
+    <link rel="canonical" th:if="${pageCanonicalUrl != null or defaultCanonicalUrl != null}" th:href="${pageCanonicalUrl != null ? pageCanonicalUrl : defaultCanonicalUrl}">
+
+    <th:block th:if="${marketingSettings != null and marketingSettings.openGraphEnabled}">
+        <meta property="og:type" th:content="${pageOgType != null ? pageOgType : 'website'}">
+        <meta property="og:site_name" th:content="${marketingSettings.ogSiteName != null ? marketingSettings.ogSiteName : marketingSettings.siteName}">
+        <meta property="og:title" th:content="${pageOgTitle != null ? pageOgTitle : (pageTitle != null ? pageTitle : defaultPageTitle)}">
+        <meta property="og:description" th:content="${pageOgDescription != null ? pageOgDescription : (pageDescription != null ? pageDescription : defaultPageDescription)}">
+        <meta property="og:url" th:if="${pageCanonicalUrl != null or defaultCanonicalUrl != null}" th:content="${pageCanonicalUrl != null ? pageCanonicalUrl : defaultCanonicalUrl}">
+        <meta property="og:image" th:if="${pageOgImageUrl != null or defaultOgImageUrl != null}" th:content="${pageOgImageUrl != null ? pageOgImageUrl : defaultOgImageUrl}">
+        <meta property="og:image:secure_url" th:if="${pageOgImageUrl != null or defaultOgImageUrl != null}" th:content="${pageOgImageUrl != null ? pageOgImageUrl : defaultOgImageUrl}">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+        <meta property="fb:app_id" th:if="${marketingSettings.facebookAppId != null}" th:content="${marketingSettings.facebookAppId}">
+
+        <meta name="twitter:card" th:content="${marketingSettings.twitterCardType != null ? marketingSettings.twitterCardType : 'summary_large_image'}">
+        <meta name="twitter:title" th:content="${pageOgTitle != null ? pageOgTitle : (pageTitle != null ? pageTitle : defaultPageTitle)}">
+        <meta name="twitter:description" th:content="${pageOgDescription != null ? pageOgDescription : (pageDescription != null ? pageDescription : defaultPageDescription)}">
+        <meta name="twitter:image" th:if="${pageOgImageUrl != null or defaultOgImageUrl != null}" th:content="${pageOgImageUrl != null ? pageOgImageUrl : defaultOgImageUrl}">
+    </th:block>
+    <script th:if="${pageJsonLd != null}" type="application/ld+json" th:utext="${pageJsonLd}"></script>
+</th:block>

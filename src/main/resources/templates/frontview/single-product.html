@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <div xmlns:th="http://www.thymeleaf.org"
      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-     layout:decorate="front-layout-inner-page">
+     layout:decorate="front-layout-single-product">
     <div layout:fragment="main_content">
         <section  class="breadcrumb_section">
             <div class="container">
@@ -205,22 +205,14 @@
                                                         <span><i class="bi bi-share"></i> Share and earn</span>
                                                         <strong th:text="${customerProductReferralCode}">CODE</strong>
                                                     </div>
-                                                    <div class="input-group product-referral-share-link">
-                                                        <input type="text" class="form-control" th:value="${productShareUrl}" readonly aria-label="Product referral share link" />
-                                                        <a class="btn btn-outline-success" th:href="${productShareWhatsAppUrl}" target="_blank" rel="noopener" title="Share on WhatsApp">
-                                                            <i class="bi bi-whatsapp"></i>
-                                                        </a>
-                                                        <a class="btn btn-outline-primary" th:href="${productShareFacebookUrl}" target="_blank" rel="noopener" title="Share on Facebook">
-                                                            <i class="bi bi-facebook"></i>
-                                                        </a>
-                                                    </div>
                                                 </div>
                                                 <div class="product-referral-share product-referral-share-guest mt-3" th:if="${#strings.isEmpty(customerProductReferralCode)}">
                                                     <div class="product-referral-share-header">
-                                                        <span><i class="bi bi-share"></i> Referral share</span>
+                                                        <span><i class="bi bi-share"></i> Share this product</span>
                                                     </div>
-                                                    <a class="btn btn-outline-danger btn-sm" th:href="@{/public/member-login}">Sign in to create your share link</a>
+                                                    <a class="btn btn-outline-danger btn-sm" th:href="@{/public/member-login}">Sign in to create a referral link</a>
                                                 </div>
+                                                <div th:replace="~{fronttheme/fragments/social-sharing :: share}"></div>
                                                 <script th:if="${hasCatalogVariants}" th:inline="javascript">
                                                     // 2026-05-15: Generic variant selector that resolves real combinations to a catalog variant UUID.
                                                     (() => {
@@ -375,6 +367,18 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            <script th:inline="javascript">
+                                                window.AppTrackingQueue = window.AppTrackingQueue || [];
+                                                window.AppTrackingQueue.push(["viewProduct", {
+                                                    currency: /*[[${trackingProduct.currency}]]*/ "BDT",
+                                                    value: /*[[${trackingProduct.price}]]*/ 0,
+                                                    ecommerce: {
+                                                        currency: /*[[${trackingProduct.currency}]]*/ "BDT",
+                                                        value: /*[[${trackingProduct.price}]]*/ 0,
+                                                        items: [/*[[${trackingProduct}]]*/ {}]
+                                                    }
+                                                }]);
+                                            </script>
                                             <div class="col-xl-5 product-info-sidebar">
                                                 <div class="fs-6"> Delivery Options </div>
                                                 <p>Available Delivery Area: </p>

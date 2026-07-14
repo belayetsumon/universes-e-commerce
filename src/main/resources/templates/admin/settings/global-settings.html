@@ -116,7 +116,7 @@
             <div class="settings-layout">
                 <aside class="settings-nav nav" aria-label="Settings sections" role="tablist">
                     <button class="nav-link active" id="basic-tab" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#basic" aria-controls="basic" aria-selected="true"><i class="bi bi-info-circle"></i><span>Basic Site</span></button>
-                    <button class="nav-link" id="seo-tab" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#seo" aria-controls="seo" aria-selected="false"><i class="bi bi-graph-up"></i><span>SEO</span></button>
+                    <button class="nav-link" id="seo-tab" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#seo" aria-controls="seo" aria-selected="false"><i class="bi bi-broadcast-pin"></i><span>Marketing</span></button>
                     <button class="nav-link" id="store-tab" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#store" aria-controls="store" aria-selected="false"><i class="bi bi-shop"></i><span>Store</span></button>
                     <button class="nav-link" id="payment-tab" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#payment" aria-controls="payment" aria-selected="false"><i class="bi bi-credit-card"></i><span>Payment</span></button>
                     <button class="nav-link" id="delivery-tab" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#delivery" aria-controls="delivery" aria-selected="false"><i class="bi bi-truck"></i><span>Delivery</span></button>
@@ -226,27 +226,176 @@
                             <input type="hidden" th:field="*{version}">
                             <div class="settings-panel-head">
                                 <div>
-                                    <p>SEO Settings</p>
-                                    <h2>Metadata and Tracking</h2>
+                                    <p>Marketing, Analytics &amp; Social Integration</p>
+                                    <h2>Open Graph, Sharing, Consent, and Tracking</h2>
                                 </div>
-                                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i><span>Save SEO</span></button>
+                                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i><span>Save Marketing</span></button>
                             </div>
                             <div class="alert alert-danger settings-alert" th:if="${#fields.hasErrors('*')}">
                                 <ul class="mb-0"><li th:each="err : ${#fields.errors('*')}" th:text="${err}">Validation message</li></ul>
                             </div>
-                            <div class="settings-grid">
-                                <div class="settings-field"><label class="form-label">Meta Title</label><input type="text" th:field="*{metaTitle}" class="form-control" maxlength="200"></div>
-                                <div class="settings-field"><label class="form-label">Meta Keywords</label><input type="text" th:field="*{metaKeywords}" class="form-control" maxlength="500"></div>
-                                <div class="settings-field settings-field--wide"><label class="form-label">Meta Description</label><textarea th:field="*{metaDescription}" class="form-control" rows="3" maxlength="500"></textarea></div>
-                                <div class="settings-field"><label class="form-label">OG Title</label><input type="text" th:field="*{ogTitle}" class="form-control" maxlength="200"></div>
-                                <div class="settings-field"><label class="form-label">Google Analytics ID</label><input type="text" th:field="*{googleAnalyticsId}" class="form-control" placeholder="G-XXXXXXXXXX" maxlength="100"></div>
-                                <div class="settings-field"><label class="form-label">Facebook Pixel ID</label><input type="text" th:field="*{facebookPixelId}" class="form-control" maxlength="100"></div>
-                                <div class="settings-field settings-field--wide"><label class="form-label">OG Description</label><textarea th:field="*{ogDescription}" class="form-control" rows="3" maxlength="500"></textarea></div>
-                                <div class="settings-upload settings-field--wide">
-                                    <label class="form-label">OG Image</label>
-                                    <input type="file" name="ogImageFile" class="form-control" accept="image/jpeg,image/png,image/webp">
-                                    <div class="settings-inline-preview" th:if="${settings.ogImage}">
-                                        <img th:src="${settings.ogImage}" class="settings-media-preview settings-media-preview--og-image" alt="OG image">
+                            <div class="settings-mode-guide">
+                                <div>
+                                    <span class="settings-mode-icon"><i class="bi bi-box-arrow-up-right"></i></span>
+                                    <strong>Active tracking mode</strong>
+                                    <small th:text="${settings.trackingImplementationMode != null and settings.trackingImplementationMode.name() == 'GOOGLE_TAG_MANAGER'} ? 'Google Tag Manager dataLayer' : 'Direct GA4 and Pixel scripts'">Direct GA4 and Pixel scripts</small>
+                                </div>
+                                <div>
+                                    <span class="settings-mode-icon"><i class="bi bi-shield-lock"></i></span>
+                                    <strong>Consent gate</strong>
+                                    <small th:text="${settings.cookieConsentEnabled} ? 'Analytics and marketing wait for consent' : 'Consent banner disabled'">Analytics and marketing wait for consent</small>
+                                </div>
+                                <div>
+                                    <span class="settings-mode-icon"><i class="bi bi-check2-circle"></i></span>
+                                    <strong>Duplicate prevention</strong>
+                                    <small>Direct scripts are skipped when GTM mode is active.</small>
+                                </div>
+                            </div>
+
+                            <div class="settings-card-stack">
+                                <div class="settings-card-section">
+                                    <h3>Open Graph</h3>
+                                    <div class="settings-grid">
+                                        <div class="form-check form-switch settings-field"><input class="form-check-input" type="checkbox" th:field="*{openGraphEnabled}"><label class="form-check-label">Enable Open Graph</label></div>
+                                        <div class="settings-field"><label class="form-label">Default Open Graph Title</label><input type="text" th:field="*{ogTitle}" class="form-control" maxlength="200"></div>
+                                        <div class="settings-field"><label class="form-label">Site Name</label><input type="text" th:field="*{ogSiteName}" class="form-control" maxlength="150" placeholder="Your store name"></div>
+                                        <div class="settings-field"><label class="form-label">Public Website Base URL</label><input type="url" th:field="*{publicBaseUrl}" class="form-control" placeholder="https://example.com" maxlength="500"></div>
+                                        <div class="settings-field"><label class="form-label">Facebook App ID</label><input type="text" th:field="*{facebookAppId}" class="form-control" inputmode="numeric" maxlength="100"></div>
+                                        <div class="settings-field"><label class="form-label">Default Twitter Card Type</label><select th:field="*{twitterCardType}" class="form-select"><option value="summary_large_image">summary_large_image</option><option value="summary">summary</option></select></div>
+                                        <div class="settings-field settings-field--wide"><label class="form-label">Default Open Graph Description</label><textarea th:field="*{ogDescription}" class="form-control" rows="3" maxlength="500"></textarea></div>
+                                        <div class="settings-upload settings-field--wide">
+                                            <label class="form-label">Default Open Graph Image</label>
+                                            <input type="file" name="ogImageFile" class="form-control" accept="image/jpeg,image/png,image/webp">
+                                            <div class="form-text">Recommended 1200 x 630 JPG, PNG, or WEBP. Public pages use this when a page-specific image is missing.</div>
+                                            <div class="settings-inline-preview" th:if="${settings.ogImage}">
+                                                <img th:src="${settings.ogImage}" class="settings-media-preview settings-media-preview--og-image" alt="OG image">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="settings-card-section">
+                                    <h3>SEO Defaults</h3>
+                                    <div class="settings-grid">
+                                        <div class="settings-field"><label class="form-label">Meta Title</label><input type="text" th:field="*{metaTitle}" class="form-control" maxlength="200"></div>
+                                        <div class="settings-field"><label class="form-label">Meta Keywords</label><input type="text" th:field="*{metaKeywords}" class="form-control" maxlength="500"></div>
+                                        <div class="settings-field settings-field--wide"><label class="form-label">Meta Description</label><textarea th:field="*{metaDescription}" class="form-control" rows="3" maxlength="500"></textarea></div>
+                                    </div>
+                                </div>
+
+                                <div class="settings-card-section">
+                                    <h3>Social Sharing</h3>
+                                    <div class="settings-grid settings-grid--compact">
+                                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" th:field="*{socialSharingEnabled}"><label class="form-check-label">Enable social sharing</label></div>
+                                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" th:field="*{facebookSharingEnabled}"><label class="form-check-label">Facebook</label></div>
+                                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" th:field="*{messengerSharingEnabled}"><label class="form-check-label">Messenger</label></div>
+                                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" th:field="*{whatsappSharingEnabled}"><label class="form-check-label">WhatsApp</label></div>
+                                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" th:field="*{linkedinSharingEnabled}"><label class="form-check-label">LinkedIn</label></div>
+                                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" th:field="*{twitterSharingEnabled}"><label class="form-check-label">X/Twitter</label></div>
+                                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" th:field="*{emailSharingEnabled}"><label class="form-check-label">Email</label></div>
+                                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" th:field="*{copyLinkSharingEnabled}"><label class="form-check-label">Copy link</label></div>
+                                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" th:field="*{nativeShareEnabled}"><label class="form-check-label">Native device sharing</label></div>
+                                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" th:field="*{referralLinksEnabled}"><label class="form-check-label">Referral links for customers</label></div>
+                                        <div class="settings-field"><label class="form-label">Referral Cookie Expiry Days</label><input type="number" th:field="*{referralCookieExpiryDays}" class="form-control" min="1"></div>
+                                    </div>
+                                </div>
+
+                                <div class="settings-card-section">
+                                    <h3>Facebook Pixel and Conversion API</h3>
+                                    <div class="settings-grid">
+                                        <div class="form-check form-switch settings-field"><input class="form-check-input" type="checkbox" th:field="*{facebookPixelEnabled}"><label class="form-check-label">Enable Facebook Pixel</label></div>
+                                        <div class="form-check form-switch settings-field"><input class="form-check-input" type="checkbox" th:field="*{facebookBrowserTrackingEnabled}"><label class="form-check-label">Enable browser tracking</label></div>
+                                        <div class="settings-field"><label class="form-label">Facebook Pixel ID</label><input type="text" th:field="*{facebookPixelId}" class="form-control" placeholder="123456789012345" inputmode="numeric" maxlength="100"></div>
+                                        <div class="form-check form-switch settings-field"><input class="form-check-input" type="checkbox" th:field="*{facebookConversionApiEnabled}"><label class="form-check-label">Enable Conversion API</label></div>
+                                        <div class="settings-field"><label class="form-label">Conversion API Access Token</label><input type="password" th:field="*{facebookConversionApiAccessToken}" class="form-control" autocomplete="new-password" maxlength="500"><div class="form-text">Masked after saving. Leave masked to keep the current token.</div></div>
+                                        <div class="settings-field"><label class="form-label">Facebook Test Event Code</label><input type="text" th:field="*{facebookTestEventCode}" class="form-control" maxlength="100"></div>
+                                        <div class="form-check form-switch settings-field"><input class="form-check-input" type="checkbox" th:field="*{facebookDebugMode}"><label class="form-check-label">Debug mode</label></div>
+                                    </div>
+                                </div>
+
+                                <div class="settings-card-section">
+                                    <h3>Google Analytics 4 and Tag Manager</h3>
+                                    <div class="settings-grid">
+                                        <div class="form-check form-switch settings-field"><input class="form-check-input" type="checkbox" th:field="*{googleAnalyticsEnabled}"><label class="form-check-label">Enable Google Analytics</label></div>
+                                        <div class="settings-field"><label class="form-label">GA4 Measurement ID</label><input type="text" th:field="*{googleAnalyticsId}" class="form-control" placeholder="G-XXXXXXXXXX" maxlength="100"></div>
+                                        <div class="form-check form-switch settings-field"><input class="form-check-input" type="checkbox" th:field="*{ga4EnhancedEcommerceEnabled}"><label class="form-check-label">Enhanced eCommerce</label></div>
+                                        <div class="form-check form-switch settings-field"><input class="form-check-input" type="checkbox" th:field="*{ga4DebugMode}"><label class="form-check-label">GA4 debug mode</label></div>
+                                        <div class="form-check form-switch settings-field"><input class="form-check-input" type="checkbox" th:field="*{googleConsentModeEnabled}"><label class="form-check-label">Google Consent Mode</label></div>
+                                        <div class="form-check form-switch settings-field"><input class="form-check-input" type="checkbox" th:field="*{googleTagManagerEnabled}"><label class="form-check-label">Enable Google Tag Manager</label></div>
+                                        <div class="settings-field"><label class="form-label">GTM Container ID</label><input type="text" th:field="*{gtmContainerId}" class="form-control" placeholder="GTM-XXXXXXX" maxlength="50"></div>
+                                        <div class="settings-field"><label class="form-label">Server-side GTM URL</label><input type="url" th:field="*{serverSideGtmUrl}" class="form-control" placeholder="https://gtm.example.com" maxlength="500"></div>
+                                        <div class="settings-field"><label class="form-label">Tracking Implementation Mode</label><select th:field="*{trackingImplementationMode}" class="form-select"><option value="DIRECT">Direct GA4 and Pixel</option><option value="GOOGLE_TAG_MANAGER">Google Tag Manager dataLayer</option></select></div>
+                                        <div class="form-check form-switch settings-field"><input class="form-check-input" type="checkbox" th:field="*{cookieConsentEnabled}"><label class="form-check-label">Enable consent banner</label></div>
+                                    </div>
+                                </div>
+
+                                <div class="settings-card-section">
+                                    <h3>Diagnostics and Preview</h3>
+                                    <div class="settings-diagnostics-grid">
+                                        <div class="settings-diagnostic-card">
+                                            <span class="settings-diagnostic-icon"><i class="bi bi-card-heading"></i></span>
+                                            <div>
+                                                <strong>Open Graph preview</strong>
+                                                <p th:text="${settings.ogTitle != null ? settings.ogTitle : (settings.metaTitle != null ? settings.metaTitle : settings.siteName)}">Store title</p>
+                                                <small th:text="${settings.ogDescription != null ? settings.ogDescription : settings.metaDescription}">Description</small>
+                                            </div>
+                                        </div>
+                                        <div class="settings-diagnostic-card">
+                                            <span class="settings-diagnostic-icon"><i class="bi bi-share"></i></span>
+                                            <div>
+                                                <strong>Social-share preview</strong>
+                                                <p th:text="${settings.socialSharingEnabled} ? 'Enabled for public pages' : 'Disabled'">Enabled</p>
+                                                <small th:text="${settings.referralLinksEnabled} ? 'Referral links enabled for registered customers' : 'Referral links disabled'">Referral links enabled</small>
+                                            </div>
+                                        </div>
+                                        <div class="settings-diagnostic-card">
+                                            <span class="settings-diagnostic-icon"><i class="bi bi-activity"></i></span>
+                                            <div>
+                                                <strong>Enabled providers</strong>
+                                                <p>
+                                                    <span class="badge text-bg-primary me-1" th:if="${settings.googleAnalyticsEnabled}">GA4</span>
+                                                    <span class="badge text-bg-info me-1" th:if="${settings.googleTagManagerEnabled}">GTM</span>
+                                                    <span class="badge text-bg-danger me-1" th:if="${settings.facebookPixelEnabled}">Pixel</span>
+                                                    <span class="badge text-bg-dark me-1" th:if="${settings.facebookConversionApiEnabled}">CAPI</span>
+                                                    <span class="text-muted" th:if="${!settings.googleAnalyticsEnabled and !settings.googleTagManagerEnabled and !settings.facebookPixelEnabled and !settings.facebookConversionApiEnabled}">No providers enabled</span>
+                                                </p>
+                                                <small th:text="${settings.trackingImplementationMode != null and settings.trackingImplementationMode.name() == 'GOOGLE_TAG_MANAGER'} ? 'Events go to dataLayer only' : 'Direct scripts load after consent'">Direct scripts load after consent</small>
+                                            </div>
+                                        </div>
+                                        <div class="settings-diagnostic-card"
+                                             th:classappend="${settings.publicBaseUrl != null and #strings.startsWith(settings.publicBaseUrl, 'https://')} ? '' : ' settings-diagnostic-card--warning'">
+                                            <span class="settings-diagnostic-icon"><i class="bi bi-globe2"></i></span>
+                                            <div>
+                                                <strong>Public base URL</strong>
+                                                <p th:text="${settings.publicBaseUrl != null ? settings.publicBaseUrl : 'Not configured'}">https://example.com</p>
+                                                <small>Required for absolute canonical, Open Graph, and share URLs.</small>
+                                            </div>
+                                        </div>
+                                        <div class="settings-diagnostic-card"
+                                             th:classappend="${settings.ogImage != null} ? '' : ' settings-diagnostic-card--warning'">
+                                            <span class="settings-diagnostic-icon"><i class="bi bi-image"></i></span>
+                                            <div>
+                                                <strong>Default Open Graph image</strong>
+                                                <p th:text="${settings.ogImage != null ? 'Configured' : 'Missing'}">Configured</p>
+                                                <small>Used when product, category, or article images are unavailable.</small>
+                                            </div>
+                                        </div>
+                                        <div class="settings-diagnostic-card">
+                                            <span class="settings-diagnostic-icon"><i class="bi bi-shield-check"></i></span>
+                                            <div>
+                                                <strong>Consent status</strong>
+                                                <p th:text="${settings.cookieConsentEnabled} ? 'Consent banner enabled' : 'Consent banner disabled'">Consent banner enabled</p>
+                                                <small th:text="${settings.googleConsentModeEnabled} ? 'Google Consent Mode enabled' : 'Google Consent Mode disabled'">Google Consent Mode enabled</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="settings-diagnostic-actions">
+                                        <a class="btn btn-outline-primary btn-sm" th:href="@{/public/product}" target="_blank" rel="noopener">
+                                            <i class="bi bi-box-arrow-up-right"></i><span>Open Public Products</span>
+                                        </a>
+                                        <a class="btn btn-outline-secondary btn-sm" th:href="@{/admin/marketing/share-analytics}">
+                                            <i class="bi bi-bar-chart"></i><span>View Share Analytics</span>
+                                        </a>
                                     </div>
                                 </div>
                             </div>

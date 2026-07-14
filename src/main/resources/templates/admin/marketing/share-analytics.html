@@ -1,0 +1,72 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <div class="container-fluid py-3">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <p class="text-uppercase text-muted fw-bold small mb-1">Marketing analytics</p>
+                        <h1 class="h4 mb-1">Social Share Analytics</h1>
+                        <p class="text-muted mb-0">Share initiations, referral-aware sharing, and public marketing page performance.</p>
+                    </div>
+                    <form class="d-flex flex-wrap gap-2" method="get">
+                        <input type="date" name="startDate" class="form-control" th:value="${startDate}">
+                        <input type="date" name="endDate" class="form-control" th:value="${endDate}">
+                        <button class="btn btn-primary" type="submit"><i class="bi bi-funnel"></i><span>Filter</span></button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-3"><div class="card shadow-sm h-100"><div class="card-body"><span class="text-muted small">Total shares</span><h2 class="h3 mb-0" th:text="${summary.totalShares()}">0</h2></div></div></div>
+                <div class="col-md-3"><div class="card shadow-sm h-100"><div class="card-body"><span class="text-muted small">Referral shares</span><h2 class="h3 mb-0" th:text="${summary.referralShares()}">0</h2></div></div></div>
+                <div class="col-md-3"><div class="card shadow-sm h-100"><div class="card-body"><span class="text-muted small">Registered shares</span><h2 class="h3 mb-0" th:text="${summary.registeredShares()}">0</h2></div></div></div>
+                <div class="col-md-3"><div class="card shadow-sm h-100"><div class="card-body"><span class="text-muted small">Guest shares</span><h2 class="h3 mb-0" th:text="${summary.guestShares()}">0</h2></div></div></div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-lg-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-white fw-bold">Shares by Platform</div>
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <tbody><tr th:each="row : ${sharesByPlatform}"><td th:text="${row.label}">FACEBOOK</td><td class="text-end fw-bold" th:text="${row.total}">0</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-white fw-bold">Shares by Page Type</div>
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <tbody><tr th:each="row : ${sharesByPageType}"><td th:text="${row.label}">PRODUCT</td><td class="text-end fw-bold" th:text="${row.total}">0</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-white fw-bold">Most Shared Products</div>
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <tbody><tr th:each="row : ${mostSharedProducts}"><td th:text="${row.label}">product-code</td><td class="text-end fw-bold" th:text="${row.total}">0</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-white fw-bold">Most Shared Vendors</div>
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <tbody><tr th:each="row : ${mostSharedVendors}"><td th:text="${row.label}">vendor-code</td><td class="text-end fw-bold" th:text="${row.total}">0</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

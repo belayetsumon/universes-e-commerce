@@ -14,6 +14,7 @@ import com.ecommerce.app.module.settings.form.StoreSettingsForm;
 import com.ecommerce.app.module.settings.model.GlobalSettings;
 import com.ecommerce.app.module.settings.model.SalesOrderMode;
 import com.ecommerce.app.module.settings.model.StoreMode;
+import com.ecommerce.app.module.settings.model.TrackingImplementationMode;
 import com.ecommerce.app.module.settings.repository.GlobalSettingsRepository;
 import com.ecommerce.app.services.StorageProperties;
 import com.ecommerce.app.vendor.repository.VendorprofileRepository;
@@ -48,6 +49,10 @@ public class GlobalSettingsService {
     private static final int MAX_IMAGE_WIDTH = 8000;
     private static final int MAX_IMAGE_HEIGHT = 8000;
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
+    private static final Pattern GA4_MEASUREMENT_ID_PATTERN = Pattern.compile("^G-[A-Z0-9]{6,15}$");
+    private static final Pattern GTM_CONTAINER_ID_PATTERN = Pattern.compile("^GTM-[A-Z0-9]{4,12}$");
+    private static final Pattern FACEBOOK_PIXEL_ID_PATTERN = Pattern.compile("^\\d{5,30}$");
+    private static final Pattern FACEBOOK_APP_ID_PATTERN = Pattern.compile("^\\d{5,30}$");
     private static final Set<String> SETTINGS_IMAGE_CONTENT_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
     private static final Set<String> SETTINGS_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
     private static final Set<String> SETTINGS_IMAGE_FORMATS = Set.of("jpeg", "png", "webp");
@@ -455,6 +460,37 @@ public class GlobalSettingsService {
         settings.setOgDescription(form.getOgDescription());
         settings.setGoogleAnalyticsId(form.getGoogleAnalyticsId());
         settings.setFacebookPixelId(form.getFacebookPixelId());
+        settings.setOpenGraphEnabled(form.getOpenGraphEnabled());
+        settings.setOgSiteName(form.getOgSiteName());
+        settings.setPublicBaseUrl(form.getPublicBaseUrl());
+        settings.setFacebookAppId(form.getFacebookAppId());
+        settings.setTwitterCardType(form.getTwitterCardType());
+        settings.setSocialSharingEnabled(form.getSocialSharingEnabled());
+        settings.setFacebookSharingEnabled(form.getFacebookSharingEnabled());
+        settings.setMessengerSharingEnabled(form.getMessengerSharingEnabled());
+        settings.setWhatsappSharingEnabled(form.getWhatsappSharingEnabled());
+        settings.setLinkedinSharingEnabled(form.getLinkedinSharingEnabled());
+        settings.setTwitterSharingEnabled(form.getTwitterSharingEnabled());
+        settings.setEmailSharingEnabled(form.getEmailSharingEnabled());
+        settings.setCopyLinkSharingEnabled(form.getCopyLinkSharingEnabled());
+        settings.setNativeShareEnabled(form.getNativeShareEnabled());
+        settings.setReferralLinksEnabled(form.getReferralLinksEnabled());
+        settings.setReferralCookieExpiryDays(form.getReferralCookieExpiryDays());
+        settings.setFacebookPixelEnabled(form.getFacebookPixelEnabled());
+        settings.setFacebookBrowserTrackingEnabled(form.getFacebookBrowserTrackingEnabled());
+        settings.setFacebookConversionApiEnabled(form.getFacebookConversionApiEnabled());
+        settings.setFacebookConversionApiAccessToken(form.getFacebookConversionApiAccessToken());
+        settings.setFacebookTestEventCode(form.getFacebookTestEventCode());
+        settings.setFacebookDebugMode(form.getFacebookDebugMode());
+        settings.setGoogleAnalyticsEnabled(form.getGoogleAnalyticsEnabled());
+        settings.setGa4EnhancedEcommerceEnabled(form.getGa4EnhancedEcommerceEnabled());
+        settings.setGa4DebugMode(form.getGa4DebugMode());
+        settings.setGoogleConsentModeEnabled(form.getGoogleConsentModeEnabled());
+        settings.setGoogleTagManagerEnabled(form.getGoogleTagManagerEnabled());
+        settings.setGtmContainerId(form.getGtmContainerId());
+        settings.setServerSideGtmUrl(form.getServerSideGtmUrl());
+        settings.setTrackingImplementationMode(form.getTrackingImplementationMode());
+        settings.setCookieConsentEnabled(form.getCookieConsentEnabled());
         return settings;
     }
 
@@ -585,6 +621,21 @@ public class GlobalSettingsService {
         max(source.getOgDescription(), 500, "OG description", errors);
         max(source.getGoogleAnalyticsId(), 100, "Google Analytics ID", errors);
         max(source.getFacebookPixelId(), 100, "Facebook Pixel ID", errors);
+        max(source.getOgSiteName(), 150, "Open Graph site name", errors);
+        max(source.getPublicBaseUrl(), 500, "Public website base URL", errors);
+        max(source.getFacebookAppId(), 100, "Facebook App ID", errors);
+        max(source.getTwitterCardType(), 50, "Twitter card type", errors);
+        httpsUrl(source.getPublicBaseUrl(), "Public website base URL", errors);
+        httpsUrl(source.getServerSideGtmUrl(), "Server-side GTM URL", errors);
+        max(source.getGtmContainerId(), 50, "GTM container ID", errors);
+        max(source.getFacebookConversionApiAccessToken(), 500, "Conversion API access token", errors);
+        max(source.getFacebookTestEventCode(), 100, "Facebook test event code", errors);
+        positive(source.getReferralCookieExpiryDays(), "Referral cookie expiry days", errors);
+        trackingMode(source, errors);
+        measurementId(source.getGoogleAnalyticsId(), source.getGoogleAnalyticsEnabled(), errors);
+        gtmId(source.getGtmContainerId(), source.getGoogleTagManagerEnabled(), errors);
+        facebookPixel(source.getFacebookPixelId(), source.getFacebookPixelEnabled(), errors);
+        facebookAppId(source.getFacebookAppId(), errors);
     }
 
     private void validateStore(GlobalSettings source, List<String> errors) {
@@ -637,11 +688,11 @@ public class GlobalSettingsService {
     }
 
     private void validateSocial(GlobalSettings source, List<String> errors) {
-        url(source.getFacebookUrl(), "Facebook URL", errors);
-        url(source.getYoutubeUrl(), "YouTube URL", errors);
-        url(source.getInstagramUrl(), "Instagram URL", errors);
-        url(source.getLinkedinUrl(), "LinkedIn URL", errors);
-        url(source.getTwitterUrl(), "Twitter/X URL", errors);
+        httpsUrl(source.getFacebookUrl(), "Facebook URL", errors);
+        httpsUrl(source.getYoutubeUrl(), "YouTube URL", errors);
+        httpsUrl(source.getInstagramUrl(), "Instagram URL", errors);
+        httpsUrl(source.getLinkedinUrl(), "LinkedIn URL", errors);
+        httpsUrl(source.getTwitterUrl(), "Twitter/X URL", errors);
         max(source.getWhatsappNumber(), 50, "WhatsApp number", errors);
     }
 
@@ -709,6 +760,39 @@ public class GlobalSettingsService {
         target.setOgDescription(cleanText(source.getOgDescription()));
         target.setGoogleAnalyticsId(cleanText(source.getGoogleAnalyticsId()));
         target.setFacebookPixelId(cleanText(source.getFacebookPixelId()));
+        target.setOpenGraphEnabled(checked(source.getOpenGraphEnabled()));
+        target.setOgSiteName(cleanText(source.getOgSiteName()));
+        target.setPublicBaseUrl(normalizeBaseUrl(source.getPublicBaseUrl()));
+        target.setFacebookAppId(cleanText(source.getFacebookAppId()));
+        target.setTwitterCardType(defaultText(source.getTwitterCardType(), "summary_large_image"));
+        target.setSocialSharingEnabled(checked(source.getSocialSharingEnabled()));
+        target.setFacebookSharingEnabled(checked(source.getFacebookSharingEnabled()));
+        target.setMessengerSharingEnabled(checked(source.getMessengerSharingEnabled()));
+        target.setWhatsappSharingEnabled(checked(source.getWhatsappSharingEnabled()));
+        target.setLinkedinSharingEnabled(checked(source.getLinkedinSharingEnabled()));
+        target.setTwitterSharingEnabled(checked(source.getTwitterSharingEnabled()));
+        target.setEmailSharingEnabled(checked(source.getEmailSharingEnabled()));
+        target.setCopyLinkSharingEnabled(checked(source.getCopyLinkSharingEnabled()));
+        target.setNativeShareEnabled(checked(source.getNativeShareEnabled()));
+        target.setReferralLinksEnabled(checked(source.getReferralLinksEnabled()));
+        target.setReferralCookieExpiryDays(positiveInteger(source.getReferralCookieExpiryDays(), 30));
+        target.setFacebookPixelEnabled(checked(source.getFacebookPixelEnabled()));
+        target.setFacebookBrowserTrackingEnabled(checked(source.getFacebookBrowserTrackingEnabled()));
+        target.setFacebookConversionApiEnabled(checked(source.getFacebookConversionApiEnabled()));
+        target.setFacebookConversionApiAccessToken(resolveSecret(source.getFacebookConversionApiAccessToken(), target.getFacebookConversionApiAccessToken()));
+        target.setFacebookTestEventCode(cleanText(source.getFacebookTestEventCode()));
+        target.setFacebookDebugMode(checked(source.getFacebookDebugMode()));
+        target.setGoogleAnalyticsEnabled(checked(source.getGoogleAnalyticsEnabled()));
+        target.setGa4EnhancedEcommerceEnabled(checked(source.getGa4EnhancedEcommerceEnabled()));
+        target.setGa4DebugMode(checked(source.getGa4DebugMode()));
+        target.setGoogleConsentModeEnabled(checked(source.getGoogleConsentModeEnabled()));
+        target.setGoogleTagManagerEnabled(checked(source.getGoogleTagManagerEnabled()));
+        target.setGtmContainerId(cleanText(source.getGtmContainerId()));
+        target.setServerSideGtmUrl(normalizeBaseUrl(source.getServerSideGtmUrl()));
+        target.setTrackingImplementationMode(source.getTrackingImplementationMode() == null
+                ? TrackingImplementationMode.DIRECT
+                : source.getTrackingImplementationMode());
+        target.setCookieConsentEnabled(checked(source.getCookieConsentEnabled()));
     }
 
     private void applyStore(GlobalSettings source, GlobalSettings target) {
@@ -936,6 +1020,32 @@ public class GlobalSettingsService {
         settings.setMaximumOrderAmount(optionalNonNegativeAmount(settings.getMaximumOrderAmount()));
         settings.setStoreMode(settings.getStoreMode() != null ? settings.getStoreMode() : StoreMode.MARKETPLACE);
         settings.setSalesOrderMode(settings.getSalesOrderMode() != null ? settings.getSalesOrderMode() : SalesOrderMode.SPLIT_BY_VENDOR);
+        settings.setOpenGraphEnabled(checked(settings.getOpenGraphEnabled()));
+        settings.setTwitterCardType(defaultText(settings.getTwitterCardType(), "summary_large_image"));
+        settings.setSocialSharingEnabled(checked(settings.getSocialSharingEnabled()));
+        settings.setFacebookSharingEnabled(checked(settings.getFacebookSharingEnabled()));
+        settings.setMessengerSharingEnabled(checked(settings.getMessengerSharingEnabled()));
+        settings.setWhatsappSharingEnabled(checked(settings.getWhatsappSharingEnabled()));
+        settings.setLinkedinSharingEnabled(checked(settings.getLinkedinSharingEnabled()));
+        settings.setTwitterSharingEnabled(checked(settings.getTwitterSharingEnabled()));
+        settings.setEmailSharingEnabled(checked(settings.getEmailSharingEnabled()));
+        settings.setCopyLinkSharingEnabled(checked(settings.getCopyLinkSharingEnabled()));
+        settings.setNativeShareEnabled(checked(settings.getNativeShareEnabled()));
+        settings.setReferralLinksEnabled(checked(settings.getReferralLinksEnabled()));
+        settings.setReferralCookieExpiryDays(positiveInteger(settings.getReferralCookieExpiryDays(), 30));
+        settings.setFacebookPixelEnabled(checked(settings.getFacebookPixelEnabled()));
+        settings.setFacebookBrowserTrackingEnabled(checked(settings.getFacebookBrowserTrackingEnabled()));
+        settings.setFacebookConversionApiEnabled(checked(settings.getFacebookConversionApiEnabled()));
+        settings.setFacebookDebugMode(checked(settings.getFacebookDebugMode()));
+        settings.setGoogleAnalyticsEnabled(checked(settings.getGoogleAnalyticsEnabled()));
+        settings.setGa4EnhancedEcommerceEnabled(checked(settings.getGa4EnhancedEcommerceEnabled()));
+        settings.setGa4DebugMode(checked(settings.getGa4DebugMode()));
+        settings.setGoogleConsentModeEnabled(checked(settings.getGoogleConsentModeEnabled()));
+        settings.setGoogleTagManagerEnabled(checked(settings.getGoogleTagManagerEnabled()));
+        settings.setTrackingImplementationMode(settings.getTrackingImplementationMode() == null
+                ? TrackingImplementationMode.DIRECT
+                : settings.getTrackingImplementationMode());
+        settings.setCookieConsentEnabled(checked(settings.getCookieConsentEnabled()));
         settings.setFreeDeliveryMinAmount(nonNegativeAmount(settings.getFreeDeliveryMinAmount(), BigDecimal.ZERO));
         settings.setInsideDhakaDeliveryCharge(nonNegativeAmount(settings.getInsideDhakaDeliveryCharge(), BigDecimal.ZERO));
         settings.setOutsideDhakaDeliveryCharge(nonNegativeAmount(settings.getOutsideDhakaDeliveryCharge(), BigDecimal.ZERO));
@@ -1029,6 +1139,78 @@ public class GlobalSettingsService {
         }
     }
 
+    private void httpsUrl(String value, String label, List<String> errors) {
+        String cleanValue = cleanText(value);
+        if (cleanValue == null) {
+            return;
+        }
+        if (!cleanValue.startsWith("https://")) {
+            errors.add(label + " must be a valid HTTPS URL.");
+            return;
+        }
+        String lowerValue = cleanValue.toLowerCase(Locale.ROOT);
+        if (lowerValue.contains("localhost")
+                || lowerValue.contains("127.0.0.1")
+                || lowerValue.contains("0.0.0.0")
+                || lowerValue.matches("https://10\\..*")
+                || lowerValue.matches("https://172\\.(1[6-9]|2[0-9]|3[0-1])\\..*")
+                || lowerValue.matches("https://192\\.168\\..*")) {
+            errors.add(label + " cannot point to localhost, private IP addresses, or internal ports.");
+        }
+    }
+
+    private void measurementId(String value, Boolean enabled, List<String> errors) {
+        String cleanValue = cleanText(value);
+        if (Boolean.TRUE.equals(enabled) && cleanValue == null) {
+            errors.add("GA4 Measurement ID is required when Google Analytics is enabled.");
+            return;
+        }
+        if (cleanValue != null && !GA4_MEASUREMENT_ID_PATTERN.matcher(cleanValue).matches()) {
+            errors.add("GA4 Measurement ID must match G-XXXXXXXXXX.");
+        }
+    }
+
+    private void gtmId(String value, Boolean enabled, List<String> errors) {
+        String cleanValue = cleanText(value);
+        if (Boolean.TRUE.equals(enabled) && cleanValue == null) {
+            errors.add("GTM Container ID is required when Google Tag Manager is enabled.");
+            return;
+        }
+        if (cleanValue != null && !GTM_CONTAINER_ID_PATTERN.matcher(cleanValue).matches()) {
+            errors.add("GTM Container ID must match GTM-XXXXXXX.");
+        }
+    }
+
+    private void facebookPixel(String value, Boolean enabled, List<String> errors) {
+        String cleanValue = cleanText(value);
+        if (Boolean.TRUE.equals(enabled) && cleanValue == null) {
+            errors.add("Facebook Pixel ID is required when Facebook Pixel is enabled.");
+            return;
+        }
+        if (cleanValue != null && !FACEBOOK_PIXEL_ID_PATTERN.matcher(cleanValue).matches()) {
+            errors.add("Facebook Pixel ID must be numeric.");
+        }
+    }
+
+    private void facebookAppId(String value, List<String> errors) {
+        String cleanValue = cleanText(value);
+        if (cleanValue != null && !FACEBOOK_APP_ID_PATTERN.matcher(cleanValue).matches()) {
+            errors.add("Facebook App ID must be numeric.");
+        }
+    }
+
+    private void trackingMode(GlobalSettings source, List<String> errors) {
+        if (source.getTrackingImplementationMode() == null) {
+            errors.add("Tracking implementation mode is required.");
+            return;
+        }
+        if (source.getTrackingImplementationMode() == TrackingImplementationMode.GOOGLE_TAG_MANAGER
+                && Boolean.TRUE.equals(source.getGoogleTagManagerEnabled())
+                && cleanText(source.getGtmContainerId()) == null) {
+            errors.add("GTM Container ID is required when tracking mode is Google Tag Manager.");
+        }
+    }
+
     private void max(String value, int length, String label, List<String> errors) {
         String cleanValue = cleanText(value);
         if (cleanValue != null && cleanValue.length() > length) {
@@ -1082,6 +1264,25 @@ public class GlobalSettingsService {
         }
         String cleanValue = value.trim();
         return cleanValue.isEmpty() ? null : cleanValue;
+    }
+
+    private String normalizeBaseUrl(String value) {
+        String cleanValue = cleanText(value);
+        if (cleanValue == null) {
+            return null;
+        }
+        while (cleanValue.endsWith("/")) {
+            cleanValue = cleanValue.substring(0, cleanValue.length() - 1);
+        }
+        return cleanValue;
+    }
+
+    private String resolveSecret(String submittedValue, String existingValue) {
+        String cleanValue = cleanText(submittedValue);
+        if (cleanValue == null || cleanValue.matches("\\*{4,}")) {
+            return existingValue;
+        }
+        return cleanValue;
     }
 
     private Boolean checked(Boolean value) {
