@@ -1,0 +1,115 @@
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <div layout:fragment="main_content">
+        <section class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h4 class="mb-1"><i class="bi bi-journal-richtext me-2 text-primary"></i><span th:text="${blogForm.id == null ? 'Create Blog Article' : 'Edit Blog Article'}">Blog Article</span></h4>
+                <p class="text-muted mb-0">Content, SEO, workflow, visibility, and marketing metadata.</p>
+            </div>
+            <a class="btn btn-outline-secondary" th:href="@{/admin/blog}"><i class="bi bi-arrow-left me-1"></i>Back</a>
+        </section>
+        <div th:replace="admin/blog/fragments :: tabs('posts')"></div>
+        <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger"><div th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div></div>
+
+        <form method="post" th:action="@{/admin/blog/save}" th:object="${blogForm}">
+            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input type="hidden" th:field="*{id}">
+            <input type="hidden" th:field="*{version}">
+            <div class="row g-3">
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Title</label>
+                                <input class="form-control form-control-lg" th:field="*{title}">
+                                <div class="text-danger small" th:errors="*{title}"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Slug</label>
+                                <input class="form-control" th:field="*{slug}">
+                                <div class="text-danger small" th:errors="*{slug}"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Excerpt</label>
+                                <textarea class="form-control" rows="3" th:field="*{excerpt}"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Content</label>
+                                <textarea id="blogContentEditor" class="form-control" rows="18" th:field="*{contentHtml}"></textarea>
+                                <div class="text-danger small" th:errors="*{contentHtml}"></div>
+                            </div>
+                            <div class="mb-0">
+                                <label class="form-label">Change Summary</label>
+                                <input class="form-control" th:field="*{changeSummary}" placeholder="What changed in this revision?">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-header bg-white fw-semibold">SEO</div>
+                        <div class="card-body row g-3">
+                            <div class="col-md-6"><label class="form-label">SEO Title</label><input class="form-control" th:field="*{seoTitle}"></div>
+                            <div class="col-md-6"><label class="form-label">Canonical URL</label><input class="form-control" th:field="*{canonicalUrl}"></div>
+                            <div class="col-12"><label class="form-label">Meta Description</label><textarea class="form-control" rows="2" th:field="*{metaDescription}"></textarea></div>
+                            <div class="col-md-6"><label class="form-label">Meta Keywords</label><input class="form-control" th:field="*{metaKeywords}"></div>
+                            <div class="col-md-6"><label class="form-label">Robots Meta</label><input class="form-control" th:field="*{robotsMeta}"></div>
+                            <div class="col-md-6"><label class="form-label">Open Graph Title</label><input class="form-control" th:field="*{openGraphTitle}"></div>
+                            <div class="col-md-6"><label class="form-label">Open Graph Image</label><input class="form-control" th:field="*{openGraphImage}"></div>
+                            <div class="col-12"><label class="form-label">Open Graph Description</label><textarea class="form-control" rows="2" th:field="*{openGraphDescription}"></textarea></div>
+                            <div class="col-md-6"><label class="form-label">Twitter Card</label><input class="form-control" th:field="*{twitterCard}"></div>
+                            <div class="col-12"><label class="form-label">JSON-LD</label><textarea class="form-control font-monospace" rows="4" th:field="*{jsonLd}"></textarea></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-header bg-white fw-semibold">Workflow</div>
+                        <div class="card-body">
+                            <div class="mb-3"><label class="form-label">Status</label><select class="form-select" th:field="*{status}"><option th:each="status : ${blogStatuses}" th:value="${status}" th:text="${status}"></option></select></div>
+                            <div class="mb-3"><label class="form-label">Visibility</label><select class="form-select" th:field="*{visibility}"><option th:each="visibility : ${blogVisibilities}" th:value="${visibility}" th:text="${visibility}"></option></select></div>
+                            <div class="mb-3"><label class="form-label">Scheduled At</label><input type="datetime-local" class="form-control" th:field="*{scheduledAt}"><div class="text-danger small" th:errors="*{scheduledAt}"></div></div>
+                            <div class="mb-3"><label class="form-label">Expires At</label><input type="datetime-local" class="form-control" th:field="*{expiresAt}"></div>
+                            <div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" th:field="*{featuredPost}"><label class="form-check-label">Featured post</label></div>
+                            <div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" th:field="*{stickyPost}"><label class="form-check-label">Sticky post</label></div>
+                            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" th:field="*{allowComments}"><label class="form-check-label">Allow comments</label></div>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-header bg-white fw-semibold">Classification</div>
+                        <div class="card-body">
+                            <div class="mb-3"><label class="form-label">Category</label><select class="form-select" th:field="*{categoryId}"><option value="">Unassigned</option><option th:each="category : ${blogCategories}" th:value="${category.id}" th:text="${category.name}"></option></select></div>
+                            <div class="mb-3"><label class="form-label">Author</label><select class="form-select" th:field="*{authorId}"><option value="">Unassigned</option><option th:each="author : ${blogAuthors}" th:value="${author.id}" th:text="${author.displayName}"></option></select></div>
+                            <div class="mb-3"><label class="form-label">Series</label><select class="form-select" th:field="*{seriesId}"><option value="">None</option><option th:each="series : ${blogSeriesList}" th:value="${series.id}" th:text="${series.title}"></option></select></div>
+                            <div class="mb-3"><label class="form-label">Tags</label><input class="form-control" th:field="*{tags}" placeholder="fashion, buying guide, seasonal"></div>
+                            <div class="mb-3"><label class="form-label">Language</label><input class="form-control" th:field="*{languageCode}"></div>
+                            <div class="mb-0"><label class="form-label">Customer Segment</label><input class="form-control" th:field="*{customerSegment}"></div>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-header bg-white fw-semibold">Media & Campaign</div>
+                        <div class="card-body">
+                            <div class="mb-3"><label class="form-label">Featured Image URL</label><input class="form-control" th:field="*{featuredImageUrl}"></div>
+                            <div class="mb-3"><label class="form-label">Image Alt Text</label><input class="form-control" th:field="*{featuredImageAlt}"></div>
+                            <div class="mb-0"><label class="form-label">UTM Campaign</label><input class="form-control" th:field="*{utmCampaign}"></div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-save me-1"></i>Save Article</button>
+                        <a th:if="${blogForm.id != null}" class="btn btn-outline-secondary" th:href="@{/admin/blog/{id}/preview(id=${blogForm.id})}" target="_blank"><i class="bi bi-eye me-1"></i>Preview</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <th:block layout:fragment="page_js">
+        <script th:src="@{/webjars/tinymce/7.2.1/tinymce.min.js}"></script>
+        <script>
+            if (window.tinymce) {
+                tinymce.init({ selector: '#blogContentEditor', height: 520, menubar: false, plugins: 'lists link image table code preview', toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | link image table | code preview' });
+            }
+        </script>
+    </th:block>
+</div>

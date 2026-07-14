@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="front-layout-inner-customar-page">
+    <div layout:fragment="main_content">
+        <section class="customer-blog-page">
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <div class="customer-blog-hero mb-4">
+                <div>
+                    <span class="customer-blog-kicker">Customer reading room</span>
+                    <h1>Articles For Your Shopping Journey</h1>
+                    <p>Save useful guides, revisit recently viewed articles, and discover product stories.</p>
+                </div>
+                <a class="btn btn-light" th:href="@{/customer/blog/saved}"><i class="bi bi-bookmark-heart me-1"></i>Saved Articles</a>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <form class="row g-2 align-items-end" method="get" th:action="@{/customer/blog}">
+                        <div class="col-md-9">
+                            <label class="form-label">Search Articles</label>
+                            <input class="form-control" name="q" th:value="${query}" placeholder="Search buying guides, product education, and stories">
+                        </div>
+                        <div class="col-md-3 d-grid">
+                            <button class="btn btn-danger"><i class="bi bi-search me-1"></i>Search</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="row g-3">
+                        <div class="col-md-6" th:each="article : ${articles.content}">
+                            <article class="customer-blog-card h-100">
+                                <a class="customer-blog-media" th:href="@{/customer/blog/{slug}(slug=${article.slug})}">
+                                    <img th:if="${article.featuredImageUrl != null}" th:src="${article.featuredImageUrl}" th:alt="${article.featuredImageAlt != null ? article.featuredImageAlt : article.title}" loading="lazy">
+                                    <span th:unless="${article.featuredImageUrl != null}"><i class="bi bi-journal-richtext"></i></span>
+                                </a>
+                                <div class="customer-blog-body">
+                                    <div class="d-flex justify-content-between small text-muted mb-2">
+                                        <span th:text="${article.category != null ? article.category.name : 'Article'}">Article</span>
+                                        <span th:text="${article.readingTimeMinutes + ' min'}">3 min</span>
+                                    </div>
+                                    <h2 class="h5"><a th:href="@{/customer/blog/{slug}(slug=${article.slug})}" th:text="${article.title}">Article title</a></h2>
+                                    <p th:text="${article.excerpt}">Excerpt</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <a class="btn btn-sm btn-outline-danger" th:href="@{/customer/blog/{slug}(slug=${article.slug})}">Read</a>
+                                        <span class="badge text-bg-light" th:if="${bookmarkedArticles[article.id]}"><i class="bi bi-bookmark-fill text-danger me-1"></i>Saved</span>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                        <div class="col-12" th:if="${articles.empty}">
+                            <div class="card border-0 shadow-sm"><div class="card-body text-center text-muted py-5">No articles found.</div></div>
+                        </div>
+                    </div>
+                </div>
+                <aside class="col-lg-4">
+                    <div class="customer-blog-panel mb-3">
+                        <h2 class="h6">Recently Viewed</h2>
+                        <a class="customer-blog-mini" th:each="view : ${recentlyViewed}" th:if="${view.blog != null}" th:href="@{/customer/blog/{slug}(slug=${view.blog.slug})}">
+                            <span th:text="${view.blog.title}">Article</span>
+                            <small th:text="${view.viewedAt}">Viewed</small>
+                        </a>
+                        <p class="text-muted mb-0" th:if="${#lists.isEmpty(recentlyViewed)}">No recent blog views yet.</p>
+                    </div>
+                    <div class="customer-blog-panel">
+                        <h2 class="h6">Categories</h2>
+                        <a class="btn btn-sm btn-outline-secondary me-1 mb-1" th:each="category : ${blogCategories}" th:href="@{/customer/blog(q=${category.name})}" th:text="${category.name}">Category</a>
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </div>
+    <th:block layout:fragment="page_css">
+        <style>
+            .customer-blog-page{--cb-navy:#0f4c81;--cb-ink:#0f172a;--cb-muted:#64748b}
+            .customer-blog-hero{background:linear-gradient(135deg,#0f4c81,#0f766e);border-radius:8px;color:#fff;padding:1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+            .customer-blog-kicker{display:inline-block;text-transform:uppercase;font-size:.78rem;font-weight:700;letter-spacing:.05em;opacity:.85}
+            .customer-blog-hero h1{font-size:clamp(1.6rem,3vw,2.4rem);margin:.35rem 0}
+            .customer-blog-hero p{margin:0;color:rgba(255,255,255,.78)}
+            .customer-blog-card,.customer-blog-panel{background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden}
+            .customer-blog-media{display:flex;align-items:center;justify-content:center;aspect-ratio:16/9;background:#edf3f8;color:var(--cb-navy);font-size:2rem;text-decoration:none}
+            .customer-blog-media img{width:100%;height:100%;object-fit:cover}
+            .customer-blog-body,.customer-blog-panel{padding:1rem}
+            .customer-blog-body h2 a{color:var(--cb-ink);text-decoration:none}
+            .customer-blog-body p{color:var(--cb-muted)}
+            .customer-blog-mini{display:block;text-decoration:none;color:var(--cb-ink);padding:.65rem 0;border-top:1px solid #edf0f4}
+            .customer-blog-mini small{display:block;color:var(--cb-muted)}
+            @media (max-width:768px){.customer-blog-hero{display:block}.customer-blog-hero .btn{margin-top:1rem}}
+        </style>
+    </th:block>
+</div>

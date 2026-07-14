@@ -1,0 +1,25 @@
+<div xmlns:th="http://www.thymeleaf.org">
+    <div th:fragment="tabs(active)" class="blog-admin-tabs mb-3">
+        <div class="nav nav-pills flex-wrap gap-2">
+            <a class="nav-link" th:classappend="${active == 'posts'} ? ' active'" th:href="@{/admin/blog}"><i class="bi bi-journal-text me-1"></i>Posts</a>
+            <a class="nav-link" th:classappend="${active == 'approval'} ? ' active'" th:href="@{/admin/blog/approval-queue}"><i class="bi bi-check2-square me-1"></i>Approval Queue</a>
+            <a class="nav-link" th:classappend="${active == 'publishing'} ? ' active'" th:href="@{/admin/blog/publishing-queue}"><i class="bi bi-calendar-event me-1"></i>Publishing Queue</a>
+            <a class="nav-link" th:classappend="${active == 'comments'} ? ' active'" th:href="@{/admin/blog/comments}"><i class="bi bi-chat-dots me-1"></i>Moderation</a>
+            <a class="nav-link" th:classappend="${active == 'categories'} ? ' active'" th:href="@{/admin/blog/categories}"><i class="bi bi-folder2-open me-1"></i>Categories</a>
+            <a class="nav-link" th:classappend="${active == 'authors'} ? ' active'" th:href="@{/admin/blog/authors}"><i class="bi bi-person-lines-fill me-1"></i>Authors</a>
+            <a class="nav-link" th:classappend="${active == 'series'} ? ' active'" th:href="@{/admin/blog/series}"><i class="bi bi-collection me-1"></i>Series</a>
+            <a class="nav-link" th:classappend="${active == 'subscribers'} ? ' active'" th:href="@{/admin/blog/subscribers}"><i class="bi bi-envelope-paper me-1"></i>Subscribers</a>
+        </div>
+    </div>
+
+    <div th:fragment="alerts">
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
+            <span th:text="${successMessage}"></span>
+            <button class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+            <span th:text="${errorMessage}"></span>
+            <button class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+</div>

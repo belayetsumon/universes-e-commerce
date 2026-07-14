@@ -6,12 +6,15 @@
 package com.ecommerce.app.publics.controller;
 
 import com.ecommerce.app.model.Contact;
-import com.ecommerce.app.module.browsinghistory.model.BrowsingHistory;
-import com.ecommerce.app.module.browsinghistory.model.BrowsingHistoryViewType;
-import com.ecommerce.app.module.browsinghistory.service.BrowsingHistoryService;
 import com.ecommerce.app.module.ReferralRewards.model.Referral;
 import com.ecommerce.app.module.ReferralRewards.repository.ReferralRepository;
 import com.ecommerce.app.module.ReferralRewards.services.ReferralService;
+import com.ecommerce.app.module.blog.model.BlogCategory;
+import com.ecommerce.app.module.blog.repository.BlogCategoryRepository;
+import com.ecommerce.app.module.blog.repository.BlogRepository;
+import com.ecommerce.app.module.browsinghistory.model.BrowsingHistory;
+import com.ecommerce.app.module.browsinghistory.model.BrowsingHistoryViewType;
+import com.ecommerce.app.module.browsinghistory.service.BrowsingHistoryService;
 import com.ecommerce.app.module.settings.model.GlobalSettings;
 import com.ecommerce.app.module.settings.services.GlobalSettingsService;
 import com.ecommerce.app.module.user.model.UserType;
@@ -36,9 +39,8 @@ import com.ecommerce.app.product.services.CatalogProductAttributeService;
 import com.ecommerce.app.product.services.CatalogProductDiscoveryService;
 import com.ecommerce.app.product.services.ProductService;
 import com.ecommerce.app.product.services.ProductVariantCatalogService;
+import com.ecommerce.app.publics.seo.PublicSeoService;
 import com.ecommerce.app.review.services.ProductReviewService;
-import com.ecommerce.app.ripository.BlogCategoryRepository;
-import com.ecommerce.app.ripository.BlogRepository;
 import com.ecommerce.app.ripository.ContactRepository;
 import com.ecommerce.app.ripository.FaqRepository;
 import com.ecommerce.app.ripository.GalleryRepository;
@@ -180,6 +182,9 @@ public class PublicController {
     BrowsingHistoryService browsingHistoryService;
 
     @Autowired
+    PublicSeoService publicSeoService;
+
+    @Autowired
     ReferralRepository referralRepository;
 
     @Autowired
@@ -202,8 +207,14 @@ public class PublicController {
     }
 
     @RequestMapping("/member-login")
-    public String memberlogin(Model model) {
+    public String memberlogin(Model model, HttpServletRequest request) {
         model.addAttribute("attribute", "value");
+        publicSeoService.apply(model, publicSeoService.noIndexPage(
+                request,
+                "/public/member-login",
+                "Customer Sign In",
+                "Sign in to your customer account to manage orders, wishlist items, and account details."
+        ));
 
         return "frontview/member-login";
     }
@@ -212,24 +223,37 @@ public class PublicController {
     public String studentRegistration(Model model,
             @RequestParam(name = "ref", required = false) String referralCode,
             HttpSession session,
-            Users users) {
+            Users users,
+            HttpServletRequest request) {
 
         /////Role instructor = roleRepository.findBySlug("instructor");
         ////  model.addAttribute("instructor", instructor);
         //// Role customer = roleRepository.findBySlug("customer");
-        ///// model.addAttribute("customer", customer);
+        ///// model.addAttribute("customer", customer);
         String normalizedReferralCode = trimToNull(referralCode);
         if (normalizedReferralCode != null && session != null) {
             session.setAttribute("productShareReferralCode", normalizedReferralCode);
         }
         Object prefilledReferralCode = session == null ? null : session.getAttribute("productShareReferralCode");
         model.addAttribute("prefilledReferralCode", prefilledReferralCode instanceof String ? prefilledReferralCode : "");
+        publicSeoService.apply(model, publicSeoService.staticPage(
+                request,
+                "/public/front-registration",
+                "Create Your Shopping Account",
+                "Register for a customer account to shop faster, save wishlist items, and track orders."
+        ));
         return "frontview/front-registration";
     }
 
     @RequestMapping("/forgot-password")
-    public String forgotPassword(Model model) {
+    public String forgotPassword(Model model, HttpServletRequest request) {
         model.addAttribute("attribute", "value");
+        publicSeoService.apply(model, publicSeoService.noIndexPage(
+                request,
+                "/public/forgot-password",
+                "Reset Your Password",
+                "Recover access to your customer account securely."
+        ));
         return "frontview/forgot-password";
     }
 
@@ -239,7 +263,8 @@ public class PublicController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "latest") String sort,
             @RequestParam(required = false) String vendor,
-            @RequestParam(required = false) String q) {
+            @RequestParam(required = false) String q,
+            HttpServletRequest request) {
 
         Vendorprofile selectedVendor = null;
         if (vendor != null && !vendor.isBlank()) {
@@ -258,7 +283,7 @@ public class PublicController {
                 );
 
         allProducts = catalogProductDiscoveryService.applyKeywordSearch(allProducts, q);
-        return renderProductList(model, allProducts, page, size, sort, selectedVendor, q);
+        return renderProductList(model, allProducts, page, size, sort, selectedVendor, q, request);
     }
 
     private String renderProductList(
@@ -268,7 +293,8 @@ public class PublicController {
             int size,
             String sort,
             Vendorprofile selectedVendor,
-            String query) {
+            String query,
+            HttpServletRequest request) {
 
         List<Map<String, Object>> safeProducts = allProducts == null ? List.of() : allProducts;
         List<Map<String, Object>> sortedProducts = sortProductList(safeProducts, sort);
@@ -293,6 +319,7 @@ public class PublicController {
         model.addAttribute("currentVendorUuid", selectedVendor == null ? null : selectedVendor.getUuid());
         model.addAttribute("selectedVendorName", selectedVendor == null ? null : selectedVendor.getCompanyName());
         model.addAttribute("currentQuery", query);
+        publicSeoService.apply(model, publicSeoService.productList(request, pagedProducts, selectedVendor, query, sort, currentPage));
         return "frontview/product";
     }
 
@@ -681,10 +708,49 @@ public class PublicController {
         model.addAttribute("productHistoryCount", productHistoryCount);
         model.addAttribute("categoryHistoryCount", categoryHistoryCount);
         model.addAttribute("authenticatedHistoryUser", authenticatedUser);
-        model.addAttribute("pageTitle", historyTitle);
-        model.addAttribute("pageDescription", historySubtitle);
+        publicSeoService.apply(model, publicSeoService.noIndexPage(
+                request,
+                "/public/browsing-history",
+                historyTitle,
+                historySubtitle
+        ));
 
         return "frontview/browsing-history";
+    }
+
+    @RequestMapping("/blog")
+    public String blog(Model model, HttpServletRequest request) {
+//        List<Blog> blogs = blogRepository.findByStatusOrderByIdDesc(Status.Active);
+//        model.addAttribute("bloglist", blogs);
+//        model.addAttribute("blogcategorylist", blogCategoryRepository.findAll());
+//        publicSeoService.apply(model, publicSeoService.blogList(request, blogs));
+        return "frontview/blog";
+    }
+
+    @RequestMapping("/blogdetails/{blogid}")
+    public String blogDetails(Model model, @PathVariable Long blogid, HttpServletRequest request) {
+//        Optional<Blog> blog = blogRepository.findByIdAndStatus(blogid, Status.Active);
+//        if (blog == null) {
+//            return "redirect:/public/blog";
+//        }
+//        model.addAttribute("bloglist", blog);
+//        model.addAttribute("blogcategorylist", blogCategoryRepository.findAll());
+//        publicSeoService.apply(model, publicSeoService.blogArticle(request, blog));
+        return "frontview/blogdetails";
+    }
+
+    @RequestMapping("/blog-by-cat/{catid}")
+    public String blogByCategory(Model model, @PathVariable Long catid, HttpServletRequest request) {
+        BlogCategory category = blogCategoryRepository.findById(catid).orElse(null);
+//        if (category == null) {
+//            return "redirect:/public/blog";
+//        }
+//        List<Blog> blogs = blogRepository.findByBlogcategoryAndStatusOrderByIdDesc(category, Status.Active);
+//        model.addAttribute("bloglist", blogs);
+//        model.addAttribute("blogcategorylist", blogCategoryRepository.findAll());
+//        model.addAttribute("activeBlogCategory", category);
+//        publicSeoService.apply(model, publicSeoService.blogCategory(request, category, blogs));
+        return "frontview/blog-by-category";
     }
 
     private void captureProductShareReferral(String referralCode, String productUuid, HttpSession session) {
@@ -737,26 +803,10 @@ public class PublicController {
 
     private void addProductMetadataModel(Model model, Product product, Map<String, Object> productDetails, HttpServletRequest request) {
         GlobalSettings settings = globalSettingsService.getActiveSettings();
-        String productTitle = textOrDefault(getString(productDetails, "metaTitle"), getString(productDetails, "title"));
-        String productDescription = textOrDefault(plainText(getString(productDetails, "metaDescription")),
-                plainText(getString(productDetails, "shortDescription")));
-        String canonicalUrl = buildProductShareUrl(request, product.getUuid(), null);
-        String imageName = getString(productDetails, "imageName");
-        String imageUrl = imageName.isBlank() ? null : absolutePublicAssetUrl(settings, "/files/" + imageName);
-        if (imageUrl == null) {
-            imageUrl = absolutePublicAssetUrl(settings, settings.getOgImage());
-        }
-
-        model.addAttribute("pageTitle", productTitle);
-        model.addAttribute("pageDescription", productDescription);
-        model.addAttribute("pageCanonicalUrl", canonicalUrl);
-        model.addAttribute("pageOgType", "product");
-        model.addAttribute("pageOgTitle", productTitle);
-        model.addAttribute("pageOgDescription", productDescription);
-        model.addAttribute("pageOgImageUrl", imageUrl);
+        publicSeoService.apply(model, publicSeoService.product(request, product, productDetails));
         model.addAttribute("trackingProduct", Map.of(
                 "item_id", product.getSku() > 0 ? "SKU-" + product.getSku() : product.getUuid(),
-                "item_name", productTitle,
+                "item_name", textOrDefault(getString(productDetails, "metaTitle"), getString(productDetails, "title")),
                 "item_brand", getString(productDetails, "manufacturerName"),
                 "item_category", getString(productDetails, "category"),
                 "price", getBigDecimal(productDetails, "afterDiscountRemainingAmount", "salesPrice"),
@@ -766,23 +816,7 @@ public class PublicController {
     }
 
     private void addCategoryMetadataModel(Model model, Productcategory category, HttpServletRequest request, int productCount) {
-        GlobalSettings settings = globalSettingsService.getActiveSettings();
-        String categoryName = textOrDefault(category.getName(), "Products");
-        String title = categoryName + " Products";
-        String description = "Browse " + productCount + " products in " + categoryName + ".";
-        String canonicalUrl = buildPublicUrl(request, "/public/product-by-category/" + category.getUuid());
-        model.addAttribute("pageTitle", title);
-        model.addAttribute("pageDescription", description);
-        model.addAttribute("pageCanonicalUrl", canonicalUrl);
-        model.addAttribute("pageOgType", "website");
-        model.addAttribute("pageOgTitle", title);
-        model.addAttribute("pageOgDescription", description);
-        model.addAttribute("pageOgImageUrl", absolutePublicAssetUrl(settings, settings.getOgImage()));
-        model.addAttribute("shareUrl", canonicalUrl);
-        model.addAttribute("shareTitle", title);
-        model.addAttribute("shareDescription", description);
-        model.addAttribute("sharePageType", "CATEGORY");
-        model.addAttribute("shareEntityReference", category.getUuid());
+        publicSeoService.apply(model, publicSeoService.category(request, category, productCount));
     }
 
     private String buildProductShareUrl(HttpServletRequest request, String productUuid, String referralCode) {
@@ -1094,6 +1128,7 @@ public class PublicController {
         model.addAttribute("pageSections", pageSections == null ? List.of() : pageSections);
         model.addAttribute("staticPageLinks", buildStaticPageLinks(activePath));
         model.addAttribute("storeSettings", settings);
+        publicSeoService.apply(model, publicSeoService.staticPage(null, activePath, heading, description));
         return STATIC_PAGE_TEMPLATE;
     }
 

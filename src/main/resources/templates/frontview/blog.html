@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <div xmlns:th="http://www.thymeleaf.org"
      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-     layout:decorator="front-layout-inner-page">
+     layout:decorate="front-layout-inner-page">
     <div layout:fragment="main_content">
 
         <section class="d-none d-sm-block">
@@ -31,7 +31,7 @@
                                             <div class="media-left media-">
 
                                                 <div class="media-body ml-3">
-                                                    <a    class=" textMaroon" th:href="@{/front-view/blog-by-cat/{catid}(catid=${blogcategorylists.id})}" > <span  th:text="${blogcategorylists.name}">    </span> </a> 
+                                                    <a    class=" textMaroon" th:href="@{/public/blog-by-cat/{catid}(catid=${blogcategorylists.id})}" > <span  th:text="${blogcategorylists.name}">    </span> </a> 
                                                 </div>
                                             </div> 
                                     </li>
@@ -60,13 +60,13 @@
                                             <li class="col-sm-4 mb-2" th:if="${ not #lists.isEmpty(bloglist)}"  th:each="bloglists,status:${bloglist}">
 
                                                 <span th:if="${ not #strings.isEmpty(bloglists.imageName)}" class=""> 
-                                                    <img  class="img-fluid" th:src="@{/files/}+${bloglists.imageName}" />
+                                                    <img  class="img-fluid" th:src="@{/files/}+${bloglists.imageName}" th:alt="${bloglists.title}" />
                                                 </span>
-                                                <span  class="" th:if="${#strings.isEmpty(bloglists.imageName)}" > <img  class="mr-3 rounded-circle border border-secondary" th:src="@{/img/image-not-available.png}"  width="80" height="80"/>  </span>
+                                                <span  class="" th:if="${#strings.isEmpty(bloglists.imageName)}" > <img  class="mr-3 rounded-circle border border-secondary" th:src="@{/img/image-not-available.png}" th:alt="${bloglists.title}"  width="80" height="80"/>  </span>
 
                                                 <h6 class="mt-2 bg-light">
 
-                                                    <a    class="text-muted" th:href="@{/front-view/blogdetails/{blogid}(blogid=${bloglists.id})}" > 
+                                                    <a    class="text-muted" th:href="@{/public/blogdetails/{blogid}(blogid=${bloglists.id})}" > 
                                                         <span  th:text="${bloglists.title}">   </span></a>
 
                                                 </h6>
@@ -122,7 +122,7 @@
                                             <div class="media-left media-">
 
                                                 <div class="media-body ml-3">
-                                                    <a    class=" textMaroon" th:href="@{/front-view/blog-by-cat/{catid}(catid=${blogcategorylists.id})}" > <span  th:text="${blogcategorylists.name}">    </span> </a> 
+                                                    <a    class=" textMaroon" th:href="@{/public/blog-by-cat/{catid}(catid=${blogcategorylists.id})}" > <span  th:text="${blogcategorylists.name}">    </span> </a> 
                                                 </div>
                                             </div> 
                                     </li>
@@ -151,13 +151,13 @@
                                             <li class="col-sm-4 mb-2" th:if="${ not #lists.isEmpty(bloglist)}"  th:each="bloglists,status:${bloglist}">
 
                                                 <span th:if="${ not #strings.isEmpty(bloglists.imageName)}" class=""> 
-                                                    <img  class="img-fluid" th:src="@{/files/}+${bloglists.imageName}" />
+                                                    <img  class="img-fluid" th:src="@{/files/}+${bloglists.imageName}" th:alt="${bloglists.title}" />
                                                 </span>
-                                                <span  class="" th:if="${#strings.isEmpty(bloglists.imageName)}" > <img  class="mr-3 rounded-circle border border-secondary" th:src="@{/img/image-not-available.png}"  width="80" height="80"/>  </span>
+                                                <span  class="" th:if="${#strings.isEmpty(bloglists.imageName)}" > <img  class="mr-3 rounded-circle border border-secondary" th:src="@{/img/image-not-available.png}" th:alt="${bloglists.title}"  width="80" height="80"/>  </span>
 
                                                 <h6 class="mt-2 bg-light">
 
-                                                    <a    class="text-muted" th:href="@{/front-view/blogdetails/{blogid}(blogid=${bloglists.id})}" > 
+                                                    <a    class="text-muted" th:href="@{/public/blogdetails/{blogid}(blogid=${bloglists.id})}" > 
                                                         <span  th:text="${bloglists.title}">   </span></a>
 
                                                 </h6>

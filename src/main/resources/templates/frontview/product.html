@@ -97,10 +97,11 @@
                                         <span th:if="${not #strings.isEmpty(#strings.trim(productlists.imageName))}" class="">
                                             <img class="card-img-top"
                                                  th:src="@{/files/}+${productlists.imageName}"
+                                                 th:alt="${productlists.title}"
                                                  th:attr="onerror=|this.onerror=null;this.src='@{/img/image-not-available.png}';|" />
                                         </span>
                                         <span th:if="${#strings.isEmpty(#strings.trim(productlists.imageName))}">
-                                            <img  class="card-img-top" th:src="@{/img/image-not-available.png}" />
+                                            <img  class="card-img-top" th:src="@{/img/image-not-available.png}" th:alt="${productlists.title}" />
                                         </span>
 
                                         <div class="product-status-badge-stack"

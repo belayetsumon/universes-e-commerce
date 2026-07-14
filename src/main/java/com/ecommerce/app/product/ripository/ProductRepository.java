@@ -32,6 +32,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByStatusOrderByIdDesc(ProductStatusEnum status);
 
+    List<Product> findByStatusOrderByIdDesc(ProductStatusEnum status, Pageable pageable);
+
     List<Product> findByVendorprofile_IdOrderByIdDesc(Long vendorId);
 
     Optional<Product> findByUuid(String uuid);

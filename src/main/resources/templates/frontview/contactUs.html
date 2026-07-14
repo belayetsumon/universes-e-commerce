@@ -101,7 +101,7 @@ and open the template in the editor.
                             </div>
                             
                             <div class="card-body">
-                                <form   th:object="${contact}"  method="post" th:action="@{/front-view/home-contact-save}">
+                                <form   th:object="${contact}"  method="post" th:action="@{/public/home-contact-save}">
 
                                     <div class="alert alert-danger alert-dismissible" th:if="${#fields.hasErrors('*')}">
                                         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>

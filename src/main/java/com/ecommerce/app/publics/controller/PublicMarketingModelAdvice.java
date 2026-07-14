@@ -22,7 +22,7 @@ public class PublicMarketingModelAdvice {
 
     @ModelAttribute
     public void addMarketingModel(Model model, HttpServletRequest request) {
-        if (request == null || isSecuredArea(request.getRequestURI())) {
+        if (request == null || isBackOfficeArea(request.getRequestURI())) {
             return;
         }
         GlobalSettings settings = globalSettingsService.getActiveSettings();
@@ -38,19 +38,33 @@ public class PublicMarketingModelAdvice {
         model.addAttribute("defaultPageTitle", title);
         model.addAttribute("defaultPageDescription", description);
         model.addAttribute("publicTracking", trackingConfig(settings));
+        if (isNoIndexUtilityArea(request.getRequestURI())) {
+            model.addAttribute("pageRobots", "noindex,follow");
+        }
     }
 
-    private boolean isSecuredArea(String uri) {
+    private boolean isBackOfficeArea(String uri) {
         if (uri == null) {
             return false;
         }
         return uri.startsWith("/admin")
                 || uri.startsWith("/vendor")
-                || uri.startsWith("/customer")
-                || uri.startsWith("/cart/checkout")
+                || uri.startsWith("/customer");
+    }
+
+    private boolean isNoIndexUtilityArea(String uri) {
+        if (uri == null) {
+            return false;
+        }
+        return uri.startsWith("/cart")
                 || uri.startsWith("/order")
+                || uri.startsWith("/wishlist")
+                || uri.startsWith("/checkout")
+                || uri.contains("login")
                 || uri.contains("password")
-                || uri.contains("payment");
+                || uri.contains("payment")
+                || uri.contains("browsing-history")
+                || uri.contains("unsubscribe");
     }
 
     private Map<String, Object> trackingConfig(GlobalSettings settings) {

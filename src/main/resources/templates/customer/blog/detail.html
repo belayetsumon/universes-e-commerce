@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="front-layout-inner-customar-page">
+    <div layout:fragment="main_content">
+        <div class="customer-blog-progress" id="customerBlogProgress"></div>
+        <article class="customer-blog-detail">
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/customer/}">Customer</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/customer/blog}">Blog</a></li>
+                    <li class="breadcrumb-item active" th:text="${blog.title}">Article</li>
+                </ol>
+            </nav>
+
+            <header class="customer-blog-detail-head mb-4">
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                    <span class="badge text-bg-light" th:text="${blog.category != null ? blog.category.name : 'Article'}">Article</span>
+                    <span class="badge text-bg-light" th:text="${blog.readingTimeMinutes + ' min read'}">3 min read</span>
+                </div>
+                <h1 th:text="${blog.title}">Article title</h1>
+                <p class="lead text-muted" th:text="${blog.excerpt}">Excerpt</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <form th:if="${!bookmarked}" method="post" th:action="@{/customer/blog/{slug}/bookmark(slug=${blog.slug})}">
+                        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button class="btn btn-danger"><i class="bi bi-bookmark-plus me-1"></i>Save Article</button>
+                    </form>
+                    <form th:if="${bookmarked}" method="post" th:action="@{/customer/blog/{slug}/bookmark/remove(slug=${blog.slug})}">
+                        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button class="btn btn-outline-danger"><i class="bi bi-bookmark-dash me-1"></i>Remove Saved</button>
+                    </form>
+                    <a class="btn btn-outline-secondary" th:href="@{/public/blog/{slug}(slug=${blog.slug})}" target="_blank">Public View</a>
+                </div>
+                <img th:if="${blog.featuredImageUrl != null}" class="customer-blog-hero-image" th:src="${blog.featuredImageUrl}" th:alt="${blog.featuredImageAlt != null ? blog.featuredImageAlt : blog.title}" loading="lazy">
+            </header>
+
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="customer-blog-content" th:utext="${blog.contentHtml}"></div>
+                    <section class="customer-blog-comments mt-4">
+                        <h2 class="h5">Comments</h2>
+                        <div class="customer-blog-comment" th:each="comment : ${comments}">
+                            <strong th:text="${comment.guestName}">Name</strong>
+                            <p th:text="${comment.commentText}">Comment</p>
+                        </div>
+                        <form class="mt-3" method="post" th:action="@{/customer/blog/{slug}/comments(slug=${blog.slug})}" th:object="${commentForm}" th:if="${blog.allowComments}">
+                            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <div class="row g-2">
+                                <div class="col-md-6"><input class="form-control" th:field="*{name}" placeholder="Name"><div class="text-danger small" th:errors="*{name}"></div></div>
+                                <div class="col-md-6"><input class="form-control" th:field="*{email}" placeholder="Email"><div class="text-danger small" th:errors="*{email}"></div></div>
+                                <div class="col-12"><textarea class="form-control" rows="4" th:field="*{comment}" placeholder="Comment"></textarea><div class="text-danger small" th:errors="*{comment}"></div></div>
+                                <div class="col-12"><button class="btn btn-danger">Submit Comment</button></div>
+                            </div>
+                        </form>
+                    </section>
+                </div>
+                <aside class="col-lg-4">
+                    <div class="customer-blog-side mb-3" th:if="${!#lists.isEmpty(relatedProducts)}">
+                        <h2 class="h6">Related Products</h2>
+                        <a class="customer-blog-side-link" th:each="item : ${relatedProducts}" th:href="@{/public/single-product/{prodid}(prodid=${item.product.uuid})}">
+                            <span th:text="${item.product.title}">Product</span>
+                            <small th:text="${item.ctaLabel}">View Product</small>
+                        </a>
+                    </div>
+                    <div class="customer-blog-side">
+                        <h2 class="h6">Related Articles</h2>
+                        <a class="customer-blog-side-link" th:each="article : ${relatedArticles}" th:if="${article.id != blog.id}" th:href="@{/customer/blog/{slug}(slug=${article.slug})}" th:text="${article.title}">Article</a>
+                    </div>
+                </aside>
+            </div>
+        </article>
+    </div>
+    <th:block layout:fragment="page_css">
+        <style>
+            .customer-blog-progress{position:fixed;top:0;left:0;height:4px;background:#dc3545;width:0;z-index:1055}
+            .customer-blog-detail-head h1{font-size:clamp(1.8rem,3.4vw,3rem);line-height:1.1}
+            .customer-blog-hero-image{width:100%;max-height:430px;object-fit:cover;border-radius:8px;margin-top:1rem}
+            .customer-blog-content,.customer-blog-comments,.customer-blog-side{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:1.25rem}
+            .customer-blog-content img{max-width:100%;height:auto}
+            .customer-blog-comment{border-top:1px solid #edf0f4;padding:.8rem 0}
+            .customer-blog-side-link{display:block;text-decoration:none;color:#0f172a;padding:.65rem 0;border-top:1px solid #edf0f4}
+            .customer-blog-side-link small{display:block;color:#dc3545}
+        </style>
+    </th:block>
+    <th:block layout:fragment="page_js">
+        <script>
+            window.addEventListener('scroll', function () {
+                var doc = document.documentElement;
+                var max = doc.scrollHeight - doc.clientHeight;
+                var pct = max > 0 ? (doc.scrollTop / max) * 100 : 0;
+                var bar = document.getElementById('customerBlogProgress');
+                if (bar) { bar.style.width = pct + '%'; }
+            }, { passive: true });
+        </script>
+    </th:block>
+</div>

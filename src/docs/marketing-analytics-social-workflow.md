@@ -30,7 +30,10 @@
 | Add admin menu and diagnostics UI | Done | Configuration menu links directly to Marketing & Tracking; Reports links to Social Share Analytics; Marketing tab includes diagnostics and preview cards. |
 | Add product single-page Thymeleaf layout | Done | `front-layout-single-product.html` centralizes single-product metadata/tracking assets. |
 | Wire product metadata | Done | Product title, description, image fallback, canonical URL, price, currency, availability, and item tracking are supplied. |
-| Wire category/vendor/blog/referral metadata | Partial | Category metadata/share is wired. Vendor, blog, referral, campaign, offer, and gift-card page-specific enrichment remains. |
+| Add public SEO service and robots support | Done | `PublicSeoService` centralizes canonical URLs, robots directives, Open Graph defaults, and JSON-LD generation. |
+| Wire product/category/blog/static metadata | Done | Product, product listing, category, blog list/category/detail, homepage, registration, auth utility, browsing-history, and static policy pages now receive explicit SEO metadata. |
+| Add crawler/AI discovery endpoints | Done | Root `/robots.txt`, `/sitemap.xml`, and `/llms.txt` endpoints were added with canonical public URL guidance. |
+| Wire vendor/referral/campaign/offer/gift-card metadata | Partial | Product referral-aware sharing is preserved. Dedicated public vendor, campaign, offer, and gift-card landing-page metadata still depends on those public page routes being exposed. |
 | Conversion API async delivery | Partial | Delivery table/entity/repository and queueing service exist; order/registration/add-to-cart hooks and sender retry scheduler remain. |
 | Tests | Pending | Maven unavailable in this environment; tests still need to be added/run from a machine with Maven. |
 | Runtime/build verification | Blocked | `mvn` is not on PATH and no wrapper is present; static duplicate-tracking checks were run instead. |

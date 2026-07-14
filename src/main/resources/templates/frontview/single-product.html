@@ -44,11 +44,12 @@
                                             <span th:if="${not #strings.isEmpty(#strings.trim(product_details.imageName))}" class="">
                                                 <img  id="mainImage" class="img-fluid product-main-image" th:src="@{/files/}+${product_details.imageName}"
                                                       th:attr="onerror=|this.onerror=null;this.src='@{/img/image-not-available.png}';|"
+                                                      th:alt="${product_details.title}"
                                                       width="800"
                                                       height="600"/>
                                             </span>
                                             <span th:if="${#strings.isEmpty(#strings.trim(product_details.imageName))}" >
-                                                <img  class="img-fluid product-main-image" th:src="@{/img/image-not-available.png}" />
+                                                <img  class="img-fluid product-main-image" th:src="@{/img/image-not-available.png}" th:alt="${product_details.title}" />
                                             </span>
 
                                         </div>
@@ -58,6 +59,7 @@
                                                 <!--                                                <img th:src="@{/images/{file}(file=${img})}" alt="Thumbnail"/>-->
                                                 <img  class="img-fluid product-thumb-image"
                                                       th:src="@{/files/}+${img.productImageName}"
+                                                      th:alt="${product_details.title}"
                                                       th:attr="data-img=@{/files/}+${img.productImageName}"  width="100" height="80"/>
                                             </div>
                                             <!-- Optional fallback when the list is empty or contains only null values -->
@@ -486,12 +488,13 @@
                                                     <!--                                <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />-->
                                                     <img class="card-img-top"
                                                          th:src="@{${productlists.imageUrl}}"
+                                                         th:alt="${productlists.title}"
                                                          th:attr="onerror=|this.onerror=null;this.src='@{/img/image-not-available.png}';|" />
 
 
                                                 </span>
                                                 <span th:if="${#strings.isEmpty(#strings.trim(productlists.imageName))}" >
-                                                    <img  class="card-img-top" th:src="@{/img/image-not-available.png}" />
+                                                    <img  class="card-img-top" th:src="@{/img/image-not-available.png}" th:alt="${productlists.title}" />
                                                 </span>
 
                                                 <div class="product-status-badge-stack"
@@ -829,12 +832,13 @@
                                                     <!--                                <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />-->
                                                     <img class="card-img-top"
                                                          th:src="@{${productlists.imageUrl}}"
+                                                         th:alt="${productlists.title}"
                                                          th:attr="onerror=|this.onerror=null;this.src='@{/img/image-not-available.png}';|" />
 
 
                                                 </span>
                                                 <span th:if="${#strings.isEmpty(#strings.trim(productlists.imageName))}" >
-                                                    <img  class="card-img-top" th:src="@{/img/image-not-available.png}" />
+                                                    <img  class="card-img-top" th:src="@{/img/image-not-available.png}" th:alt="${productlists.title}" />
                                                 </span>
 
                                                 <div class="product-status-badge-stack"

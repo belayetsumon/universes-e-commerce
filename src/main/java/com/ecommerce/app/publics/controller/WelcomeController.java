@@ -2,10 +2,12 @@ package com.ecommerce.app.publics.controller;
 
 import com.ecommerce.app.module.ads.model.Placement;
 import com.ecommerce.app.module.ads.services.AdsService;
+import com.ecommerce.app.publics.seo.PublicSeoService;
 import com.ecommerce.app.product.model.ProductStatusEnum;
 import com.ecommerce.app.product.ripository.ProductRepository;
 import com.ecommerce.app.product.ripository.ProductcategoryRepository;
 import com.ecommerce.app.product.services.ProductService;
+import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
@@ -33,6 +35,9 @@ public class WelcomeController {
 
     @Autowired
     AdsService adsService;
+
+    @Autowired
+    PublicSeoService publicSeoService;
 //
 //    @RequestMapping({"/index", "/index.html"})
 //    public String index() {
@@ -40,7 +45,7 @@ public class WelcomeController {
 //    }
 
     @RequestMapping("/")
-    public String welcome(Model model) {
+    public String welcome(Model model, HttpServletRequest request) {
         List<Map<String, Object>> banner = adsService.findAllAdsAsMap(Placement.HOME_BANNER);
         List<Map<String, Object>> afterFeaturedCategoryBanners = adsService.findAllAdsAsMap(Placement.HOME_FEATURED_CATEGORY_SHOWCASE);
         List<Map<String, Object>> afterDealsTodayBanners = adsService.findAllAdsAsMap(Placement.HOME_TODAY_DEALS_SPOTLIGHT);
@@ -70,8 +75,7 @@ public class WelcomeController {
         model.addAttribute("newArrivalProducts", newArrivalProducts);
         model.addAttribute("latestProducts", latestProducts);
         model.addAttribute("dealProducts", dealProducts);
-        model.addAttribute("pageTitle", "Musapir | Online Shopping");
-        model.addAttribute("pageDescription", "Shop featured products, new arrivals, and top deals from Musapir.");
+        publicSeoService.apply(model, publicSeoService.home(request, featuredProducts));
         return "welcome/welcome";
     }
 
