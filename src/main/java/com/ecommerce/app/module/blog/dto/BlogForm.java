@@ -17,7 +17,6 @@ public class BlogForm {
     @Size(max = 220, message = "Title cannot exceed 220 characters.")
     private String title;
 
-    @NotBlank(message = "Slug is required.")
     @Size(max = 240, message = "Slug cannot exceed 240 characters.")
     private String slug;
 
@@ -34,7 +33,6 @@ public class BlogForm {
     private BlogVisibility visibility = BlogVisibility.PUBLIC;
 
     private Long categoryId;
-    private Long authorId;
     private Long seriesId;
     private String tags;
     private String featuredImageUrl;
@@ -137,14 +135,6 @@ public class BlogForm {
 
     public void setCategoryId(Long categoryId) {
         this.categoryId = categoryId;
-    }
-
-    public Long getAuthorId() {
-        return authorId;
-    }
-
-    public void setAuthorId(Long authorId) {
-        this.authorId = authorId;
     }
 
     public Long getSeriesId() {

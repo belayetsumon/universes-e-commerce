@@ -2,6 +2,8 @@ package com.ecommerce.app.publics.controller;
 
 import com.ecommerce.app.module.ads.model.Placement;
 import com.ecommerce.app.module.ads.services.AdsService;
+import com.ecommerce.app.module.blog.model.BlogPublicationStatus;
+import com.ecommerce.app.module.blog.repository.BlogRepository;
 import com.ecommerce.app.publics.seo.PublicSeoService;
 import com.ecommerce.app.product.model.ProductStatusEnum;
 import com.ecommerce.app.product.ripository.ProductRepository;
@@ -13,6 +15,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,6 +42,9 @@ public class WelcomeController {
 
     @Autowired
     PublicSeoService publicSeoService;
+
+    @Autowired
+    BlogRepository blogRepository;
 //
 //    @RequestMapping({"/index", "/index.html"})
 //    public String index() {
@@ -75,6 +82,10 @@ public class WelcomeController {
         model.addAttribute("newArrivalProducts", newArrivalProducts);
         model.addAttribute("latestProducts", latestProducts);
         model.addAttribute("dealProducts", dealProducts);
+        model.addAttribute("homeBlogArticles", blogRepository.findByStatusAndDeletedFlagFalseAndActiveFlagTrue(
+                BlogPublicationStatus.PUBLISHED,
+                PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "publishedAt").and(Sort.by(Sort.Direction.DESC, "id")))
+        ).getContent());
         publicSeoService.apply(model, publicSeoService.home(request, featuredProducts));
         return "welcome/welcome";
     }

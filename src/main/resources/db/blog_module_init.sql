@@ -46,29 +46,6 @@ CREATE TABLE IF NOT EXISTS blog_tags (
     CONSTRAINT uk_blog_tag_slug UNIQUE (slug)
 );
 
-CREATE TABLE IF NOT EXISTS blog_authors (
-    id BIGSERIAL PRIMARY KEY,
-    uuid VARCHAR(36) NOT NULL UNIQUE,
-    version BIGINT,
-    record_status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE',
-    active_flag BOOLEAN NOT NULL DEFAULT TRUE,
-    sort_order INTEGER NOT NULL DEFAULT 0,
-    deleted_flag BOOLEAN NOT NULL DEFAULT FALSE,
-    deleted_at TIMESTAMP,
-    deleted_by VARCHAR(100),
-    created_by VARCHAR(100) NOT NULL DEFAULT 'system',
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_by VARCHAR(100),
-    updated_at TIMESTAMP,
-    display_name VARCHAR(160) NOT NULL,
-    slug VARCHAR(180) NOT NULL,
-    email VARCHAR(180),
-    avatar_url VARCHAR(500),
-    bio TEXT,
-    user_id BIGINT,
-    CONSTRAINT uk_blog_author_slug UNIQUE (slug)
-);
-
 CREATE TABLE IF NOT EXISTS blog_series (
     id BIGSERIAL PRIMARY KEY,
     uuid VARCHAR(36) NOT NULL UNIQUE,
@@ -111,7 +88,6 @@ CREATE TABLE IF NOT EXISTS blogs (
     status VARCHAR(40) NOT NULL DEFAULT 'DRAFT',
     visibility VARCHAR(40) NOT NULL DEFAULT 'PUBLIC',
     category_id BIGINT REFERENCES blog_categories(id),
-    author_id BIGINT REFERENCES blog_authors(id),
     series_id BIGINT REFERENCES blog_series(id),
     featured_image_url VARCHAR(500),
     featured_image_alt VARCHAR(220),
@@ -311,7 +287,6 @@ CREATE TABLE IF NOT EXISTS blog_views (
 
 CREATE INDEX IF NOT EXISTS idx_blog_status_publish ON blogs(status, published_at, scheduled_at);
 CREATE INDEX IF NOT EXISTS idx_blog_category ON blogs(category_id);
-CREATE INDEX IF NOT EXISTS idx_blog_author ON blogs(author_id);
 CREATE INDEX IF NOT EXISTS idx_blog_featured_sticky ON blogs(featured_post, sticky_post, sort_order);
 CREATE INDEX IF NOT EXISTS idx_blog_tag_map_blog ON blog_tag_map(blog_id);
 CREATE INDEX IF NOT EXISTS idx_blog_tag_map_tag ON blog_tag_map(tag_id);

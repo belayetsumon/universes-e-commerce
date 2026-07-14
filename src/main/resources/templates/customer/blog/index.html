@@ -13,7 +13,10 @@
                     <h1>Articles For Your Shopping Journey</h1>
                     <p>Save useful guides, revisit recently viewed articles, and discover product stories.</p>
                 </div>
-                <a class="btn btn-light" th:href="@{/customer/blog/saved}"><i class="bi bi-bookmark-heart me-1"></i>Saved Articles</a>
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-warning" th:href="@{/customer/blog/write}"><i class="bi bi-pencil-square me-1"></i>Write Blog</a>
+                    <a class="btn btn-light" th:href="@{/customer/blog/saved}"><i class="bi bi-bookmark-heart me-1"></i>Saved Articles</a>
+                </div>
             </div>
 
             <div class="card border-0 shadow-sm mb-4">
@@ -60,6 +63,17 @@
                 </div>
                 <aside class="col-lg-4">
                     <div class="customer-blog-panel mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h2 class="h6 mb-0">My Posts</h2>
+                            <a class="small text-danger text-decoration-none" th:href="@{/customer/blog/my-posts}">View all</a>
+                        </div>
+                        <a class="customer-blog-mini" th:each="post : ${myPosts.content}" th:href="@{/customer/blog/my-posts}">
+                            <span th:text="${post.title}">Article</span>
+                            <small th:text="${post.status}">IN_REVIEW</small>
+                        </a>
+                        <p class="text-muted mb-0" th:if="${myPosts == null or myPosts.empty}">No submitted posts yet.</p>
+                    </div>
+                    <div class="customer-blog-panel mb-3">
                         <h2 class="h6">Recently Viewed</h2>
                         <a class="customer-blog-mini" th:each="view : ${recentlyViewed}" th:if="${view.blog != null}" th:href="@{/customer/blog/{slug}(slug=${view.blog.slug})}">
                             <span th:text="${view.blog.title}">Article</span>
@@ -78,7 +92,7 @@
     <th:block layout:fragment="page_css">
         <style>
             .customer-blog-page{--cb-navy:#0f4c81;--cb-ink:#0f172a;--cb-muted:#64748b}
-            .customer-blog-hero{background:linear-gradient(135deg,#0f4c81,#0f766e);border-radius:8px;color:#fff;padding:1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+            .customer-blog-hero{background:linear-gradient(135deg,#9f1616,#d79a10);border-radius:8px;color:#fff;padding:1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
             .customer-blog-kicker{display:inline-block;text-transform:uppercase;font-size:.78rem;font-weight:700;letter-spacing:.05em;opacity:.85}
             .customer-blog-hero h1{font-size:clamp(1.6rem,3vw,2.4rem);margin:.35rem 0}
             .customer-blog-hero p{margin:0;color:rgba(255,255,255,.78)}

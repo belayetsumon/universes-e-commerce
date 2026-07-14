@@ -1,6 +1,33 @@
-<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
-    <div layout:fragment="main_content">
-        <section class="d-flex justify-content-between align-items-center mb-3"><h4 class="mb-0">Blog Category</h4><a class="btn btn-outline-secondary" th:href="@{/admin/blog/categories}">Back</a></section>
-        <form class="card border-0 shadow-sm" method="post" th:action="@{/admin/blog/categories/save}" th:object="${category}"><div class="card-body row g-3"><input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><input type="hidden" th:field="*{id}"><input type="hidden" th:field="*{version}"><div class="col-md-6"><label class="form-label">Name</label><input class="form-control" th:field="*{name}"><div class="text-danger small" th:errors="*{name}"></div></div><div class="col-md-6"><label class="form-label">Slug</label><input class="form-control" th:field="*{slug}"><div class="text-danger small" th:errors="*{slug}"></div></div><div class="col-12"><label class="form-label">Description</label><textarea class="form-control" rows="3" th:field="*{description}"></textarea></div><div class="col-md-3"><label class="form-label">Sort Order</label><input class="form-control" type="number" th:field="*{sortOrder}"></div><div class="col-12"><button class="btn btn-primary">Save Category</button></div></div></form>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <div layout:fragment="main_content" class="blog-admin-page">
+        <div class="blog-settings-workspace">
+            <div th:replace="admin/blog/fragments :: moduleHeader('categories', 'Blog Category', 'Create or update the category metadata used to organize blog articles.', 'bi-folder2-open', 'Taxonomy', null, null, null, @{/admin/blog/categories}, 'Back', 'bi-arrow-left')"></div>
+            <form class="card border-0 shadow-sm blog-form-card" method="post" th:action="@{/admin/blog/categories/save}" th:object="${category}">
+                <div class="card-body row g-3">
+                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <input type="hidden" th:field="*{id}">
+                    <input type="hidden" th:field="*{version}">
+                    <input type="hidden" th:field="*{slug}">
+                    <div class="col-md-6">
+                        <label class="form-label">Name</label>
+                        <input class="form-control" th:field="*{name}">
+                        <div class="text-danger small" th:errors="*{name}"></div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" rows="3" th:field="*{description}"></textarea>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Sort Order</label>
+                        <input class="form-control" type="number" th:field="*{sortOrder}">
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-primary">Save Category</button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 </div>

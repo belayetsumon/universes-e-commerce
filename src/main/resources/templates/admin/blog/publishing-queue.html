@@ -1,24 +1,35 @@
-<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
-    <div layout:fragment="main_content">
-        <section class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="mb-0"><i class="bi bi-calendar-event me-2 text-primary"></i>Scheduled Publishing Queue</h4>
-            <form method="post" th:action="@{/admin/blog/publishing-queue/run}"><input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="btn btn-primary"><i class="bi bi-play-fill me-1"></i>Run Queue</button></form>
-        </section>
-        <div th:replace="admin/blog/fragments :: tabs('publishing')"></div>
-        <div th:replace="admin/blog/fragments :: alerts"></div>
-        <div class="card border-0 shadow-sm"><div class="card-body table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Article</th><th>Scheduled At</th><th>Category</th><th class="text-end">Actions</th></tr></thead>
-                <tbody>
-                    <tr th:each="blog : ${blogs.content}">
-                        <td><div class="fw-semibold" th:text="${blog.title}"></div><small class="text-muted" th:text="${blog.slug}"></small></td>
-                        <td th:text="${blog.scheduledAt}"></td>
-                        <td th:text="${blog.category != null ? blog.category.name : '-'}"></td>
-                        <td class="text-end"><a class="btn btn-sm btn-primary" th:href="@{/admin/blog/{id}/edit(id=${blog.id})}">Edit</a></td>
-                    </tr>
-                    <tr th:if="${blogs.empty}"><td colspan="4" class="text-center text-muted py-4">No scheduled articles.</td></tr>
-                </tbody>
-            </table>
-        </div></div>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <div layout:fragment="main_content" class="blog-admin-page">
+        <div class="blog-settings-workspace">
+            <div th:replace="admin/blog/fragments :: moduleHeader('publishing', 'Scheduled Publishing Queue', 'Monitor scheduled content and run the publishing worker when needed.', 'bi-calendar-event', 'Publishing', null, null, null, null, null, null)"></div>
+            <div th:replace="admin/blog/fragments :: alerts"></div>
+            <div class="card border-0 shadow-sm blog-table-card">
+                <div class="card-body">
+                    <div class="blog-panel-head">
+                        <div>
+                            <p>Publishing Worker</p>
+                            <h2>Scheduled Articles</h2>
+                        </div>
+                        <form method="post" th:action="@{/admin/blog/publishing-queue/run}"><input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="btn btn-primary"><i class="bi bi-play-fill me-1"></i>Run Queue</button></form>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light"><tr><th>Article</th><th>Scheduled At</th><th>Category</th><th class="text-end">Actions</th></tr></thead>
+                            <tbody>
+                                <tr th:each="blog : ${blogs.content}">
+                                    <td><div class="fw-semibold" th:text="${blog.title}"></div><small class="text-muted" th:text="${blog.slug}"></small></td>
+                                    <td th:text="${blog.scheduledAt}"></td>
+                                    <td th:text="${blog.category != null ? blog.category.name : '-'}"></td>
+                                    <td class="text-end"><a class="btn btn-sm btn-primary" th:href="@{/admin/blog/{id}/edit(id=${blog.id})}">Edit</a></td>
+                                </tr>
+                                <tr th:if="${blogs.empty}"><td colspan="4" class="text-center text-muted py-4">No scheduled articles.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

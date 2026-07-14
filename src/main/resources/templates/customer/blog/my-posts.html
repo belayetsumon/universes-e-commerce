@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="front-layout-inner-customar-page">
+    <div layout:fragment="main_content">
+        <section class="customer-blog-page">
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div class="customer-blog-hero mb-4">
+                <div>
+                    <span class="customer-blog-kicker">Your writing desk</span>
+                    <h1>My Blog Posts</h1>
+                    <p>Track the articles you submitted and their editorial status.</p>
+                </div>
+                <a class="btn btn-light" th:href="@{/customer/blog/write}"><i class="bi bi-pencil-square me-1"></i>Write Blog</a>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr><th>Article</th><th>Status</th><th>Updated</th><th>Public Link</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="post : ${myPosts.content}">
+                                <td><div class="fw-semibold" th:text="${post.title}">Article</div><small class="text-muted" th:text="${post.slug}">slug</small></td>
+                                <td><span class="badge text-bg-warning" th:text="${post.status}">IN_REVIEW</span></td>
+                                <td th:text="${post.updatedAt}">-</td>
+                                <td><a th:if="${post.status.name() == 'PUBLISHED'}" class="btn btn-sm btn-outline-danger" th:href="@{/public/blog/{slug}(slug=${post.slug})}" target="_blank">View</a><span th:unless="${post.status.name() == 'PUBLISHED'}" class="text-muted">After publish</span></td>
+                            </tr>
+                            <tr th:if="${myPosts.empty}"><td colspan="4" class="text-center text-muted py-4">You have not submitted any blog posts yet.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+    <th:block layout:fragment="page_css">
+        <style>
+            .customer-blog-page{--cb-ink:#0f172a;--cb-muted:#64748b}
+            .customer-blog-hero{background:linear-gradient(135deg,#9f1616,#d79a10);border-radius:8px;color:#fff;padding:1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+            .customer-blog-kicker{display:inline-block;text-transform:uppercase;font-size:.78rem;font-weight:700;letter-spacing:.05em;opacity:.85}
+            .customer-blog-hero h1{font-size:clamp(1.6rem,3vw,2.4rem);margin:.35rem 0}
+            .customer-blog-hero p{margin:0;color:rgba(255,255,255,.78)}
+            @media (max-width:768px){.customer-blog-hero{display:block}.customer-blog-hero .btn{margin-top:1rem}}
+        </style>
+    </th:block>
+</div>

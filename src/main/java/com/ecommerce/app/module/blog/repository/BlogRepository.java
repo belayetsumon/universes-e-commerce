@@ -16,14 +16,14 @@ import org.springframework.data.repository.query.Param;
 
 public interface BlogRepository extends JpaRepository<Blog, Long>, JpaSpecificationExecutor<Blog> {
 
-    boolean existsBySlugIgnoreCaseAndLanguageCodeIgnoreCaseAndDeletedFlagFalse(String slug, String languageCode);
+    boolean existsBySlugAndLanguageCodeAndDeletedFlagFalse(String slug, String languageCode);
 
-    boolean existsBySlugIgnoreCaseAndLanguageCodeIgnoreCaseAndIdNotAndDeletedFlagFalse(String slug, String languageCode, Long id);
+    boolean existsBySlugAndLanguageCodeAndIdNotAndDeletedFlagFalse(String slug, String languageCode, Long id);
 
-    @EntityGraph(attributePaths = {"category", "author", "series", "tags", "seo"})
-    Optional<Blog> findBySlugIgnoreCaseAndLanguageCodeIgnoreCaseAndDeletedFlagFalse(String slug, String languageCode);
+    @EntityGraph(attributePaths = {"category", "series", "tags", "seo"})
+    Optional<Blog> findBySlugAndLanguageCodeAndDeletedFlagFalse(String slug, String languageCode);
 
-    @EntityGraph(attributePaths = {"category", "author"})
+    @EntityGraph(attributePaths = {"category"})
     Page<Blog> findByStatusAndDeletedFlagFalseAndActiveFlagTrue(BlogPublicationStatus status, Pageable pageable);
 
     long countByStatusAndDeletedFlagFalse(BlogPublicationStatus status);
@@ -43,22 +43,21 @@ public interface BlogRepository extends JpaRepository<Blog, Long>, JpaSpecificat
     @Query("""
             select b from Blog b
             left join b.category c
-            left join b.author a
             where b.deletedFlag = false
               and b.activeFlag = true
               and b.status = :status
-              and (:query is null or lower(b.title) like lower(concat('%', :query, '%'))
-                   or lower(b.excerpt) like lower(concat('%', :query, '%'))
-                   or lower(b.contentPlainText) like lower(concat('%', :query, '%')))
-              and (:categorySlug is null or lower(c.slug) = lower(:categorySlug))
-              and (:authorSlug is null or lower(a.slug) = lower(:authorSlug))
+              and (:queryLike is null or b.title like :queryLike
+                   or b.excerpt like :queryLike
+                   or b.contentPlainText like :queryLike)
+              and (:categorySlug is null or c.slug = :categorySlug)
             """)
     Page<Blog> publicSearch(
             @Param("status") BlogPublicationStatus status,
-            @Param("query") String query,
+            @Param("queryLike") String queryLike,
             @Param("categorySlug") String categorySlug,
-            @Param("authorSlug") String authorSlug,
             Pageable pageable);
+
+    Page<Blog> findByCreatedByAndDeletedFlagFalseOrderByUpdatedAtDesc(String createdBy, Pageable pageable);
 
 //    Optional<Blog> findByIdAndStatus(Long id, Status status);
 //    List<Blog> findAllByBlogcategoryAndStatusOrderByIdDesc(

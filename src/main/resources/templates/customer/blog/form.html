@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="front-layout-inner-customar-page">
+    <div layout:fragment="main_content">
+        <section class="customer-blog-write">
+            <div class="customer-blog-write-head mb-4">
+                <div>
+                    <span>Customer publishing</span>
+                    <h1>Write a Blog Post</h1>
+                    <p>Share product experience, shopping guidance, or a customer story. Submissions go to review before public publishing.</p>
+                </div>
+                <a class="btn btn-outline-light" th:href="@{/customer/blog/my-posts}"><i class="bi bi-journal-check me-1"></i>My Posts</a>
+            </div>
+
+            <form method="post" th:action="@{/customer/blog/write}" th:object="${blogForm}" class="customer-blog-write-form" enctype="multipart/form-data">
+                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <input type="hidden" th:field="*{slug}">
+                <input type="hidden" th:field="*{featuredImageUrl}">
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="customer-blog-write-card">
+                            <div class="mb-3">
+                                <label class="form-label">Title</label>
+                                <input id="customerBlogTitle" class="form-control form-control-lg" th:field="*{title}" placeholder="A clear helpful title">
+                                <div class="text-danger small" th:errors="*{title}"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Excerpt</label>
+                                <textarea class="form-control" rows="3" th:field="*{excerpt}" placeholder="Short summary for the blog card"></textarea>
+                                <div class="text-danger small" th:errors="*{excerpt}"></div>
+                            </div>
+                            <div class="mb-0">
+                                <label class="form-label">Content</label>
+                                <textarea class="form-control" rows="14" th:field="*{contentHtml}" placeholder="Write your article here"></textarea>
+                                <div class="text-danger small" th:errors="*{contentHtml}"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="customer-blog-write-card mb-3">
+                            <h2>Details</h2>
+                            <div class="mb-3">
+                                <label class="form-label">Category</label>
+                                <select class="form-select" th:field="*{categoryId}">
+                                    <option value="">Select category</option>
+                                    <option th:each="category : ${blogCategories}" th:value="${category.id}" th:text="${category.name}">Category</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Featured Image</label>
+                                <input class="form-control" type="file" name="featuredImageFile" accept="image/jpeg,image/png,image/webp">
+                                <div class="form-text">Upload JPG, PNG, or WEBP. The image is checked and optimized before review.</div>
+                                <div class="text-danger small" th:errors="*{featuredImageUrl}"></div>
+                            </div>
+                            <div class="mb-0">
+                                <label class="form-label">Image Alt Text</label>
+                                <input class="form-control" th:field="*{featuredImageAlt}" placeholder="Describe the image">
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-danger btn-lg" type="submit"><i class="bi bi-send-check me-1"></i>Submit For Review</button>
+                            <a class="btn btn-outline-secondary" th:href="@{/customer/blog}">Back To Blog</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+    <th:block layout:fragment="page_css">
+        <style>
+            .customer-blog-write{--ink:#172033;--red:#c81e1e;--yellow:#f8c731}
+            .customer-blog-write-head{background:linear-gradient(135deg,#9f1616,#d79a10);border-radius:8px;color:#fff;padding:1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+            .customer-blog-write-head span{display:inline-block;text-transform:uppercase;font-size:.78rem;font-weight:700;letter-spacing:.05em;opacity:.88}
+            .customer-blog-write-head h1{font-size:clamp(1.7rem,3vw,2.5rem);margin:.35rem 0}
+            .customer-blog-write-head p{max-width:720px;margin:0;color:rgba(255,255,255,.82)}
+            .customer-blog-write-card{background:#fff;border:1px solid #e6e9ef;border-radius:8px;padding:1.25rem;box-shadow:0 12px 30px rgba(15,23,42,.06)}
+            .customer-blog-write-card h2{font-size:1rem;color:var(--ink);margin:0 0 1rem}
+            .customer-blog-write .form-control:focus,.customer-blog-write .form-select:focus{border-color:var(--yellow);box-shadow:0 0 0 .2rem rgba(248,199,49,.2)}
+            @media (max-width:768px){.customer-blog-write-head{display:block}.customer-blog-write-head .btn{margin-top:1rem}}
+        </style>
+    </th:block>
+</div>

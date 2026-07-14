@@ -9,7 +9,6 @@ import com.ecommerce.app.model.Contact;
 import com.ecommerce.app.module.ReferralRewards.model.Referral;
 import com.ecommerce.app.module.ReferralRewards.repository.ReferralRepository;
 import com.ecommerce.app.module.ReferralRewards.services.ReferralService;
-import com.ecommerce.app.module.blog.model.BlogCategory;
 import com.ecommerce.app.module.blog.repository.BlogCategoryRepository;
 import com.ecommerce.app.module.blog.repository.BlogRepository;
 import com.ecommerce.app.module.browsinghistory.model.BrowsingHistory;
@@ -718,39 +717,18 @@ public class PublicController {
         return "frontview/browsing-history";
     }
 
-    @RequestMapping("/blog")
-    public String blog(Model model, HttpServletRequest request) {
-//        List<Blog> blogs = blogRepository.findByStatusOrderByIdDesc(Status.Active);
-//        model.addAttribute("bloglist", blogs);
-//        model.addAttribute("blogcategorylist", blogCategoryRepository.findAll());
-//        publicSeoService.apply(model, publicSeoService.blogList(request, blogs));
-        return "frontview/blog";
-    }
-
     @RequestMapping("/blogdetails/{blogid}")
-    public String blogDetails(Model model, @PathVariable Long blogid, HttpServletRequest request) {
-//        Optional<Blog> blog = blogRepository.findByIdAndStatus(blogid, Status.Active);
-//        if (blog == null) {
-//            return "redirect:/public/blog";
-//        }
-//        model.addAttribute("bloglist", blog);
-//        model.addAttribute("blogcategorylist", blogCategoryRepository.findAll());
-//        publicSeoService.apply(model, publicSeoService.blogArticle(request, blog));
-        return "frontview/blogdetails";
+    public String blogDetails(@PathVariable Long blogid) {
+        return blogRepository.findById(blogid)
+                .map(blog -> "redirect:/public/blog/" + blog.getSlug())
+                .orElse("redirect:/public/blog");
     }
 
     @RequestMapping("/blog-by-cat/{catid}")
-    public String blogByCategory(Model model, @PathVariable Long catid, HttpServletRequest request) {
-        BlogCategory category = blogCategoryRepository.findById(catid).orElse(null);
-//        if (category == null) {
-//            return "redirect:/public/blog";
-//        }
-//        List<Blog> blogs = blogRepository.findByBlogcategoryAndStatusOrderByIdDesc(category, Status.Active);
-//        model.addAttribute("bloglist", blogs);
-//        model.addAttribute("blogcategorylist", blogCategoryRepository.findAll());
-//        model.addAttribute("activeBlogCategory", category);
-//        publicSeoService.apply(model, publicSeoService.blogCategory(request, category, blogs));
-        return "frontview/blog-by-category";
+    public String blogByCategory(@PathVariable Long catid) {
+        return blogCategoryRepository.findById(catid)
+                .map(category -> "redirect:/public/blog/category/" + category.getSlug())
+                .orElse("redirect:/public/blog");
     }
 
     private void captureProductShareReferral(String referralCode, String productUuid, HttpSession session) {

@@ -1,85 +1,122 @@
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-page">
     <div layout:fragment="main_content">
-        <section class="blog-public-shell">
-            <div class="container py-4 py-lg-5">
-                <div th:if="${successMessage}" class="alert alert-success"><span th:text="${successMessage}"></span></div>
-                <div th:if="${errorMessage}" class="alert alert-danger"><span th:text="${errorMessage}"></span></div>
-
-                <div class="blog-landing-head mb-4">
-                    <div>
-                        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-2"><li class="breadcrumb-item"><a th:href="@{/}">Home</a></li><li class="breadcrumb-item active">Blog</li></ol></nav>
-                        <h1 class="mb-2">Shopping Guides & Stories</h1>
-                        <p class="text-muted mb-0">Ideas, product education, buying guides, and marketplace updates.</p>
-                    </div>
-                    <form class="blog-search" method="get" th:action="@{/public/blog/search}">
-                        <input class="form-control" name="q" th:value="${query}" placeholder="Search articles">
-                        <button class="btn btn-danger" type="submit"><i class="bi bi-search"></i></button>
-                    </form>
-                </div>
-
-                <div class="row g-4">
-                    <div class="col-lg-8">
-                        <div class="row g-3">
-                            <div class="col-md-6" th:each="article : ${articles.content}">
-                                <article class="blog-card h-100">
-                                    <a th:href="@{/public/blog/{slug}(slug=${article.slug})}" class="blog-card-media">
-                                        <img th:if="${article.featuredImageUrl != null}" th:src="${article.featuredImageUrl}" th:alt="${article.featuredImageAlt != null ? article.featuredImageAlt : article.title}" loading="lazy">
-                                        <span th:unless="${article.featuredImageUrl != null}" class="blog-card-placeholder"><i class="bi bi-journal-richtext"></i></span>
-                                    </a>
-                                    <div class="blog-card-body">
-                                        <div class="d-flex justify-content-between gap-2 small text-muted mb-2">
-                                            <a class="text-decoration-none" th:if="${article.category != null}" th:href="@{/public/blog/category/{slug}(slug=${article.category.slug})}" th:text="${article.category.name}">Category</a>
-                                            <span th:text="${article.readingTimeMinutes + ' min read'}">3 min read</span>
-                                        </div>
-                                        <h2 class="h5"><a th:href="@{/public/blog/{slug}(slug=${article.slug})}" th:text="${article.title}">Article title</a></h2>
-                                        <p class="text-muted" th:text="${article.excerpt}">Excerpt</p>
-                                    </div>
-                                </article>
-                            </div>
-                            <div class="col-12" th:if="${articles.empty}">
-                                <div class="text-center text-muted py-5 bg-white border rounded">No articles found.</div>
-                            </div>
+        <section class="public-blog-page">
+            <div class="public-blog-hero">
+                <div class="container">
+                    <div class="public-blog-hero-grid">
+                        <div class="public-blog-hero-copy">
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb public-blog-breadcrumb mb-3">
+                                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                                    <li class="breadcrumb-item active">Blog</li>
+                                </ol>
+                            </nav>
+                            <span class="public-blog-kicker"><i class="bi bi-journal-richtext"></i> Marketplace Journal</span>
+                            <h1>Shopping Guides & Stories</h1>
+                            <p>Ideas, product education, buying guides, and marketplace updates curated for smarter purchasing.</p>
                         </div>
-                    </div>
-                    <aside class="col-lg-4">
-                        <div class="blog-sidebar-block mb-3">
-                            <h2 class="h6">Categories</h2>
-                            <div class="d-flex flex-wrap gap-2">
-                                <a class="btn btn-sm btn-outline-secondary" th:each="category : ${blogCategories}" th:href="@{/public/blog/category/{slug}(slug=${category.slug})}" th:text="${category.name}">Category</a>
+                        <div class="public-blog-hero-panel">
+                            <div class="public-blog-stat">
+                                <span th:text="${articles.totalElements}">0</span>
+                                <small>Published Articles</small>
                             </div>
-                        </div>
-                        <div class="blog-sidebar-block mb-3">
-                            <h2 class="h6">Popular Articles</h2>
-                            <a class="blog-mini-link" th:each="article : ${popularArticles}" th:href="@{/public/blog/{slug}(slug=${article.slug})}" th:text="${article.title}">Article</a>
-                        </div>
-                        <div class="blog-sidebar-block">
-                            <h2 class="h6">Newsletter</h2>
-                            <form method="post" th:action="@{/public/blog/subscribe}" th:object="${subscriberForm}">
-                                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                <input class="form-control mb-2" th:field="*{name}" placeholder="Name">
-                                <input class="form-control mb-2" th:field="*{email}" placeholder="Email">
-                                <button class="btn btn-danger w-100">Subscribe</button>
+                            <form class="public-blog-search" method="get" th:action="@{/public/blog/search}">
+                                <label class="visually-hidden" for="publicBlogSearch">Search articles</label>
+                                <input id="publicBlogSearch" class="form-control" name="q" th:value="${query}" placeholder="Search guides, news, product tips">
+                                <button class="btn public-blog-action" type="submit" aria-label="Search articles"><i class="bi bi-search"></i></button>
                             </form>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container public-blog-content">
+                <div th:if="${successMessage}" class="alert alert-success public-blog-alert"><span th:text="${successMessage}"></span></div>
+                <div th:if="${errorMessage}" class="alert alert-danger public-blog-alert"><span th:text="${errorMessage}"></span></div>
+
+                <div class="public-blog-layout">
+                    <main class="public-blog-main">
+                        <div class="public-blog-toolbar">
+                            <div>
+                                <span class="public-blog-eyebrow">Latest Insights</span>
+                                <h2>Featured reading for today</h2>
+                            </div>
+                            <a class="public-blog-reset" th:href="@{/public/blog}" th:if="${query != null or activeCategorySlug != null or activeTagSlug != null or activeAuthorSlug != null}">
+                                <i class="bi bi-arrow-counterclockwise"></i> Reset
+                            </a>
+                        </div>
+
+                        <div class="public-blog-grid">
+                            <article class="public-blog-card" th:each="article : ${articles.content}">
+                                <a th:href="@{/public/blog/{slug}(slug=${article.slug})}" class="public-blog-card-media">
+                                    <img th:if="${article.featuredImageUrl != null}" th:src="${article.featuredImageUrl}" th:alt="${article.featuredImageAlt != null ? article.featuredImageAlt : article.title}" loading="lazy">
+                                    <span th:unless="${article.featuredImageUrl != null}" class="public-blog-card-placeholder"><i class="bi bi-newspaper"></i></span>
+                                </a>
+                                <div class="public-blog-card-body">
+                                    <div class="public-blog-card-meta">
+                                        <a th:if="${article.category != null}" th:href="@{/public/blog/category/{slug}(slug=${article.category.slug})}" th:text="${article.category.name}">Category</a>
+                                        <span><i class="bi bi-clock"></i> <span th:text="${article.readingTimeMinutes + ' min read'}">3 min read</span></span>
+                                    </div>
+                                    <h3><a th:href="@{/public/blog/{slug}(slug=${article.slug})}" th:text="${article.title}">Article title</a></h3>
+                                    <p th:text="${article.excerpt}">Excerpt</p>
+                                    <a class="public-blog-read-link" th:href="@{/public/blog/{slug}(slug=${article.slug})}">
+                                        Read Article <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </article>
+
+                            <div class="public-blog-empty" th:if="${articles.empty}">
+                                <i class="bi bi-search"></i>
+                                <h3>No articles found</h3>
+                                <p>Try a different keyword or browse all marketplace articles.</p>
+                                <a class="btn public-blog-action" th:href="@{/public/blog}">View All Articles</a>
+                            </div>
+                        </div>
+                    </main>
+
+                    <aside class="public-blog-sidebar">
+                        <section class="public-blog-panel">
+                            <div class="public-blog-panel-head">
+                                <i class="bi bi-grid"></i>
+                                <h2>Categories</h2>
+                            </div>
+                            <div class="public-blog-category-list">
+                                <a th:each="category : ${blogCategories}"
+                                   th:href="@{/public/blog/category/{slug}(slug=${category.slug})}"
+                                   th:classappend="${activeCategorySlug == category.slug} ? ' active' : ''"
+                                   th:text="${category.name}">Category</a>
+                            </div>
+                        </section>
+
+                        <section class="public-blog-panel">
+                            <div class="public-blog-panel-head">
+                                <i class="bi bi-fire"></i>
+                                <h2>Popular Articles</h2>
+                            </div>
+                            <a class="public-blog-mini-link" th:each="article : ${popularArticles}" th:href="@{/public/blog/{slug}(slug=${article.slug})}">
+                                <span th:text="${article.title}">Article</span>
+                                <small th:text="${article.readingTimeMinutes + ' min read'}">3 min read</small>
+                            </a>
+                        </section>
+
+                        <section class="public-blog-panel public-blog-newsletter">
+                            <div class="public-blog-panel-head">
+                                <i class="bi bi-envelope-paper"></i>
+                                <h2>Newsletter</h2>
+                            </div>
+                            <p>Get fresh buying ideas and marketplace updates in your inbox.</p>
+                            <form method="post" th:action="@{/public/blog/subscribe}" th:object="${subscriberForm}">
+                                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <label class="visually-hidden" for="subscriberName">Name</label>
+                                <input id="subscriberName" class="form-control" th:field="*{name}" placeholder="Name">
+                                <label class="visually-hidden" for="subscriberEmail">Email</label>
+                                <input id="subscriberEmail" class="form-control" th:field="*{email}" placeholder="Email">
+                                <button class="btn public-blog-action w-100">Subscribe</button>
+                            </form>
+                        </section>
                     </aside>
                 </div>
             </div>
         </section>
     </div>
-    <th:block layout:fragment="page_css">
-        <style>
-            .blog-public-shell{background:#f6f8fb}
-            .blog-landing-head{display:flex;gap:1rem;justify-content:space-between;align-items:end}
-            .blog-search{display:flex;gap:.5rem;min-width:min(420px,100%)}
-            .blog-card,.blog-sidebar-block{background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden}
-            .blog-card-media{display:flex;align-items:center;justify-content:center;aspect-ratio:16/9;background:#e8eef6;color:#113459;text-decoration:none}
-            .blog-card-media img{width:100%;height:100%;object-fit:cover}
-            .blog-card-placeholder{font-size:2.5rem}
-            .blog-card-body{padding:1rem}
-            .blog-card h2 a{color:#172033;text-decoration:none}
-            .blog-sidebar-block{padding:1rem}
-            .blog-mini-link{display:block;color:#172033;text-decoration:none;padding:.55rem 0;border-top:1px solid #edf0f4}
-            @media (max-width: 768px){.blog-landing-head{display:block}.blog-search{margin-top:1rem}}
-        </style>
-    </th:block>
 </div>

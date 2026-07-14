@@ -21,7 +21,6 @@ public class BlogMapper {
         form.setStatus(blog.getStatus());
         form.setVisibility(blog.getVisibility());
         form.setCategoryId(blog.getCategory() != null ? blog.getCategory().getId() : null);
-        form.setAuthorId(blog.getAuthor() != null ? blog.getAuthor().getId() : null);
         form.setSeriesId(blog.getSeries() != null ? blog.getSeries().getId() : null);
         form.setTags(blog.getTags() == null ? "" : blog.getTags().stream().map(BlogTag::getName).sorted().collect(Collectors.joining(", ")));
         form.setFeaturedImageUrl(blog.getFeaturedImageUrl());

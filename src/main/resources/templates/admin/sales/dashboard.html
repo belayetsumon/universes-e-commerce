@@ -39,11 +39,6 @@
             .sales-dashboard .sd-alert.danger { border-left-color:#bd3038; }
             .sales-dashboard .sd-alert.warning { border-left-color:#b7791f; }
             .sales-dashboard .sd-alert.success { border-left-color:#087443; }
-            .sales-dashboard .sd-activity { display:grid; gap:.7rem; }
-            .sales-dashboard .sd-event { display:flex; gap:.75rem; align-items:flex-start; }
-            .sales-dashboard .sd-event i { width:2rem; height:2rem; display:grid; place-items:center; color:#fff; background:#113459; border-radius:50%; flex:0 0 2rem; }
-            .sales-dashboard .sd-event.success i { background:#087443; }
-            .sales-dashboard .sd-event.danger i { background:#bd3038; }
             .sales-dashboard .sd-empty { color:var(--sd-muted); padding:2rem 1rem; text-align:center; }
             .sales-dashboard.is-loading .sd-panel,.sales-dashboard.is-loading .sd-kpi { background:linear-gradient(100deg,#f6f8fb 25%,#edf2f7 50%,#f6f8fb 75%); background-size:200% 100%; animation:sd-skeleton 1.2s infinite; }
             .sales-dashboard.is-loading .sd-panel > *,.sales-dashboard.is-loading .sd-kpi > * { visibility:hidden; }
@@ -154,10 +149,18 @@
                     <div class="col-12 col-xl-4"><article class="card sd-panel h-100"><div class="card-body"><h2 class="sd-title">Top Customers</h2><div class="table-responsive"><table class="table sd-table"><thead><tr><th>Customer</th><th class="text-end">Orders</th><th class="text-end">LTV</th><th>Last Purchase</th><th class="text-end">Points</th></tr></thead><tbody><tr th:if="${#lists.isEmpty(sales.topCustomers)}"><td colspan="5" class="sd-empty">No customer sales match this filter.</td></tr><tr th:each="item : ${sales.topCustomers}"><td class="sd-name" th:text="${item.customer}">Customer</td><td class="text-end" th:text="${item.orders}">0</td><td class="text-end" th:text="${'Tk ' + #numbers.formatDecimal(item.lifetimeValue,1,'COMMA',2,'POINT')}">Tk 0</td><td th:text="${item.lastPurchase}">Date</td><td class="text-end" th:text="${item.rewardPoints}">0</td></tr></tbody></table></div></div></article></div>
                 </div>
 
-                <div class="row g-3">
-                    <div class="col-12 col-xl-6"><article class="card sd-panel h-100"><div class="card-body"><h2 class="sd-title">Live Activity Feed</h2><p class="sd-subtitle">Auto-refreshes every 60 seconds.</p><div class="sd-activity"><div class="sd-event" th:each="item : ${sales.liveActivity}" th:classappend="${item.accent}"><i class="bi bi-lightning-charge"></i><div><div class="sd-name" th:text="${item.title}">Order</div><div class="text-muted small" th:text="${item.detail}">Detail</div><div class="text-muted small" th:text="${item.happenedAt}">Time</div></div></div></div></div></article></div>
-                    <div class="col-12 col-xl-6"><article class="card sd-panel h-100"><div class="card-body"><h2 class="sd-title">Business Alerts</h2><p class="sd-subtitle">Inventory, sales target, payment, return, vendor, and shipping signals.</p><div class="sd-metric-list"><div class="sd-metric sd-alert" th:each="item : ${sales.alerts}" th:classappend="${item.severity}"><div><strong th:text="${item.title}">Alert</strong><span th:text="${item.detail}">Detail</span></div><b th:text="${item.actionLabel}">Action</b></div></div></div></article></div>
-                </div>
+                <article class="card sd-panel">
+                    <div class="card-body">
+                        <h2 class="sd-title">Business Alerts</h2>
+                        <p class="sd-subtitle">Inventory, sales target, payment, return, vendor, and shipping signals.</p>
+                        <div class="sd-metric-list">
+                            <div class="sd-metric sd-alert" th:each="item : ${sales.alerts}" th:classappend="${item.severity}">
+                                <div><strong th:text="${item.title}">Alert</strong><span th:text="${item.detail}">Detail</span></div>
+                                <b th:text="${item.actionLabel}">Action</b>
+                            </div>
+                        </div>
+                    </div>
+                </article>
             </div>
         </section>
     </div>

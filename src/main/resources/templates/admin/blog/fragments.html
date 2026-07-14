@@ -1,12 +1,48 @@
 <div xmlns:th="http://www.thymeleaf.org">
+    <header th:fragment="moduleHeader(active, title, subtitle, iconClass, badgeText, primaryHref, primaryText, primaryIcon, secondaryHref, secondaryText, secondaryIcon)"
+            class="card shadow-sm mb-4 blog-admin-hero-card">
+        <div class="card-header d-flex justify-content-between align-items-center border-0 py-3">
+            <div class="h5 mb-0 text-white">
+                <i class="bi bi-journal-richtext me-2 text-warning"></i>
+                Content operations
+            </div>
+            <span class="badge text-bg-light border border-white border-opacity-25" th:text="${badgeText}">Blog module</span>
+        </div>
+        <div class="card-body py-4">
+            <div class="blog-hero-main">
+                <div class="blog-hero-title">
+                    <span class="blog-hero-icon"><i class="bi fs-4" th:classappend="${iconClass}"></i></span>
+                    <div>
+                        <p class="blog-kicker">Administration</p>
+                        <h1 th:text="${title}">Blog Management</h1>
+                        <p class="blog-subtitle" th:text="${subtitle}">Manage editorial workflow, SEO content, categories, publishing, and moderation.</p>
+                    </div>
+                </div>
+                <div class="blog-hero-actions">
+                    <a th:if="${secondaryHref != null and secondaryText != null}" class="btn btn-light" th:href="${secondaryHref}">
+                        <i class="bi" th:classappend="${secondaryIcon}"></i>
+                        <span th:text="${secondaryText}">Back</span>
+                    </a>
+                    <a th:if="${primaryHref != null and primaryText != null}" class="btn btn-primary" th:href="${primaryHref}">
+                        <i class="bi" th:classappend="${primaryIcon}"></i>
+                        <span th:text="${primaryText}">New</span>
+                    </a>
+                </div>
+            </div>
+            <div class="blog-hero-menu" aria-label="Blog module sections">
+                <div th:replace="admin/blog/fragments :: tabs(${active})"></div>
+            </div>
+        </div>
+    </header>
+
     <div th:fragment="tabs(active)" class="blog-admin-tabs mb-3">
+        <link rel="stylesheet" th:href="@{/assets/admin/pages/blog/blog-admin.css}">
         <div class="nav nav-pills flex-wrap gap-2">
             <a class="nav-link" th:classappend="${active == 'posts'} ? ' active'" th:href="@{/admin/blog}"><i class="bi bi-journal-text me-1"></i>Posts</a>
             <a class="nav-link" th:classappend="${active == 'approval'} ? ' active'" th:href="@{/admin/blog/approval-queue}"><i class="bi bi-check2-square me-1"></i>Approval Queue</a>
             <a class="nav-link" th:classappend="${active == 'publishing'} ? ' active'" th:href="@{/admin/blog/publishing-queue}"><i class="bi bi-calendar-event me-1"></i>Publishing Queue</a>
             <a class="nav-link" th:classappend="${active == 'comments'} ? ' active'" th:href="@{/admin/blog/comments}"><i class="bi bi-chat-dots me-1"></i>Moderation</a>
             <a class="nav-link" th:classappend="${active == 'categories'} ? ' active'" th:href="@{/admin/blog/categories}"><i class="bi bi-folder2-open me-1"></i>Categories</a>
-            <a class="nav-link" th:classappend="${active == 'authors'} ? ' active'" th:href="@{/admin/blog/authors}"><i class="bi bi-person-lines-fill me-1"></i>Authors</a>
             <a class="nav-link" th:classappend="${active == 'series'} ? ' active'" th:href="@{/admin/blog/series}"><i class="bi bi-collection me-1"></i>Series</a>
             <a class="nav-link" th:classappend="${active == 'subscribers'} ? ' active'" th:href="@{/admin/blog/subscribers}"><i class="bi bi-envelope-paper me-1"></i>Subscribers</a>
         </div>

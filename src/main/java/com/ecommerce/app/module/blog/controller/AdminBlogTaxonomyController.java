@@ -1,9 +1,7 @@
 package com.ecommerce.app.module.blog.controller;
 
-import com.ecommerce.app.module.blog.model.BlogAuthor;
 import com.ecommerce.app.module.blog.model.BlogCategory;
 import com.ecommerce.app.module.blog.model.BlogSeries;
-import com.ecommerce.app.module.blog.repository.BlogAuthorRepository;
 import com.ecommerce.app.module.blog.repository.BlogCategoryRepository;
 import com.ecommerce.app.module.blog.repository.BlogSeriesRepository;
 import com.ecommerce.app.module.blog.services.BlogTaxonomyService;
@@ -29,17 +27,14 @@ public class AdminBlogTaxonomyController {
 
     private final BlogTaxonomyService taxonomyService;
     private final BlogCategoryRepository categoryRepository;
-    private final BlogAuthorRepository authorRepository;
     private final BlogSeriesRepository seriesRepository;
 
     public AdminBlogTaxonomyController(
             BlogTaxonomyService taxonomyService,
             BlogCategoryRepository categoryRepository,
-            BlogAuthorRepository authorRepository,
             BlogSeriesRepository seriesRepository) {
         this.taxonomyService = taxonomyService;
         this.categoryRepository = categoryRepository;
-        this.authorRepository = authorRepository;
         this.seriesRepository = seriesRepository;
     }
 
@@ -74,39 +69,6 @@ public class AdminBlogTaxonomyController {
         taxonomyService.saveCategory(category);
         redirectAttributes.addFlashAttribute("successMessage", "Blog category saved.");
         return "redirect:/admin/blog/categories";
-    }
-
-    @GetMapping("/authors")
-    public String authors(@RequestParam(defaultValue = "0") int page, Model model) {
-        model.addAttribute("authors", taxonomyService.authors(PageRequest.of(Math.max(page, 0), 50, Sort.by("displayName"))));
-        return "admin/blog/authors";
-    }
-
-    @GetMapping("/authors/new")
-    public String authorCreate(Model model) {
-        model.addAttribute("author", new BlogAuthor());
-        return "admin/blog/author-form";
-    }
-
-    @GetMapping("/authors/{id}/edit")
-    public String authorEdit(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
-        BlogAuthor author = authorRepository.findById(id).orElse(null);
-        if (author == null) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Author was not found.");
-            return "redirect:/admin/blog/authors";
-        }
-        model.addAttribute("author", author);
-        return "admin/blog/author-form";
-    }
-
-    @PostMapping("/authors/save")
-    public String authorSave(@Valid @ModelAttribute("author") BlogAuthor author, BindingResult result, RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            return "admin/blog/author-form";
-        }
-        taxonomyService.saveAuthor(author);
-        redirectAttributes.addFlashAttribute("successMessage", "Blog author saved.");
-        return "redirect:/admin/blog/authors";
     }
 
     @GetMapping("/series")

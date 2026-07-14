@@ -31,7 +31,6 @@ import java.util.Set;
         indexes = {
             @Index(name = "idx_blog_status_publish", columnList = "status,published_at,scheduled_at"),
             @Index(name = "idx_blog_category", columnList = "category_id"),
-            @Index(name = "idx_blog_author", columnList = "author_id"),
             @Index(name = "idx_blog_visibility", columnList = "visibility"),
             @Index(name = "idx_blog_featured_sticky", columnList = "featured_post,sticky_post,sort_order"),
             @Index(name = "idx_blog_deleted", columnList = "deleted_flag,active_flag")
@@ -75,10 +74,6 @@ public class Blog extends BaseBlogEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private BlogCategory category;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id")
-    private BlogAuthor author;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "series_id")
@@ -222,14 +217,6 @@ public class Blog extends BaseBlogEntity {
 
     public void setCategory(BlogCategory category) {
         this.category = category;
-    }
-
-    public BlogAuthor getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(BlogAuthor author) {
-        this.author = author;
     }
 
     public BlogSeries getSeries() {

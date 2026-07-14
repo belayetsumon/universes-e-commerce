@@ -10,6 +10,7 @@ import com.ecommerce.app.module.blog.repository.BlogRelatedProductRepository;
 import com.ecommerce.app.module.blog.repository.BlogRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,13 +46,13 @@ public class BlogPublicService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Blog> publicPosts(String query, String categorySlug, String authorSlug, Pageable pageable) {
-        return blogRepository.publicSearch(BlogPublicationStatus.PUBLISHED, clean(query), clean(categorySlug), clean(authorSlug), pageable);
+    public Page<Blog> publicPosts(String query, String categorySlug, Pageable pageable) {
+        return blogRepository.publicSearch(BlogPublicationStatus.PUBLISHED, likePattern(query), cleanLower(categorySlug), pageable);
     }
 
     @Transactional
     public Optional<Blog> findPublishedBySlug(String slug, String languageCode, HttpServletRequest request) {
-        Optional<Blog> blog = blogRepository.findBySlugIgnoreCaseAndLanguageCodeIgnoreCaseAndDeletedFlagFalse(slug, languageCode == null ? "en" : languageCode);
+        Optional<Blog> blog = blogRepository.findBySlugAndLanguageCodeAndDeletedFlagFalse(cleanLower(slug), cleanLower(languageCode) == null ? "en" : cleanLower(languageCode));
         blog.filter(this::isPubliclyVisible).ifPresent(post -> engagementService.recordView(post, request));
         return blog.filter(this::isPubliclyVisible);
     }
@@ -84,5 +85,15 @@ public class BlogPublicService {
 
     private String clean(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private String cleanLower(String value) {
+        String cleanValue = clean(value);
+        return cleanValue == null ? null : cleanValue.toLowerCase(Locale.ROOT);
+    }
+
+    private String likePattern(String value) {
+        String cleanValue = clean(value);
+        return cleanValue == null ? null : "%" + cleanValue + "%";
     }
 }

@@ -1,7 +1,28 @@
-<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
-    <div layout:fragment="main_content">
-        <section class="d-flex justify-content-between align-items-center mb-3"><h4 class="mb-0"><i class="bi bi-folder2-open me-2 text-primary"></i>Blog Categories</h4><a class="btn btn-primary" th:href="@{/admin/blog/categories/new}">New Category</a></section>
-        <div th:replace="admin/blog/fragments :: tabs('categories')"></div><div th:replace="admin/blog/fragments :: alerts"></div>
-        <div class="card border-0 shadow-sm"><div class="card-body table-responsive"><table class="table table-hover align-middle mb-0"><thead class="table-light"><tr><th>Name</th><th>Slug</th><th>Status</th><th class="text-end">Actions</th></tr></thead><tbody><tr th:each="category : ${categories.content}"><td th:text="${category.name}"></td><td th:text="${category.slug}"></td><td th:text="${category.recordStatus}"></td><td class="text-end"><a class="btn btn-sm btn-primary" th:href="@{/admin/blog/categories/{id}/edit(id=${category.id})}">Edit</a></td></tr><tr th:if="${categories.empty}"><td colspan="4" class="text-center text-muted py-4">No categories found.</td></tr></tbody></table></div></div>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <div layout:fragment="main_content" class="blog-admin-page">
+        <div class="blog-settings-workspace">
+            <div th:replace="admin/blog/fragments :: moduleHeader('categories', 'Blog Categories', 'Organize articles into discoverable editorial and storefront topics.', 'bi-folder2-open', 'Taxonomy', @{/admin/blog/categories/new}, 'New Category', 'bi-plus-circle', null, null, null)"></div>
+            <div th:replace="admin/blog/fragments :: alerts"></div>
+            <div class="card border-0 shadow-sm blog-table-card">
+                <div class="card-body table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr><th>Name</th><th>Slug</th><th>Status</th><th class="text-end">Actions</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="category : ${categories.content}">
+                                <td th:text="${category.name}"></td>
+                                <td th:text="${category.slug}"></td>
+                                <td th:text="${category.recordStatus}"></td>
+                                <td class="text-end"><a class="btn btn-sm btn-primary" th:href="@{/admin/blog/categories/{id}/edit(id=${category.id})}">Edit</a></td>
+                            </tr>
+                            <tr th:if="${categories.empty}"><td colspan="4" class="text-center text-muted py-4">No categories found.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

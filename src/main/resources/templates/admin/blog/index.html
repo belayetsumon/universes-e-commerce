@@ -1,106 +1,145 @@
-<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
-    <div layout:fragment="main_content">
-        <section class="blog-admin-hero mb-4">
-            <div>
-                <span class="text-uppercase small fw-semibold text-info">Content operations</span>
-                <h3 class="mb-1 text-white">Blog Management</h3>
-                <p class="mb-0 text-white-50">Editorial workflow, SEO, engagement, and product-linked content.</p>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <link rel="stylesheet" th:href="@{/assets/admin/pages/blog/blog-admin.css}">
+    </th:block>
+
+    <div layout:fragment="main_content" class="blog-admin-page">
+        <div class="blog-settings-workspace">
+            <div th:replace="admin/blog/fragments :: moduleHeader('posts', 'Blog Management', 'Manage editorial workflow, SEO content, categories, publishing, and moderation from one workspace.', 'bi-pencil-square', 'Blog module', @{/admin/blog/new}, 'New Article', 'bi-plus-circle', @{/public/blog}, 'Public Blog', 'bi-box-arrow-up-right')"></div>
+
+            <div class="blog-status-grid" th:if="${metrics != null}">
+                <div class="blog-status">
+                    <span class="blog-status-icon"><i class="bi bi-stack"></i></span>
+                    <div><span>Total Posts</span><strong th:text="${metrics.totalPosts}">0</strong></div>
+                </div>
+                <div class="blog-status">
+                    <span class="blog-status-icon blog-status-icon--success"><i class="bi bi-check2-circle"></i></span>
+                    <div><span>Published</span><strong th:text="${metrics.publishedPosts}">0</strong></div>
+                </div>
+                <div class="blog-status">
+                    <span class="blog-status-icon blog-status-icon--muted"><i class="bi bi-pencil"></i></span>
+                    <div><span>Drafts</span><strong th:text="${metrics.draftPosts}">0</strong></div>
+                </div>
+                <div class="blog-status blog-status--warning">
+                    <span class="blog-status-icon blog-status-icon--warning"><i class="bi bi-hourglass-split"></i></span>
+                    <div><span>In Review</span><strong th:text="${metrics.reviewPosts}">0</strong></div>
+                </div>
+                <div class="blog-status">
+                    <span class="blog-status-icon blog-status-icon--info"><i class="bi bi-calendar-event"></i></span>
+                    <div><span>Scheduled</span><strong th:text="${metrics.scheduledPosts}">0</strong></div>
+                </div>
+                <div class="blog-status blog-status--warning">
+                    <span class="blog-status-icon blog-status-icon--danger"><i class="bi bi-chat-left-text"></i></span>
+                    <div><span>Pending Comments</span><strong th:text="${metrics.pendingComments}">0</strong></div>
+                </div>
             </div>
-            <a class="btn btn-info text-dark fw-semibold" th:href="@{/admin/blog/new}"><i class="bi bi-plus-circle me-1"></i>New Article</a>
-        </section>
 
-        <div th:replace="admin/blog/fragments :: tabs('posts')"></div>
-        <div th:replace="admin/blog/fragments :: alerts"></div>
+            <section class="blog-admin-content">
+                <div th:replace="admin/blog/fragments :: alerts"></div>
 
-        <div class="row g-3 mb-3" th:if="${metrics != null}">
-            <div class="col-6 col-lg-2"><div class="card border-0 shadow-sm"><div class="card-body"><small>Total</small><h4 th:text="${metrics.totalPosts}">0</h4></div></div></div>
-            <div class="col-6 col-lg-2"><div class="card border-0 shadow-sm"><div class="card-body"><small>Published</small><h4 th:text="${metrics.publishedPosts}">0</h4></div></div></div>
-            <div class="col-6 col-lg-2"><div class="card border-0 shadow-sm"><div class="card-body"><small>Draft</small><h4 th:text="${metrics.draftPosts}">0</h4></div></div></div>
-            <div class="col-6 col-lg-2"><div class="card border-0 shadow-sm"><div class="card-body"><small>Review</small><h4 th:text="${metrics.reviewPosts}">0</h4></div></div></div>
-            <div class="col-6 col-lg-2"><div class="card border-0 shadow-sm"><div class="card-body"><small>Scheduled</small><h4 th:text="${metrics.scheduledPosts}">0</h4></div></div></div>
-            <div class="col-6 col-lg-2"><div class="card border-0 shadow-sm"><div class="card-body"><small>Comments</small><h4 th:text="${metrics.pendingComments}">0</h4></div></div></div>
-        </div>
+                <div class="card border-0 shadow-sm mb-3 blog-filter-card">
+                    <div class="card-body">
+                        <div class="blog-panel-head">
+                            <div>
+                                <p>Article Search</p>
+                                <h2>Find Articles</h2>
+                            </div>
+                            <a class="btn btn-sm btn-outline-secondary" th:href="@{/admin/blog}">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+                            </a>
+                        </div>
+                        <form class="row g-3 align-items-end" method="get" th:action="@{/admin/blog}">
+                            <div class="col-lg-4">
+                                <label class="form-label">Search</label>
+                                <input class="form-control" name="query" th:value="${criteria.query}" placeholder="Title, excerpt, content">
+                            </div>
+                            <div class="col-md-4 col-lg-2">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" name="status">
+                                    <option value="">All</option>
+                                    <option th:each="status : ${blogStatuses}" th:value="${status}" th:selected="${criteria.status == status}" th:text="${status}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 col-lg-2">
+                                <label class="form-label">Visibility</label>
+                                <select class="form-select" name="visibility">
+                                    <option value="">All</option>
+                                    <option th:each="visibility : ${blogVisibilities}" th:value="${visibility}" th:selected="${criteria.visibility == visibility}" th:text="${visibility}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 col-lg-2">
+                                <label class="form-label">Sort</label>
+                                <select class="form-select" name="sort">
+                                    <option value="updatedAt" th:selected="${criteria.sort == 'updatedAt'}">Updated</option>
+                                    <option value="publishedAt" th:selected="${criteria.sort == 'publishedAt'}">Published</option>
+                                    <option value="viewCount" th:selected="${criteria.sort == 'viewCount'}">Views</option>
+                                    <option value="title" th:selected="${criteria.sort == 'title'}">Title</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-2 d-grid">
+                                <button class="btn btn-primary"><i class="bi bi-funnel me-1"></i>Filter</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
 
-        <div class="card border-0 shadow-sm mb-3">
-            <div class="card-body">
-                <form class="row g-2 align-items-end" method="get" th:action="@{/admin/blog}">
-                    <div class="col-md-4">
-                        <label class="form-label">Search</label>
-                        <input class="form-control" name="query" th:value="${criteria.query}" placeholder="Title, excerpt, content">
+                <div class="card border-0 shadow-sm blog-table-card">
+                    <div class="card-body">
+                        <div class="blog-panel-head blog-panel-head--table">
+                            <div>
+                                <p>Content Library</p>
+                                <h2>Articles</h2>
+                            </div>
+                            <span class="blog-chip" th:if="${blogs != null}" th:text="|${blogs.totalElements} records|">0 records</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr><th>Article</th><th>Status</th><th>Visibility</th><th>Category</th><th>Creator</th><th>Views</th><th>Updated</th><th class="text-end">Actions</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="blog : ${blogs.content}">
+                                        <td>
+                                            <div class="blog-article-cell">
+                                                <span class="blog-article-thumb">
+                                                    <img th:if="${blog.featuredImageUrl != null}" th:src="${blog.featuredImageUrl}" th:alt="${blog.featuredImageAlt != null ? blog.featuredImageAlt : blog.title}">
+                                                    <i th:unless="${blog.featuredImageUrl != null}" class="bi bi-newspaper"></i>
+                                                </span>
+                                                <span>
+                                                    <span class="blog-article-title" th:text="${blog.title}">Article</span>
+                                                    <small class="text-muted" th:text="${blog.slug}">slug</small>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td><span class="badge blog-status-badge" th:classappend="${blog.status != null ? ' blog-status-' + #strings.toLowerCase(#strings.replace(blog.status.name(), '_', '-')) : ''}" th:text="${blog.status}">DRAFT</span></td>
+                                        <td><span class="badge blog-visibility-badge" th:text="${blog.visibility}">PUBLIC</span></td>
+                                        <td th:text="${blog.category != null ? blog.category.name : '-'}">-</td>
+                                        <td th:text="${blog.createdBy != null ? blog.createdBy : '-'}">-</td>
+                                        <td><span class="blog-view-pill"><i class="bi bi-eye"></i><span th:text="${blog.viewCount}">0</span></span></td>
+                                        <td><span class="blog-date-text" th:text="${blog.updatedAt}">-</span></td>
+                                        <td class="text-end text-nowrap blog-actions">
+                                            <a class="btn btn-sm btn-outline-secondary" th:href="@{/admin/blog/{id}/preview(id=${blog.id})}" target="_blank" title="Preview"><i class="bi bi-eye"></i></a>
+                                            <a class="btn btn-sm btn-primary" th:href="@{/admin/blog/{id}/edit(id=${blog.id})}" title="Edit"><i class="bi bi-pencil"></i></a>
+                                            <a class="btn btn-sm btn-outline-dark" th:href="@{/admin/blog/{id}/revisions(id=${blog.id})}" title="Revisions"><i class="bi bi-clock-history"></i></a>
+                                            <form class="d-inline" method="post" th:action="@{/admin/blog/{id}/duplicate(id=${blog.id})}">
+                                                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                                <button class="btn btn-sm btn-outline-info" type="submit" title="Duplicate"><i class="bi bi-files"></i></button>
+                                            </form>
+                                            <form class="d-inline" method="post" th:action="@{/admin/blog/{id}/delete(id=${blog.id})}" onsubmit="return confirm('Delete this blog post?')">
+                                                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                                <button class="btn btn-sm btn-outline-danger" type="submit" title="Delete"><i class="bi bi-trash"></i></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${blogs.empty}"><td colspan="8" class="text-center text-muted py-5"><i class="bi bi-journal-x d-block fs-2 mb-2"></i>No blog posts found.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Status</label>
-                        <select class="form-select" name="status">
-                            <option value="">All</option>
-                            <option th:each="status : ${blogStatuses}" th:value="${status}" th:selected="${criteria.status == status}" th:text="${status}"></option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Visibility</label>
-                        <select class="form-select" name="visibility">
-                            <option value="">All</option>
-                            <option th:each="visibility : ${blogVisibilities}" th:value="${visibility}" th:selected="${criteria.visibility == visibility}" th:text="${visibility}"></option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Sort</label>
-                        <select class="form-select" name="sort">
-                            <option value="updatedAt" th:selected="${criteria.sort == 'updatedAt'}">Updated</option>
-                            <option value="publishedAt" th:selected="${criteria.sort == 'publishedAt'}">Published</option>
-                            <option value="viewCount" th:selected="${criteria.sort == 'viewCount'}">Views</option>
-                            <option value="title" th:selected="${criteria.sort == 'title'}">Title</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2 d-grid">
-                        <button class="btn btn-primary"><i class="bi bi-funnel me-1"></i>Filter</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div class="card border-0 shadow-sm">
-            <div class="card-body table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr><th>Article</th><th>Status</th><th>Visibility</th><th>Category</th><th>Author</th><th>Views</th><th>Updated</th><th class="text-end">Actions</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="blog : ${blogs.content}">
-                            <td>
-                                <div class="fw-semibold" th:text="${blog.title}">Article</div>
-                                <small class="text-muted" th:text="${blog.slug}">slug</small>
-                            </td>
-                            <td><span class="badge bg-secondary" th:text="${blog.status}">DRAFT</span></td>
-                            <td th:text="${blog.visibility}">PUBLIC</td>
-                            <td th:text="${blog.category != null ? blog.category.name : '-'}">-</td>
-                            <td th:text="${blog.author != null ? blog.author.displayName : '-'}">-</td>
-                            <td th:text="${blog.viewCount}">0</td>
-                            <td th:text="${blog.updatedAt}">-</td>
-                            <td class="text-end text-nowrap">
-                                <a class="btn btn-sm btn-outline-secondary" th:href="@{/admin/blog/{id}/preview(id=${blog.id})}" target="_blank"><i class="bi bi-eye"></i></a>
-                                <a class="btn btn-sm btn-primary" th:href="@{/admin/blog/{id}/edit(id=${blog.id})}"><i class="bi bi-pencil"></i></a>
-                                <a class="btn btn-sm btn-outline-dark" th:href="@{/admin/blog/{id}/revisions(id=${blog.id})}"><i class="bi bi-clock-history"></i></a>
-                                <form class="d-inline" method="post" th:action="@{/admin/blog/{id}/duplicate(id=${blog.id})}">
-                                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                    <button class="btn btn-sm btn-outline-info" type="submit"><i class="bi bi-files"></i></button>
-                                </form>
-                                <form class="d-inline" method="post" th:action="@{/admin/blog/{id}/delete(id=${blog.id})}" onsubmit="return confirm('Delete this blog post?')">
-                                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                    <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i></button>
-                                </form>
-                            </td>
-                        </tr>
-                        <tr th:if="${blogs.empty}"><td colspan="8" class="text-center text-muted py-4">No blog posts found.</td></tr>
-                    </tbody>
-                </table>
-            </div>
+                </div>
+            </section>
         </div>
     </div>
-    <th:block layout:fragment="page_css">
-        <style>
-            .blog-admin-hero{background:#113459;border-radius:8px;padding:1.5rem;display:flex;justify-content:space-between;gap:1rem;align-items:center}
-            .blog-admin-tabs .nav-link{background:#fff;border:1px solid #e5e7eb;color:#334155}
-            .blog-admin-tabs .nav-link.active{background:#113459;border-color:#113459;color:#fff}
-        </style>
-    </th:block>
 </div>

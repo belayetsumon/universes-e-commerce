@@ -28,8 +28,8 @@ public class BlogValidator implements Validator {
         String languageCode = form.getLanguageCode() == null || form.getLanguageCode().isBlank() ? "en" : form.getLanguageCode().trim();
         if (form.getSlug() != null && !form.getSlug().isBlank()) {
             boolean duplicate = form.getId() == null
-                    ? blogRepository.existsBySlugIgnoreCaseAndLanguageCodeIgnoreCaseAndDeletedFlagFalse(form.getSlug().trim(), languageCode)
-                    : blogRepository.existsBySlugIgnoreCaseAndLanguageCodeIgnoreCaseAndIdNotAndDeletedFlagFalse(form.getSlug().trim(), languageCode, form.getId());
+                    ? blogRepository.existsBySlugAndLanguageCodeAndDeletedFlagFalse(form.getSlug().trim(), languageCode)
+                    : blogRepository.existsBySlugAndLanguageCodeAndIdNotAndDeletedFlagFalse(form.getSlug().trim(), languageCode, form.getId());
             if (duplicate) {
                 errors.rejectValue("slug", "blog.slug.duplicate", "Another blog already uses this slug for the selected language.");
             }

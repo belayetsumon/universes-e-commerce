@@ -8,9 +8,9 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface BlogTagRepository extends JpaRepository<BlogTag, Long>, JpaSpecificationExecutor<BlogTag> {
 
-    Optional<BlogTag> findBySlugIgnoreCaseAndDeletedFlagFalse(String slug);
+    Optional<BlogTag> findBySlugAndDeletedFlagFalse(String slug);
 
-    boolean existsBySlugIgnoreCaseAndDeletedFlagFalse(String slug);
+    boolean existsBySlugAndDeletedFlagFalse(String slug);
 
     List<BlogTag> findByDeletedFlagFalseAndActiveFlagTrueOrderByNameAsc();
 }

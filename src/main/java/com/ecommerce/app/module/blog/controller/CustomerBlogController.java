@@ -1,12 +1,14 @@
 package com.ecommerce.app.module.blog.controller;
 
 import com.ecommerce.app.module.blog.dto.BlogCommentForm;
+import com.ecommerce.app.module.blog.dto.BlogForm;
 import com.ecommerce.app.module.blog.model.Blog;
-import com.ecommerce.app.module.blog.repository.BlogAuthorRepository;
 import com.ecommerce.app.module.blog.repository.BlogCategoryRepository;
 import com.ecommerce.app.module.blog.services.BlogEngagementService;
+import com.ecommerce.app.module.blog.services.BlogImageUploadException;
 import com.ecommerce.app.module.blog.services.BlogPublicService;
 import com.ecommerce.app.module.blog.services.CustomerBlogService;
+import com.ecommerce.app.module.blog.validator.BlogValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
@@ -15,12 +17,15 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -32,25 +37,29 @@ public class CustomerBlogController {
     private final BlogPublicService blogPublicService;
     private final BlogEngagementService engagementService;
     private final BlogCategoryRepository categoryRepository;
-    private final BlogAuthorRepository authorRepository;
+    private final BlogValidator blogValidator;
 
     public CustomerBlogController(
             CustomerBlogService customerBlogService,
             BlogPublicService blogPublicService,
             BlogEngagementService engagementService,
             BlogCategoryRepository categoryRepository,
-            BlogAuthorRepository authorRepository) {
+            BlogValidator blogValidator) {
         this.customerBlogService = customerBlogService;
         this.blogPublicService = blogPublicService;
         this.engagementService = engagementService;
         this.categoryRepository = categoryRepository;
-        this.authorRepository = authorRepository;
+        this.blogValidator = blogValidator;
+    }
+
+    @InitBinder("blogForm")
+    public void initBlogBinder(WebDataBinder binder) {
+        binder.addValidators(blogValidator);
     }
 
     @ModelAttribute
     public void dropdowns(Model model) {
         model.addAttribute("blogCategories", categoryRepository.findByDeletedFlagFalseAndActiveFlagTrueOrderBySortOrderAscNameAsc());
-        model.addAttribute("blogAuthors", authorRepository.findByDeletedFlagFalseAndActiveFlagTrueOrderByDisplayNameAsc());
     }
 
     @GetMapping(value = {"", "/", "/index"})
@@ -59,8 +68,42 @@ public class CustomerBlogController {
         model.addAttribute("articles", articles);
         model.addAttribute("bookmarkedArticles", customerBlogService.bookmarkMap(articles));
         model.addAttribute("recentlyViewed", customerBlogService.recentlyViewed());
+        model.addAttribute("myPosts", customerBlogService.myPosts(PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "updatedAt"))));
         model.addAttribute("query", q);
         return "customer/blog/index";
+    }
+
+    @GetMapping("/write")
+    public String write(Model model) {
+        if (!model.containsAttribute("blogForm")) {
+            model.addAttribute("blogForm", new BlogForm());
+        }
+        return "customer/blog/form";
+    }
+
+    @PostMapping("/write")
+    public String submit(
+            @Valid @ModelAttribute("blogForm") BlogForm form,
+            BindingResult result,
+            @RequestParam(value = "featuredImageFile", required = false) MultipartFile featuredImageFile,
+            RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            return "customer/blog/form";
+        }
+        try {
+            customerBlogService.submitCustomerPost(form, featuredImageFile);
+        } catch (BlogImageUploadException ex) {
+            result.rejectValue("featuredImageUrl", "blog.featured.image.upload", ex.getMessage());
+            return "customer/blog/form";
+        }
+        redirectAttributes.addFlashAttribute("successMessage", "Your blog post was submitted for review.");
+        return "redirect:/customer/blog/my-posts";
+    }
+
+    @GetMapping("/my-posts")
+    public String myPosts(@RequestParam(defaultValue = "0") int page, Model model) {
+        model.addAttribute("myPosts", customerBlogService.myPosts(PageRequest.of(Math.max(page, 0), 12, Sort.by(Sort.Direction.DESC, "updatedAt"))));
+        return "customer/blog/my-posts";
     }
 
     @GetMapping("/saved")

@@ -16,7 +16,6 @@ import com.ecommerce.app.module.blog.model.BlogSeo;
 import com.ecommerce.app.module.blog.model.BlogTag;
 import com.ecommerce.app.module.blog.model.BlogModerationStatus;
 import com.ecommerce.app.module.blog.repository.BlogApprovalRepository;
-import com.ecommerce.app.module.blog.repository.BlogAuthorRepository;
 import com.ecommerce.app.module.blog.repository.BlogCategoryRepository;
 import com.ecommerce.app.module.blog.repository.BlogCommentRepository;
 import com.ecommerce.app.module.blog.repository.BlogRepository;
@@ -27,7 +26,6 @@ import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
-import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -38,6 +36,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class BlogAdminService {
@@ -45,35 +44,35 @@ public class BlogAdminService {
     private final BlogRepository blogRepository;
     private final BlogCategoryRepository categoryRepository;
     private final BlogTagRepository tagRepository;
-    private final BlogAuthorRepository authorRepository;
     private final BlogSeriesRepository seriesRepository;
     private final BlogRevisionRepository revisionRepository;
     private final BlogApprovalRepository approvalRepository;
     private final BlogCommentRepository commentRepository;
     private final BlogMapper mapper;
     private final BlogHtmlSanitizer htmlSanitizer;
+    private final BlogImageStorageService imageStorageService;
 
     public BlogAdminService(
             BlogRepository blogRepository,
             BlogCategoryRepository categoryRepository,
             BlogTagRepository tagRepository,
-            BlogAuthorRepository authorRepository,
             BlogSeriesRepository seriesRepository,
             BlogRevisionRepository revisionRepository,
             BlogApprovalRepository approvalRepository,
             BlogCommentRepository commentRepository,
             BlogMapper mapper,
-            BlogHtmlSanitizer htmlSanitizer) {
+            BlogHtmlSanitizer htmlSanitizer,
+            BlogImageStorageService imageStorageService) {
         this.blogRepository = blogRepository;
         this.categoryRepository = categoryRepository;
         this.tagRepository = tagRepository;
-        this.authorRepository = authorRepository;
         this.seriesRepository = seriesRepository;
         this.revisionRepository = revisionRepository;
         this.approvalRepository = approvalRepository;
         this.commentRepository = commentRepository;
         this.mapper = mapper;
         this.htmlSanitizer = htmlSanitizer;
+        this.imageStorageService = imageStorageService;
     }
 
     @Transactional(readOnly = true)
@@ -88,12 +87,18 @@ public class BlogAdminService {
 
     @Transactional
     public Blog save(BlogForm form) {
+        return save(form, null);
+    }
+
+    @Transactional
+    public Blog save(BlogForm form, MultipartFile featuredImageFile) {
         Blog blog = form.getId() == null ? new Blog() : findRequired(form.getId());
         assertVersion(form, blog);
+        form.setSlug(uniqueBlogSlug(form.getSlug(), form.getTitle(), form.getLanguageCode(), form.getId()));
+        applyFeaturedImageUpload(form, featuredImageFile);
         form.setContentHtml(htmlSanitizer.sanitize(form.getContentHtml()));
         mapper.copyFormToBlog(form, blog);
         blog.setCategory(form.getCategoryId() == null ? null : categoryRepository.findById(form.getCategoryId()).orElse(null));
-        blog.setAuthor(form.getAuthorId() == null ? null : authorRepository.findById(form.getAuthorId()).orElse(null));
         blog.setSeries(form.getSeriesId() == null ? null : seriesRepository.findById(form.getSeriesId()).orElse(null));
         blog.setTags(resolveTags(form.getTags()));
         if (blog.getStatus() == BlogPublicationStatus.PUBLISHED && blog.getPublishedAt() == null) {
@@ -114,6 +119,17 @@ public class BlogAdminService {
         return saved;
     }
 
+    private void applyFeaturedImageUpload(BlogForm form, MultipartFile featuredImageFile) {
+        if (!imageStorageService.hasFile(featuredImageFile)) {
+            return;
+        }
+        try {
+            form.setFeaturedImageUrl(imageStorageService.storeFeaturedImage(featuredImageFile));
+        } catch (java.io.IOException ex) {
+            throw new BlogImageUploadException("Featured image upload failed. " + ex.getMessage(), ex);
+        }
+    }
+
     @Transactional
     public Blog duplicate(Long id) {
         Blog source = findRequired(id);
@@ -126,7 +142,6 @@ public class BlogAdminService {
         copy.setStatus(BlogPublicationStatus.DRAFT);
         copy.setVisibility(source.getVisibility());
         copy.setCategory(source.getCategory());
-        copy.setAuthor(source.getAuthor());
         copy.setSeries(source.getSeries());
         copy.setTags(new LinkedHashSet<>(source.getTags()));
         copy.setFeaturedImageUrl(source.getFeaturedImageUrl());
@@ -226,11 +241,11 @@ public class BlogAdminService {
         return (root, query, cb) -> {
             Predicate predicate = cb.isFalse(root.get("deletedFlag"));
             if (criteria.getQuery() != null && !criteria.getQuery().isBlank()) {
-                String like = "%" + criteria.getQuery().trim().toLowerCase(Locale.ROOT) + "%";
+                String like = "%" + criteria.getQuery().trim() + "%";
                 predicate = cb.and(predicate, cb.or(
-                        cb.like(cb.lower(root.get("title")), like),
-                        cb.like(cb.lower(root.get("excerpt")), like),
-                        cb.like(cb.lower(root.get("contentPlainText")), like)));
+                        cb.like(root.get("title"), like),
+                        cb.like(root.get("excerpt"), like),
+                        cb.like(root.get("contentPlainText"), like)));
             }
             if (criteria.getStatus() != null) {
                 predicate = cb.and(predicate, cb.equal(root.get("status"), criteria.getStatus()));
@@ -240,9 +255,6 @@ public class BlogAdminService {
             }
             if (criteria.getCategoryId() != null) {
                 predicate = cb.and(predicate, cb.equal(root.get("category").get("id"), criteria.getCategoryId()));
-            }
-            if (criteria.getAuthorId() != null) {
-                predicate = cb.and(predicate, cb.equal(root.get("author").get("id"), criteria.getAuthorId()));
             }
             return predicate;
         };
@@ -261,7 +273,7 @@ public class BlogAdminService {
 
     private BlogTag findOrCreateTag(String name) {
         String slug = mapper.slugify(name);
-        return tagRepository.findBySlugIgnoreCaseAndDeletedFlagFalse(slug).orElseGet(() -> {
+        return tagRepository.findBySlugAndDeletedFlagFalse(slug).orElseGet(() -> {
             BlogTag tag = new BlogTag();
             tag.setName(name);
             tag.setSlug(slug);
@@ -295,8 +307,29 @@ public class BlogAdminService {
         String base = sourceSlug + "-copy";
         String slug = base;
         int counter = 2;
-        while (blogRepository.existsBySlugIgnoreCaseAndLanguageCodeIgnoreCaseAndDeletedFlagFalse(slug, "en")) {
+        while (blogRepository.existsBySlugAndLanguageCodeAndDeletedFlagFalse(slug, "en")) {
             slug = base + "-" + counter++;
+        }
+        return slug;
+    }
+
+    private String uniqueBlogSlug(String requestedSlug, String title, String languageCode, Long currentId) {
+        String base = mapper.slugify(requestedSlug == null || requestedSlug.isBlank() ? title : requestedSlug);
+        if (base.isBlank()) {
+            base = "blog-post";
+        }
+        if (base.length() > 220) {
+            base = base.substring(0, 220).replaceAll("-+$", "");
+        }
+        String lang = languageCode == null || languageCode.isBlank() ? "en" : languageCode.trim().toLowerCase();
+        String slug = base;
+        int counter = 2;
+        while (currentId == null
+                ? blogRepository.existsBySlugAndLanguageCodeAndDeletedFlagFalse(slug, lang)
+                : blogRepository.existsBySlugAndLanguageCodeAndIdNotAndDeletedFlagFalse(slug, lang, currentId)) {
+            String suffix = "-" + counter++;
+            String trimmedBase = base.length() + suffix.length() > 240 ? base.substring(0, 240 - suffix.length()).replaceAll("-+$", "") : base;
+            slug = trimmedBase + suffix;
         }
         return slug;
     }

@@ -392,10 +392,10 @@
             <div class="col-12 col-md-9">
                 <ul class="list-inline mb-0 d-flex flex-wrap justify-content-md-start align-items-center storefront-primary-menu">
                     <li class="list-inline-item">
-                        <a class="nav-link active link-light storefront-primary-link" aria-current="page" href="/">Home</a>
+                        <a class="nav-link active link-light storefront-primary-link" data-menu-match="/" aria-current="page" href="/">Home</a>
                     </li>
                     <li class="list-inline-item">
-                        <a class="nav-link link-light storefront-primary-link" th:href="@{/public/product}">Product</a>
+                        <a class="nav-link link-light storefront-primary-link" data-menu-match="/public/product" th:href="@{/public/product}">Product</a>
                     </li>
 
 
@@ -409,20 +409,20 @@
                         <a class="nav-link link-light storefront-primary-link" th:href="@{/public/product}">Vendors</a>
                     </li>
                     <li class="list-inline-item">
-                        <a class="nav-link link-light storefront-primary-link" th:href="@{/public/blog}">Blog</a>
+                        <a class="nav-link link-light storefront-primary-link" data-menu-match="/public/blog" th:href="@{/public/blog}">Blog</a>
                     </li>
                     <li class="list-inline-item">
-                        <a class="nav-link link-light storefront-primary-link" th:href="@{/customer-giftcard/buy}">Gift Cards</a>
+                        <a class="nav-link link-light storefront-primary-link" data-menu-match="/customer-giftcard" th:href="@{/customer-giftcard/buy}">Gift Cards</a>
                     </li>
 
                     <!--                    <li class="list-inline-item">
                                             <a class="nav-link link-light storefront-primary-link" th:href="@{/admin/index}">Admin Panel</a>
                                         </li>-->
                     <li class="list-inline-item">
-                        <a class="nav-link link-light storefront-primary-link" th:href="@{/customer/index}">Account</a>
+                        <a class="nav-link link-light storefront-primary-link" data-menu-match="/customer" th:href="@{/customer/index}">Account</a>
                     </li>
                     <li class="list-inline-item">
-                        <a class="nav-link link-light storefront-primary-link" th:href="@{/public/contact-us}">Contact</a>
+                        <a class="nav-link link-light storefront-primary-link" data-menu-match="/public/contact-us" th:href="@{/public/contact-us}">Contact</a>
                     </li>
                     <!--                    <li class="list-inline-item">
                                             <a class="nav-link link-light storefront-primary-link" th:href="@{/customer/index}">Vendor</a>

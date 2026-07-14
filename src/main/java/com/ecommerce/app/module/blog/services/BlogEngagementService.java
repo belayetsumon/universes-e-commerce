@@ -74,7 +74,7 @@ public class BlogEngagementService {
     @Transactional
     public void subscribe(BlogSubscriberForm form) {
         String email = form.getEmail().trim().toLowerCase();
-        BlogSubscriber subscriber = subscriberRepository.findByEmailIgnoreCase(email).orElseGet(BlogSubscriber::new);
+        BlogSubscriber subscriber = subscriberRepository.findByEmail(email).orElseGet(BlogSubscriber::new);
         subscriber.setEmail(email);
         subscriber.setName(form.getName() == null ? null : form.getName().trim());
         subscriber.setSubscriberStatus(BlogSubscriberStatus.SUBSCRIBED);

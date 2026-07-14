@@ -542,6 +542,40 @@
             </div>
         </section>
 
+        <section class="home-blog-section py-4" th:if="${homeBlogArticles != null and !#lists.isEmpty(homeBlogArticles)}">
+            <div class="container-fluid">
+                <div class="home-blog-head">
+                    <div>
+                        <span class="public-blog-eyebrow">Marketplace Journal</span>
+                        <h5 class="mb-0">Latest buying guides and stories</h5>
+                    </div>
+                    <a class="home-blog-view-all" th:href="@{/public/blog}">
+                        View All <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+
+                <div class="public-blog-grid home-blog-grid">
+                    <article class="public-blog-card" th:each="article : ${homeBlogArticles}">
+                        <a th:href="@{/public/blog/{slug}(slug=${article.slug})}" class="public-blog-card-media">
+                            <img th:if="${article.featuredImageUrl != null}" th:src="${article.featuredImageUrl}" th:alt="${article.featuredImageAlt != null ? article.featuredImageAlt : article.title}" loading="lazy">
+                            <span th:unless="${article.featuredImageUrl != null}" class="public-blog-card-placeholder"><i class="bi bi-newspaper"></i></span>
+                        </a>
+                        <div class="public-blog-card-body">
+                            <div class="public-blog-card-meta">
+                                <a th:if="${article.category != null}" th:href="@{/public/blog/category/{slug}(slug=${article.category.slug})}" th:text="${article.category.name}">Category</a>
+                                <span><i class="bi bi-clock"></i> <span th:text="${article.readingTimeMinutes + ' min read'}">3 min read</span></span>
+                            </div>
+                            <h3><a th:href="@{/public/blog/{slug}(slug=${article.slug})}" th:text="${article.title}">Article title</a></h3>
+                            <p th:text="${article.excerpt}">Excerpt</p>
+                            <a class="public-blog-read-link" th:href="@{/public/blog/{slug}(slug=${article.slug})}">
+                                Read Article <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
         <section class="pt-1 pb-1">
             <div class="container-fluid p-0">
                 <div class="row g-3">

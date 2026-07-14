@@ -65,6 +65,27 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
 
     List<Users> findByStatus(Status status);
 
+    @Query("""
+            select distinct u
+            from Users u
+            left join u.role filterRole
+            left join fetch u.role role
+            where (:keyword is null
+                   or lower(coalesce(u.firstName, '')) like :keyword
+                   or lower(coalesce(u.lastName, '')) like :keyword
+                   or lower(coalesce(u.email, '')) like :keyword
+                   or lower(coalesce(u.mobile, '')) like :keyword)
+              and (:status is null or u.status = :status)
+              and (:userType is null or u.userType = :userType)
+              and (:roleId is null or filterRole.id = :roleId)
+            order by u.id desc
+            """)
+    List<Users> findForAdminListFilters(
+            @Param("keyword") String keyword,
+            @Param("status") Status status,
+            @Param("userType") UserType userType,
+            @Param("roleId") Long roleId);
+
     List<Users> findByUserTypeAndStatusOrderByIdDesc(UserType userType, Status status);
 
     @Query("""

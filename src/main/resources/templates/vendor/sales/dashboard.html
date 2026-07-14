@@ -38,8 +38,6 @@
             .vendor-sales-dashboard .vs-alert.danger { border-left-color:#bd3038; }
             .vendor-sales-dashboard .vs-alert.warning { border-left-color:#b7791f; }
             .vendor-sales-dashboard .vs-alert.success { border-left-color:#087443; }
-            .vendor-sales-dashboard .vs-event { display:flex; gap:.75rem; align-items:flex-start; margin-bottom:.7rem; }
-            .vendor-sales-dashboard .vs-event i { width:2rem; height:2rem; display:grid; place-items:center; color:#fff; background:#113459; border-radius:50%; flex:0 0 2rem; }
             .vendor-sales-dashboard .vs-empty { color:var(--vs-muted); padding:2rem 1rem; text-align:center; }
             .vendor-sales-dashboard.is-loading .vs-panel,.vendor-sales-dashboard.is-loading .vs-kpi { background:linear-gradient(100deg,#f6f8fb 25%,#edf2f7 50%,#f6f8fb 75%); background-size:200% 100%; animation:vs-skeleton 1.2s infinite; }
             .vendor-sales-dashboard.is-loading .vs-panel > *,.vendor-sales-dashboard.is-loading .vs-kpi > * { visibility:hidden; }
@@ -133,10 +131,18 @@
                     <div class="col-12 col-xl-4"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title">Geographic Sales</h2><div class="vs-chart"><canvas id="vendorGeoChart"></canvas></div></div></article></div>
                 </div>
 
-                <div class="row g-3">
-                    <div class="col-12 col-xl-6"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title">Live Activity Feed</h2><p class="vs-subtitle">Auto-refreshes every 60 seconds.</p><div class="vs-event" th:each="item : ${sales.liveActivity}" th:classappend="${item.accent}"><i class="bi bi-lightning-charge"></i><div><div class="vs-name" th:text="${item.title}">Order</div><div class="text-muted small" th:text="${item.detail}">Detail</div><div class="text-muted small" th:text="${item.happenedAt}">Time</div></div></div></div></article></div>
-                    <div class="col-12 col-xl-6"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title">Business Alerts</h2><p class="vs-subtitle">Inventory, sales target, payment, return, and shipping signals.</p><div class="vs-metric-list"><div class="vs-metric vs-alert" th:each="item : ${sales.alerts}" th:classappend="${item.severity}"><div><strong th:text="${item.title}">Alert</strong><span th:text="${item.detail}">Detail</span></div><b th:text="${item.actionLabel}">Action</b></div></div></div></article></div>
-                </div>
+                <article class="card vs-panel">
+                    <div class="card-body">
+                        <h2 class="vs-title">Business Alerts</h2>
+                        <p class="vs-subtitle">Inventory, sales target, payment, return, and shipping signals.</p>
+                        <div class="vs-metric-list">
+                            <div class="vs-metric vs-alert" th:each="item : ${sales.alerts}" th:classappend="${item.severity}">
+                                <div><strong th:text="${item.title}">Alert</strong><span th:text="${item.detail}">Detail</span></div>
+                                <b th:text="${item.actionLabel}">Action</b>
+                            </div>
+                        </div>
+                    </div>
+                </article>
             </div>
         </section>
     </div>

@@ -129,52 +129,30 @@ public class PublicSeoService {
                 ROBOTS_INDEX_FOLLOW, "BLOG", "BLOG", List.of(blogItemList(blogs, canonicalUrl)));
     }
 
-    public PageSeoMetadata blogModuleList(HttpServletRequest request, List<com.ecommerce.app.module.blog.model.Blog> blogs) {
-        String canonicalUrl = publicUrl(request, "/public/blog");
-        return new PageSeoMetadata("Blog", "Read articles, buying guides, updates, and marketplace news.", canonicalUrl, "website", defaultImage(settings()),
-                ROBOTS_INDEX_FOLLOW, "BLOG", "BLOG", List.of(moduleBlogItemList(blogs, canonicalUrl)));
+    public PageSeoMetadata blogModuleList(HttpServletRequest request, List<Blog> blogs) {
+        return blogList(request, blogs);
     }
 
     public PageSeoMetadata blogCategory(HttpServletRequest request, BlogCategory category, List<Blog> blogs) {
-        String categoryId = legacyBlogCategoryValue(category, "id");
-        String title = first(legacyBlogCategoryValue(category, "seoTitle"), legacyBlogCategoryValue(category, "name"), "Blog Category");
-        String canonicalUrl = publicUrl(request, "/public/blog-by-cat/" + categoryId);
-        String description = first(plainText(legacyBlogCategoryValue(category, "seoDescription")), plainText(legacyBlogCategoryValue(category, "description")), "Read articles in " + title + ".");
+        String title = first(category.getSeoTitle(), category.getName(), "Blog Category");
+        String canonicalUrl = publicUrl(request, "/public/blog/category/" + category.getSlug());
+        String description = first(plainText(category.getMetaDescription()), plainText(category.getDescription()), "Read articles in " + title + ".");
         return new PageSeoMetadata(title, description, canonicalUrl, "website", defaultImage(settings()), ROBOTS_INDEX_FOLLOW,
-                "BLOG_CATEGORY", categoryId, List.of(blogItemList(blogs, canonicalUrl)));
+                "BLOG_CATEGORY", category.getUuid(), List.of(blogItemList(blogs, canonicalUrl)));
     }
 
-//    public PageSeoMetadata blogCategory(
-//            HttpServletRequest request,
-//            com.ecommerce.app.module.blog.model.BlogCategory category,
-//            List<com.ecommerce.app.module.blog.model.Blog> blogs) {
-//        String title = first(category.getSeoTitle(), category.getName(), "Blog Category");
-//        String canonicalUrl = publicUrl(request, "/public/blog/category/" + category.getSlug());
-//        String description = first(plainText(category.getMetaDescription()), plainText(category.getDescription()), "Read articles in " + title + ".");
-//        return new PageSeoMetadata(title, description, canonicalUrl, "website", defaultImage(settings()), ROBOTS_INDEX_FOLLOW,
-//                "BLOG_CATEGORY", category.getUuid(), List.of(moduleBlogItemList(blogs, canonicalUrl)));
-//    }
     public PageSeoMetadata blogArticle(HttpServletRequest request, Blog blog) {
-        String canonicalUrl = publicUrl(request, "/public/blogdetails/" + blog.getId());
-        String title = first(blog.getTitle(), "Article");
-        String description = first(truncate(plainText(blog.getContentHtml()), 180), "Read " + title + ".");
-        String imageUrl = imageUrl(settings(), blog.getDeviceRules());
-        return new PageSeoMetadata(title, description, canonicalUrl, "article", imageUrl, ROBOTS_INDEX_FOLLOW, "BLOG_ARTICLE", String.valueOf(blog.getId()),
+        String canonicalUrl = publicUrl(request, "/public/blog/" + blog.getSlug());
+        String title = first(blog.getSeo() == null ? null : blog.getSeo().getSeoTitle(), blog.getTitle(), "Article");
+        String description = first(
+                truncate(plainText(blog.getSeo() == null ? null : blog.getSeo().getMetaDescription()), 180),
+                truncate(plainText(blog.getExcerpt()), 180),
+                truncate(plainText(blog.getContentPlainText()), 180),
+                "Read " + title + ".");
+        String imageUrl = imageUrl(settings(), first(blog.getSeo() == null ? null : blog.getSeo().getOpenGraphImage(), blog.getFeaturedImageUrl()));
+        return new PageSeoMetadata(title, description, canonicalUrl, "article", imageUrl, ROBOTS_INDEX_FOLLOW, "BLOG_ARTICLE", blog.getUuid(),
                 List.of(blogPosting(blog, canonicalUrl, imageUrl, description), breadcrumb(List.of(crumb("Home", publicUrl(request, "/")), crumb("Blog", publicUrl(request, "/public/blog")), crumb(title, canonicalUrl)))));
     }
-
-//    public PageSeoMetadata blogArticle(HttpServletRequest request, Blog blog) {
-//        String canonicalUrl = publicUrl(request, "/public/blog/" + blog.getSlug());
-//        String title = first(blog.getSeo() == null ? null : blog.getSeo().getSeoTitle(), blog.getTitle(), "Article");
-//        String description = first(
-//                truncate(plainText(blog.getSeo() == null ? null : blog.getSeo().getMetaDescription()), 180),
-//                truncate(plainText(blog.getExcerpt()), 180),
-//                truncate(plainText(blog.getContentPlainText()), 180),
-//                "Read " + title + ".");
-//        String imageUrl = imageUrl(settings(), first(blog.getSeo() == null ? null : blog.getSeo().getOpenGraphImage(), blog.getFeaturedImageUrl()));
-//        return new PageSeoMetadata(title, description, canonicalUrl, "article", imageUrl, ROBOTS_INDEX_FOLLOW, "BLOG_ARTICLE", blog.getUuid(),
-//                List.of(moduleBlogPosting(blog, canonicalUrl, imageUrl, description), breadcrumb(List.of(crumb("Home", publicUrl(request, "/")), crumb("Blog", publicUrl(request, "/public/blog")), crumb(title, canonicalUrl)))));
-//    }
     public String publicUrl(HttpServletRequest request, String path) {
         String normalizedPath = path == null || path.isBlank() ? "/" : (path.startsWith("/") ? path : "/" + path);
         String baseUrl = safeBaseUrl(settings().getPublicBaseUrl());
@@ -245,25 +223,14 @@ public class PublicSeoService {
         }
         if (blog.getPublishedAt() != null) {
             data.put("datePublished", blog.getPublishedAt().toString());
-        }
-        return data;
-    }
-
-    private Map<String, Object> moduleBlogPosting(com.ecommerce.app.module.blog.model.Blog blog, String canonicalUrl, String imageUrl, String description) {
-        Map<String, Object> data = map("@context", "https://schema.org", "@type", "BlogPosting", "headline", first(blog.getTitle(), "Article"), "description", description, "url", canonicalUrl);
-        if (imageUrl != null) {
-            data.put("image", List.of(imageUrl));
-        }
-        if (blog.getPublishedAt() != null) {
-            data.put("datePublished", blog.getPublishedAt().toString());
         } else if (blog.getCreatedAt() != null) {
             data.put("datePublished", blog.getCreatedAt().toString());
         }
         if (blog.getUpdatedAt() != null) {
             data.put("dateModified", blog.getUpdatedAt().toString());
         }
-        if (blog.getAuthor() != null) {
-            data.put("author", map("@type", "Person", "name", blog.getAuthor().getDisplayName()));
+        if (blog.getCreatedBy() != null && !blog.getCreatedBy().isBlank()) {
+            data.put("author", map("@type", "Person", "name", blog.getCreatedBy()));
         }
         return data;
     }
@@ -290,19 +257,6 @@ public class PublicSeoService {
         if (blogs != null) {
             int position = 1;
             for (Blog blog : blogs.stream().limit(24).toList()) {
-                items.add(map("@type", "ListItem", "position", position++, "name", first(blog.getTitle(), "Article"), "url", publicUrl(null, "/public/blogdetails/" + blog.getId())));
-            }
-        }
-        Map<String, Object> data = map("@context", "https://schema.org", "@type", "ItemList", "url", canonicalUrl);
-        data.put("itemListElement", items);
-        return data;
-    }
-
-    private Map<String, Object> moduleBlogItemList(List<com.ecommerce.app.module.blog.model.Blog> blogs, String canonicalUrl) {
-        List<Map<String, Object>> items = new ArrayList<>();
-        if (blogs != null) {
-            int position = 1;
-            for (com.ecommerce.app.module.blog.model.Blog blog : blogs.stream().limit(24).toList()) {
                 items.add(map("@type", "ListItem", "position", position++, "name", first(blog.getTitle(), "Article"), "url", publicUrl(null, "/public/blog/" + blog.getSlug())));
             }
         }
@@ -419,20 +373,6 @@ public class PublicSeoService {
     private String mapText(Map<String, Object> data, String key) {
         Object value = data == null ? null : data.get(key);
         return value == null ? null : value.toString();
-    }
-
-    private String legacyBlogCategoryValue(BlogCategory category, String fieldName) {
-        if (category == null || fieldName == null) {
-            return null;
-        }
-        try {
-            java.lang.reflect.Field field = BlogCategory.class.getDeclaredField(fieldName);
-            field.setAccessible(true);
-            Object value = field.get(category);
-            return value == null ? null : value.toString();
-        } catch (ReflectiveOperationException | SecurityException ex) {
-            return null;
-        }
     }
 
     private String truncate(String value, int maxLength) {

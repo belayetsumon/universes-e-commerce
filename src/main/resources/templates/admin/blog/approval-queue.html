@@ -1,24 +1,27 @@
-<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
-    <div layout:fragment="main_content">
-        <section class="d-flex justify-content-between align-items-center mb-3"><h4 class="mb-0"><i class="bi bi-check2-square me-2 text-primary"></i>Approval Queue</h4><a class="btn btn-outline-secondary" th:href="@{/admin/blog}">Posts</a></section>
-        <div th:replace="admin/blog/fragments :: tabs('approval')"></div>
-        <div th:replace="admin/blog/fragments :: alerts"></div>
-        <div class="card border-0 shadow-sm"><div class="card-body table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light"><tr><th>Article</th><th>Author</th><th>Updated</th><th class="text-end">Decision</th></tr></thead>
-                <tbody>
-                    <tr th:each="blog : ${blogs.content}">
-                        <td><div class="fw-semibold" th:text="${blog.title}"></div><small class="text-muted" th:text="${blog.slug}"></small></td>
-                        <td th:text="${blog.author != null ? blog.author.displayName : '-'}"></td>
-                        <td th:text="${blog.updatedAt}"></td>
-                        <td class="text-end">
-                            <form class="d-inline" method="post" th:action="@{/admin/blog/{id}/approve(id=${blog.id})}"><input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="btn btn-sm btn-success">Approve</button></form>
-                            <form class="d-inline" method="post" th:action="@{/admin/blog/{id}/reject(id=${blog.id})}"><input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="btn btn-sm btn-outline-danger">Return</button></form>
-                        </td>
-                    </tr>
-                    <tr th:if="${blogs.empty}"><td colspan="4" class="text-center text-muted py-4">No articles waiting for approval.</td></tr>
-                </tbody>
-            </table>
-        </div></div>
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <div layout:fragment="main_content" class="blog-admin-page">
+        <div class="blog-settings-workspace">
+            <div th:replace="admin/blog/fragments :: moduleHeader('approval', 'Approval Queue', 'Review submitted articles and move approved content into the publishing workflow.', 'bi-check2-square', 'Workflow', @{/admin/blog}, 'Posts', 'bi-journal-text', null, null, null)"></div>
+            <div th:replace="admin/blog/fragments :: alerts"></div>
+            <div class="card border-0 shadow-sm blog-table-card"><div class="card-body table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light"><tr><th>Article</th><th>Creator</th><th>Updated</th><th class="text-end">Decision</th></tr></thead>
+                    <tbody>
+                        <tr th:each="blog : ${blogs.content}">
+                            <td><div class="fw-semibold" th:text="${blog.title}"></div><small class="text-muted" th:text="${blog.slug}"></small></td>
+                            <td th:text="${blog.createdBy != null ? blog.createdBy : '-'}"></td>
+                            <td th:text="${blog.updatedAt}"></td>
+                            <td class="text-end">
+                                <form class="d-inline" method="post" th:action="@{/admin/blog/{id}/approve(id=${blog.id})}"><input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="btn btn-sm btn-success">Approve</button></form>
+                                <form class="d-inline" method="post" th:action="@{/admin/blog/{id}/reject(id=${blog.id})}"><input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="btn btn-sm btn-outline-danger">Return</button></form>
+                            </td>
+                        </tr>
+                        <tr th:if="${blogs.empty}"><td colspan="4" class="text-center text-muted py-4">No articles waiting for approval.</td></tr>
+                    </tbody>
+                </table>
+            </div></div>
+        </div>
     </div>
 </div>

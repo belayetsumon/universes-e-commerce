@@ -79,6 +79,28 @@ function initSiteLoadingProgress() {
 
 initSiteLoadingProgress();
 
+function initStorefrontActiveMenu() {
+    var currentPath = window.location.pathname || '/';
+    var links = document.querySelectorAll('[data-menu-match]');
+    if (!links.length) {
+        return;
+    }
+
+    links.forEach(function (link) {
+        var matchPath = link.getAttribute('data-menu-match') || '';
+        var isHome = matchPath === '/';
+        var isActive = isHome ? currentPath === '/' : currentPath.indexOf(matchPath) === 0;
+        link.classList.toggle('active', isActive);
+        if (isActive) {
+            link.setAttribute('aria-current', 'page');
+        } else {
+            link.removeAttribute('aria-current');
+        }
+    });
+}
+
+initStorefrontActiveMenu();
+
 // District and thana location picker
 document.addEventListener('DOMContentLoaded', function () {
     var path = window.location.pathname;

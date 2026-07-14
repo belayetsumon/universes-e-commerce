@@ -1,5 +1,6 @@
 package com.ecommerce.app.module.blog.controller;
 
+import com.ecommerce.app.module.blog.dto.BlogCommentForm;
 import com.ecommerce.app.module.blog.dto.BlogForm;
 import com.ecommerce.app.module.blog.dto.BlogSearchCriteria;
 import com.ecommerce.app.module.blog.mapper.BlogMapper;
@@ -7,13 +8,14 @@ import com.ecommerce.app.module.blog.model.BlogModerationStatus;
 import com.ecommerce.app.module.blog.model.BlogPublicationStatus;
 import com.ecommerce.app.module.blog.model.BlogVisibility;
 import com.ecommerce.app.module.blog.repository.BlogApprovalRepository;
-import com.ecommerce.app.module.blog.repository.BlogAuthorRepository;
 import com.ecommerce.app.module.blog.repository.BlogCategoryRepository;
 import com.ecommerce.app.module.blog.repository.BlogCommentRepository;
 import com.ecommerce.app.module.blog.repository.BlogRevisionRepository;
 import com.ecommerce.app.module.blog.repository.BlogSeriesRepository;
 import com.ecommerce.app.module.blog.repository.BlogSubscriberRepository;
 import com.ecommerce.app.module.blog.services.BlogAdminService;
+import com.ecommerce.app.module.blog.services.BlogImageUploadException;
+import com.ecommerce.app.module.blog.services.BlogPublicService;
 import com.ecommerce.app.module.blog.validator.BlogValidator;
 import jakarta.validation.Valid;
 import java.util.Set;
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -43,10 +46,10 @@ public class AdminBlogController {
     private static final Set<String> ALLOWED_SORTS = Set.of("updatedAt", "publishedAt", "title", "status", "viewCount", "sortOrder");
 
     private final BlogAdminService blogAdminService;
+    private final BlogPublicService blogPublicService;
     private final BlogMapper blogMapper;
     private final BlogValidator blogValidator;
     private final BlogCategoryRepository categoryRepository;
-    private final BlogAuthorRepository authorRepository;
     private final BlogSeriesRepository seriesRepository;
     private final BlogRevisionRepository revisionRepository;
     private final BlogCommentRepository commentRepository;
@@ -55,20 +58,20 @@ public class AdminBlogController {
 
     public AdminBlogController(
             BlogAdminService blogAdminService,
+            BlogPublicService blogPublicService,
             BlogMapper blogMapper,
             BlogValidator blogValidator,
             BlogCategoryRepository categoryRepository,
-            BlogAuthorRepository authorRepository,
             BlogSeriesRepository seriesRepository,
             BlogRevisionRepository revisionRepository,
             BlogCommentRepository commentRepository,
             BlogApprovalRepository approvalRepository,
             BlogSubscriberRepository subscriberRepository) {
         this.blogAdminService = blogAdminService;
+        this.blogPublicService = blogPublicService;
         this.blogMapper = blogMapper;
         this.blogValidator = blogValidator;
         this.categoryRepository = categoryRepository;
-        this.authorRepository = authorRepository;
         this.seriesRepository = seriesRepository;
         this.revisionRepository = revisionRepository;
         this.commentRepository = commentRepository;
@@ -86,7 +89,6 @@ public class AdminBlogController {
         model.addAttribute("blogStatuses", BlogPublicationStatus.values());
         model.addAttribute("blogVisibilities", BlogVisibility.values());
         model.addAttribute("blogCategories", categoryRepository.findByDeletedFlagFalseAndActiveFlagTrueOrderBySortOrderAscNameAsc());
-        model.addAttribute("blogAuthors", authorRepository.findByDeletedFlagFalseAndActiveFlagTrueOrderByDisplayNameAsc());
         model.addAttribute("blogSeriesList", seriesRepository.findByDeletedFlagFalseAndActiveFlagTrueOrderBySortOrderAscTitleAsc());
     }
 
@@ -120,24 +122,31 @@ public class AdminBlogController {
     public String save(
             @Valid @ModelAttribute("blogForm") BlogForm form,
             BindingResult result,
+            @RequestParam(value = "featuredImageFile", required = false) MultipartFile featuredImageFile,
             RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
             return "admin/blog/form";
         }
         try {
-            var saved = blogAdminService.save(form);
+            var saved = blogAdminService.save(form, featuredImageFile);
             redirectAttributes.addFlashAttribute("successMessage", "Blog post saved successfully.");
             return "redirect:/admin/blog/" + saved.getId() + "/edit";
         } catch (OptimisticLockingFailureException ex) {
             result.reject("blog.optimistic.lock", ex.getMessage());
+            return "admin/blog/form";
+        } catch (BlogImageUploadException ex) {
+            result.rejectValue("featuredImageUrl", "blog.featured.image.upload", ex.getMessage());
             return "admin/blog/form";
         }
     }
 
     @GetMapping("/{id}/preview")
     public String preview(@PathVariable Long id, Model model) {
-        model.addAttribute("blog", blogAdminService.findRequired(id));
+        var blog = blogAdminService.findRequired(id);
+        model.addAttribute("blog", blog);
+        model.addAttribute("commentForm", new BlogCommentForm());
         model.addAttribute("previewMode", true);
+        blogPublicService.enrichArticleModel(model, blog);
         return "fronttheme/blog/detail";
     }
 

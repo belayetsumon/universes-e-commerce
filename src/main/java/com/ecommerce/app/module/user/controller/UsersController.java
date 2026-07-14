@@ -29,7 +29,6 @@ import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -85,10 +84,21 @@ public class UsersController {
     ReferralService referralService;
 
     @RequestMapping(value = {"", "/", "/index"})
-    public String index(Model model) {
-        List<Users> allUsers = usersRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
+    public String index(
+            Model model,
+            @RequestParam(name = "q", required = false) String q,
+            @RequestParam(name = "status", required = false) Status status,
+            @RequestParam(name = "userType", required = false) UserType userType,
+            @RequestParam(name = "roleId", required = false) Long roleId,
+            @RequestParam(name = "referralFilter", required = false) String referralFilter) {
+        String keyword = normalizeKeyword(q);
+        List<Users> allUsers = usersRepository.findForAdminListFilters(keyword, status, userType, roleId);
+        Map<Long, String> referralCodesByUserId = buildReferralCodeMap(allUsers);
+        allUsers = applyReferralFilter(allUsers, referralCodesByUserId, referralFilter);
         model.addAttribute("alluser", allUsers);
+        addReferralCodeSummary(model, allUsers, referralCodesByUserId);
         addUserListSummary(model, allUsers);
+        addUserFilterModel(model, q, status, userType, roleId, referralFilter);
         return "user/allusers";
     }
 
@@ -280,6 +290,25 @@ public class UsersController {
         return "redirect:/users/index";
     }
 
+    @PostMapping("/generate-referral-code/{id}")
+    public String generateReferralCode(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            Referral referral = referralService.generateMissingReferralCodeForCustomer(id);
+            String referralCode = referral == null ? "" : referral.getReferralCode();
+            redirectAttributes.addFlashAttribute(
+                    "success",
+                    referralCode == null || referralCode.isBlank()
+                            ? "Referral code generated successfully."
+                            : "Referral code is ready: " + referralCode);
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+        } catch (RuntimeException ex) {
+            redirectAttributes.addFlashAttribute("error", "Unable to generate referral code. Please try again.");
+        }
+
+        return "redirect:/users/index";
+    }
+
     @RequestMapping("/login")
     public String login(Model model) {
         model.addAttribute("attribute", "value");
@@ -466,6 +495,93 @@ public class UsersController {
         model.addAttribute("blockedUserCount", blockedUsers);
         model.addAttribute("customerUserCount", customerUsers);
         model.addAttribute("adminManagedUserCount", adminManagedUsers);
+    }
+
+    private void addUserFilterModel(
+            Model model,
+            String q,
+            Status status,
+            UserType userType,
+            Long roleId,
+            String referralFilter) {
+        model.addAttribute("userSearch", q == null ? "" : q.trim());
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("selectedUserType", userType);
+        model.addAttribute("selectedRoleId", roleId);
+        model.addAttribute("selectedReferralFilter", normalizeReferralFilter(referralFilter));
+        model.addAttribute("statuses", Status.values());
+        model.addAttribute("userTypes", UserType.values());
+        model.addAttribute("roles", roleRepository.findAll());
+    }
+
+    private void addReferralCodeSummary(Model model, List<Users> users, Map<Long, String> referralCodesByUserId) {
+        List<Users> safeUsers = users == null ? List.of() : users;
+        Map<Long, String> safeReferralCodesByUserId = referralCodesByUserId == null ? Map.of() : referralCodesByUserId;
+        long missingCustomerReferralCodeCount = safeUsers.stream()
+                .filter(user -> user != null && user.getUserType() == UserType.customer)
+                .filter(user -> hasNoReferralCode(safeReferralCodesByUserId.get(user.getId())))
+                .count();
+
+        model.addAttribute("referralCodesByUserId", safeReferralCodesByUserId);
+        model.addAttribute("missingCustomerReferralCodeCount", missingCustomerReferralCodeCount);
+    }
+
+    private Map<Long, String> buildReferralCodeMap(List<Users> users) {
+        List<Users> safeUsers = users == null ? List.of() : users;
+        Set<Long> userIds = new HashSet<>();
+        for (Users user : safeUsers) {
+            if (user != null && user.getId() != null) {
+                userIds.add(user.getId());
+            }
+        }
+
+        Map<Long, String> referralCodesByUserId = new HashMap<>();
+        if (!userIds.isEmpty()) {
+            for (Referral referral : referralRepository.findAllByUsers_IdIn(userIds)) {
+                if (referral.getUsers() != null && referral.getUsers().getId() != null) {
+                    referralCodesByUserId.put(referral.getUsers().getId(), referral.getReferralCode());
+                }
+            }
+        }
+
+        return referralCodesByUserId;
+    }
+
+    private List<Users> applyReferralFilter(List<Users> users, Map<Long, String> referralCodesByUserId, String referralFilter) {
+        String normalizedReferralFilter = normalizeReferralFilter(referralFilter);
+        if (normalizedReferralFilter == null) {
+            return users;
+        }
+
+        Map<Long, String> safeReferralCodesByUserId = referralCodesByUserId == null ? Map.of() : referralCodesByUserId;
+        return (users == null ? List.<Users>of() : users).stream()
+                .filter(user -> user != null && user.getUserType() == UserType.customer)
+                .filter(user -> {
+                    boolean missing = hasNoReferralCode(safeReferralCodesByUserId.get(user.getId()));
+                    return "missing".equals(normalizedReferralFilter) ? missing : !missing;
+                })
+                .toList();
+    }
+
+    private String normalizeKeyword(String q) {
+        if (q == null || q.isBlank()) {
+            return null;
+        }
+        return "%" + q.trim().toLowerCase(Locale.ROOT) + "%";
+    }
+
+    private String normalizeReferralFilter(String referralFilter) {
+        if (referralFilter == null || referralFilter.isBlank()) {
+            return null;
+        }
+        String normalizedReferralFilter = referralFilter.trim().toLowerCase(Locale.ROOT);
+        return "missing".equals(normalizedReferralFilter) || "generated".equals(normalizedReferralFilter)
+                ? normalizedReferralFilter
+                : null;
+    }
+
+    private boolean hasNoReferralCode(String referralCode) {
+        return referralCode == null || referralCode.isBlank();
     }
 
 }

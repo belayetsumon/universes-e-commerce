@@ -8,11 +8,11 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface BlogCategoryRepository extends JpaRepository<BlogCategory, Long>, JpaSpecificationExecutor<BlogCategory> {
 
-    Optional<BlogCategory> findBySlugIgnoreCaseAndDeletedFlagFalse(String slug);
+    Optional<BlogCategory> findBySlugAndDeletedFlagFalse(String slug);
 
-    boolean existsBySlugIgnoreCaseAndDeletedFlagFalse(String slug);
+    boolean existsBySlugAndDeletedFlagFalse(String slug);
 
-    boolean existsBySlugIgnoreCaseAndIdNotAndDeletedFlagFalse(String slug, Long id);
+    boolean existsBySlugAndIdNotAndDeletedFlagFalse(String slug, Long id);
 
     List<BlogCategory> findByDeletedFlagFalseAndActiveFlagTrueOrderBySortOrderAscNameAsc();
 }

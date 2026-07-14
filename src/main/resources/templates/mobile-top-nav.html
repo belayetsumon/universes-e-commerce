@@ -28,10 +28,12 @@
         <li class="list-group-item">
             <a class=""  th:href="@{/}"> <i class="fas fa-home"></i> Home</a>
         </li>
-<!--        <li class="list-group-item"><a class="textMaroon"  th:href="@{/front-view/exam-category}"><i class="fas fa-list-ul"></i> Exam Category</a></li>
-        <li class="list-group-item"><a th:class="textMaroon"  th:href="@{/front-view/all-exam}"><i class="fas fa-book-reader"></i> All Exam</a></li>
-        <li class="list-group-item"><a th:class="textMaroon"  th:href="@{/front-view/all-instructor}"> <i class="fas fa-book-open"></i> All Instructor</a></li>
-        <li class="list-group-item"><a th:class="textMaroon"  th:href="@{/public/blog}"><i class="fas fa-blog"></i> Blog</a></li>-->
+        <li class="list-group-item">
+            <a class="textMaroon" th:href="@{/public/product}"><i class="fas fa-box-open"></i> Products</a>
+        </li>
+        <li class="list-group-item">
+            <a class="textMaroon" th:href="@{/public/blog}"><i class="fas fa-blog"></i> Blog</a>
+        </li>
         <li sec:authorize="!isAuthenticated()" class="list-group-item">
             <a class="textMaroon" th:href="@{/public/front-registration}"> <i class="fab fa-wpforms"></i> Registration</a>
         </li>

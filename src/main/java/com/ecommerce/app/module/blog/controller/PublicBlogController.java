@@ -2,7 +2,6 @@ package com.ecommerce.app.module.blog.controller;
 
 import com.ecommerce.app.module.blog.dto.BlogCommentForm;
 import com.ecommerce.app.module.blog.dto.BlogSubscriberForm;
-import com.ecommerce.app.module.blog.repository.BlogAuthorRepository;
 import com.ecommerce.app.module.blog.repository.BlogCategoryRepository;
 import com.ecommerce.app.module.blog.repository.BlogTagRepository;
 import com.ecommerce.app.module.blog.services.BlogEngagementService;
@@ -31,7 +30,6 @@ public class PublicBlogController {
     private final BlogEngagementService engagementService;
     private final BlogCategoryRepository categoryRepository;
     private final BlogTagRepository tagRepository;
-    private final BlogAuthorRepository authorRepository;
     private final PublicSeoService publicSeoService;
 
     public PublicBlogController(
@@ -39,13 +37,11 @@ public class PublicBlogController {
             BlogEngagementService engagementService,
             BlogCategoryRepository categoryRepository,
             BlogTagRepository tagRepository,
-            BlogAuthorRepository authorRepository,
             PublicSeoService publicSeoService) {
         this.blogPublicService = blogPublicService;
         this.engagementService = engagementService;
         this.categoryRepository = categoryRepository;
         this.tagRepository = tagRepository;
-        this.authorRepository = authorRepository;
         this.publicSeoService = publicSeoService;
     }
 
@@ -56,7 +52,7 @@ public class PublicBlogController {
 
     @GetMapping
     public String landing(@RequestParam(required = false) String q, @RequestParam(defaultValue = "0") int page, HttpServletRequest request, Model model) {
-        var articles = blogPublicService.publicPosts(q, null, null, PageRequest.of(Math.max(page, 0), 12, Sort.by(Sort.Direction.DESC, "publishedAt")));
+        var articles = blogPublicService.publicPosts(q, null, PageRequest.of(Math.max(page, 0), 12, Sort.by(Sort.Direction.DESC, "publishedAt")));
         model.addAttribute("articles", articles);
         model.addAttribute("query", q);
         blogPublicService.enrichListingModel(model);
@@ -71,12 +67,12 @@ public class PublicBlogController {
 
     @GetMapping("/category/{slug}")
     public String category(@PathVariable String slug, @RequestParam(defaultValue = "0") int page, HttpServletRequest request, Model model, RedirectAttributes redirectAttributes) {
-        var category = categoryRepository.findBySlugIgnoreCaseAndDeletedFlagFalse(slug).orElse(null);
+        var category = categoryRepository.findBySlugAndDeletedFlagFalse(slug).orElse(null);
         if (category == null) {
             redirectAttributes.addFlashAttribute("errorMessage", "Blog category was not found.");
             return "redirect:/public/blog";
         }
-        var articles = blogPublicService.publicPosts(null, slug, null, PageRequest.of(Math.max(page, 0), 12, Sort.by(Sort.Direction.DESC, "publishedAt")));
+        var articles = blogPublicService.publicPosts(null, slug, PageRequest.of(Math.max(page, 0), 12, Sort.by(Sort.Direction.DESC, "publishedAt")));
         model.addAttribute("articles", articles);
         model.addAttribute("activeCategorySlug", slug);
         blogPublicService.enrichListingModel(model);
@@ -86,24 +82,12 @@ public class PublicBlogController {
 
     @GetMapping("/tag/{slug}")
     public String tag(@PathVariable String slug, @RequestParam(defaultValue = "0") int page, Model model, RedirectAttributes redirectAttributes) {
-        if (tagRepository.findBySlugIgnoreCaseAndDeletedFlagFalse(slug).isEmpty()) {
+        if (tagRepository.findBySlugAndDeletedFlagFalse(slug).isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage", "Blog tag was not found.");
             return "redirect:/public/blog";
         }
-        model.addAttribute("articles", blogPublicService.publicPosts(slug.replace("-", " "), null, null, PageRequest.of(Math.max(page, 0), 12, Sort.by(Sort.Direction.DESC, "publishedAt"))));
+        model.addAttribute("articles", blogPublicService.publicPosts(slug.replace("-", " "), null, PageRequest.of(Math.max(page, 0), 12, Sort.by(Sort.Direction.DESC, "publishedAt"))));
         model.addAttribute("activeTagSlug", slug);
-        blogPublicService.enrichListingModel(model);
-        return "fronttheme/blog/list";
-    }
-
-    @GetMapping("/author/{slug}")
-    public String author(@PathVariable String slug, @RequestParam(defaultValue = "0") int page, Model model, RedirectAttributes redirectAttributes) {
-        if (authorRepository.findBySlugIgnoreCaseAndDeletedFlagFalse(slug).isEmpty()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Blog author was not found.");
-            return "redirect:/public/blog";
-        }
-        model.addAttribute("articles", blogPublicService.publicPosts(null, null, slug, PageRequest.of(Math.max(page, 0), 12, Sort.by(Sort.Direction.DESC, "publishedAt"))));
-        model.addAttribute("activeAuthorSlug", slug);
         blogPublicService.enrichListingModel(model);
         return "fronttheme/blog/list";
     }

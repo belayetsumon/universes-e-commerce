@@ -9,7 +9,6 @@ public class BlogSearchCriteria {
     private BlogPublicationStatus status;
     private BlogVisibility visibility;
     private Long categoryId;
-    private Long authorId;
     private String sort = "updatedAt";
     private String direction = "desc";
 
@@ -43,14 +42,6 @@ public class BlogSearchCriteria {
 
     public void setCategoryId(Long categoryId) {
         this.categoryId = categoryId;
-    }
-
-    public Long getAuthorId() {
-        return authorId;
-    }
-
-    public void setAuthorId(Long authorId) {
-        this.authorId = authorId;
     }
 
     public String getSort() {

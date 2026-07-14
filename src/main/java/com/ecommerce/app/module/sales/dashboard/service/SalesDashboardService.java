@@ -31,7 +31,6 @@ public class SalesDashboardService {
     private static final int CHART_LIMIT = 8;
     private static final int TABLE_LIMIT = 10;
     private static final DateTimeFormatter DAY_LABEL = DateTimeFormatter.ofPattern("dd MMM");
-    private static final DateTimeFormatter ACTIVITY_TIME = DateTimeFormatter.ofPattern("dd MMM, hh:mm a");
 
     private final SalesDashboardAnalyticsRepository analyticsRepository;
     private final VendorprofileRepository vendorprofileRepository;
@@ -110,7 +109,6 @@ public class SalesDashboardService {
         view.setCustomerAnalytics(customerMetricRows(view));
         view.setReturnAnalytics(returnRows(view));
         view.setGeographicSales(geoRows(analyticsRepository.loadGeographicSales(start, end, safeFilter, vendorId, CHART_LIMIT)));
-        view.setLiveActivity(activityRows(analyticsRepository.loadActivity(start, end, vendorId, 12)));
         view.setAlerts(alertRows(view));
         view.setKpis(kpiRows(view, previousTotals));
         return view;
@@ -386,18 +384,6 @@ public class SalesDashboardService {
         return result;
     }
 
-    private List<SalesDashboardView.ActivityEvent> activityRows(List<Object[]> rows) {
-        List<SalesDashboardView.ActivityEvent> result = new ArrayList<>();
-        for (Object[] row : rows) {
-            OrderStatus status = row[1] instanceof OrderStatus orderStatus ? orderStatus : null;
-            String accent = status == OrderStatus.CANCELLED ? "danger" : status == OrderStatus.DELIVERED || status == OrderStatus.COMPLETED ? "success" : "info";
-            result.add(new SalesDashboardView.ActivityEvent("Order", "Order " + text(row[0], "N/A"),
-                    label(status == null ? "NEW_ORDER" : status.name()) + " - " + money(decimal(row[2])),
-                    localDateTime(row[3]) == null ? "" : localDateTime(row[3]).format(ACTIVITY_TIME), accent));
-        }
-        return result;
-    }
-
     private List<SalesDashboardView.BusinessAlert> alertRows(SalesDashboardView view) {
         List<SalesDashboardView.BusinessAlert> alerts = new ArrayList<>();
         if (view.getInventoryImpact().stream().anyMatch(row -> "Out of Stock".equals(row.label()) && !"0".equals(row.value()))) {
@@ -461,12 +447,6 @@ public class SalesDashboardService {
         if (value instanceof LocalDate date) return date;
         if (value instanceof Date date) return date.toLocalDate();
         if (value instanceof java.sql.Timestamp timestamp) return timestamp.toLocalDateTime().toLocalDate();
-        return null;
-    }
-
-    private LocalDateTime localDateTime(Object value) {
-        if (value instanceof LocalDateTime dateTime) return dateTime;
-        if (value instanceof java.sql.Timestamp timestamp) return timestamp.toLocalDateTime();
         return null;
     }
 

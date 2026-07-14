@@ -339,21 +339,6 @@ public class SalesDashboardAnalyticsRepository {
                 .getSingleResult();
     }
 
-    public List<Object[]> loadActivity(LocalDateTime start, LocalDateTime end, Long vendorId, int limit) {
-        return entityManager.createQuery("""
-                select o.orderCode, o.status, o.grandTotal, o.created
-                from SalesOrder o
-                where o.created >= :start and o.created < :end
-                  and (:vendorId is null or o.vendorId = :vendorId)
-                order by o.created desc
-                """, Object[].class)
-                .setParameter("start", start)
-                .setParameter("end", end)
-                .setParameter("vendorId", vendorId)
-                .setMaxResults(limit)
-                .getResultList();
-    }
-
     public BigDecimal loadCouponUsage(LocalDateTime start, LocalDateTime end) {
         Object value = entityManager.createQuery("""
                 select coalesce(sum(c.discountAmount), 0)
@@ -451,7 +436,7 @@ public class SalesDashboardAnalyticsRepository {
     }
 
     private String orderWhere(String orderAlias, String shippingAlias) {
-        return orderAlias + ".created >= :start and " + orderAlias + ".created < :end\n"
+        return " " + orderAlias + ".created >= :start and " + orderAlias + ".created < :end\n"
                 + "                  and (:vendorId is null or " + orderAlias + ".vendorId = :vendorId)\n"
                 + "                  and (:customerId is null or " + orderAlias + ".customer.id = :customerId)\n"
                 + "                  and (:orderStatus is null or " + orderAlias + ".status = :orderStatus)\n"

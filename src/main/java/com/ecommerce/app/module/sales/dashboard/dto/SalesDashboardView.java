@@ -48,7 +48,6 @@ public class SalesDashboardView {
     private List<MetricRow> customerAnalytics = new ArrayList<>();
     private List<MetricRow> returnAnalytics = new ArrayList<>();
     private List<DimensionMetric> geographicSales = new ArrayList<>();
-    private List<ActivityEvent> liveActivity = new ArrayList<>();
     private List<BusinessAlert> alerts = new ArrayList<>();
 
     public SalesDashboardDateRange getRange() { return range; }
@@ -134,8 +133,6 @@ public class SalesDashboardView {
     public void setReturnAnalytics(List<MetricRow> returnAnalytics) { this.returnAnalytics = safeList(returnAnalytics); }
     public List<DimensionMetric> getGeographicSales() { return geographicSales; }
     public void setGeographicSales(List<DimensionMetric> geographicSales) { this.geographicSales = safeList(geographicSales); }
-    public List<ActivityEvent> getLiveActivity() { return liveActivity; }
-    public void setLiveActivity(List<ActivityEvent> liveActivity) { this.liveActivity = safeList(liveActivity); }
     public List<BusinessAlert> getAlerts() { return alerts; }
     public void setAlerts(List<BusinessAlert> alerts) { this.alerts = safeList(alerts); }
 
@@ -163,7 +160,6 @@ public class SalesDashboardView {
     public record SalesCustomerRow(String customer, long orders, BigDecimal lifetimeValue, LocalDate lastPurchase,
             BigDecimal rewardPoints) { }
     public record MetricRow(String label, String value, String detail, String accent) { }
-    public record ActivityEvent(String type, String title, String detail, String happenedAt, String accent) { }
     public record BusinessAlert(String severity, String title, String detail, String actionLabel) { }
     public record FilterOption(Long id, String label) { }
 }

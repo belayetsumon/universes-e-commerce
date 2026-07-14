@@ -7,7 +7,9 @@ package com.ecommerce.app.module.ReferralRewards.services;
 import com.ecommerce.app.module.ReferralRewards.model.Referral;
 import com.ecommerce.app.module.ReferralRewards.model.TransactionType;
 import com.ecommerce.app.module.ReferralRewards.repository.ReferralRepository;
+import com.ecommerce.app.module.user.model.UserType;
 import com.ecommerce.app.module.user.model.Users;
+import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.user.services.UsersService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -32,6 +34,9 @@ public class ReferralService {
 
     @Autowired
     private UsersService usersService;
+
+    @Autowired
+    private UsersRepository usersRepository;
 
     @Autowired
     private RewardAccountService rewardAccountService;
@@ -86,6 +91,34 @@ public class ReferralService {
         }
 
         return referral;
+    }
+
+    @Transactional
+    public Referral generateMissingReferralCodeForCustomer(Long userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("Customer is required.");
+        }
+
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found."));
+
+        if (user.getUserType() != UserType.customer) {
+            throw new IllegalArgumentException("Referral codes can only be generated for customer accounts.");
+        }
+
+        Referral referral = referralRepository.findByUsers(user).orElse(null);
+        if (referral == null) {
+            referral = new Referral();
+            referral.setUsers(user);
+            referral.setReferralCode(generateUniqueReferralCode());
+        } else if (hasNoReferralCode(referral)) {
+            referral.setReferralCode(generateUniqueReferralCode());
+        } else {
+            return referral;
+        }
+
+        rewardAccountService.ensureRewardAccount(user);
+        return referralRepository.save(referral);
     }
 
     public Users resolveReferrerByCode(String referralCode) {
@@ -216,5 +249,11 @@ public class ReferralService {
             referralCode = usersService.generateReferralCode();
         } while (referralRepository.findByReferralCode(referralCode).isPresent());
         return referralCode;
+    }
+
+    private boolean hasNoReferralCode(Referral referral) {
+        return referral == null
+                || referral.getReferralCode() == null
+                || referral.getReferralCode().isBlank();
     }
 }

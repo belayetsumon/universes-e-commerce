@@ -30,7 +30,6 @@ public class BlogCategory extends BaseBlogEntity {
     @Column(name = "name", nullable = false, length = 150)
     private String name;
 
-    @NotBlank(message = "Category slug is required.")
     @Size(max = 180, message = "Slug cannot exceed 180 characters.")
     @Column(name = "slug", nullable = false, length = 180)
     private String slug;

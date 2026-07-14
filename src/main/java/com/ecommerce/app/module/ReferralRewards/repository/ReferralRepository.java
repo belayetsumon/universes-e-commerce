@@ -6,6 +6,7 @@ package com.ecommerce.app.module.ReferralRewards.repository;
 
 import com.ecommerce.app.module.ReferralRewards.model.Referral;
 import com.ecommerce.app.module.user.model.Users;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -37,6 +38,14 @@ public interface ReferralRepository extends JpaRepository<Referral, Long> {
     Optional<Referral> findByUsers_Id(Long id);
 
     List<Referral> findAllByUsers_Id(Long id);
+
+    @Query("""
+            SELECT r
+            FROM Referral r
+            JOIN FETCH r.users
+            WHERE r.users.id IN :userIds
+            """)
+    List<Referral> findAllByUsers_IdIn(@Param("userIds") Collection<Long> userIds);
 
     // Find referral by the referred user's ID (should be one-to-one)
     Optional<Referral> findByReferredUser_Id(Long id);

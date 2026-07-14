@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BlogTranslationRepository extends JpaRepository<BlogTranslation, Long> {
 
-    Optional<BlogTranslation> findByBlogAndLanguageCodeIgnoreCaseAndDeletedFlagFalse(Blog blog, String languageCode);
+    Optional<BlogTranslation> findByBlogAndLanguageCodeAndDeletedFlagFalse(Blog blog, String languageCode);
 }
