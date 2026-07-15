@@ -387,8 +387,12 @@ $(document).ready(function () {
 
 
 $(document).ready(function () {
-//    alert("summernote");
-    $('#description,#shortDescription').summernote({
+    var $productEditors = $('#description,#shortDescription');
+    if (!$productEditors.length || !$.fn || typeof $.fn.summernote !== 'function') {
+        return;
+    }
+
+    $productEditors.summernote({
 
         height: 250,
         placeholder: 'Write content here...'

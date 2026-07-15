@@ -41,6 +41,7 @@ public class SalesDashboardAnalyticsRepository {
                 .setParameter("productId", filter.getProductId())
                 .setParameter("paymentMethod", filter.getPaymentMethod())
                 .setParameter("shippingCarrierId", filter.getShippingCarrierId())
+                .setParameter("salesChannel", channel(filter))
                 .setParameter("regionLike", like(filter.getRegion()))
                 .getSingleResult();
         return new SalesTotals(decimal(row[0]), number(row[1]), number(row[2]), decimal(row[3]), decimal(row[4]));
@@ -67,6 +68,7 @@ public class SalesDashboardAnalyticsRepository {
                 .setParameter("productId", filter.getProductId())
                 .setParameter("paymentMethod", filter.getPaymentMethod())
                 .setParameter("shippingCarrierId", filter.getShippingCarrierId())
+                .setParameter("salesChannel", channel(filter))
                 .setParameter("regionLike", like(filter.getRegion()))
                 .getSingleResult();
         return decimal(value);
@@ -96,6 +98,7 @@ public class SalesDashboardAnalyticsRepository {
                 .setParameter("productId", filter.getProductId())
                 .setParameter("paymentMethod", filter.getPaymentMethod())
                 .setParameter("shippingCarrierId", filter.getShippingCarrierId())
+                .setParameter("salesChannel", channel(filter))
                 .setParameter("regionLike", like(filter.getRegion()))
                 .getSingleResult();
         return decimal(value);
@@ -224,6 +227,22 @@ public class SalesDashboardAnalyticsRepository {
         setOrderParameters(query, start, end, filter, vendorId);
         query.setParameter("cancelled", OrderStatus.CANCELLED);
         query.setMaxResults(limit);
+        return query.getResultList();
+    }
+
+    public List<Object[]> loadSalesByChannel(LocalDateTime start, LocalDateTime end, SalesDashboardFilter filter, Long vendorId) {
+        Query query = entityManager.createQuery("""
+                select o.guestCheckout,
+                       coalesce(sum(case when o.status <> :cancelled then o.grandTotal else 0 end), 0),
+                       count(distinct o.id)
+                from SalesOrder o
+                left join o.shippingAddress sa
+                where """ + orderWhere("o", "sa") + """
+                group by o.guestCheckout
+                order by sum(o.grandTotal) desc
+                """, Object[].class);
+        setOrderParameters(query, start, end, filter, vendorId);
+        query.setParameter("cancelled", OrderStatus.CANCELLED);
         return query.getResultList();
     }
 
@@ -447,7 +466,10 @@ public class SalesDashboardAnalyticsRepository {
                 + "                  and (:brandId is null or exists (select 1 from OrderItem fi join fi.product fp where fi.salesOrder = " + orderAlias + " and fp.manufacturer.id = :brandId))\n"
                 + "                  and (:productId is null or exists (select 1 from OrderItem fi join fi.product fp where fi.salesOrder = " + orderAlias + " and fp.id = :productId))\n"
                 + "                  and (:paymentMethod is null or exists (select 1 from Payment fp where fp.order = " + orderAlias + " and fp.paymentMethod = :paymentMethod))\n"
-                + "                  and (:shippingCarrierId is null or exists (select 1 from Shipment sh where sh.salesOrderId = " + orderAlias + ".id and sh.carrier.id = :shippingCarrierId))\n";
+                + "                  and (:shippingCarrierId is null or exists (select 1 from Shipment sh where sh.salesOrderId = " + orderAlias + ".id and sh.carrier.id = :shippingCarrierId))\n"
+                + "                  and (:salesChannel is null"
+                + " or (:salesChannel = 'GUEST_CHECKOUT' and " + orderAlias + ".guestCheckout = true)"
+                + " or (:salesChannel = 'REGISTERED_CHECKOUT' and " + orderAlias + ".guestCheckout = false))\n";
     }
 
     private void setOrderParameters(Query query, LocalDateTime start, LocalDateTime end, SalesDashboardFilter filter, Long vendorId) {
@@ -461,7 +483,12 @@ public class SalesDashboardAnalyticsRepository {
         query.setParameter("productId", filter.getProductId());
         query.setParameter("paymentMethod", filter.getPaymentMethod());
         query.setParameter("shippingCarrierId", filter.getShippingCarrierId());
+        query.setParameter("salesChannel", channel(filter));
         query.setParameter("regionLike", like(filter.getRegion()));
+    }
+
+    private String channel(SalesDashboardFilter filter) {
+        return filter.getSalesChannel() == null ? null : filter.getSalesChannel().name();
     }
 
     private String like(String value) {

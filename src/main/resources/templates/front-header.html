@@ -125,17 +125,35 @@
 
             <!-- 🔹 Center: Search -->
             <div class="flex-fill mx-3 storefront-header-search">
-                <form class="input-group storefront-search-form" th:action="@{/public/product}" method="get" role="search">
-                    <input type="search"
-                           class="form-control storefront-search-input"
-                           name="q"
-                           th:value="${currentQuery}"
-                           placeholder="Search products, brands, categories"
-                           aria-label="Search products">
-                    <button class="btn storefront-search-btn" type="submit" aria-label="Submit product search">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </form>
+                <div class="storefront-search-shell" data-search-suggest>
+                    <form class="input-group storefront-search-form"
+                          th:action="@{/public/product}"
+                          method="get"
+                          role="search"
+                          autocomplete="off"
+                          data-search-suggest-form>
+                        <input type="search"
+                               class="form-control storefront-search-input"
+                               name="q"
+                               th:value="${currentQuery}"
+                               placeholder="Search products, brands, categories"
+                               aria-label="Search products"
+                               aria-autocomplete="list"
+                               aria-expanded="false"
+                               aria-controls="storefrontSearchSuggestions"
+                               data-search-suggest-input>
+                        <button class="btn storefront-search-btn" type="submit" aria-label="Submit product search">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </form>
+                    <div class="storefront-search-suggestions"
+                         id="storefrontSearchSuggestions"
+                         role="region"
+                         aria-label="Search suggestions"
+                         aria-live="polite"
+                         hidden
+                         data-search-suggest-panel></div>
+                </div>
             </div>
 
             <!-- 🔹 Right: Icons & Login/Register -->

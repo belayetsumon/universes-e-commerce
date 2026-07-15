@@ -4,6 +4,8 @@
  */
 package com.ecommerce.app.product.services;
 
+import com.ecommerce.app.product.dto.ProductSearchSuggestion;
+import com.ecommerce.app.product.dto.ProductSearchSuggestionResponse;
 import com.ecommerce.app.product.model.AvailableDeliveryArea;
 import com.ecommerce.app.product.model.DeliveryCharge;
 import com.ecommerce.app.product.model.DeliveryTimeline;
@@ -16,6 +18,8 @@ import com.ecommerce.app.product.model.ProductVariant;
 import com.ecommerce.app.product.model.Productcategory;
 import com.ecommerce.app.product.model.SortingType;
 import com.ecommerce.app.product.model.Warranty;
+import com.ecommerce.app.product.ripository.ProductRepository;
+import com.ecommerce.app.product.ripository.ProductcategoryRepository;
 import static com.ecommerce.app.product.model.SortingType.ASC;
 import static com.ecommerce.app.product.model.SortingType.DESC;
 import static com.ecommerce.app.product.model.SortingType.RANDOM;
@@ -45,6 +49,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -60,6 +65,12 @@ public class ProductService {
 
     @Autowired
     ProductVariantCatalogService productVariantCatalogService;
+
+    @Autowired
+    ProductRepository productRepository;
+
+    @Autowired
+    ProductcategoryRepository productcategoryRepository;
 
     private List<Map<String, Object>> enrichProductAvailability(List<Map<String, Object>> products) {
         if (products == null || products.isEmpty()) {
@@ -177,6 +188,74 @@ public class ProductService {
                 cb.equal(productRoot.get("status"), ProductStatusEnum.Active),
                 cb.isTrue(productRoot.get("onlineShow")),
                 cb.equal(vendorJoin.get("vendorStatusEnum"), VendorStatusEnum.Active)
+        );
+    }
+
+    public ProductSearchSuggestionResponse publicSearchSuggestions(String rawQuery) {
+        String query = rawQuery == null ? "" : rawQuery.trim();
+        if (query.length() < 2) {
+            return new ProductSearchSuggestionResponse(query, List.of(), List.of());
+        }
+
+        String safeQuery = query.length() > 80 ? query.substring(0, 80) : query;
+        List<ProductSearchSuggestion> products = productRepository.findPublicSearchSuggestions(
+                safeQuery,
+                ProductStatusEnum.Active,
+                VendorStatusEnum.Active,
+                PageRequest.of(0, 6)
+        ).stream()
+                .map(this::toProductSuggestion)
+                .toList();
+
+        List<ProductSearchSuggestion> categories = productcategoryRepository.findPublicCategorySuggestions(
+                safeQuery,
+                ProductStatusEnum.Active,
+                PageRequest.of(0, 4)
+        ).stream()
+                .map(this::toCategorySuggestion)
+                .toList();
+
+        return new ProductSearchSuggestionResponse(safeQuery, products, categories);
+    }
+
+    private ProductSearchSuggestion toProductSuggestion(Product product) {
+        Productcategory category = product.getProductcategory();
+        BigDecimal price = finalNetPrice(
+                product.getSalesPrice(),
+                totalDiscountPercentCalculate(product.getVendordiscount(), product.getMarketPlaceDiscount())
+        );
+        String categoryName = category == null ? "Product" : category.getName();
+        String imageName = product.getImageName() == null ? "" : product.getImageName().trim();
+        String imageUrl = imageName.isEmpty() ? null : "/files/" + imageName;
+        boolean manageStock = Boolean.TRUE.equals(product.getManageStock());
+        BigDecimal stockAvailable = product.getStockAvailableQuantity() == null ? BigDecimal.ZERO : product.getStockAvailableQuantity();
+        String badge = manageStock && stockAvailable.compareTo(BigDecimal.ZERO) <= 0 ? "Out of stock" : "In stock";
+
+        return new ProductSearchSuggestion(
+                "product",
+                product.getTitle(),
+                categoryName,
+                "/public/single-product/" + product.getUuid(),
+                imageUrl,
+                price,
+                badge
+        );
+    }
+
+    private ProductSearchSuggestion toCategorySuggestion(Productcategory category) {
+        String imageName = category.getImageName() == null ? "" : category.getImageName().trim();
+        String imageUrl = imageName.isEmpty() ? null : "/files/" + imageName;
+        Productcategory parent = category.getParent();
+        String detail = parent == null ? "Category" : "Category in " + parent.getName();
+
+        return new ProductSearchSuggestion(
+                "category",
+                category.getName(),
+                detail,
+                "/public/product-by-category/" + category.getUuid(),
+                imageUrl,
+                null,
+                "Browse"
         );
     }
 

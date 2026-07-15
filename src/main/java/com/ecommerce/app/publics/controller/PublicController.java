@@ -23,6 +23,7 @@ import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.user.services.LoginEventService;
 import com.ecommerce.app.module.wishlist.service.WishlistService;
 import com.ecommerce.app.product.dto.CatalogDiscoveryResult;
+import com.ecommerce.app.product.dto.ProductSearchSuggestionResponse;
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.ProductStatusEnum;
 import com.ecommerce.app.product.model.Productcategory;
@@ -76,6 +77,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.HtmlUtils;
@@ -283,6 +285,12 @@ public class PublicController {
 
         allProducts = catalogProductDiscoveryService.applyKeywordSearch(allProducts, q);
         return renderProductList(model, allProducts, page, size, sort, selectedVendor, q, request);
+    }
+
+    @RequestMapping("/search/suggestions")
+    @ResponseBody
+    public ProductSearchSuggestionResponse searchSuggestions(@RequestParam(required = false, name = "q") String query) {
+        return productService.publicSearchSuggestions(query);
     }
 
     private String renderProductList(
@@ -782,7 +790,7 @@ public class PublicController {
     private void addProductMetadataModel(Model model, Product product, Map<String, Object> productDetails, HttpServletRequest request) {
         GlobalSettings settings = globalSettingsService.getActiveSettings();
         publicSeoService.apply(model, publicSeoService.product(request, product, productDetails));
-        model.addAttribute("trackingProduct", Map.of(
+        Map<String, Object> trackingProduct = Map.of(
                 "item_id", product.getSku() > 0 ? "SKU-" + product.getSku() : product.getUuid(),
                 "item_name", textOrDefault(getString(productDetails, "metaTitle"), getString(productDetails, "title")),
                 "item_brand", getString(productDetails, "manufacturerName"),
@@ -790,7 +798,10 @@ public class PublicController {
                 "price", getBigDecimal(productDetails, "afterDiscountRemainingAmount", "salesPrice"),
                 "currency", textOrDefault(settings.getCurrency(), "BDT"),
                 "availability", getString(productDetails, "availabilityLabel")
-        ));
+        );
+
+        model.addAttribute("trackingProduct", trackingProduct);
+        model.addAttribute("trackingProductItems", List.of(trackingProduct));
     }
 
     private void addCategoryMetadataModel(Model model, Productcategory category, HttpServletRequest request, int productCount) {

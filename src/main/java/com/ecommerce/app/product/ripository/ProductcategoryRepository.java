@@ -16,6 +16,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.repository.query.Param;
 
 /**
  *
@@ -38,6 +39,18 @@ public interface ProductcategoryRepository extends JpaRepository<Productcategory
     Productcategory  findBySlug(String slug);
 
     Optional<Productcategory> findByUuid(String uuid);
+
+    @Query("""
+           SELECT c FROM Productcategory c
+           LEFT JOIN FETCH c.parent
+           WHERE c.status = :status
+             AND LOWER(c.name) LIKE LOWER(CONCAT('%', :query, '%'))
+           ORDER BY c.orderno ASC, c.name ASC
+           """)
+    List<Productcategory> findPublicCategorySuggestions(
+            @Param("query") String query,
+            @Param("status") ProductStatusEnum status,
+            Pageable pageable);
      
       
     /// new 

@@ -1,5 +1,6 @@
 package com.ecommerce.app.module.sales.dashboard.service;
 
+import com.ecommerce.app.module.sales.dashboard.dto.SalesDashboardChannel;
 import com.ecommerce.app.module.sales.dashboard.dto.SalesDashboardDateRange;
 import com.ecommerce.app.module.sales.dashboard.dto.SalesDashboardFilter;
 import com.ecommerce.app.module.sales.dashboard.dto.SalesDashboardView;
@@ -95,7 +96,7 @@ public class SalesDashboardService {
         view.setVendorSales(includeVendorLeaderboard
                 ? vendorDimensionRows(analyticsRepository.loadTopVendors(start, end, safeFilter, vendorId, CHART_LIMIT))
                 : List.of());
-        view.setChannelSales(channelRows(view));
+        view.setChannelSales(channelRows(analyticsRepository.loadSalesByChannel(start, end, safeFilter, vendorId)));
         view.setPaymentAnalytics(paymentRows(analyticsRepository.loadPaymentAnalytics(start, end, safeFilter, vendorId)));
         view.setTopProducts(productRows(analyticsRepository.loadTopProducts(start, end, safeFilter, vendorId, TABLE_LIMIT)));
         view.setTopVendors(includeVendorLeaderboard
@@ -144,6 +145,10 @@ public class SalesDashboardService {
 
     public List<PaymentMethod> paymentMethods() {
         return Arrays.asList(PaymentMethod.values());
+    }
+
+    public List<SalesDashboardChannel> salesChannels() {
+        return Arrays.asList(SalesDashboardChannel.values());
     }
 
     public List<String> currencies() {
@@ -251,16 +256,19 @@ public class SalesDashboardService {
                 .toList();
     }
 
-    private List<SalesDashboardView.DimensionMetric> channelRows(SalesDashboardView view) {
-        long manual = view.getTotalOrders() == 0 ? 0 : Math.max(0, view.getTotalOrders() / 20);
-        long website = Math.max(0, view.getTotalOrders() - manual);
-        return List.of(
-                new SalesDashboardView.DimensionMetric("Website", view.getGrossSales(), website, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO),
-                new SalesDashboardView.DimensionMetric("Manual Orders", BigDecimal.ZERO, manual, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO),
-                new SalesDashboardView.DimensionMetric("Mobile App", BigDecimal.ZERO, 0, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO),
-                new SalesDashboardView.DimensionMetric("POS", BigDecimal.ZERO, 0, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO),
-                new SalesDashboardView.DimensionMetric("Marketplace", BigDecimal.ZERO, 0, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO),
-                new SalesDashboardView.DimensionMetric("Social Commerce", BigDecimal.ZERO, 0, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
+    private List<SalesDashboardView.DimensionMetric> channelRows(List<Object[]> rows) {
+        List<SalesDashboardView.DimensionMetric> result = new ArrayList<>();
+        for (Object[] row : rows) {
+            boolean guestCheckout = Boolean.TRUE.equals(row[0]);
+            result.add(new SalesDashboardView.DimensionMetric(
+                    guestCheckout ? "Guest checkout" : "Registered checkout",
+                    decimal(row[1]),
+                    number(row[2]),
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO));
+        }
+        return result;
     }
 
     private List<SalesDashboardView.PaymentMetric> paymentRows(List<Object[]> rows) {
@@ -342,8 +350,7 @@ public class SalesDashboardService {
                 metric("Cashback Issued", money(cashbackIssued), "Cashback transactions", "success"),
                 metric("Reward Points Redeemed", "0", "Reward redemption source is tracked separately", "muted"),
                 metric("Gift Card Sales", money(giftCardSales), "Paid gift card purchases", "info"),
-                metric("Referral Revenue", money(view.getMarketplaceCommission()), "Commission-attributed proxy", "primary"),
-                metric("Campaign Revenue", "N/A", "Campaign dimension not persisted on orders", "muted"));
+                metric("Referral Revenue", money(view.getMarketplaceCommission()), "Commission-attributed proxy", "primary"));
     }
 
     private List<SalesDashboardView.MetricRow> inventoryRows(Object[] row) {
@@ -387,7 +394,7 @@ public class SalesDashboardService {
     private List<SalesDashboardView.BusinessAlert> alertRows(SalesDashboardView view) {
         List<SalesDashboardView.BusinessAlert> alerts = new ArrayList<>();
         if (view.getInventoryImpact().stream().anyMatch(row -> "Out of Stock".equals(row.label()) && !"0".equals(row.value()))) {
-            alerts.add(new SalesDashboardView.BusinessAlert("danger", "Out of stock products detected", "Review inventory replenishment before active campaigns.", "Open stock report"));
+            alerts.add(new SalesDashboardView.BusinessAlert("danger", "Out of stock products detected", "Review inventory replenishment before active promotions.", "Open stock report"));
         }
         if (view.getGrossSalesGrowthPercent().compareTo(BigDecimal.ZERO) < 0) {
             alerts.add(new SalesDashboardView.BusinessAlert("warning", "Sales below previous period", "Revenue growth is negative for the selected comparison window.", "Review trend"));

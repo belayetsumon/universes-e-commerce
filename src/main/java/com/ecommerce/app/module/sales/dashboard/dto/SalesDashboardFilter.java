@@ -16,6 +16,7 @@ public class SalesDashboardFilter {
     private Long shippingCarrierId;
     private OrderStatus orderStatus;
     private PaymentMethod paymentMethod;
+    private SalesDashboardChannel salesChannel;
     private String region;
     private String currency = "BDT";
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -59,6 +60,9 @@ public class SalesDashboardFilter {
 
     public PaymentMethod getPaymentMethod() { return paymentMethod; }
     public void setPaymentMethod(PaymentMethod paymentMethod) { this.paymentMethod = paymentMethod; }
+
+    public SalesDashboardChannel getSalesChannel() { return salesChannel; }
+    public void setSalesChannel(SalesDashboardChannel salesChannel) { this.salesChannel = salesChannel; }
 
     public String getRegion() { return region; }
     public void setRegion(String region) { this.region = region == null || region.isBlank() ? null : region.trim(); }

@@ -21,6 +21,9 @@
             .login-history-page .lh-toolbar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:1rem; padding:1rem; border-bottom:1px solid var(--lh-line); }
             .login-history-page .lh-title { font-size:1rem; font-weight:780; margin:0; color:var(--lh-ink); }
             .login-history-page .lh-subtitle { color:var(--lh-muted); font-size:.84rem; margin:.2rem 0 0; }
+            .login-history-page .lh-filter-form { display:grid; grid-template-columns:minmax(220px,1.4fr) minmax(160px,.7fr) repeat(2,minmax(145px,.65fr)) auto auto; gap:.75rem; align-items:end; }
+            .login-history-page .lh-filter-label { color:var(--lh-muted); font-size:.72rem; font-weight:780; letter-spacing:.04em; margin-bottom:.35rem; text-transform:uppercase; }
+            .login-history-page .lh-filter-actions { display:flex; gap:.5rem; }
             .login-history-page .lh-table { margin:0; }
             .login-history-page .lh-table th { color:var(--lh-muted); font-size:.72rem; letter-spacing:.04em; text-transform:uppercase; white-space:nowrap; border-bottom-color:var(--lh-line); }
             .login-history-page .lh-table td { color:#344054; font-size:.84rem; vertical-align:middle; }
@@ -38,7 +41,8 @@
             .login-history-page .lh-empty { padding:3rem 1rem; text-align:center; color:var(--lh-muted); }
             .login-history-page .lh-empty i { display:grid; place-items:center; width:3.5rem; height:3.5rem; margin:0 auto .9rem; color:var(--lh-navy); background:#eef5fb; border-radius:50%; font-size:1.4rem; }
             .login-history-page .lh-print-note { color:var(--lh-muted); font-size:.78rem; }
-            @media (max-width:767.98px) { .login-history-page .lh-hero .card-body { padding:1rem; } .login-history-page .lh-toolbar { align-items:flex-start; } }
+            @media (max-width:1199.98px) { .login-history-page .lh-filter-form { grid-template-columns:repeat(2,minmax(0,1fr)); } .login-history-page .lh-filter-actions { grid-column:span 2; } }
+            @media (max-width:767.98px) { .login-history-page .lh-hero .card-body { padding:1rem; } .login-history-page .lh-toolbar { align-items:flex-start; } .login-history-page .lh-filter-form { grid-template-columns:1fr; } .login-history-page .lh-filter-actions { grid-column:auto; } }
             @media print { .lh-print-hide,.navbar,.sidebar { display:none !important; } .main-container { margin-left:0 !important; } .main-content { margin-top:0 !important; overflow:visible !important; } .login-history-page .lh-panel,.login-history-page .lh-metric,.login-history-page .lh-hero { box-shadow:none; break-inside:avoid; } }
         </style>
     </th:block>
@@ -118,6 +122,54 @@
                         </article>
                     </div>
                 </div>
+
+                <article class="card lh-panel lh-print-hide">
+                    <div class="card-body">
+                        <form class="lh-filter-form"
+                              method="get"
+                              th:action="${selectedUser != null} ? @{/users/login-history/{uid}(uid=${selectedUser.id})} : @{/users/login-history}">
+                            <div>
+                                <label class="lh-filter-label" for="loginHistorySearch">Search</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                    <input id="loginHistorySearch"
+                                           name="q"
+                                           type="search"
+                                           class="form-control"
+                                           th:value="${loginHistorySearch}"
+                                           placeholder="User, email, mobile, IP, session, device">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="lh-filter-label" for="loginStatusFilter">Status</label>
+                                <select id="loginStatusFilter" name="loginStatus" class="form-select">
+                                    <option value="">All statuses</option>
+                                    <option th:each="statusOption : ${loginStatuses}"
+                                            th:value="${statusOption}"
+                                            th:text="${statusOption}"
+                                            th:selected="${selectedLoginStatus == statusOption}">ACTIVE</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="lh-filter-label" for="loginFromDate">From</label>
+                                <input id="loginFromDate" name="fromDate" type="date" class="form-control" th:value="${selectedFromDate}">
+                            </div>
+                            <div>
+                                <label class="lh-filter-label" for="loginToDate">To</label>
+                                <input id="loginToDate" name="toDate" type="date" class="form-control" th:value="${selectedToDate}">
+                            </div>
+                            <div class="lh-filter-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-funnel me-1"></i>Filter
+                                </button>
+                                <a class="btn btn-outline-secondary"
+                                   th:href="${selectedUser != null} ? @{/users/login-history/{uid}(uid=${selectedUser.id})} : @{/users/login-history}">
+                                    Reset
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </article>
 
                 <article class="card lh-panel">
                     <div class="lh-toolbar">

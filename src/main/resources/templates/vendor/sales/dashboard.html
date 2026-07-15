@@ -2,63 +2,351 @@
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
     <th:block layout:fragment="page_css">
         <style>
-            .vendor-sales-dashboard { --vs-navy:#113459; --vs-ink:#142235; --vs-muted:#667085; --vs-line:#e6edf5; color:var(--vs-ink); }
-            .vendor-sales-dashboard .vs-shell { display:grid; gap:1rem; }
-            .vendor-sales-dashboard .vs-hero { color:#fff; border:0; border-radius:1rem; overflow:hidden; background:radial-gradient(circle at 90% 10%,rgba(242,175,80,.25),transparent 25%),linear-gradient(135deg,#113459,#0b2d50); box-shadow:0 16px 34px rgba(17,52,89,.14); }
-            .vendor-sales-dashboard .vs-hero .card-body { padding:1.35rem 1.5rem; }
-            .vendor-sales-dashboard .vs-kicker { color:#f9d49a; font-size:.75rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
-            .vendor-sales-dashboard h1 { font-size:clamp(1.5rem,2vw,2rem); font-weight:780; margin:.25rem 0; letter-spacing:0; }
-            .vendor-sales-dashboard .vs-copy { color:rgba(255,255,255,.82); max-width:820px; margin:0; }
-            .vendor-sales-dashboard .vs-period { display:inline-flex; align-items:center; gap:.45rem; margin-top:.85rem; padding:.42rem .75rem; border:1px solid rgba(255,255,255,.18); border-radius:999px; background:rgba(255,255,255,.09); font-size:.84rem; font-weight:650; }
-            .vendor-sales-dashboard .vs-panel,.vendor-sales-dashboard .vs-kpi { background:#fff; border:1px solid var(--vs-line); border-radius:.75rem; box-shadow:0 10px 26px rgba(17,52,89,.06); }
-            .vendor-sales-dashboard .vs-panel .card-body { padding:1rem; }
-            .vendor-sales-dashboard .vs-filter { padding:1rem; }
-            .vendor-sales-dashboard label { color:var(--vs-muted); font-size:.72rem; font-weight:760; letter-spacing:.05em; text-transform:uppercase; }
-            .vendor-sales-dashboard .vs-kpi { min-height:126px; padding:.95rem; transition:transform .18s ease, box-shadow .18s ease; }
-            .vendor-sales-dashboard .vs-kpi:hover { transform:translateY(-2px); box-shadow:0 16px 32px rgba(17,52,89,.1); }
-            .vendor-sales-dashboard .vs-kpi__label { color:var(--vs-muted); font-size:.75rem; font-weight:780; text-transform:uppercase; letter-spacing:.04em; }
-            .vendor-sales-dashboard .vs-kpi__value { color:var(--vs-ink); font-size:1.32rem; font-weight:800; margin:.35rem 0; line-height:1.15; }
-            .vendor-sales-dashboard .vs-kpi__note { color:var(--vs-muted); font-size:.8rem; }
-            .vendor-sales-dashboard .vs-trend { color:#087443; font-size:.78rem; font-weight:760; }
-            .vendor-sales-dashboard .vs-trend.is-negative { color:#bd3038; }
-            .vendor-sales-dashboard .vs-spark { width:100%; height:28px; margin-top:.45rem; }
-            .vendor-sales-dashboard .vs-title { font-size:.98rem; font-weight:780; margin:0; color:var(--vs-ink); }
-            .vendor-sales-dashboard .vs-subtitle { color:var(--vs-muted); font-size:.82rem; margin:.2rem 0 .85rem; }
-            .vendor-sales-dashboard .vs-chart { position:relative; min-height:270px; }
-            .vendor-sales-dashboard .vs-chart canvas { min-height:250px; }
-            .vendor-sales-dashboard .vs-table th { color:var(--vs-muted); font-size:.7rem; letter-spacing:.04em; text-transform:uppercase; white-space:nowrap; }
-            .vendor-sales-dashboard .vs-table td { color:#344054; font-size:.84rem; vertical-align:middle; }
-            .vendor-sales-dashboard .vs-name { color:var(--vs-ink); font-weight:750; }
-            .vendor-sales-dashboard .vs-metric-list { display:grid; gap:.65rem; }
-            .vendor-sales-dashboard .vs-metric { display:flex; align-items:flex-start; justify-content:space-between; gap:.8rem; padding:.75rem; border:1px solid var(--vs-line); border-radius:.65rem; background:#fbfdff; }
-            .vendor-sales-dashboard .vs-metric strong { display:block; color:var(--vs-ink); font-size:.9rem; }
-            .vendor-sales-dashboard .vs-metric span { color:var(--vs-muted); font-size:.78rem; }
-            .vendor-sales-dashboard .vs-metric b { color:var(--vs-navy); font-size:.95rem; white-space:nowrap; }
-            .vendor-sales-dashboard .vs-alert { border-left:4px solid #113459; }
-            .vendor-sales-dashboard .vs-alert.danger { border-left-color:#bd3038; }
-            .vendor-sales-dashboard .vs-alert.warning { border-left-color:#b7791f; }
-            .vendor-sales-dashboard .vs-alert.success { border-left-color:#087443; }
-            .vendor-sales-dashboard .vs-empty { color:var(--vs-muted); padding:2rem 1rem; text-align:center; }
-            .vendor-sales-dashboard.is-loading .vs-panel,.vendor-sales-dashboard.is-loading .vs-kpi { background:linear-gradient(100deg,#f6f8fb 25%,#edf2f7 50%,#f6f8fb 75%); background-size:200% 100%; animation:vs-skeleton 1.2s infinite; }
-            .vendor-sales-dashboard.is-loading .vs-panel > *,.vendor-sales-dashboard.is-loading .vs-kpi > * { visibility:hidden; }
-            .vendor-sales-dashboard.dark-mode { --vs-ink:#e7eef7; --vs-muted:#a8b6c7; --vs-line:#2a3d52; }
-            .vendor-sales-dashboard.dark-mode .vs-panel,.vendor-sales-dashboard.dark-mode .vs-kpi { background:#15283b; }
-            .vendor-sales-dashboard.dark-mode .vs-metric { background:#102235; }
-            .vendor-sales-dashboard.dark-mode .vs-table td,.vendor-sales-dashboard.dark-mode .vs-name,.vendor-sales-dashboard.dark-mode .vs-title,.vendor-sales-dashboard.dark-mode .vs-kpi__value,.vendor-sales-dashboard.dark-mode .vs-metric strong { color:#f7fbff; }
-            @keyframes vs-skeleton { to { background-position:-200% 0; } }
-            @media print { .vs-print-hide,.customer-shell__header,.vendor-shell__sidebar,footer { display:none !important; } .vendor-sales-dashboard .vs-panel,.vendor-sales-dashboard .vs-kpi { box-shadow:none; break-inside:avoid; } }
+            .vendor-sales-dashboard {
+                --vs-navy:#113459;
+                --vs-ink:#142235;
+                --vs-muted:#667085;
+                --vs-line:#e6edf5;
+                color:var(--vs-ink);
+            }
+            .vendor-sales-dashboard .vs-shell {
+                display:grid;
+                gap:1rem;
+            }
+            .vendor-sales-dashboard .vs-hero {
+                color:#fff;
+                border:0;
+                border-radius:1rem;
+                overflow:hidden;
+                background:radial-gradient(circle at 90% 10%,rgba(242,175,80,.25),transparent 25%),linear-gradient(135deg,#113459,#0b2d50);
+                box-shadow:0 16px 34px rgba(17,52,89,.14);
+            }
+            .vendor-sales-dashboard .vs-hero .card-body {
+                padding:1.35rem 1.5rem;
+            }
+            .vendor-sales-dashboard .vs-kicker {
+                color:#f9d49a;
+                font-size:.75rem;
+                font-weight:800;
+                letter-spacing:.08em;
+                text-transform:uppercase;
+            }
+            .vendor-sales-dashboard h1 {
+                font-size:clamp(1.5rem,2vw,2rem);
+                font-weight:780;
+                margin:.25rem 0;
+                letter-spacing:0;
+            }
+            .vendor-sales-dashboard .vs-copy {
+                color:rgba(255,255,255,.82);
+                max-width:820px;
+                margin:0;
+            }
+            .vendor-sales-dashboard .vs-period {
+                display:inline-flex;
+                align-items:center;
+                gap:.45rem;
+                margin-top:.85rem;
+                padding:.42rem .75rem;
+                border:1px solid rgba(255,255,255,.18);
+                border-radius:999px;
+                background:rgba(255,255,255,.09);
+                font-size:.84rem;
+                font-weight:650;
+            }
+            .vendor-sales-dashboard .vs-panel,.vendor-sales-dashboard .vs-kpi {
+                background:#fff;
+                border:1px solid var(--vs-line);
+                border-radius:.75rem;
+                box-shadow:0 10px 26px rgba(17,52,89,.06);
+            }
+            .vendor-sales-dashboard .vs-panel .card-body {
+                padding:1rem;
+            }
+            .vendor-sales-dashboard .vs-filter {
+                padding:1rem;
+            }
+            .vendor-sales-dashboard label {
+                color:var(--vs-muted);
+                font-size:.72rem;
+                font-weight:760;
+                letter-spacing:.05em;
+                text-transform:uppercase;
+            }
+            .vendor-sales-dashboard label i {
+                color:#f2af50;
+                margin-right:.25rem;
+            }
+            .vendor-sales-dashboard .vs-kpi-strip {
+                display:grid;
+                grid-auto-flow:column;
+                grid-auto-columns:minmax(180px,1fr);
+                gap:.75rem;
+                overflow-x:auto;
+                padding-bottom:.15rem;
+                scrollbar-width:thin;
+            }
+            .vendor-sales-dashboard .vs-kpi {
+                min-height:96px;
+                padding:.85rem;
+                border-left:4px solid #4f6f8f;
+                transition:transform .18s ease, box-shadow .18s ease;
+            }
+            .vendor-sales-dashboard .vs-kpi.is-revenue {
+                border-left-color:var(--vs-navy);
+            }
+            .vendor-sales-dashboard .vs-kpi.is-order {
+                border-left-color:#087443;
+            }
+            .vendor-sales-dashboard .vs-kpi.is-risk {
+                border-left-color:#bd3038;
+            }
+            .vendor-sales-dashboard .vs-kpi.is-customer {
+                border-left-color:#7c3aed;
+            }
+            .vendor-sales-dashboard .vs-kpi.is-profit {
+                border-left-color:#f2af50;
+            }
+            .vendor-sales-dashboard .vs-kpi:hover {
+                transform:translateY(-2px);
+                box-shadow:0 16px 32px rgba(17,52,89,.1);
+            }
+            .vendor-sales-dashboard .vs-kpi__head {
+                display:flex;
+                align-items:center;
+                gap:.55rem;
+            }
+            .vendor-sales-dashboard .vs-kpi-icon {
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                width:1.8rem;
+                height:1.8rem;
+                flex:0 0 1.8rem;
+                border-radius:.55rem;
+                color:#113459;
+                background:#eaf1f8;
+            }
+            .vendor-sales-dashboard .vs-kpi.is-order .vs-kpi-icon {
+                color:#087443;
+                background:#e7f6ef;
+            }
+            .vendor-sales-dashboard .vs-kpi.is-risk .vs-kpi-icon {
+                color:#bd3038;
+                background:#fff0f1;
+            }
+            .vendor-sales-dashboard .vs-kpi.is-customer .vs-kpi-icon {
+                color:#7c3aed;
+                background:#f3efff;
+            }
+            .vendor-sales-dashboard .vs-kpi.is-profit .vs-kpi-icon {
+                color:#8a5a0a;
+                background:#fff5df;
+            }
+            .vendor-sales-dashboard .vs-kpi__label {
+                color:var(--vs-muted);
+                font-size:.75rem;
+                font-weight:780;
+                text-transform:uppercase;
+                letter-spacing:.04em;
+            }
+            .vendor-sales-dashboard .vs-kpi__value {
+                color:var(--vs-ink);
+                font-size:1.2rem;
+                font-weight:800;
+                margin:.35rem 0;
+                line-height:1.2;
+                overflow-wrap:anywhere;
+            }
+            .vendor-sales-dashboard .vs-kpi__note {
+                color:var(--vs-muted);
+                font-size:.8rem;
+            }
+            .vendor-sales-dashboard .vs-trend {
+                color:#087443;
+                font-size:.78rem;
+                font-weight:760;
+            }
+            .vendor-sales-dashboard .vs-trend.is-negative {
+                color:#bd3038;
+            }
+            .vendor-sales-dashboard .vs-title {
+                display:flex;
+                align-items:center;
+                gap:.45rem;
+                font-size:.98rem;
+                font-weight:780;
+                margin:0;
+                color:var(--vs-ink);
+            }
+            .vendor-sales-dashboard .vs-title i {
+                color:var(--vs-title-icon,#113459);
+            }
+            .vendor-sales-dashboard .vs-icon-revenue { --vs-title-icon:#113459; }
+            .vendor-sales-dashboard .vs-icon-order { --vs-title-icon:#087443; }
+            .vendor-sales-dashboard .vs-icon-risk { --vs-title-icon:#bd3038; }
+            .vendor-sales-dashboard .vs-icon-gold { --vs-title-icon:#b7791f; }
+            .vendor-sales-dashboard .vs-icon-purple { --vs-title-icon:#7c3aed; }
+            .vendor-sales-dashboard .vs-icon-teal { --vs-title-icon:#0f766e; }
+            .vendor-sales-dashboard .vs-subtitle {
+                color:var(--vs-muted);
+                font-size:.82rem;
+                margin:.2rem 0 .85rem;
+            }
+            .vendor-sales-dashboard .vs-chart {
+                position:relative;
+                min-height:270px;
+            }
+            .vendor-sales-dashboard .vs-chart canvas {
+                min-height:250px;
+            }
+            .vendor-sales-dashboard .vs-table th {
+                color:var(--vs-muted);
+                font-size:.7rem;
+                letter-spacing:.04em;
+                text-transform:uppercase;
+                white-space:nowrap;
+            }
+            .vendor-sales-dashboard .vs-table td {
+                color:#344054;
+                font-size:.84rem;
+                vertical-align:middle;
+            }
+            .vendor-sales-dashboard .vs-name {
+                color:var(--vs-ink);
+                font-weight:750;
+            }
+            .vendor-sales-dashboard .vs-metric-list {
+                display:grid;
+                gap:.65rem;
+            }
+            .vendor-sales-dashboard .vs-metric {
+                display:flex;
+                align-items:flex-start;
+                justify-content:space-between;
+                gap:.8rem;
+                padding:.75rem;
+                border:1px solid var(--vs-line);
+                border-radius:.65rem;
+                background:#fbfdff;
+            }
+            .vendor-sales-dashboard .vs-metric strong {
+                display:block;
+                color:var(--vs-ink);
+                font-size:.9rem;
+            }
+            .vendor-sales-dashboard .vs-metric span {
+                color:var(--vs-muted);
+                font-size:.78rem;
+            }
+            .vendor-sales-dashboard .vs-metric b {
+                color:var(--vs-navy);
+                font-size:.95rem;
+                white-space:nowrap;
+            }
+            .vendor-sales-dashboard .vs-channel {
+                display:grid;
+                grid-template-columns:2rem minmax(0,1fr);
+                align-items:center;
+                justify-content:start;
+                gap:.55rem .7rem;
+                border-left:4px solid var(--vs-navy);
+            }
+            .vendor-sales-dashboard .vs-channel.is-guest {
+                border-left-color:#f2af50;
+            }
+            .vendor-sales-dashboard .vs-channel-icon {
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                width:2rem;
+                height:2rem;
+                border-radius:50%;
+                color:#fff;
+                background:var(--vs-navy);
+            }
+            .vendor-sales-dashboard .vs-channel > div {
+                min-width:0;
+            }
+            .vendor-sales-dashboard .vs-channel strong,
+            .vendor-sales-dashboard .vs-channel span {
+                overflow-wrap:anywhere;
+            }
+            .vendor-sales-dashboard .vs-channel b {
+                grid-column:2;
+                justify-self:start;
+                max-width:100%;
+                white-space:normal;
+                overflow-wrap:anywhere;
+                line-height:1.25;
+                font-size:.86rem;
+            }
+            .vendor-sales-dashboard .vs-channel.is-guest .vs-channel-icon {
+                background:#f2af50;
+                color:#3b2a08;
+            }
+            .vendor-sales-dashboard .vs-alert {
+                border-left:4px solid #113459;
+            }
+            .vendor-sales-dashboard .vs-alert.danger {
+                border-left-color:#bd3038;
+            }
+            .vendor-sales-dashboard .vs-alert.warning {
+                border-left-color:#b7791f;
+            }
+            .vendor-sales-dashboard .vs-alert.success {
+                border-left-color:#087443;
+            }
+            .vendor-sales-dashboard .vs-empty {
+                color:var(--vs-muted);
+                padding:2rem 1rem;
+                text-align:center;
+            }
+            .vendor-sales-dashboard.is-loading .vs-panel,.vendor-sales-dashboard.is-loading .vs-kpi {
+                background:linear-gradient(100deg,#f6f8fb 25%,#edf2f7 50%,#f6f8fb 75%);
+                background-size:200% 100%;
+                animation:vs-skeleton 1.2s infinite;
+            }
+            .vendor-sales-dashboard.dark-mode {
+                --vs-ink:#e7eef7;
+                --vs-muted:#a8b6c7;
+                --vs-line:#2a3d52;
+            }
+            .vendor-sales-dashboard.dark-mode .vs-panel,.vendor-sales-dashboard.dark-mode .vs-kpi {
+                background:#15283b;
+            }
+            .vendor-sales-dashboard.dark-mode .vs-metric {
+                background:#102235;
+            }
+            .vendor-sales-dashboard.dark-mode .vs-table td,.vendor-sales-dashboard.dark-mode .vs-name,.vendor-sales-dashboard.dark-mode .vs-title,.vendor-sales-dashboard.dark-mode .vs-kpi__value,.vendor-sales-dashboard.dark-mode .vs-metric strong {
+                color:#f7fbff;
+            }
+            @keyframes vs-skeleton {
+                to {
+                    background-position:-200% 0;
+                }
+            }
+            @media print {
+                .vs-print-hide,.customer-shell__header,.vendor-shell__sidebar,footer {
+                    display:none !important;
+                }
+                .vendor-sales-dashboard .vs-panel,.vendor-sales-dashboard .vs-kpi {
+                    box-shadow:none;
+                    break-inside:avoid;
+                }
+            }
         </style>
     </th:block>
 
     <div layout:fragment="main_content">
-        <section class="vendor-sales-dashboard is-loading" id="vendorSalesDashboard">
+        <section class="vendor-sales-dashboard" id="vendorSalesDashboard">
             <div class="vs-shell">
                 <header class="card vs-hero">
                     <div class="card-body d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3">
                         <div>
                             <div class="vs-kicker">Sales intelligence</div>
                             <h1>Vendor Sales Dashboard</h1>
-                            <p class="vs-copy">Store-scoped revenue, fulfillment, product, payment, shipping, customer, inventory, and return analytics from live aggregate data.</p>
+                            <p class="vs-copy">Vendor-scoped revenue, fulfillment, product, payment, shipping, customer, inventory, and return analytics from live aggregate data.</p>
                             <div class="vs-period"><i class="bi bi-calendar3"></i><span th:text="${sales.startDate + ' to ' + sales.endDate}">Period</span></div>
                         </div>
                         <div class="d-flex flex-wrap gap-2 vs-print-hide">
@@ -79,6 +367,7 @@
                         <div class="col-12 col-md-4 col-xl-2"><label class="form-label">Product</label><select class="form-select" name="productId"><option value="">All products</option><option th:each="item : ${products}" th:value="${item.id}" th:text="${item.label}" th:selected="${item.id == filter.productId}">Product</option></select></div>
                         <div class="col-12 col-md-4 col-xl-2"><label class="form-label">Customer</label><select class="form-select" name="customerId"><option value="">All customers</option><option th:each="item : ${customers}" th:value="${item.id}" th:text="${item.label}" th:selected="${item.id == filter.customerId}">Customer</option></select></div>
                         <div class="col-12 col-md-4 col-xl-2"><label class="form-label">Region</label><input class="form-control" type="text" name="region" th:value="${filter.region}" placeholder="Country, district, city"></div>
+                        <div class="col-12 col-md-4 col-xl-2"><label class="form-label"><i class="bi bi-diagram-3"></i>Sales channel</label><select class="form-select" name="salesChannel"><option value="">All channels</option><option th:each="item : ${salesChannels}" th:value="${item}" th:text="${item.label}" th:selected="${item == filter.salesChannel}">Registered checkout</option></select></div>
                         <div class="col-12 col-md-4 col-xl-2"><label class="form-label">Payment</label><select class="form-select" name="paymentMethod"><option value="">All methods</option><option th:each="item : ${paymentMethods}" th:value="${item}" th:text="${item.displayName}" th:selected="${item == filter.paymentMethod}">Payment</option></select></div>
                         <div class="col-12 col-md-4 col-xl-2"><label class="form-label">Carrier</label><select class="form-select" name="shippingCarrierId"><option value="">All carriers</option><option th:each="item : ${carriers}" th:value="${item.id}" th:text="${item.label}" th:selected="${item.id == filter.shippingCarrierId}">Carrier</option></select></div>
                         <div class="col-12 col-md-4 col-xl-2"><label class="form-label">Status</label><select class="form-select" name="orderStatus"><option value="">All statuses</option><option th:each="item : ${orderStatuses}" th:value="${item}" th:text="${item}" th:selected="${item == filter.orderStatus}">Status</option></select></div>
@@ -87,53 +376,57 @@
                     </div>
                 </form>
 
-                <div class="row g-3">
-                    <div class="col-12 col-sm-6 col-lg-4 col-xxl-3" th:each="kpi, iter : ${sales.kpis}">
-                        <article class="vs-kpi">
-                            <div class="vs-kpi__label" th:text="${kpi.label}">KPI</div>
+                <div class="vs-kpi-strip">
+                    <div th:each="kpi : ${sales.kpis}">
+                        <article class="vs-kpi"
+                                 th:classappend="${kpi.label == 'Cancelled Orders' || kpi.label == 'Refunded Orders' ? ' is-risk' : (#strings.contains(kpi.label, 'Order') ? ' is-order' : (#strings.contains(kpi.label, 'Customer') || kpi.label == 'Conversion Rate' ? ' is-customer' : (#strings.contains(kpi.label, 'Profit') || #strings.contains(kpi.label, 'Margin') ? ' is-profit' : ' is-revenue')))}">
+                            <div class="vs-kpi__head">
+                                <span class="vs-kpi-icon"><i class="bi" th:classappend="${kpi.label == 'Cancelled Orders' || kpi.label == 'Refunded Orders' ? ' bi-arrow-counterclockwise' : (#strings.contains(kpi.label, 'Order') ? ' bi-receipt' : (#strings.contains(kpi.label, 'Customer') || kpi.label == 'Conversion Rate' ? ' bi-people' : (#strings.contains(kpi.label, 'Profit') || #strings.contains(kpi.label, 'Margin') ? ' bi-graph-up-arrow' : ' bi-cash-stack')))}"></i></span>
+                                <div class="vs-kpi__label" th:text="${kpi.label}">KPI</div>
+                            </div>
                             <div class="vs-kpi__value" th:text="${kpi.value}">0</div>
                             <div class="d-flex align-items-center justify-content-between gap-2">
                                 <span class="vs-kpi__note" th:text="${kpi.previousLabel}">Comparison</span>
                                 <span class="vs-trend" th:classappend="${kpi.trend == 'down' ? ' is-negative' : ''}" th:text="${kpi.changePercent + '%'}">0%</span>
                             </div>
-                            <canvas class="vs-spark" th:attr="data-spark-index=${iter.index}"></canvas>
                         </article>
                     </div>
                 </div>
 
-                <div class="row g-3">
-                    <div class="col-12 col-xl-8"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title">Revenue Trend</h2><p class="vs-subtitle">Gross sales, net sales, and orders by day.</p><div class="vs-chart"><canvas id="vendorRevenueTrend"></canvas></div></div></article></div>
-                    <div class="col-12 col-xl-4"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title">Order Status Funnel</h2><p class="vs-subtitle">Active fulfillment and exception workload.</p><div class="vs-chart"><canvas id="vendorFunnelChart"></canvas></div></div></article></div>
+                <div class="row g-3 align-items-start">
+                    <div class="col-12 col-xl-8"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title vs-icon-revenue"><i class="bi bi-graph-up-arrow"></i>Revenue Trend</h2><p class="vs-subtitle">Gross sales, net sales, and orders by day.</p><div class="vs-chart"><canvas id="vendorRevenueTrend"></canvas></div></div></article></div>
+                    <div class="col-12 col-xl-4"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title vs-icon-order"><i class="bi bi-list-check"></i>Order Status Funnel</h2><p class="vs-subtitle">Active fulfillment and exception workload.</p><div class="vs-chart"><canvas id="vendorFunnelChart"></canvas></div></div></article></div>
                 </div>
 
-                <div class="row g-3">
-                    <div class="col-12 col-xl-6"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title">Sales by Category</h2><div class="vs-chart"><canvas id="vendorCategoryChart"></canvas></div></div></article></div>
-                    <div class="col-12 col-xl-6"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title">Payment Analytics</h2><div class="vs-chart"><canvas id="vendorPaymentChart"></canvas></div></div></article></div>
+                <div class="row g-3 align-items-start">
+                    <div class="col-12 col-xl-6"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title vs-icon-teal"><i class="bi bi-tags"></i>Sales by Category</h2><div class="vs-chart"><canvas id="vendorCategoryChart"></canvas></div></div></article></div>
+                    <div class="col-12 col-xl-6"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title vs-icon-revenue"><i class="bi bi-credit-card"></i>Payment Analytics</h2><div class="vs-chart"><canvas id="vendorPaymentChart"></canvas></div></div></article></div>
                 </div>
 
                 <article class="card vs-panel">
                     <div class="card-body">
-                        <h2 class="vs-title">Top Selling Products</h2>
+                        <h2 class="vs-title vs-icon-revenue"><i class="bi bi-bag-check"></i>Top Selling Products</h2>
                         <p class="vs-subtitle">Ranked by order-item revenue for your active vendor profile.</p>
                         <div class="table-responsive"><table class="table vs-table mb-0"><thead><tr><th>Product</th><th>SKU</th><th>Category</th><th>Brand</th><th class="text-end">Qty</th><th class="text-end">Revenue</th><th class="text-end">Profit</th><th class="text-end">Stock</th></tr></thead><tbody><tr th:if="${#lists.isEmpty(sales.topProducts)}"><td colspan="8" class="vs-empty">No completed sales items match this filter.</td></tr><tr th:each="item : ${sales.topProducts}"><td class="vs-name" th:text="${item.title}">Product</td><td th:text="${item.sku}">0</td><td th:text="${item.category}">Category</td><td th:text="${item.brand}">Brand</td><td class="text-end" th:text="${item.quantitySold}">0</td><td class="text-end" th:text="${'Tk ' + #numbers.formatDecimal(item.revenue,1,'COMMA',2,'POINT')}">Tk 0</td><td class="text-end" th:text="${'Tk ' + #numbers.formatDecimal(item.profit,1,'COMMA',2,'POINT')}">Tk 0</td><td class="text-end" th:text="${item.currentStock}">0</td></tr></tbody></table></div>
                     </div>
                 </article>
 
-                <div class="row g-3">
-                    <div class="col-12 col-xl-4"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title">Shipping Analytics</h2><div class="vs-metric-list"><div class="vs-metric" th:each="item : ${sales.shippingAnalytics}"><div><strong th:text="${item.label}">Metric</strong><span th:text="${item.detail}">Detail</span></div><b th:text="${item.value}">0</b></div></div></div></article></div>
-                    <div class="col-12 col-xl-4"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title">Inventory Impact</h2><div class="vs-metric-list"><div class="vs-metric" th:each="item : ${sales.inventoryImpact}"><div><strong th:text="${item.label}">Metric</strong><span th:text="${item.detail}">Detail</span></div><b th:text="${item.value}">0</b></div></div></div></article></div>
-                    <div class="col-12 col-xl-4"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title">Return Analytics</h2><div class="vs-metric-list"><div class="vs-metric" th:each="item : ${sales.returnAnalytics}"><div><strong th:text="${item.label}">Metric</strong><span th:text="${item.detail}">Detail</span></div><b th:text="${item.value}">0</b></div></div></div></article></div>
+                <div class="row g-3 align-items-start">
+                    <div class="col-12 col-xl-3"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title vs-icon-revenue"><i class="bi bi-diagram-3"></i>Sales Channels</h2><div class="vs-metric-list"><div class="vs-metric vs-channel" th:each="item : ${sales.channelSales}" th:classappend="${item.label == 'Guest checkout' ? ' is-guest' : ''}"><i class="vs-channel-icon" th:classappend="${item.label == 'Guest checkout' ? ' bi bi-person' : ' bi bi-person-check'}"></i><div><strong th:text="${item.label}">Channel</strong><span th:text="${item.orders + ' orders'}">0 orders</span></div><b th:text="${'Tk ' + #numbers.formatDecimal(item.revenue,1,'COMMA',2,'POINT')}">Tk 0</b></div><div th:if="${#lists.isEmpty(sales.channelSales)}" class="vs-empty">No channel sales match this filter.</div></div></div></article></div>
+                    <div class="col-12 col-xl-3"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title vs-icon-teal"><i class="bi bi-truck"></i>Shipping Analytics</h2><div class="vs-metric-list"><div class="vs-metric" th:each="item : ${sales.shippingAnalytics}"><div><strong th:text="${item.label}">Metric</strong><span th:text="${item.detail}">Detail</span></div><b th:text="${item.value}">0</b></div></div></div></article></div>
+                    <div class="col-12 col-xl-3"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title vs-icon-purple"><i class="bi bi-box-seam"></i>Inventory Impact</h2><div class="vs-metric-list"><div class="vs-metric" th:each="item : ${sales.inventoryImpact}"><div><strong th:text="${item.label}">Metric</strong><span th:text="${item.detail}">Detail</span></div><b th:text="${item.value}">0</b></div></div></div></article></div>
+                    <div class="col-12 col-xl-3"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title vs-icon-risk"><i class="bi bi-arrow-return-left"></i>Return Analytics</h2><div class="vs-metric-list"><div class="vs-metric" th:each="item : ${sales.returnAnalytics}"><div><strong th:text="${item.label}">Metric</strong><span th:text="${item.detail}">Detail</span></div><b th:text="${item.value}">0</b></div></div></div></article></div>
                 </div>
 
-                <div class="row g-3">
-                    <div class="col-12 col-xl-4"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title">Customer Analytics</h2><div class="vs-metric-list"><div class="vs-metric" th:each="item : ${sales.customerAnalytics}"><div><strong th:text="${item.label}">Metric</strong><span th:text="${item.detail}">Detail</span></div><b th:text="${item.value}">0</b></div></div></div></article></div>
-                    <div class="col-12 col-xl-4"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title">Promotion Analytics</h2><div class="vs-metric-list"><div class="vs-metric" th:each="item : ${sales.promotionAnalytics}"><div><strong th:text="${item.label}">Metric</strong><span th:text="${item.detail}">Detail</span></div><b th:text="${item.value}">0</b></div></div></div></article></div>
-                    <div class="col-12 col-xl-4"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title">Geographic Sales</h2><div class="vs-chart"><canvas id="vendorGeoChart"></canvas></div></div></article></div>
+                <div class="row g-3 align-items-start">
+                    <div class="col-12 col-xl-4"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title vs-icon-purple"><i class="bi bi-people"></i>Customer Analytics</h2><div class="vs-metric-list"><div class="vs-metric" th:each="item : ${sales.customerAnalytics}"><div><strong th:text="${item.label}">Metric</strong><span th:text="${item.detail}">Detail</span></div><b th:text="${item.value}">0</b></div></div></div></article></div>
+                    <div class="col-12 col-xl-4"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title vs-icon-gold"><i class="bi bi-percent"></i>Promotion Analytics</h2><div class="vs-metric-list"><div class="vs-metric" th:each="item : ${sales.promotionAnalytics}"><div><strong th:text="${item.label}">Metric</strong><span th:text="${item.detail}">Detail</span></div><b th:text="${item.value}">0</b></div></div></div></article></div>
+                    <div class="col-12 col-xl-4"><article class="card vs-panel h-100"><div class="card-body"><h2 class="vs-title vs-icon-teal"><i class="bi bi-geo-alt"></i>Geographic Sales</h2><div class="vs-chart"><canvas id="vendorGeoChart"></canvas></div></div></article></div>
                 </div>
 
                 <article class="card vs-panel">
                     <div class="card-body">
-                        <h2 class="vs-title">Business Alerts</h2>
+                        <h2 class="vs-title vs-icon-risk"><i class="bi bi-exclamation-triangle"></i>Business Alerts</h2>
                         <p class="vs-subtitle">Inventory, sales target, payment, return, and shipping signals.</p>
                         <div class="vs-metric-list">
                             <div class="vs-metric vs-alert" th:each="item : ${sales.alerts}" th:classappend="${item.severity}">
@@ -150,38 +443,51 @@
     <th:block layout:fragment="page_js">
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
         <script th:inline="javascript">
-            const sales = /*[[${sales}]]*/ {};
-            const root = document.getElementById('vendorSalesDashboard');
-            const money = value => new Intl.NumberFormat('en-BD',{style:'currency',currency:'BDT',maximumFractionDigits:0}).format(value || 0);
-            const themeKey = 'vendor-sales-dashboard-theme';
-            const palette = ['#113459','#f2af50','#087443','#bd3038','#4f6f8f','#7c3aed','#0f766e','#b7791f'];
-            const setTheme = dark => root.classList.toggle('dark-mode', dark);
-            setTheme(localStorage.getItem(themeKey) === 'dark');
-            document.querySelector('[data-vs-theme]')?.addEventListener('click', () => { const next = !root.classList.contains('dark-mode'); setTheme(next); localStorage.setItem(themeKey, next ? 'dark' : 'light'); });
-            const chart = (id, config) => { const node = document.getElementById(id); if (!node || typeof Chart === 'undefined') return; return new Chart(node, config); };
-            const barData = rows => ({ labels: rows.map(x => x.label), datasets: [{ label:'Revenue', data: rows.map(x => Number(x.revenue || 0)), backgroundColor:'#113459' }, { label:'Orders', data: rows.map(x => Number(x.orders || 0)), backgroundColor:'#f2af50' }] });
-            chart('vendorRevenueTrend', { type:'line', data:{ labels:sales.revenueTrend.map(x=>x.label), datasets:[{label:'Gross sales',data:sales.revenueTrend.map(x=>x.grossSales),borderColor:'#113459',backgroundColor:'rgba(17,52,89,.12)',fill:true,tension:.35},{label:'Net sales',data:sales.revenueTrend.map(x=>x.netSales),borderColor:'#087443',backgroundColor:'rgba(8,116,67,.08)',fill:true,tension:.35},{label:'Orders',data:sales.revenueTrend.map(x=>x.orderCount),type:'bar',backgroundColor:'rgba(242,175,80,.72)',yAxisID:'orders'}]}, options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},scales:{y:{ticks:{callback:money}},orders:{position:'right',grid:{drawOnChartArea:false}}}} });
-            chart('vendorFunnelChart', { type:'bar', data:{ labels:sales.statusCounts.map(x=>x.label), datasets:[{label:'Orders',data:sales.statusCounts.map(x=>x.count),backgroundColor:'#113459'}]}, options:{indexAxis:'y',responsive:true,maintainAspectRatio:false} });
-            chart('vendorCategoryChart', { type:'bar', data:barData(sales.categorySales), options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,scales:{x:{ticks:{callback:money}}}} });
-            chart('vendorPaymentChart', { type:'doughnut', data:{ labels:sales.paymentAnalytics.map(x=>x.label), datasets:[{data:sales.paymentAnalytics.map(x=>x.amount),backgroundColor:palette}]}, options:{responsive:true,maintainAspectRatio:false} });
-            chart('vendorGeoChart', { type:'bar', data:barData(sales.geographicSales), options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,scales:{x:{ticks:{callback:money}}}} });
-            document.querySelectorAll('.vs-spark').forEach(canvas => {
-                const index = Number(canvas.dataset.sparkIndex || 0);
-                const points = (sales.kpis[index] && sales.kpis[index].sparkline) || [];
-                if (!points.length || typeof Chart === 'undefined') return;
-                new Chart(canvas, { type:'line', data:{ labels:points.map((_, i)=>i + 1), datasets:[{data:points,borderColor:'#113459',borderWidth:2,pointRadius:0,tension:.35}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}}} });
-            });
-            document.querySelector('[data-export-csv]')?.addEventListener('click', () => {
-                const rows = [['Metric','Value'], ...sales.kpis.map(item => [item.label, item.value])];
-                const csv = rows.map(row => row.map(value => `"${String(value).replaceAll('"','""')}"`).join(',')).join('\n');
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
-                link.download = 'vendor-sales-dashboard.csv';
-                link.click();
-                URL.revokeObjectURL(link.href);
-            });
-            window.setTimeout(() => root.classList.remove('is-loading'), 250);
-            window.setInterval(() => window.location.reload(), 60000);
+                                const sales = /*[[${sales}]]*/ {};
+                                const root = document.getElementById('vendorSalesDashboard');
+                                const rows = value => Array.isArray(value) ? value : [];
+                                const number = value => Number(value || 0);
+                                const money = value => new Intl.NumberFormat('en-BD', {style: 'currency', currency: 'BDT', maximumFractionDigits: 0}).format(number(value));
+                                const themeKey = 'vendor-sales-dashboard-theme';
+                                const palette = ['#113459', '#f2af50', '#087443', '#bd3038', '#4f6f8f', '#7c3aed', '#0f766e', '#b7791f'];
+                                const setTheme = dark => root.classList.toggle('dark-mode', dark);
+                                setTheme(localStorage.getItem(themeKey) === 'dark');
+                                document.querySelector('[data-vs-theme]')?.addEventListener('click', () => {
+                                    const next = !root.classList.contains('dark-mode');
+                                    setTheme(next);
+                                    localStorage.setItem(themeKey, next ? 'dark' : 'light');
+                                });
+                                const chart = (id, config) => {
+                                    const node = document.getElementById(id);
+                                    if (!node || typeof Chart === 'undefined')
+                                        return;
+                                    return new Chart(node, config);
+                                };
+                                const revenueAxis = {ticks: {callback: money}};
+                                const orderAxis = {position: 'top', grid: {drawOnChartArea: false}, ticks: {precision: 0}};
+                                const barData = values => {
+                                    const items = rows(values);
+                                    return {labels: items.map(x => x.label), datasets: [
+                                            {label: 'Revenue', data: items.map(x => number(x.revenue)), backgroundColor: '#113459', xAxisID: 'revenue'},
+                                            {label: 'Orders', data: items.map(x => number(x.orders)), backgroundColor: '#f2af50', xAxisID: 'orders'}
+                                        ]};
+                                };
+                                const revenueTrend = rows(sales.revenueTrend);
+                                chart('vendorRevenueTrend', {type: 'line', data: {labels: revenueTrend.map(x => x.label), datasets: [{label: 'Gross sales', data: revenueTrend.map(x => number(x.grossSales)), borderColor: '#113459', backgroundColor: 'rgba(17,52,89,.12)', fill: true, tension: .35}, {label: 'Net sales', data: revenueTrend.map(x => number(x.netSales)), borderColor: '#087443', backgroundColor: 'rgba(8,116,67,.08)', fill: true, tension: .35}, {label: 'Orders', data: revenueTrend.map(x => number(x.orderCount)), type: 'bar', backgroundColor: 'rgba(242,175,80,.72)', yAxisID: 'orders'}]}, options: {responsive: true, maintainAspectRatio: false, interaction: {mode: 'index', intersect: false}, scales: {y: revenueAxis, orders: {type: 'linear', position: 'right', grid: {drawOnChartArea: false}, ticks: {precision: 0}}}}});
+                                chart('vendorFunnelChart', {type: 'bar', data: {labels: rows(sales.statusCounts).map(x => x.label), datasets: [{label: 'Orders', data: rows(sales.statusCounts).map(x => number(x.count)), backgroundColor: '#113459'}]}, options: {indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: {x: {ticks: {precision: 0}}}}});
+                                chart('vendorCategoryChart', {type: 'bar', data: barData(sales.categorySales), options: {indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: {revenue: revenueAxis, orders: orderAxis}}});
+                                chart('vendorPaymentChart', {type: 'doughnut', data: {labels: rows(sales.paymentAnalytics).map(x => x.label), datasets: [{data: rows(sales.paymentAnalytics).map(x => number(x.amount)), backgroundColor: palette}]}, options: {responsive: true, maintainAspectRatio: false}});
+                                chart('vendorGeoChart', {type: 'bar', data: barData(sales.geographicSales), options: {indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: {revenue: revenueAxis, orders: orderAxis}}});
+                                document.querySelector('[data-export-csv]')?.addEventListener('click', () => {
+                                    const csvRows = [['Metric', 'Value'], ...rows(sales.kpis).map(item => [item.label, item.value])];
+                                    const csv = csvRows.map(row => row.map(value => `"${String(value).replaceAll('"', '""')}"`).join(',')).join('\n');
+                                    const link = document.createElement('a');
+                                    link.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'}));
+                                    link.download = 'vendor-sales-dashboard.csv';
+                                    link.click();
+                                    URL.revokeObjectURL(link.href);
+                                });
+                                window.setInterval(() => window.location.reload(), 60000);
         </script>
     </th:block>
 </div>

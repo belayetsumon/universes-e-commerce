@@ -101,6 +101,256 @@ function initStorefrontActiveMenu() {
 
 initStorefrontActiveMenu();
 
+function initStorefrontSearchSuggestions() {
+    document.querySelectorAll('[data-search-suggest]').forEach(function (shell) {
+        var input = shell.querySelector('[data-search-suggest-input]');
+        var panel = shell.querySelector('[data-search-suggest-panel]');
+        var form = shell.querySelector('[data-search-suggest-form]');
+        if (!input || !panel || !form || shell.dataset.searchSuggestReady === 'true') {
+            return;
+        }
+
+        shell.dataset.searchSuggestReady = 'true';
+        var debounceTimer = null;
+        var activeRequest = null;
+
+        function buildFormUrl(query) {
+            var url = new URL(form.action, window.location.origin);
+            url.search = '';
+            url.searchParams.set('q', query);
+            return url.toString();
+        }
+
+        function buildSuggestionUrl(query) {
+            var url = new URL(form.action, window.location.origin);
+            url.pathname = url.pathname.replace(/\/product$/, '/search/suggestions');
+            url.search = '';
+            url.searchParams.set('q', query);
+            return url.toString();
+        }
+
+        function resolveItemUrl(itemUrl) {
+            if (!itemUrl) {
+                return buildFormUrl(input.value.trim());
+            }
+            if (/^https?:\/\//i.test(itemUrl)) {
+                return itemUrl;
+            }
+            if (itemUrl.charAt(0) === '/') {
+                var formUrl = new URL(form.action, window.location.origin);
+                var contextPath = formUrl.pathname.replace(/\/public\/product$/, '');
+                return window.location.origin + contextPath + itemUrl;
+            }
+            return itemUrl;
+        }
+
+        function resolveAssetUrl(assetUrl) {
+            if (!assetUrl || /^https?:\/\//i.test(assetUrl)) {
+                return assetUrl;
+            }
+            if (assetUrl.charAt(0) === '/') {
+                var formUrl = new URL(form.action, window.location.origin);
+                var contextPath = formUrl.pathname.replace(/\/public\/product$/, '');
+                return window.location.origin + contextPath + assetUrl;
+            }
+            return assetUrl;
+        }
+
+        function setPanelOpen(isOpen) {
+            panel.hidden = !isOpen;
+            input.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            shell.classList.toggle('is-suggesting', isOpen);
+        }
+
+        function clearPanel() {
+            panel.replaceChildren();
+            setPanelOpen(false);
+        }
+
+        function createIcon(className) {
+            var icon = document.createElement('i');
+            icon.className = className;
+            icon.setAttribute('aria-hidden', 'true');
+            return icon;
+        }
+
+        function createSuggestionRow(item) {
+            var link = document.createElement('a');
+            link.className = 'storefront-search-suggestion-row';
+            link.href = resolveItemUrl(item.url);
+
+            var media = document.createElement('span');
+            media.className = 'storefront-search-suggestion-media';
+            if (item.imageUrl) {
+                var image = document.createElement('img');
+                image.src = resolveAssetUrl(item.imageUrl);
+                image.alt = item.label || 'Suggestion';
+                media.appendChild(image);
+            } else {
+                media.appendChild(createIcon(item.type === 'category' ? 'bi bi-grid' : 'bi bi-box'));
+            }
+
+            var body = document.createElement('span');
+            body.className = 'storefront-search-suggestion-body';
+            var title = document.createElement('strong');
+            title.className = 'storefront-search-suggestion-title';
+            title.textContent = item.label || 'Suggestion';
+            body.appendChild(title);
+            var detail = document.createElement('span');
+            detail.className = 'storefront-search-suggestion-detail';
+            detail.textContent = item.detail || '';
+            body.appendChild(detail);
+
+            var meta = document.createElement('span');
+            meta.className = 'storefront-search-suggestion-meta';
+            if (item.price !== null && item.price !== undefined) {
+                var price = document.createElement('strong');
+                price.textContent = item.price;
+                meta.appendChild(price);
+            }
+            if (item.badge) {
+                var badge = document.createElement('span');
+                badge.textContent = item.badge;
+                meta.appendChild(badge);
+            }
+
+            link.appendChild(media);
+            link.appendChild(body);
+            link.appendChild(meta);
+            return link;
+        }
+
+        function createGroup(title, items) {
+            var group = document.createElement('section');
+            group.className = 'storefront-search-suggestion-group';
+            var heading = document.createElement('button');
+            heading.type = 'button';
+            heading.className = 'storefront-search-suggestion-heading';
+            heading.setAttribute('aria-expanded', 'true');
+            var headingText = document.createElement('span');
+            headingText.textContent = title;
+            var headingIcon = createIcon('bi bi-chevron-up');
+            heading.appendChild(headingText);
+            heading.appendChild(headingIcon);
+
+            var list = document.createElement('div');
+            list.className = 'storefront-search-suggestion-list';
+            items.forEach(function (item) {
+                list.appendChild(createSuggestionRow(item));
+            });
+
+            heading.addEventListener('click', function () {
+                var isExpanded = heading.getAttribute('aria-expanded') !== 'false';
+                heading.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
+                list.hidden = isExpanded;
+                headingIcon.className = isExpanded ? 'bi bi-chevron-down' : 'bi bi-chevron-up';
+            });
+
+            group.appendChild(heading);
+            group.appendChild(list);
+            return group;
+        }
+
+        function renderSuggestions(data, query) {
+            panel.replaceChildren();
+            var products = Array.isArray(data.products) ? data.products : [];
+            var categories = Array.isArray(data.categories) ? data.categories : [];
+
+            if (!products.length && !categories.length) {
+                var empty = document.createElement('div');
+                empty.className = 'storefront-search-suggestion-empty';
+                empty.appendChild(createIcon('bi bi-search'));
+                var emptyText = document.createElement('span');
+                emptyText.textContent = 'No quick suggestions. Press Enter to search all products.';
+                empty.appendChild(emptyText);
+                panel.appendChild(empty);
+            } else {
+                if (products.length) {
+                    panel.appendChild(createGroup('Product suggestions', products));
+                }
+                if (categories.length) {
+                    panel.appendChild(createGroup('Category suggestions', categories));
+                }
+            }
+
+            var footer = document.createElement('a');
+            footer.className = 'storefront-search-suggestion-footer';
+            footer.href = buildFormUrl(query);
+            var footerText = document.createElement('span');
+            footerText.textContent = 'Search all results for "' + query + '"';
+            footer.appendChild(footerText);
+            footer.appendChild(createIcon('bi bi-arrow-right'));
+            panel.appendChild(footer);
+            setPanelOpen(true);
+        }
+
+        function loadSuggestions() {
+            var query = input.value.trim();
+            if (query.length < 2) {
+                clearPanel();
+                return;
+            }
+
+            if (activeRequest) {
+                activeRequest.abort();
+            }
+            activeRequest = new AbortController();
+            panel.replaceChildren();
+            var loading = document.createElement('div');
+            loading.className = 'storefront-search-suggestion-loading';
+            loading.textContent = 'Searching...';
+            panel.appendChild(loading);
+            setPanelOpen(true);
+
+            fetch(buildSuggestionUrl(query), {
+                headers: {'Accept': 'application/json'},
+                signal: activeRequest.signal
+            })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('Suggestion request failed');
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        renderSuggestions(data || {}, query);
+                    })
+                    .catch(function (error) {
+                        if (error.name === 'AbortError') {
+                            return;
+                        }
+                        clearPanel();
+                    });
+        }
+
+        input.addEventListener('input', function () {
+            window.clearTimeout(debounceTimer);
+            debounceTimer = window.setTimeout(loadSuggestions, 280);
+        });
+
+        input.addEventListener('focus', function () {
+            if (input.value.trim().length >= 2 && panel.childElementCount) {
+                setPanelOpen(true);
+            }
+        });
+
+        input.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                clearPanel();
+                input.blur();
+            }
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!shell.contains(event.target)) {
+                setPanelOpen(false);
+            }
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initStorefrontSearchSuggestions);
+
 // District and thana location picker
 document.addEventListener('DOMContentLoaded', function () {
     var path = window.location.pathname;

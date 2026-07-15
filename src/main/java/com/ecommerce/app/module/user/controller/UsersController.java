@@ -27,6 +27,9 @@ import com.ecommerce.app.module.user.services.UsersService;
 import jakarta.servlet.http.*;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -121,33 +124,47 @@ public class UsersController {
     }
 
     @GetMapping("/login-history")
-    public String loginHistory(Model model) {
-        List<LoginHistory> historyEntries = loginHistoryRepository.findAllForAdminList();
+    public String loginHistory(
+            Model model,
+            @RequestParam(name = "q", required = false) String q,
+            @RequestParam(name = "loginStatus", required = false) LoginStatus loginStatus,
+            @RequestParam(name = "fromDate", required = false) String fromDate,
+            @RequestParam(name = "toDate", required = false) String toDate) {
+        List<LoginHistory> historyEntries = findLoginHistoryForAdmin(null, q, loginStatus, fromDate, toDate);
         model.addAttribute("historyEntries", historyEntries);
         model.addAttribute("historyTitle", "All User Login History");
         model.addAttribute("historySubtitle", "Recent login, logout, failed attempt, and session activity records across all users.");
         model.addAttribute("backUrl", "/users/index");
         model.addAttribute("backLabel", "Back to Users");
         model.addAttribute("selectedUser", null);
+        addLoginHistoryFilterModel(model, q, loginStatus, fromDate, toDate);
         addLoginHistorySummary(model, historyEntries);
         return "user/login_history";
     }
 
     @GetMapping("/login-history/{uid}")
-    public String userLoginHistory(Model model, @PathVariable Long uid, RedirectAttributes redirectAttributes) {
+    public String userLoginHistory(
+            Model model,
+            @PathVariable Long uid,
+            @RequestParam(name = "q", required = false) String q,
+            @RequestParam(name = "loginStatus", required = false) LoginStatus loginStatus,
+            @RequestParam(name = "fromDate", required = false) String fromDate,
+            @RequestParam(name = "toDate", required = false) String toDate,
+            RedirectAttributes redirectAttributes) {
         Users user = usersRepository.findById(uid).orElse(null);
         if (user == null) {
             redirectAttributes.addFlashAttribute("error", "User not found.");
             return "redirect:/users/index";
         }
 
-        List<LoginHistory> historyEntries = loginHistoryRepository.findByUserIdForAdminList(uid);
+        List<LoginHistory> historyEntries = findLoginHistoryForAdmin(uid, q, loginStatus, fromDate, toDate);
         model.addAttribute("historyEntries", historyEntries);
         model.addAttribute("historyTitle", "Login History");
         model.addAttribute("historySubtitle", "Detailed login activity for " + buildDisplayName(user) + ".");
         model.addAttribute("backUrl", "/users/view/" + uid);
         model.addAttribute("backLabel", "Back to Profile");
         model.addAttribute("selectedUser", user);
+        addLoginHistoryFilterModel(model, q, loginStatus, fromDate, toDate);
         addLoginHistorySummary(model, historyEntries);
         return "user/login_history";
     }
@@ -441,6 +458,60 @@ public class UsersController {
         }
 
         return "User #" + user.getId();
+    }
+
+    private List<LoginHistory> findLoginHistoryForAdmin(
+            Long userId,
+            String q,
+            LoginStatus loginStatus,
+            String fromDate,
+            String toDate) {
+        return loginHistoryRepository.findForAdminListFilters(
+                userId,
+                normalizeKeyword(q),
+                loginStatus,
+                parseLoginHistoryStartDate(fromDate),
+                parseLoginHistoryEndDate(toDate));
+    }
+
+    private void addLoginHistoryFilterModel(
+            Model model,
+            String q,
+            LoginStatus loginStatus,
+            String fromDate,
+            String toDate) {
+        model.addAttribute("loginHistorySearch", q == null ? "" : q.trim());
+        model.addAttribute("selectedLoginStatus", loginStatus);
+        model.addAttribute("selectedFromDate", normalizeDateInput(fromDate));
+        model.addAttribute("selectedToDate", normalizeDateInput(toDate));
+        model.addAttribute("loginStatuses", LoginStatus.values());
+    }
+
+    private LocalDateTime parseLoginHistoryStartDate(String value) {
+        LocalDate date = parseDateInput(value);
+        return date == null ? null : date.atStartOfDay();
+    }
+
+    private LocalDateTime parseLoginHistoryEndDate(String value) {
+        LocalDate date = parseDateInput(value);
+        return date == null ? null : date.plusDays(1).atStartOfDay();
+    }
+
+    private String normalizeDateInput(String value) {
+        LocalDate date = parseDateInput(value);
+        return date == null ? "" : date.toString();
+    }
+
+    private LocalDate parseDateInput(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        try {
+            return LocalDate.parse(value.trim());
+        } catch (DateTimeParseException ex) {
+            return null;
+        }
     }
 
     private void addLoginHistorySummary(Model model, List<LoginHistory> historyEntries) {

@@ -8,6 +8,7 @@ package com.ecommerce.app.product.ripository;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.ProductStatusEnum;
+import com.ecommerce.app.vendor.model.VendorStatusEnum;
 import java.util.List;
 import java.util.Optional;
 import jakarta.persistence.LockModeType;
@@ -42,6 +43,28 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             + "(SELECT c.id FROM Productcategory c WHERE c.parent.id = :categoryId OR c.id = :categoryId)"
             + "ORDER BY p.id DESC")
     List<Product> findActiveProductsByCategoryOrChildren(@Param("categoryId") Long categoryId);
+
+    @Query("""
+           SELECT DISTINCT p FROM Product p
+           LEFT JOIN FETCH p.productcategory c
+           LEFT JOIN FETCH p.manufacturer m
+           JOIN p.vendorprofile v
+           WHERE p.status = :status
+             AND p.onlineShow = true
+             AND v.vendorStatusEnum = :vendorStatus
+             AND (
+                LOWER(p.title) LIKE LOWER(CONCAT('%', :query, '%'))
+                OR LOWER(COALESCE(p.metaKeywords, '')) LIKE LOWER(CONCAT('%', :query, '%'))
+                OR LOWER(COALESCE(c.name, '')) LIKE LOWER(CONCAT('%', :query, '%'))
+                OR LOWER(COALESCE(m.name, '')) LIKE LOWER(CONCAT('%', :query, '%'))
+             )
+           ORDER BY p.id DESC
+           """)
+    List<Product> findPublicSearchSuggestions(
+            @Param("query") String query,
+            @Param("status") ProductStatusEnum status,
+            @Param("vendorStatus") VendorStatusEnum vendorStatus,
+            Pageable pageable);
 
     @Query("SELECT p.productcategory.id, COUNT(p.id) FROM Product p "
             + "WHERE p.productcategory.id IN :categoryIds GROUP BY p.productcategory.id")

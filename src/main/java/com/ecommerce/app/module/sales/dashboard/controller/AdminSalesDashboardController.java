@@ -35,6 +35,7 @@ public class AdminSalesDashboardController {
         model.addAttribute("carriers", salesDashboardService.carrierOptions());
         model.addAttribute("orderStatuses", salesDashboardService.orderStatuses());
         model.addAttribute("paymentMethods", salesDashboardService.paymentMethods());
+        model.addAttribute("salesChannels", salesDashboardService.salesChannels());
         model.addAttribute("currencies", salesDashboardService.currencies());
         model.addAttribute("filter", filter);
         model.addAttribute("sales", salesDashboardService.build(filter, null, true));
