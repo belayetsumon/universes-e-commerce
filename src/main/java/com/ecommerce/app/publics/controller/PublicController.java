@@ -38,9 +38,10 @@ import com.ecommerce.app.product.ripository.WarrantyRepository;
 import com.ecommerce.app.product.services.CatalogProductAttributeService;
 import com.ecommerce.app.product.services.CatalogProductDiscoveryService;
 import com.ecommerce.app.product.services.ProductService;
+import com.ecommerce.app.product.services.ProductVideoEmbedService;
 import com.ecommerce.app.product.services.ProductVariantCatalogService;
 import com.ecommerce.app.publics.seo.PublicSeoService;
-import com.ecommerce.app.review.services.ProductReviewService;
+import com.ecommerce.app.module.review.services.ProductReviewService;
 import com.ecommerce.app.ripository.ContactRepository;
 import com.ecommerce.app.ripository.FaqRepository;
 import com.ecommerce.app.ripository.GalleryRepository;
@@ -145,6 +146,9 @@ public class PublicController {
 
     @Autowired
     ProductService productService;
+
+    @Autowired
+    ProductVideoEmbedService productVideoEmbedService;
 
     @Autowired
     ProductImageRepository productImageRepository;
@@ -602,6 +606,7 @@ public class PublicController {
         model.addAttribute("productViewCount", productViewCount);
 
         model.addAttribute("product_details", product_details);
+        model.addAttribute("productVideoEmbedUrl", productVideoEmbedService.toYoutubeEmbedUrl(product_details.get("video")));
         addProductShareModel(model, activeProduct, product_details, request);
         addProductMetadataModel(model, activeProduct, product_details, request);
         model.addAttribute("productSpecifications",

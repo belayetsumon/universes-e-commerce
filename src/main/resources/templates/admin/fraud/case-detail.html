@@ -1,0 +1,81 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <link rel="stylesheet" th:href="@{/assets/admin/css/fraud-admin.css}">
+    </th:block>
+
+    <main layout:fragment="main_content" class="main-content container-fluid px-3 py-3 fraud-admin-page">
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <header class="card shadow-sm mb-4 fraud-hero">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="fraud-hero-icon"><i class="bi bi-folder-check fs-4"></i></span>
+                        <div>
+                            <h1 th:text="${fraudCase.caseNumber}">Fraud Case</h1>
+                            <p class="fraud-hero-copy" th:text="${fraudCase.caseReason} ?: 'Fraud investigation record'">Case reason</p>
+                        </div>
+                    </div>
+                    <a class="btn btn-outline-light btn-sm" th:href="@{/admin/fraud/cases}">Back</a>
+                </div>
+            </div>
+        </header>
+
+        <div class="fraud-detail-grid">
+            <section class="fraud-panel shadow-sm p-3">
+                <h2 class="h6 mb-3">Case Summary</h2>
+                <div class="fraud-kv">
+                    <div class="fraud-kv-item"><div class="fraud-kv-label">Status</div><div class="fraud-kv-value" th:text="${fraudCase.caseStatus}">OPEN</div></div>
+                    <div class="fraud-kv-item"><div class="fraud-kv-label">Priority</div><div class="fraud-kv-value" th:text="${fraudCase.priority}">HIGH</div></div>
+                    <div class="fraud-kv-item"><div class="fraud-kv-label">Order</div><div class="fraud-kv-value" th:text="${fraudCase.orderId} ?: '-'">-</div></div>
+                    <div class="fraud-kv-item"><div class="fraud-kv-label">Customer</div><div class="fraud-kv-value" th:text="${fraudCase.customerId} ?: '-'">-</div></div>
+                    <div class="fraud-kv-item"><div class="fraud-kv-label">Vendor</div><div class="fraud-kv-value" th:text="${fraudCase.vendorId} ?: '-'">-</div></div>
+                    <div class="fraud-kv-item"><div class="fraud-kv-label">Assigned</div><div class="fraud-kv-value" th:text="${fraudCase.assignedInvestigator} ?: '-'">-</div></div>
+                </div>
+                <div class="mt-3">
+                    <h3 class="h6">Investigation Notes</h3>
+                    <p class="text-muted mb-0" th:text="${fraudCase.investigationNotes} ?: 'No notes recorded.'">Notes</p>
+                </div>
+            </section>
+
+            <aside class="fraud-panel shadow-sm p-3">
+                <h2 class="h6 mb-3">Case Actions</h2>
+                <form class="mb-3" method="post" th:action="@{/admin/fraud/cases/{id}/assign(id=${fraudCase.id})}">
+                    <input type="hidden" th:name="${fraudCsrfParameterName}" th:value="${fraudCsrfToken}">
+                    <label class="form-label">Assign investigator</label>
+                    <input class="form-control mb-2" name="investigator" required maxlength="120">
+                    <textarea class="form-control mb-2" name="note" rows="2" maxlength="1000" placeholder="Note"></textarea>
+                    <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-person-plus me-1"></i>Assign</button>
+                </form>
+                <form method="post" th:action="@{/admin/fraud/cases/{id}/resolve(id=${fraudCase.id})}">
+                    <input type="hidden" th:name="${fraudCsrfParameterName}" th:value="${fraudCsrfToken}">
+                    <label class="form-label">Resolution</label>
+                    <input class="form-control mb-2" name="resolution" required maxlength="120">
+                    <textarea class="form-control mb-2" name="resolutionReason" rows="3" required maxlength="1000" placeholder="Resolution reason"></textarea>
+                    <button class="btn btn-success btn-sm" type="submit"><i class="bi bi-check2-circle me-1"></i>Resolve</button>
+                </form>
+            </aside>
+        </div>
+
+        <section class="fraud-panel shadow-sm mt-3">
+            <div class="border-bottom p-3"><h2 class="h6 mb-0">Related Event Log</h2></div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 fraud-table">
+                    <thead><tr><th>Event</th><th>Aggregate</th><th>Time</th><th>Correlation</th></tr></thead>
+                    <tbody>
+                        <tr th:each="event : ${events}">
+                            <td th:text="${event.eventType}">EVENT</td>
+                            <td th:text="${event.aggregateType} ?: '-'">-</td>
+                            <td th:text="${event.eventTime != null ? #temporals.format(event.eventTime, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
+                            <td th:text="${event.correlationId} ?: '-'">-</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(events)}"><td colspan="4"><div class="fraud-empty">No related event records</div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>

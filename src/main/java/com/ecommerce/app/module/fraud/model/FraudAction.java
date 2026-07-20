@@ -1,0 +1,21 @@
+package com.ecommerce.app.module.fraud.model;
+
+public enum FraudAction {
+    ALLOW,
+    APPROVE,
+    VERIFY,
+    REQUIRE_OTP,
+    REQUIRE_PREPAID,
+    REQUIRE_PARTIAL_PREPAYMENT,
+    MANUAL_REVIEW,
+    HOLD,
+    BLOCK,
+    REJECT,
+    CANCEL,
+    DISABLE_COD,
+    HOLD_REFUND,
+    HOLD_REWARD,
+    HOLD_VENDOR_PAYOUT,
+    TEMPORARILY_BLOCK_ACCOUNT,
+    PERMANENTLY_BLOCK_ACCOUNT
+}

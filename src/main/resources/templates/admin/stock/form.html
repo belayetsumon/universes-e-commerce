@@ -1,76 +1,219 @@
-<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <style>
+            .stock-form-workspace { color: #182230; }
+            .stock-form-hero { background: #113459; border: 0; color: #fff; overflow: hidden; }
+            .stock-form-hero .card-header { background: rgba(255,255,255,.08); border-bottom-color: rgba(255,255,255,.12); }
+            .stock-form-kicker { color: #9fd8ff; font-size: .75rem; font-weight: 700; letter-spacing: 0; margin: 0 0 .35rem; text-transform: uppercase; }
+            .stock-form-hero h1 { color: #fff; font-size: 1.65rem; font-weight: 700; letter-spacing: 0; margin: 0; }
+            .stock-form-copy { color: rgba(255,255,255,.78); margin: .45rem 0 0; max-width: 760px; }
+            .stock-form-icon { align-items: center; background: #fff; border-radius: 50%; color: #113459; display: inline-flex; flex: 0 0 48px; height: 48px; justify-content: center; width: 48px; }
+            .stock-form-primary { background: linear-gradient(135deg,#0d6efd 0%,#00a6c8 100%); border: 0; box-shadow: 0 .55rem 1rem rgba(0,166,200,.24); color: #fff; }
+            .stock-form-primary:hover, .stock-form-primary:focus { background: linear-gradient(135deg,#0b5ed7 0%,#0089a8 100%); color: #fff; }
+            .stock-form-layout { align-items: start; display: grid; gap: 1rem; grid-template-columns: minmax(0,1fr) 340px; }
+            .stock-form-panel, .stock-form-guide { border: 1px solid rgba(17,52,89,.13); border-radius: .5rem; box-shadow: 0 .5rem 1.25rem rgba(15,23,42,.06); }
+            .stock-form-panel .card-header, .stock-form-guide .card-header { background: #fff; }
+            .stock-form-section-title { color: #1f2937; font-size: 1.05rem; font-weight: 700; margin: 0; }
+            .stock-form-label { color: #506070; font-size: .75rem; font-weight: 700; letter-spacing: 0; margin-bottom: .35rem; text-transform: uppercase; }
+            .stock-form-label.required::after { color: #dc3545; content: " *"; }
+            .stock-form-note { color: #6c757d; font-size: .82rem; line-height: 1.45; margin-top: .4rem; }
+            .stock-form-example { align-items: center; background: #edf7f5; border: 1px solid #b7ddd7; border-radius: 999px; color: #113459; display: inline-flex; font-size: .76rem; font-weight: 700; gap: .35rem; margin-top: .5rem; padding: .28rem .55rem; }
+            .stock-form-guide { position: sticky; top: 1rem; }
+            .stock-form-guide-list { display: grid; gap: .75rem; }
+            .stock-form-guide-item { align-items: flex-start; background: #f8fafc; border: 1px solid #e5e9ee; border-radius: .45rem; display: flex; gap: .7rem; padding: .8rem; }
+            .stock-form-guide-item i { color: #113459; margin-top: .1rem; }
+            .stock-form-guide-item strong { color: #1f2937; display: block; font-size: .9rem; }
+            .stock-form-guide-item small { color: #6c757d; display: block; font-size: .78rem; line-height: 1.4; margin-top: .15rem; }
+            .stock-form-alert { align-items: center; display: flex; gap: .6rem; }
+            .stock-form-savebar { align-items: center; background: #fff; border: 1px solid rgba(17,52,89,.13); border-radius: .5rem; box-shadow: 0 .5rem 1.25rem rgba(15,23,42,.06); display: flex; gap: 1rem; justify-content: space-between; margin-top: 1rem; padding: .85rem 1rem; }
+            @media (max-width: 1199.98px) { .stock-form-layout { grid-template-columns: 1fr; } .stock-form-guide { position: static; } }
+            @media (max-width: 767.98px) { .stock-form-hero .card-body > .d-flex, .stock-form-savebar { align-items: stretch !important; flex-direction: column; } }
+            @media print { .stock-form-hero .btn, .stock-form-savebar, .stock-form-guide { display: none !important; } .stock-form-layout { display: block; } .stock-form-hero, .stock-form-panel { box-shadow: none; } }
+        </style>
+    </th:block>
+
     <div layout:fragment="main_content">
-        <section class="mb-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <h4><i class="bi bi-boxes me-2 text-primary"></i><span th:text="${pageTitle}"></span></h4>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="#" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
-                        <li class="breadcrumb-item"><a th:href="@{/admin/stock/transactions}" class="nav-link">Stock Transactions</a></li>
-                        <li class="breadcrumb-item active" aria-current="page" th:text="${pageTitle}"></li>
-                    </ol>
-                </nav>
+        <section class="py-4 stock-form-workspace">
+            <header class="card shadow-sm mb-4 stock-form-hero">
+                <div class="card-header d-flex align-items-center justify-content-between py-3">
+                    <span class="fw-semibold"><i class="bi bi-boxes text-warning me-2"></i>Inventory operations</span>
+                    <span class="badge text-bg-light border border-white border-opacity-25"
+                          th:text="${stockMode == 'RECEIVE' ? 'Receive stock' : 'Adjust stock'}">Stock action</span>
+                </div>
+                <div class="card-body py-4">
+                    <div class="d-flex align-items-start justify-content-between gap-4">
+                        <div class="d-flex align-items-start gap-3">
+                            <span class="stock-form-icon">
+                                <i class="bi fs-4" th:classappend="${stockMode == 'RECEIVE'} ? ' bi-plus-circle' : ' bi-sliders'"></i>
+                            </span>
+                            <div>
+                                <p class="stock-form-kicker">Stock ledger entry</p>
+                                <h1 th:text="${pageTitle}">Stock Action</h1>
+                                <p class="stock-form-copy" th:if="${stockMode == 'RECEIVE'}">Add newly arrived inventory to product-level or variant-level available stock. Use this for purchase receiving, opening balances, and warehouse intake.</p>
+                                <p class="stock-form-copy" th:if="${stockMode == 'ADJUST'}">Correct available stock with a positive or negative delta. Use this for shrinkage, audit correction, damage, or manual reconciliation.</p>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 flex-shrink-0">
+                            <a class="btn btn-light" th:href="@{/admin/stock/current}"><i class="bi bi-arrow-left me-1"></i> Current Stock</a>
+                            <a class="btn btn-outline-light" th:href="@{/admin/stock/transactions}"><i class="bi bi-clock-history me-1"></i> Ledger</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div th:if="${not #strings.isEmpty(errorMessage)}" class="alert alert-danger alert-dismissible fade show shadow-sm stock-form-alert" role="alert">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span th:text="${errorMessage}">Unable to save stock.</span>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
+
+            <form th:action="@{${stockAction}}" method="post" novalidate>
+                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                <div class="stock-form-layout">
+                    <main>
+                        <section class="card stock-form-panel mb-3">
+                            <div class="card-header py-3">
+                                <p class="stock-form-kicker text-primary mb-1">Target inventory</p>
+                                <h2 class="stock-form-section-title">Choose Product and Stock Level</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="stock-form-label required" for="productId">Product</label>
+                                        <select id="productId" name="productId" class="form-select" required>
+                                            <option value="">Select the product to update</option>
+                                            <option th:each="product : ${products}"
+                                                    th:value="${product.id}"
+                                                    th:selected="${selectedProductId != null and selectedProductId.equals(product.id)}"
+                                                    th:text="${product.title}">
+                                                Product
+                                            </option>
+                                        </select>
+                                        <div class="stock-form-note">Required. Pick the exact catalog product whose stock should change.</div>
+                                        <span class="stock-form-example"><i class="bi bi-check2-circle"></i>Example: Cotton T-Shirt</span>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="stock-form-label" for="catalogVariantUuid">Catalog Variant</label>
+                                        <select id="catalogVariantUuid" name="catalogVariantUuid" class="form-select">
+                                            <option value="">Product-level stock only</option>
+                                            <option th:each="variant : ${catalogVariants}"
+                                                    th:value="${variant.uuid}"
+                                                    th:attr="data-product-id=${variant.product.id}"
+                                                    th:selected="${selectedCatalogVariantUuid != null and selectedCatalogVariantUuid.equals(variant.uuid)}"
+                                                    th:text="${variant.product.title + ' | SKU: ' + variant.sku}">
+                                                Variant
+                                            </option>
+                                        </select>
+                                        <div class="stock-form-note">Optional. Leave blank when the product does not manage variants. Select a variant when stock is tracked by size, color, SKU, or catalog option.</div>
+                                        <span class="stock-form-example"><i class="bi bi-box-seam"></i>Example: Cotton T-Shirt | SKU: TSHIRT-BLK-M</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="card stock-form-panel">
+                            <div class="card-header py-3">
+                                <p class="stock-form-kicker text-primary mb-1">Quantity and reason</p>
+                                <h2 class="stock-form-section-title" th:text="${stockMode == 'RECEIVE' ? 'Receive Quantity' : 'Adjustment Delta'}">Quantity</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-lg-6" th:if="${stockMode == 'RECEIVE'}">
+                                        <label class="stock-form-label required" for="quantity">Quantity to Receive</label>
+                                        <input id="quantity" type="number" step="0.001" min="0.001" inputmode="decimal" name="quantity" class="form-control" placeholder="Example: 100" required>
+                                        <div class="stock-form-note">Enter the new incoming quantity. The value must be greater than zero and will increase available stock.</div>
+                                        <span class="stock-form-example"><i class="bi bi-plus-circle"></i>Example: 100 or 25.500</span>
+                                    </div>
+
+                                    <div class="col-lg-6" th:if="${stockMode == 'ADJUST'}">
+                                        <label class="stock-form-label required" for="quantityDelta">Quantity Delta</label>
+                                        <input id="quantityDelta" type="number" step="0.001" inputmode="decimal" name="quantityDelta" class="form-control" placeholder="Example: -3 or 5" required>
+                                        <div class="stock-form-note">Use a positive number to add available stock. Use a negative number to reduce available stock after damage, audit mismatch, or correction.</div>
+                                        <span class="stock-form-example"><i class="bi bi-plus-slash-minus"></i>Example: +5 to add, -3 to reduce</span>
+                                    </div>
+
+                                    <div class="col-lg-6">
+                                        <label class="stock-form-label" for="note">Note</label>
+                                        <textarea id="note" name="note" class="form-control" rows="4"
+                                                  th:placeholder="${stockMode == 'RECEIVE' ? 'Example: PO-2026-0717 received from supplier invoice INV-1045' : 'Example: Cycle count correction. System had 20, physical count found 17.'}"></textarea>
+                                        <div class="stock-form-note">Optional but recommended. Add a clear reason so the stock ledger is easy to audit later.</div>
+                                        <span class="stock-form-example" th:if="${stockMode == 'RECEIVE'}"><i class="bi bi-receipt"></i>Example: PO-2026-0717 / INV-1045</span>
+                                        <span class="stock-form-example" th:if="${stockMode == 'ADJUST'}"><i class="bi bi-clipboard-check"></i>Example: Cycle count correction</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div class="stock-form-savebar">
+                            <div>
+                                <strong th:text="${stockMode == 'RECEIVE' ? 'Ready to receive stock?' : 'Ready to adjust stock?'}">Ready?</strong>
+                                <div class="text-muted small" th:if="${stockMode == 'RECEIVE'}">This creates a receive ledger entry and increases available quantity.</div>
+                                <div class="text-muted small" th:if="${stockMode == 'ADJUST'}">This creates an adjustment ledger entry using the exact delta entered above.</div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a class="btn btn-outline-secondary" th:href="@{/admin/stock/current}"><i class="bi bi-x-circle me-1"></i>Cancel</a>
+                                <button type="submit" class="btn stock-form-primary">
+                                    <i class="bi bi-save me-1"></i>
+                                    <span th:text="${stockMode == 'RECEIVE' ? 'Save Receive Stock' : 'Save Adjustment'}">Save Stock</span>
+                                </button>
+                            </div>
+                        </div>
+                    </main>
+
+                    <aside class="card stock-form-guide">
+                        <div class="card-header py-3">
+                            <p class="stock-form-kicker text-primary mb-1">Input guide</p>
+                            <h2 class="stock-form-section-title">What to Enter</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="stock-form-guide-list">
+                                <div class="stock-form-guide-item">
+                                    <i class="bi bi-1-circle"></i>
+                                    <div>
+                                        <strong>Product is required</strong>
+                                        <small>Select the product first. The variant list will automatically narrow to that product.</small>
+                                    </div>
+                                </div>
+                                <div class="stock-form-guide-item">
+                                    <i class="bi bi-2-circle"></i>
+                                    <div>
+                                        <strong>Variant is optional</strong>
+                                        <small>Leave it blank for product-level stock. Choose it for size/color/SKU-level stock.</small>
+                                    </div>
+                                </div>
+                                <div class="stock-form-guide-item" th:if="${stockMode == 'RECEIVE'}">
+                                    <i class="bi bi-3-circle"></i>
+                                    <div>
+                                        <strong>Receive quantity must be positive</strong>
+                                        <small>Use values like 10, 100, or 25.500. Do not use negative numbers on receive.</small>
+                                    </div>
+                                </div>
+                                <div class="stock-form-guide-item" th:if="${stockMode == 'ADJUST'}">
+                                    <i class="bi bi-3-circle"></i>
+                                    <div>
+                                        <strong>Adjustment can be positive or negative</strong>
+                                        <small>Use +5 to add stock, or -3 to reduce stock. Enter only the difference, not the final stock balance.</small>
+                                    </div>
+                                </div>
+                                <div class="stock-form-guide-item">
+                                    <i class="bi bi-journal-text"></i>
+                                    <div>
+                                        <strong>Note helps audit</strong>
+                                        <small>Add supplier invoice, purchase order, cycle count, damage reason, or manager approval reference.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </form>
         </section>
 
-        <div th:if="${not #strings.isEmpty(errorMessage)}" class="alert alert-danger alert-dismissible fade show" role="alert">
-            <span th:text="${errorMessage}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <strong th:text="${pageTitle}"></strong>
-                <a class="btn btn-sm btn-outline-secondary" th:href="@{/admin/stock/transactions}">Back</a>
-            </div>
-            <div class="card-body">
-                <form th:action="@{${stockAction}}" method="post">
-                    <!--                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />-->
-
-                    <div class="mb-3">
-                        <label class="form-label">Product</label>
-                        <select id="productId" name="productId" class="form-select" required>
-                            <option value="">-- Select Product --</option>
-                            <option th:each="product : ${products}" th:value="${product.id}" th:text="${product.title}"></option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Catalog Variant (Optional)</label>
-                        <select id="catalogVariantUuid" name="catalogVariantUuid" class="form-select">
-                            <option value="">-- Product Level Stock --</option>
-                            <option th:each="variant : ${catalogVariants}"
-                                    th:value="${variant.uuid}"
-                                    th:attr="data-product-id=${variant.product.id}"
-                                    th:text="${variant.product.title + ' | SKU: ' + variant.sku}">
-                            </option>
-                        </select>
-                        <div class="form-text">Leave blank to update product-level stock, or choose a catalog variant for variant-level inventory.</div>
-                    </div>
-
-                    <div class="mb-3" th:if="${stockMode == 'RECEIVE'}">
-                        <label class="form-label">Quantity</label>
-                        <input type="number" step="0.001" min="0.001" name="quantity" class="form-control" required>
-                    </div>
-
-                    <div class="mb-3" th:if="${stockMode == 'ADJUST'}">
-                        <label class="form-label">Quantity Delta</label>
-                        <input type="number" step="0.001" name="quantityDelta" class="form-control" required>
-                        <div class="form-text">Use positive value to add stock and negative value to reduce stock.</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Note</label>
-                        <textarea name="note" class="form-control" rows="3" placeholder="Optional adjustment note"></textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-success" th:text="${pageTitle}"></button>
-                </form>
-            </div>
-        </div>
-
         <script th:inline="javascript">
-            // 2026-05-15: Keep catalog variant selection aligned with the chosen product.
             document.addEventListener('DOMContentLoaded', function () {
                 const productSelect = document.getElementById('productId');
                 const catalogVariantSelect = document.getElementById('catalogVariantUuid');

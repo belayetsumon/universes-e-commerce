@@ -1,0 +1,67 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <link rel="stylesheet" th:href="@{/assets/admin/css/fraud-admin.css}">
+    </th:block>
+
+    <main layout:fragment="main_content" class="main-content container-fluid px-3 py-3 fraud-admin-page">
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <header class="card shadow-sm mb-4 fraud-hero">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="fraud-hero-icon"><i class="bi bi-shield-plus fs-4"></i></span>
+                        <div>
+                            <h1>New Blocklist Entry</h1>
+                            <p class="fraud-hero-copy">Raw values are hashed before storage and only masked values are displayed.</p>
+                        </div>
+                    </div>
+                    <a class="btn btn-outline-light btn-sm" th:href="@{/admin/fraud/blocklist}">Back</a>
+                </div>
+            </div>
+        </header>
+
+        <form class="fraud-panel shadow-sm p-3" method="post" th:action="@{/admin/fraud/blocklist/save}" th:object="${blocklistRequest}">
+            <input type="hidden" th:name="${fraudCsrfParameterName}" th:value="${fraudCsrfToken}">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Block type</label>
+                    <select class="form-select" th:field="*{blockType}" required>
+                        <option value="">Select</option>
+                        <option th:each="type : ${blockTypes}" th:value="${type}" th:text="${type}">DEVICE</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Scope</label>
+                    <select class="form-select" th:field="*{scope}">
+                        <option th:each="scope : ${blockScopes}" th:value="${scope}" th:text="${scope}">GLOBAL</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Expires at</label>
+                    <input class="form-control" type="datetime-local" th:field="*{expiresAt}">
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label">Block value</label>
+                    <input class="form-control" th:field="*{blockValue}" required maxlength="500">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" th:field="*{temporary}">
+                        <label class="form-check-label">Temporary</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Reason</label>
+                    <textarea class="form-control" th:field="*{reason}" required maxlength="500" rows="4"></textarea>
+                </div>
+            </div>
+            <div class="fraud-action-bar mt-4">
+                <button class="btn btn-primary" type="submit"><i class="bi bi-save me-1"></i>Save Block</button>
+                <a class="btn btn-light" th:href="@{/admin/fraud/blocklist}">Cancel</a>
+            </div>
+        </form>
+    </main>
+</div>

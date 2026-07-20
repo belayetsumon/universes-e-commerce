@@ -43,6 +43,8 @@
                                 class="bi-bar-chart-line me-2"></i>Sales Dashboard</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/admin-customer/orderlist}"><i
                                 class="bi-box-seam me-2"></i>Orders</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/sales/items}"><i
+                                class="bi-list-check me-2"></i>Sales Items</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/admin/finance/transactions}"><i
                                 class="bi-receipt me-2"></i>Transactions</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/admin/finance/refunds}"><i
@@ -270,6 +272,31 @@
             </li>
 
             <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#fraud-collapse" role="button" aria-expanded="false"
+                   aria-controls="fraud-collapse">
+                    <i class="bi-shield-lock"></i>
+                    <span>Fraud Control</span>
+                    <i class="bi-chevron-right ms-auto"></i>
+                </a>
+                <ul class="nav flex-column collapse" id="fraud-collapse">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/fraud/dashboard}"><i
+                                class="bi-speedometer2 me-2"></i>Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/fraud/assessments}"><i
+                                class="bi-clipboard2-pulse me-2"></i>Assessments</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/fraud/cases}"><i
+                                class="bi-folder2-open me-2"></i>Cases</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/fraud/rules}"><i
+                                class="bi-sliders me-2"></i>Rules</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/fraud/blocklist}"><i
+                                class="bi-shield-fill-x me-2"></i>Blocklist</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/fraud/configuration}"><i
+                                class="bi-gear me-2"></i>Configuration</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/fraud/reports}"><i
+                                class="bi-graph-up-arrow me-2"></i>Reports</a></li>
+                </ul>
+            </li>
+
+            <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#users-collapse" role="button" aria-expanded="false"
                    aria-controls="users-collapse">
                     <i class="bi-person-rolodex"></i>
@@ -285,9 +312,11 @@
                                 class="bi-person-badge me-2"></i>Roles</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/users/index}"><i
                                 class="bi-person-circle me-2"></i>Users</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-key me-2"></i>Change Password</a>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/users/login-history}"><i
+                                class="bi-clock-history me-2"></i>Login History</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/users/change-password}"><i class="bi-key me-2"></i>Change Password</a>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="#"><i class="bi-person me-2"></i>Profile</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/users/profile}"><i class="bi-person me-2"></i>Profile</a></li>
                 </ul>
             </li>
 

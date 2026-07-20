@@ -22,6 +22,7 @@ import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.LoginHistoryRepository;
 import com.ecommerce.app.module.user.ripository.RoleRepository;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
+import com.ecommerce.app.module.user.services.LoggedUserService;
 import com.ecommerce.app.module.user.services.LoginEventService;
 import com.ecommerce.app.module.user.services.UsersService;
 import jakarta.servlet.http.*;
@@ -73,6 +74,9 @@ public class UsersController {
 
     @Autowired
     LoginEventService loginEventService;
+
+    @Autowired
+    LoggedUserService loggedUserService;
 
     @Autowired
     private ReferralRepository referralRepository;
@@ -180,6 +184,26 @@ public class UsersController {
         model.addAttribute("users", user);
         model.addAttribute("passwordForm", new AdminUserPasswordForm());
         return "user/change_password";
+    }
+
+    @GetMapping("/change-password")
+    public String currentUserChangePassword(RedirectAttributes redirectAttributes) {
+        Long activeUserId = loggedUserService.activeUserIdOrNull();
+        if (activeUserId == null) {
+            redirectAttributes.addFlashAttribute("error", "Please sign in to change your password.");
+            return "redirect:/public/member-login";
+        }
+        return "redirect:/users/change-password/" + activeUserId;
+    }
+
+    @GetMapping("/profile")
+    public String currentUserProfile(RedirectAttributes redirectAttributes) {
+        Long activeUserId = loggedUserService.activeUserIdOrNull();
+        if (activeUserId == null) {
+            redirectAttributes.addFlashAttribute("error", "Please sign in to view your profile.");
+            return "redirect:/public/member-login";
+        }
+        return "redirect:/users/view/" + activeUserId;
     }
 
     @PostMapping("/change-password/{id}")

@@ -1,0 +1,109 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <link rel="stylesheet" th:href="@{/assets/admin/css/fraud-admin.css}">
+    </th:block>
+
+    <main layout:fragment="main_content" class="main-content container-fluid px-3 py-3 fraud-admin-page">
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <header class="card shadow-sm mb-4 fraud-hero">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="fraud-hero-icon"><i class="bi bi-sliders2-vertical fs-4"></i></span>
+                        <div>
+                            <h1 th:text="${ruleId == null ? 'New Fraud Rule' : 'Edit Fraud Rule'}">Rule</h1>
+                            <p class="fraud-hero-copy">Rules are evaluated by priority and scoped by vendor, product, category, payment method, country, district, and channel.</p>
+                        </div>
+                    </div>
+                    <a class="btn btn-outline-light btn-sm" th:href="@{/admin/fraud/rules}">Back</a>
+                </div>
+            </div>
+        </header>
+
+        <form class="fraud-panel shadow-sm p-3" method="post" th:action="@{/admin/fraud/rules/save}" th:object="${ruleRequest}">
+            <input type="hidden" th:name="${fraudCsrfParameterName}" th:value="${fraudCsrfToken}">
+            <input type="hidden" name="id" th:value="${ruleId}">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Rule code</label>
+                    <input class="form-control" th:field="*{ruleCode}" required maxlength="100">
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label">Rule name</label>
+                    <input class="form-control" th:field="*{ruleName}" required maxlength="160">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" th:field="*{description}" rows="2" maxlength="1000"></textarea>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Rule type</label>
+                    <select class="form-select" th:field="*{ruleType}" required>
+                        <option value="">Select</option>
+                        <option th:each="type : ${ruleTypes}" th:value="${type}" th:text="${type}">SCORING</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Signal code</label>
+                    <input class="form-control" th:field="*{signalCode}" maxlength="100">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Operator</label>
+                    <select class="form-select" th:field="*{operator}">
+                        <option value="">Select</option>
+                        <option th:each="operator : ${ruleOperators}" th:value="${operator}" th:text="${operator}">EQUALS</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Comparison value</label>
+                    <input class="form-control" th:field="*{comparisonValue}" maxlength="500">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Score impact</label>
+                    <input class="form-control" type="number" th:field="*{scoreImpact}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Priority</label>
+                    <input class="form-control" type="number" th:field="*{priority}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Action</label>
+                    <select class="form-select" th:field="*{action}">
+                        <option value="">Select</option>
+                        <option th:each="action : ${fraudActions}" th:value="${action}" th:text="${action}">HOLD</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end gap-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" th:field="*{hardBlock}">
+                        <label class="form-check-label">Hard block</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" th:field="*{active}">
+                        <label class="form-check-label">Active</label>
+                    </div>
+                </div>
+                <div class="col-md-3"><label class="form-label">Vendor ID</label><input class="form-control" type="number" th:field="*{vendorId}"></div>
+                <div class="col-md-3"><label class="form-label">Product ID</label><input class="form-control" type="number" th:field="*{productId}"></div>
+                <div class="col-md-3"><label class="form-label">Category ID</label><input class="form-control" type="number" th:field="*{categoryId}"></div>
+                <div class="col-md-3"><label class="form-label">Payment method</label><input class="form-control" th:field="*{paymentMethod}" maxlength="40"></div>
+                <div class="col-md-3"><label class="form-label">Country</label><input class="form-control" th:field="*{country}" maxlength="80"></div>
+                <div class="col-md-3"><label class="form-label">District</label><input class="form-control" th:field="*{district}" maxlength="120"></div>
+                <div class="col-md-3"><label class="form-label">Channel</label><input class="form-control" th:field="*{channel}" maxlength="60"></div>
+                <div class="col-md-3"><label class="form-label">Effective start</label><input class="form-control" type="datetime-local" th:field="*{effectiveStartAt}"></div>
+                <div class="col-md-3"><label class="form-label">Effective end</label><input class="form-control" type="datetime-local" th:field="*{effectiveEndAt}"></div>
+                <div class="col-12">
+                    <label class="form-label">Rule configuration JSON</label>
+                    <textarea class="form-control font-monospace" th:field="*{ruleConfigurationJson}" rows="4"></textarea>
+                </div>
+            </div>
+            <div class="fraud-action-bar mt-4">
+                <button class="btn btn-primary" type="submit"><i class="bi bi-save me-1"></i>Save Rule</button>
+                <a class="btn btn-light" th:href="@{/admin/fraud/rules}">Cancel</a>
+            </div>
+        </form>
+    </main>
+</div>

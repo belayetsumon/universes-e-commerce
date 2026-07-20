@@ -8,7 +8,7 @@ package com.ecommerce.app.module.customer.controller;
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.services.LoggedUserService;
-import com.ecommerce.app.order.model.OrderStatus;
+import com.ecommerce.app.module.order.model.OrderStatus;
 import com.ecommerce.app.product.ripository.ProductcategoryRepository;
 import com.ecommerce.app.services.StorageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import com.ecommerce.app.product.ripository.ProductRepository;
-import com.ecommerce.app.order.repository.SalesOrderRepository;
+import com.ecommerce.app.module.order.repository.SalesOrderRepository;
 
 /**
  *

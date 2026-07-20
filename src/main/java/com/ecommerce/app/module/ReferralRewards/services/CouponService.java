@@ -10,7 +10,7 @@ import com.ecommerce.app.module.ReferralRewards.repository.CouponRedemptionRepos
 import com.ecommerce.app.module.ReferralRewards.repository.CouponRepository;
 import com.ecommerce.app.module.cart.model.CartItem;
 import com.ecommerce.app.module.user.model.Users;
-import com.ecommerce.app.order.repository.SalesOrderRepository;
+import com.ecommerce.app.module.order.repository.SalesOrderRepository;
 import com.ecommerce.app.product.model.Manufacturer;
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.Productcategory;

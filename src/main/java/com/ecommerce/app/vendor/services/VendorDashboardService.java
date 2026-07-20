@@ -1,8 +1,8 @@
 package com.ecommerce.app.vendor.services;
 
-import com.ecommerce.app.order.model.OrderStatus;
-import com.ecommerce.app.order.model.SalesOrder;
-import com.ecommerce.app.order.repository.SalesOrderRepository;
+import com.ecommerce.app.module.order.model.OrderStatus;
+import com.ecommerce.app.module.order.model.SalesOrder;
+import com.ecommerce.app.module.order.repository.SalesOrderRepository;
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.ProductStatusEnum;
 import com.ecommerce.app.product.ripository.ProductRepository;

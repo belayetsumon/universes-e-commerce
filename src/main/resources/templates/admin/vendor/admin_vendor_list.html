@@ -350,6 +350,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Vendor</th>
+                                    <th>Total Product</th>
                                     <th>Contact Person</th>
                                     <th>Phone</th>
                                     <th>Email</th>
@@ -363,7 +364,7 @@
 
                             <tbody>
                                 <tr th:if="${list == null or #lists.isEmpty(list)}">
-                                    <td colspan="10" class="text-center text-muted py-4">
+                                    <td colspan="11" class="text-center text-muted py-4">
                                         No vendor profiles match the selected filters.
                                     </td>
                                 </tr>
@@ -382,6 +383,13 @@
                                              th:text="${vendor.vendorCode != null ? vendor.vendorCode : 'No vendor code'}">
                                             VEN-BD-2026-0001
                                         </div>
+                                    </td>
+
+                                    <td>
+                                        <span class="badge text-bg-light border"
+                                              th:text="${productCountByVendorId != null and productCountByVendorId[vendor.id] != null ? productCountByVendorId[vendor.id] : 0}">
+                                            0
+                                        </span>
                                     </td>
 
                                     <td th:text="${((vendor.firstName != null ? vendor.firstName : '') + ' ' + (vendor.lastName != null ? vendor.lastName : '')).trim().isEmpty() ? 'Not provided' : ((vendor.firstName != null ? vendor.firstName : '') + ' ' + (vendor.lastName != null ? vendor.lastName : '')).trim()}">

@@ -6,8 +6,11 @@ import com.ecommerce.app.module.ReferralRewards.enumvalue.GiftCardTransactionTyp
 import com.ecommerce.app.module.ReferralRewards.model.GiftCardTransaction;
 import com.ecommerce.app.module.ReferralRewards.repository.GiftCardRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.GiftCardTransactionRepository;
+import com.ecommerce.app.module.fraud.dto.FraudGuardResult;
+import com.ecommerce.app.module.fraud.model.FraudPostOrderEventType;
+import com.ecommerce.app.module.fraud.services.FraudPostOrderMonitoringService;
 import com.ecommerce.app.module.user.model.Users;
-import com.ecommerce.app.order.model.SalesOrder;
+import com.ecommerce.app.module.order.model.SalesOrder;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Optional;
@@ -19,10 +22,13 @@ public class GiftCardService {
 
     private final GiftCardRepository giftCardRepository;
     private final GiftCardTransactionRepository giftCardTransactionRepository;
+    private final FraudPostOrderMonitoringService fraudPostOrderMonitoringService;
 
-    public GiftCardService(GiftCardRepository giftCardRepository, GiftCardTransactionRepository giftCardTransactionRepository) {
+    public GiftCardService(GiftCardRepository giftCardRepository, GiftCardTransactionRepository giftCardTransactionRepository,
+            FraudPostOrderMonitoringService fraudPostOrderMonitoringService) {
         this.giftCardRepository = giftCardRepository;
         this.giftCardTransactionRepository = giftCardTransactionRepository;
+        this.fraudPostOrderMonitoringService = fraudPostOrderMonitoringService;
     }
 
     @Transactional(readOnly = true)
@@ -56,6 +62,17 @@ public class GiftCardService {
         }
         if (requestedAmount == null || requestedAmount.compareTo(BigDecimal.ZERO) <= 0) {
             return null;
+        }
+
+        FraudGuardResult fraudGuard = fraudPostOrderMonitoringService.checkValueReleaseAllowed(
+                FraudPostOrderEventType.GIFT_CARD_USAGE,
+                order.getId(),
+                user == null ? null : user.getId(),
+                order.getVendorId(),
+                "ORDER:" + order.getId()
+        );
+        if (!fraudGuard.isAllowed()) {
+            throw new IllegalArgumentException("Gift card redemption is held while fraud review is open for this order.");
         }
 
         GiftCard locked = giftCardRepository.findById(giftCard.getId())
@@ -99,7 +116,9 @@ public class GiftCardService {
         txn.setCurrency("BDT");
         txn.setOrderId(orderId);
         txn.setIdempotencyKey("GIFT_CARD:" + locked.getId() + ":ORDER:" + orderId);
-        return giftCardTransactionRepository.save(txn);
+        GiftCardTransaction saved = giftCardTransactionRepository.save(txn);
+        fraudPostOrderMonitoringService.recordGiftCardUsage(order, applyAmount, locked.getCode(), saved.getId());
+        return saved;
     }
 
     private boolean isUsableStatus(GiftCard giftCard) {

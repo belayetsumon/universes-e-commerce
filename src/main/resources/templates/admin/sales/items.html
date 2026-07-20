@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <style>
+            .sales-items-page { color: #182230; }
+            .sales-items-hero { background: #113459; border: 0; color: #fff; overflow: hidden; }
+            .sales-items-hero .card-header { background: rgba(255,255,255,.08); border-bottom-color: rgba(255,255,255,.12); }
+            .sales-items-icon { align-items: center; background: #fff; border-radius: 50%; color: #113459; display: inline-flex; flex: 0 0 48px; height: 48px; justify-content: center; width: 48px; }
+            .sales-items-kicker { color: #9fd8ff; font-size: .75rem; font-weight: 700; letter-spacing: 0; margin: 0 0 .35rem; text-transform: uppercase; }
+            .sales-items-hero h1 { color: #fff; font-size: 1.65rem; font-weight: 700; letter-spacing: 0; margin: 0; }
+            .sales-items-copy { color: rgba(255,255,255,.78); margin: .45rem 0 0; max-width: 760px; }
+            .sales-items-panel { border: 1px solid rgba(17,52,89,.13); border-radius: .5rem; box-shadow: 0 .5rem 1.25rem rgba(15,23,42,.06); }
+            .sales-items-panel .card-header { background: #fff; }
+            .sales-items-filter { display: grid; gap: .85rem; grid-template-columns: minmax(220px,2fr) repeat(6,minmax(130px,1fr)) auto; }
+            .sales-items-label { color: #506070; font-size: .75rem; font-weight: 700; letter-spacing: 0; margin-bottom: .35rem; text-transform: uppercase; }
+            .sales-items-help { color: #6c757d; display: block; font-size: .76rem; line-height: 1.25; margin-top: .3rem; }
+            .sales-items-table { min-width: 1320px; }
+            .sales-items-table th { background: #f4f7fa; color: #506070; font-size: .75rem; letter-spacing: 0; text-transform: uppercase; white-space: nowrap; }
+            .sales-items-table th, .sales-items-table td { padding: .8rem .75rem; vertical-align: middle; }
+            .sales-items-name { color: #1f2937; display: block; font-weight: 700; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .sales-items-meta { color: #6c757d; display: block; font-size: .8rem; margin-top: .18rem; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .sales-items-actions { display: inline-flex; flex-wrap: wrap; gap: .35rem; justify-content: flex-end; }
+            .sales-items-empty { display: grid; gap: .75rem; justify-items: center; padding: 3.25rem 1rem; }
+            .sales-items-alert { align-items: center; display: flex; gap: .6rem; }
+            .sales-items-primary { background: linear-gradient(135deg,#0d6efd 0%,#00a6c8 100%); border: 0; color: #fff; }
+            .sales-items-primary:hover, .sales-items-primary:focus { background: linear-gradient(135deg,#0b5ed7 0%,#0089a8 100%); color: #fff; }
+            .sales-items-chart { display: grid; gap: .75rem; max-height: 620px; overflow: auto; padding-right: .15rem; }
+            .sales-items-chart-row { display: grid; gap: .65rem; grid-template-columns: minmax(190px,1.6fr) minmax(180px,3fr) minmax(140px,.9fr); align-items: center; }
+            .sales-items-chart-title { color: #1f2937; display: block; font-weight: 700; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .sales-items-chart-track { background: #e8eef5; border-radius: 999px; height: .85rem; overflow: hidden; }
+            .sales-items-chart-bar { background: linear-gradient(90deg,#113459,#0d6efd); border-radius: inherit; height: 100%; min-width: .35rem; }
+            .sales-items-chart-value { color: #182230; font-weight: 700; text-align: right; white-space: nowrap; }
+            @media (max-width: 1399.98px) { .sales-items-filter { grid-template-columns: repeat(3,minmax(0,1fr)); } .sales-items-filter .sales-items-search { grid-column: span 3; } }
+            @media (max-width: 767.98px) { .sales-items-filter { grid-template-columns: 1fr; } .sales-items-filter .sales-items-search { grid-column: auto; } .sales-items-chart-row { grid-template-columns: 1fr; } .sales-items-chart-value { text-align: left; } .sales-items-hero .card-body > .d-flex { align-items: stretch !important; flex-direction: column; } }
+        </style>
+    </th:block>
+
+    <div layout:fragment="main_content">
+        <section class="py-4 sales-items-page">
+            <header class="card shadow-sm mb-4 sales-items-hero">
+                <div class="card-header d-flex align-items-center justify-content-between py-3">
+                    <span class="fw-semibold"><i class="bi bi-basket2 text-warning me-2"></i>Marketplace operations</span>
+                    <span class="badge text-bg-light border border-white border-opacity-25" th:text="${salesItems.totalElements} + ' sales items'">0 sales items</span>
+                </div>
+                <div class="card-body py-4">
+                    <div class="d-flex align-items-start justify-content-between gap-4">
+                        <div class="d-flex align-items-start gap-3">
+                            <span class="sales-items-icon"><i class="bi bi-list-check fs-4"></i></span>
+                            <div>
+                                <p class="sales-items-kicker">Sales module</p>
+                                <h1>Sales Item List</h1>
+                                <p class="sales-items-copy">Review every sold product line with order status, return status, quantity, pricing, commission, vendor payout, VAT, and item total.</p>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 flex-shrink-0">
+                            <span class="btn btn-outline-light disabled"><i class="bi bi-calendar3 me-1"></i><span th:text="${reportDateRangeLabel}">Today</span></span>
+                            <a class="btn btn-light" th:href="@{/admin-customer/orderlist}"><i class="bi bi-arrow-left me-1"></i> Orders</a>
+                            <a class="btn btn-outline-light" th:href="@{/admin/sales/dashboard}"><i class="bi bi-bar-chart-line me-1"></i> Dashboard</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div th:if="${not #strings.isEmpty(errorMessage)}" class="alert alert-danger alert-dismissible fade show shadow-sm sales-items-alert" role="alert">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span th:text="${errorMessage}">Unable to load sales items.</span>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <form class="card sales-items-panel mb-4" method="get" th:action="@{/admin/sales/items}">
+                <div class="card-header d-flex align-items-center justify-content-between py-3">
+                    <div><p class="sales-items-kicker text-primary mb-1">Find items</p><h2 class="h5 mb-0">Filters and Pagination</h2></div>
+                    <a class="btn btn-sm btn-outline-secondary" th:href="@{/admin/sales/items}"><i class="bi bi-x-circle me-1"></i>Clear</a>
+                </div>
+                <div class="card-body">
+                    <input type="hidden" name="page" value="0">
+                    <div class="sales-items-filter">
+                        <div class="sales-items-search">
+                            <label class="sales-items-label" for="itemSearch">Search</label>
+                            <input id="itemSearch" type="search" class="form-control" name="q" th:value="${selectedQ}" placeholder="Order code, product, SKU, variant, item id">
+                        </div>
+                        <div>
+                            <label class="sales-items-label" for="orderStatus">Order Status</label>
+                            <select id="orderStatus" class="form-select" name="status">
+                                <option value="">All status</option>
+                                <option th:each="s : ${statuses}" th:value="${s}" th:selected="${selectedStatus == s}" th:text="${#strings.replace(s.name(), '_', ' ')}">Status</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="sales-items-label" for="returnStatus">Return Status</label>
+                            <select id="returnStatus" class="form-select" name="returnStatus">
+                                <option value="">All returns</option>
+                                <option th:each="s : ${returnStatuses}" th:value="${s}" th:selected="${selectedReturnStatus == s}" th:text="${#strings.replace(s.name(), '_', ' ')}">Return</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="sales-items-label" for="dateRange">Date Range</label>
+                            <select id="dateRange" class="form-select" name="dateRange">
+                                <option th:each="range : ${dateRangeOptions}" th:value="${range.value}" th:selected="${selectedDateRange == range.value}" th:text="${range.label}">Today</option>
+                            </select>
+                            <span class="sales-items-help">Use Custom date for manual From and To.</span>
+                        </div>
+                        <div><label class="sales-items-label" for="fromDate">From</label><input id="fromDate" type="date" class="form-control" name="fromDate" th:value="${selectedFromDate}"></div>
+                        <div><label class="sales-items-label" for="toDate">To</label><input id="toDate" type="date" class="form-control" name="toDate" th:value="${selectedToDate}"></div>
+                        <div>
+                            <label class="sales-items-label" for="pageSize">Rows</label>
+                            <select id="pageSize" class="form-select" name="size">
+                                <option value="10" th:selected="${size == 10}">10</option>
+                                <option value="25" th:selected="${size == 25}">25</option>
+                                <option value="50" th:selected="${size == 50}">50</option>
+                                <option value="100" th:selected="${size == 100}">100</option>
+                            </select>
+                        </div>
+                        <div class="d-grid"><button class="btn sales-items-primary" type="submit" title="Apply filters" aria-label="Apply filters"><i class="bi bi-funnel"></i></button></div>
+                    </div>
+                </div>
+            </form>
+
+            <section class="card sales-items-panel mb-4">
+                <div class="card-header d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 py-3">
+                    <div><p class="sales-items-kicker text-primary mb-1">Top 30 item chart</p><h2 class="h5 mb-0">Best Selling Items</h2></div>
+                    <div class="d-flex flex-wrap gap-2"><span class="badge text-bg-light border"><i class="bi bi-calendar3 me-1"></i><span th:text="${reportDateRangeLabel}">Today</span></span><span class="badge text-bg-light border" th:text="${#lists.size(topProducts)} + ' item(s)'">0 item(s)</span></div>
+                </div>
+                <div class="card-body">
+                    <div class="sales-items-chart" th:if="${!#lists.isEmpty(topProducts)}">
+                        <div class="sales-items-chart-row" th:each="row : ${topProducts}">
+                            <div>
+                                <span class="sales-items-chart-title" th:text="${row.rank + '. ' + row.productTitle}">1. Product</span>
+                                <span class="sales-items-meta" th:text="${row.sku != null ? 'SKU: ' + row.sku : 'SKU: -'}">SKU</span>
+                            </div>
+                            <div class="sales-items-chart-track" th:title="${'Quantity: ' + row.quantity}">
+                                <div class="sales-items-chart-bar" th:style="${'width:' + row.percentage + '%;'}"></div>
+                            </div>
+                            <div class="sales-items-chart-value">
+                                <span th:text="${#numbers.formatDecimal(row.quantity, 0, 'COMMA', 2, 'POINT')}">0.00</span>
+                                <span class="sales-items-meta" th:text="${'Total: ' + #numbers.formatDecimal(row.itemTotal, 0, 'COMMA', 2, 'POINT')}">Total</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sales-items-empty" th:if="${#lists.isEmpty(topProducts)}">
+                        <span class="sales-items-icon"><i class="bi bi-bar-chart"></i></span>
+                        <div class="text-center"><h3 class="h6 mb-1">No chart data found</h3><p class="text-muted small mb-0">Try a broader date range or clear the search filter.</p></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card sales-items-panel">
+                <div class="card-header d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 py-3">
+                    <div><p class="sales-items-kicker text-primary mb-1">Item register</p><h2 class="h5 mb-0">Filtered Sales Items</h2></div>
+                    <span class="badge text-bg-light border" th:text="${salesItems.totalElements} + ' matching item(s)'">0 matching item(s)</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 sales-items-table">
+                        <thead>
+                            <tr>
+                                <th>#</th><th>Order</th><th>Product</th><th>Variant</th><th>Status</th><th class="text-end">Qty</th><th class="text-end">Sales Price</th><th class="text-end">Discount</th><th class="text-end">Commission</th><th class="text-end">Vendor Amount</th><th class="text-end">VAT</th><th class="text-end">Item Total</th><th>Dates</th><th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody th:if="${!salesItems.empty}">
+                            <tr th:each="item, stat : ${salesItems.content}">
+                                <td class="text-muted" th:text="${salesItems.number * salesItems.size + stat.count}">1</td>
+                                <td>
+                                    <a class="sales-items-name" th:if="${item.salesOrder != null}" th:href="@{/admin-customer/order-details/{id}(id=${item.salesOrder.id})}" th:text="${item.salesOrder.orderCode != null ? item.salesOrder.orderCode : 'Order #' + item.salesOrder.id}">Order</a>
+                                    <span class="sales-items-name" th:if="${item.salesOrder == null}">No order</span>
+                                    <span class="sales-items-meta" th:if="${item.salesOrder != null}" th:text="${'Order ID: ' + item.salesOrder.id}">Order ID</span>
+                                </td>
+                                <td>
+                                    <span class="sales-items-name" th:text="${item.product != null ? item.product.title : 'Product not found'}">Product</span>
+                                    <span class="sales-items-meta" th:text="${item.product != null ? 'SKU: ' + item.product.sku : 'SKU: -'}">SKU</span>
+                                </td>
+                                <td><span th:text="${item.variantSummary != null ? item.variantSummary : '-'}">Variant</span><span class="sales-items-meta" th:text="${item.catalogVariantUuid != null ? item.catalogVariantUuid : ''}">UUID</span></td>
+                                <td>
+                                    <span class="badge text-bg-secondary" th:if="${item.salesOrder != null}" th:text="${#strings.replace(item.salesOrder.status.name(), '_', ' ')}">STATUS</span>
+                                    <span class="badge text-bg-light border text-dark mt-1 d-inline-block" th:text="${item.returnStatus != null ? #strings.replace(item.returnStatus.name(), '_', ' ') : 'NONE'}">NONE</span>
+                                </td>
+                                <td class="text-end" th:text="${item.quantity != null ? #numbers.formatDecimal(item.quantity, 0, 'COMMA', 2, 'POINT') : '0.00'}">0</td>
+                                <td class="text-end" th:text="${item.salesPrice != null ? #numbers.formatDecimal(item.salesPrice, 0, 'COMMA', 2, 'POINT') : '0.00'}">0</td>
+                                <td class="text-end" th:text="${item.discountAmount != null ? #numbers.formatDecimal(item.discountAmount, 0, 'COMMA', 2, 'POINT') : '0.00'}">0</td>
+                                <td class="text-end" th:text="${item.marketPlaceCommissionAmount != null ? #numbers.formatDecimal(item.marketPlaceCommissionAmount, 0, 'COMMA', 2, 'POINT') : '0.00'}">0</td>
+                                <td class="text-end fw-semibold" th:text="${item.vendorAmount != null ? #numbers.formatDecimal(item.vendorAmount, 0, 'COMMA', 2, 'POINT') : '0.00'}">0</td>
+                                <td class="text-end" th:text="${item.vatAmount != null ? #numbers.formatDecimal(item.vatAmount, 0, 'COMMA', 2, 'POINT') : '0.00'}">0</td>
+                                <td class="text-end fw-semibold" th:text="${item.itemTotal != null ? #numbers.formatDecimal(item.itemTotal, 0, 'COMMA', 2, 'POINT') : '0.00'}">0</td>
+                                <td><span class="sales-items-meta">Created <span th:text="${item.created}">date</span></span><span class="sales-items-meta">Modified <span th:text="${item.modified != null ? item.modified : '-'}">date</span></span></td>
+                                <td class="text-end">
+                                    <div class="sales-items-actions">
+                                        <a class="btn btn-sm btn-outline-dark" th:if="${item.salesOrder != null}" th:href="@{/admin-customer/order-details/{id}(id=${item.salesOrder.id})}" title="Open order"><i class="bi bi-eye"></i></a>
+                                        <a class="btn btn-sm btn-outline-danger" th:if="${item.salesOrder != null}" th:href="@{/admin-customer/orders/{id}/pdf(id=${item.salesOrder.id})}" title="Download order PDF"><i class="bi bi-file-earmark-pdf"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody th:if="${salesItems.empty}">
+                            <tr><td colspan="14"><div class="sales-items-empty"><span class="sales-items-icon"><i class="bi bi-search"></i></span><div class="text-center"><h3 class="h6 mb-1">No sales items found</h3><p class="text-muted small mb-0">Try changing filters or clearing the search text.</p></div></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div class="text-muted small" th:text="${salesItems.totalElements == 0 ? 'Showing 0 items' : 'Showing ' + (salesItems.number * salesItems.size + 1) + '-' + (salesItems.number * salesItems.size + salesItems.numberOfElements) + ' of ' + salesItems.totalElements}">Showing 0 items</div>
+                    <nav th:if="${salesItems.totalPages > 1}" aria-label="Sales item pagination">
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item" th:classappend="${salesItems.first} ? 'disabled'"><a class="page-link" th:href="@{/admin/sales/items(q=${selectedQ},status=${selectedStatus},returnStatus=${selectedReturnStatus},dateRange=${selectedDateRange},fromDate=${selectedFromDate},toDate=${selectedToDate},size=${size},page=0)}">First</a></li>
+                            <li class="page-item" th:classappend="${salesItems.first} ? 'disabled'"><a class="page-link" th:href="@{/admin/sales/items(q=${selectedQ},status=${selectedStatus},returnStatus=${selectedReturnStatus},dateRange=${selectedDateRange},fromDate=${selectedFromDate},toDate=${selectedToDate},size=${size},page=${salesItems.first ? 0 : salesItems.number - 1})}">Previous</a></li>
+                            <li class="page-item" th:each="pageNumber : ${pageNumbers}" th:classappend="${pageNumber == salesItems.number} ? 'active'"><a class="page-link" th:href="@{/admin/sales/items(q=${selectedQ},status=${selectedStatus},returnStatus=${selectedReturnStatus},dateRange=${selectedDateRange},fromDate=${selectedFromDate},toDate=${selectedToDate},size=${size},page=${pageNumber})}" th:text="${pageNumber + 1}">1</a></li>
+                            <li class="page-item" th:classappend="${salesItems.last} ? 'disabled'"><a class="page-link" th:href="@{/admin/sales/items(q=${selectedQ},status=${selectedStatus},returnStatus=${selectedReturnStatus},dateRange=${selectedDateRange},fromDate=${selectedFromDate},toDate=${selectedToDate},size=${size},page=${salesItems.last ? salesItems.number : salesItems.number + 1})}">Next</a></li>
+                            <li class="page-item" th:classappend="${salesItems.last} ? 'disabled'"><a class="page-link" th:href="@{/admin/sales/items(q=${selectedQ},status=${selectedStatus},returnStatus=${selectedReturnStatus},dateRange=${selectedDateRange},fromDate=${selectedFromDate},toDate=${selectedToDate},size=${size},page=${salesItems.totalPages - 1})}">Last</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </section>
+        </section>
+    </div>
+</div>

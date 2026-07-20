@@ -1,9 +1,9 @@
 package com.ecommerce.app.module.sales.dashboard.repository;
 
 import com.ecommerce.app.module.sales.dashboard.dto.SalesDashboardFilter;
-import com.ecommerce.app.order.model.OrderStatus;
-import com.ecommerce.app.order.model.PaymentMethod;
-import com.ecommerce.app.order.model.PaymentStatus;
+import com.ecommerce.app.module.order.model.OrderStatus;
+import com.ecommerce.app.module.order.model.PaymentMethod;
+import com.ecommerce.app.module.order.model.PaymentStatus;
 import com.ecommerce.app.product.model.ProductStatusEnum;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;

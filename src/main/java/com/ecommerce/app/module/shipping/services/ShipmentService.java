@@ -3,15 +3,22 @@ package com.ecommerce.app.module.shipping.services;
 import com.ecommerce.app.module.communication.model.MessageChannel;
 import com.ecommerce.app.module.communication.model.MessageEventType;
 import com.ecommerce.app.module.communication.events.CommunicationRequestedEvent;
+import com.ecommerce.app.module.fraud.dto.FraudGuardResult;
+import com.ecommerce.app.module.fraud.services.CodRiskProfileService;
+import com.ecommerce.app.module.fraud.services.FraudFulfilmentGuard;
+import com.ecommerce.app.module.fraud.services.FraudPostOrderMonitoringService;
+import com.ecommerce.app.module.fraud.services.VendorRiskProfileService;
 import com.ecommerce.app.module.shipping.model.Shipment;
 import com.ecommerce.app.module.shipping.model.ShipmentStatus;
 import com.ecommerce.app.module.shipping.repository.ShipmentRepository;
-import com.ecommerce.app.order.model.OrderStatus;
-import com.ecommerce.app.order.model.PaymentMethod;
-import com.ecommerce.app.order.model.SalesOrder;
-import com.ecommerce.app.order.repository.SalesOrderRepository;
-import com.ecommerce.app.order.services.PaymentService;
-import com.ecommerce.app.order.services.SalesOrderService;
+import com.ecommerce.app.module.order.model.OrderStatus;
+import com.ecommerce.app.module.order.model.PaymentMethod;
+import com.ecommerce.app.module.order.model.SalesOrder;
+import com.ecommerce.app.module.order.repository.OrderItemRepository;
+import com.ecommerce.app.module.order.repository.SalesOrderRepository;
+import com.ecommerce.app.module.order.services.PaymentService;
+import com.ecommerce.app.module.order.services.SalesOrderService;
+import com.ecommerce.app.product.model.ProductTypeEnum;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -37,22 +44,37 @@ public class ShipmentService {
 
     private final ShipmentRepository repo;
     private final SalesOrderRepository salesOrderRepository;
+    private final OrderItemRepository orderItemRepository;
     private final SalesOrderService salesOrderService;
     private final PaymentService paymentService;
     private final ShipmentTrackingService shipmentTrackingService;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final FraudFulfilmentGuard fraudFulfilmentGuard;
+    private final CodRiskProfileService codRiskProfileService;
+    private final FraudPostOrderMonitoringService fraudPostOrderMonitoringService;
+    private final VendorRiskProfileService vendorRiskProfileService;
 
     public ShipmentService(ShipmentRepository repo, SalesOrderRepository salesOrderRepository,
+            OrderItemRepository orderItemRepository,
             SalesOrderService salesOrderService,
             PaymentService paymentService,
             ShipmentTrackingService shipmentTrackingService,
-            ApplicationEventPublisher applicationEventPublisher) {
+            ApplicationEventPublisher applicationEventPublisher,
+            FraudFulfilmentGuard fraudFulfilmentGuard,
+            CodRiskProfileService codRiskProfileService,
+            FraudPostOrderMonitoringService fraudPostOrderMonitoringService,
+            VendorRiskProfileService vendorRiskProfileService) {
         this.repo = repo;
         this.salesOrderRepository = salesOrderRepository;
+        this.orderItemRepository = orderItemRepository;
         this.salesOrderService = salesOrderService;
         this.paymentService = paymentService;
         this.shipmentTrackingService = shipmentTrackingService;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.fraudFulfilmentGuard = fraudFulfilmentGuard;
+        this.codRiskProfileService = codRiskProfileService;
+        this.fraudPostOrderMonitoringService = fraudPostOrderMonitoringService;
+        this.vendorRiskProfileService = vendorRiskProfileService;
     }
 
     public List<Shipment> getAll() {
@@ -90,6 +112,7 @@ public class ShipmentService {
                 return repeatedShipment;
             }
             enforceSingleShipmentPerOrder(shipment);
+            enforceFraudShipmentAllowed(shipment);
         }
 
         ShipmentStatus previousStatus = null;
@@ -107,6 +130,8 @@ public class ShipmentService {
         }
         Shipment savedShipment = repo.saveAndFlush(preparedShipment);
         shipmentTrackingService.recordStatusChange(savedShipment, previousStatus, savedShipment.getStatus(), "shipment form");
+        recordCodOutcomeIfNeeded(savedShipment, previousStatus);
+        recordFraudShipmentEvent(savedShipment, previousStatus);
         notifyShipmentEvents(savedShipment, previousStatus);
         return savedShipment;
     }
@@ -169,6 +194,7 @@ public class ShipmentService {
         }
         Shipment shipmentWithTracking = repo.findByTrackingNumber(shipment.getTrackingNumber()).orElse(null);
         if (shipmentWithTracking != null && !Objects.equals(shipmentWithTracking.getId(), shipment.getId())) {
+            vendorRiskProfileService.recordTrackingReuseAttempt(shipment, shipmentWithTracking);
             throw new IllegalArgumentException("Tracking number already exists on shipment #" + shipmentWithTracking.getId() + ".");
         }
     }
@@ -265,6 +291,8 @@ public class ShipmentService {
 
         Shipment savedShipment = repo.save(shipment);
         shipmentTrackingService.recordStatusChange(savedShipment, previousStatus, savedShipment.getStatus(), "COD collection");
+        recordCodOutcomeIfNeeded(savedShipment, previousStatus);
+        recordFraudShipmentEvent(savedShipment, previousStatus);
         notifyShipmentEvents(savedShipment, previousStatus);
     }
 
@@ -362,6 +390,10 @@ public class ShipmentService {
         if (salesOrderService.orderContainsOnlyVirtualItems(order.getId())) {
             return "This order contains only virtual items.";
         }
+        FraudGuardResult fraudGuard = fraudFulfilmentGuard.checkShipmentCreationAllowed(order);
+        if (!fraudGuard.isAllowed()) {
+            return fraudGuard.getReason();
+        }
         String district = resolveShippingDistrict(order);
         if (district.isBlank()) {
             return "Shipping address district is missing.";
@@ -419,7 +451,10 @@ public class ShipmentService {
             return rows;
         }
 
-        Set<Long> ordersWithShipments = getOrdersWithShipments(orderIds);
+        Map<Long, SalesOrder> ordersById = getOrdersByIdWithShippingAddress(orderIds);
+        Map<Long, Shipment> latestShipmentsByOrderId = getLatestShipmentsByOrderId(orderIds);
+        Set<Long> ordersWithShipments = latestShipmentsByOrderId.keySet();
+        Set<Long> virtualOnlyOrderIds = getVirtualOnlyOrderIds(orderIds);
         for (Map<String, Object> row : rows) {
             Long orderId = asLong(row.get("orderId"));
             if (orderId == null) {
@@ -429,9 +464,9 @@ public class ShipmentService {
                 continue;
             }
 
-            SalesOrder order = salesOrderRepository.findById(orderId).orElse(null);
-            Shipment existingShipment = getLatestByOrderId(orderId);
-            row.put("shipmentEligible", order != null && canCreateNewShipment(order));
+            SalesOrder order = ordersById.get(orderId);
+            Shipment existingShipment = latestShipmentsByOrderId.get(orderId);
+            row.put("shipmentEligible", order != null && canCreateNewShipmentForReport(order, virtualOnlyOrderIds.contains(orderId)));
             row.put("hasShipment", ordersWithShipments.contains(orderId));
             row.put("existingShipmentId", existingShipment != null ? existingShipment.getId() : null);
         }
@@ -439,14 +474,110 @@ public class ShipmentService {
         return rows;
     }
 
-    private Set<Long> getOrdersWithShipments(Collection<Long> orderIds) {
+    private Map<Long, SalesOrder> getOrdersByIdWithShippingAddress(Collection<Long> orderIds) {
+        if (orderIds == null || orderIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<Long, SalesOrder> ordersById = new HashMap<>();
+        for (SalesOrder order : salesOrderRepository.findByIdInWithShippingAddress(orderIds)) {
+            if (order != null && order.getId() != null) {
+                ordersById.put(order.getId(), order);
+            }
+        }
+        return ordersById;
+    }
+
+    private Map<Long, Shipment> getLatestShipmentsByOrderId(Collection<Long> orderIds) {
+        if (orderIds == null || orderIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<Long, Shipment> latestShipmentsByOrderId = new HashMap<>();
+        for (Shipment shipment : repo.findBySalesOrderIdIn(orderIds)) {
+            if (shipment == null || shipment.getSalesOrderId() == null) {
+                continue;
+            }
+            Shipment current = latestShipmentsByOrderId.get(shipment.getSalesOrderId());
+            if (current == null
+                    || current.getId() == null
+                    || (shipment.getId() != null && shipment.getId() > current.getId())) {
+                latestShipmentsByOrderId.put(shipment.getSalesOrderId(), shipment);
+            }
+        }
+        return latestShipmentsByOrderId;
+    }
+
+    private Set<Long> getVirtualOnlyOrderIds(Collection<Long> orderIds) {
         if (orderIds == null || orderIds.isEmpty()) {
             return Set.of();
         }
-        return repo.findBySalesOrderIdIn(orderIds).stream()
-                .map(Shipment::getSalesOrderId)
-                .filter(java.util.Objects::nonNull)
-                .collect(java.util.stream.Collectors.toSet());
+        return new HashSet<>(orderItemRepository.findOrderIdsContainingOnlyProductType(orderIds, ProductTypeEnum.Virtual));
+    }
+
+    private boolean canCreateNewShipmentForReport(SalesOrder order, boolean virtualOnlyOrder) {
+        if (order == null || order.getId() == null) {
+            return false;
+        }
+        if (!isShipmentEligibleStatus(order.getStatus())) {
+            return false;
+        }
+        if (order.getVendorId() == null || virtualOnlyOrder) {
+            return false;
+        }
+        return !resolveShippingDistrict(order).isBlank();
+    }
+
+    private void enforceFraudShipmentAllowed(Shipment shipment) {
+        if (shipment == null || shipment.getSalesOrderId() == null) {
+            return;
+        }
+        SalesOrder order = salesOrderRepository.findById(shipment.getSalesOrderId()).orElse(null);
+        FraudGuardResult fraudGuard = fraudFulfilmentGuard.checkShipmentCreationAllowed(order);
+        if (!fraudGuard.isAllowed()) {
+            throw new IllegalArgumentException(fraudGuard.getReason());
+        }
+    }
+
+    private void recordCodOutcomeIfNeeded(Shipment shipment, ShipmentStatus previousStatus) {
+        if (shipment == null || shipment.getStatus() == null || shipment.getStatus() == previousStatus
+                || shipment.getSalesOrderId() == null) {
+            return;
+        }
+        SalesOrder order = salesOrderRepository.findById(shipment.getSalesOrderId()).orElse(null);
+        if (order == null) {
+            return;
+        }
+        if (shipment.getStatus() == ShipmentStatus.DELIVERED && !shipment.isCod()) {
+            codRiskProfileService.recordSuccessfulPrepaidOrder(order, null);
+            return;
+        }
+        codRiskProfileService.recordCodShipmentOutcome(order, shipment.getStatus(), resolveCodOutcomeReason(shipment), null);
+    }
+
+    private void recordFraudShipmentEvent(Shipment shipment, ShipmentStatus previousStatus) {
+        if (shipment == null || shipment.getSalesOrderId() == null) {
+            return;
+        }
+        SalesOrder order = salesOrderRepository.findById(shipment.getSalesOrderId()).orElse(null);
+        if (order == null) {
+            return;
+        }
+        if (previousStatus == null) {
+            fraudPostOrderMonitoringService.recordShipmentCreated(order, shipment.getId(), shipment.getTrackingNumber());
+        }
+        if (shipment.getStatus() != null && shipment.getStatus() != previousStatus) {
+            fraudPostOrderMonitoringService.recordShipmentStatus(order, shipment.getId(), shipment.getStatus(), resolveCodOutcomeReason(shipment));
+            vendorRiskProfileService.recordDeliveryConfirmation(shipment, order);
+        }
+        if (shipment.getVendorId() != null) {
+            vendorRiskProfileService.refreshVendorProfile(shipment.getVendorId());
+        }
+    }
+
+    private String resolveCodOutcomeReason(Shipment shipment) {
+        if (shipment == null || shipment.getMetadataJson() == null || shipment.getMetadataJson().isBlank()) {
+            return shipment == null || shipment.getStatus() == null ? null : "Shipment status: " + shipment.getStatus();
+        }
+        return shipment.getMetadataJson();
     }
 
     private Long asLong(Object value) {

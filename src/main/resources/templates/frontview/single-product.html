@@ -603,7 +603,7 @@
                                                     <span class="badge rounded-pill bg-light text-dark ms-1" th:text="${productReviewSummary.reviewCount}">0</span>
                                                 </a>
                                             </li>
-                                            <li class="nav-item">
+                                            <li class="nav-item" th:if="${productVideoEmbedUrl != null}">
                                                 <a class="nav-link" id="video-tab" data-bs-toggle="tab" href="#video">Video</a>
                                             </li>
                                             <li class="nav-item" th:if="${productSpecifications != null and !#lists.isEmpty(productSpecifications)}">
@@ -787,13 +787,14 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="tab-pane fade" id="video">
-                                                <div class="" th:if="${product_details.video != null}">
+                                            <div class="tab-pane fade" id="video" th:if="${productVideoEmbedUrl != null}">
+                                                <div class="product-video-panel">
                                                     <iframe width="560" height="315"
-                                                            th:src="'https://www.youtube.com/embed/' + ${#strings.substringAfter(product_details.video,'v=')} + '?si=q54JZcE512Kb-OkG'"
+                                                            th:src="${productVideoEmbedUrl}"
                                                             title="YouTube video player"
                                                             frameborder="0"
                                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                                            referrerpolicy="strict-origin-when-cross-origin"
                                                             allowfullscreen>
                                                     </iframe>
                                                 </div>

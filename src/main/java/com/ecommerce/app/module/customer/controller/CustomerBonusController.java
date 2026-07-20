@@ -14,7 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-import com.ecommerce.app.order.repository.SalesOrderRepository;
+import com.ecommerce.app.module.order.repository.SalesOrderRepository;
 
 /**
  *

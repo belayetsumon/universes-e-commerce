@@ -201,15 +201,6 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr th:if="${#lists.isEmpty(historyEntries)}">
-                                        <td colspan="11">
-                                            <div class="lh-empty">
-                                                <i class="bi bi-clock-history"></i>
-                                                <h3 class="h5 mb-2">No login history found</h3>
-                                                <p class="mb-0">Login and session audit records will appear here after user activity is captured.</p>
-                                            </div>
-                                        </td>
-                                    </tr>
                                     <tr th:each="entry, status : ${historyEntries}">
                                         <td class="text-muted" th:text="${status.count}">1</td>
                                         <td>
@@ -258,6 +249,11 @@
                                     </tr>
                                 </tbody>
                             </table>
+                            <div class="lh-empty" th:if="${#lists.isEmpty(historyEntries)}">
+                                <i class="bi bi-clock-history"></i>
+                                <h3 class="h5 mb-2">No login history found</h3>
+                                <p class="mb-0">Login and session audit records will appear here after user activity is captured.</p>
+                            </div>
                         </div>
                     </div>
                 </article>

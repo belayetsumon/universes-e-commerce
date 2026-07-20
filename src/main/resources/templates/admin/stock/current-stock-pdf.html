@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Current Stock Report</title>
+    <style>
+        @page { size: A4 landscape; margin: 12mm; }
+        * { box-sizing: border-box; }
+        body { color: #182230; font-family: Arial, Helvetica, sans-serif; font-size: 10px; margin: 0; }
+        h1, h2, p { margin: 0; }
+        .header { background: #113459; color: #fff; padding: 16px 18px; }
+        .kicker { color: #9fd8ff; font-size: 10px; font-weight: 700; letter-spacing: .5px; margin-bottom: 5px; text-transform: uppercase; }
+        .title { font-size: 22px; font-weight: 700; }
+        .subtitle { color: rgba(255,255,255,.78); font-size: 11px; margin-top: 6px; }
+        .meta { color: rgba(255,255,255,.82); font-size: 10px; margin-top: 8px; }
+        .summary { display: table; margin: 12px 0; table-layout: fixed; width: 100%; }
+        .summary-item { border: 1px solid #d8e0ea; display: table-cell; padding: 8px; vertical-align: top; }
+        .summary-item span { color: #667085; display: block; font-size: 9px; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; }
+        .summary-item strong { color: #113459; display: block; font-size: 13px; }
+        .filters { border: 1px solid #d8e0ea; margin-bottom: 12px; padding: 8px 10px; }
+        .filters h2 { color: #113459; font-size: 12px; margin-bottom: 6px; }
+        .filters span { color: #667085; display: inline-block; font-weight: 700; min-width: 92px; }
+        .filters div { display: inline-block; margin-right: 16px; margin-top: 3px; }
+        table { border-collapse: collapse; width: 100%; }
+        th { background: #f4f7fa; color: #506070; font-size: 9px; padding: 7px 5px; text-align: left; text-transform: uppercase; }
+        td { border-top: 1px solid #e5e9ee; padding: 6px 5px; vertical-align: top; }
+        .num { text-align: right; white-space: nowrap; }
+        .muted { color: #667085; }
+        .status { font-weight: 700; white-space: nowrap; }
+        .status-in { color: #15803d; }
+        .status-low { color: #b45309; }
+        .status-out { color: #b91c1c; }
+        .empty { border: 1px solid #d8e0ea; color: #667085; padding: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+<section class="header">
+    <p class="kicker">Inventory operations</p>
+    <h1 class="title">Current Product Stock Report</h1>
+    <p class="subtitle">Filtered product and catalog-variant stock position for admin review.</p>
+    <p class="meta" th:text="${'Generated: ' + #temporals.format(issuedAt, 'yyyy-MM-dd HH:mm')}">Generated</p>
+</section>
+
+<section class="summary">
+    <div class="summary-item"><span>Rows</span><strong th:text="${summary.rowCount}">0</strong></div>
+    <div class="summary-item"><span>Available</span><strong th:text="${summary.availableQuantity}">0</strong></div>
+    <div class="summary-item"><span>Reserved</span><strong th:text="${summary.reservedQuantity}">0</strong></div>
+    <div class="summary-item"><span>Sold</span><strong th:text="${summary.soldQuantity}">0</strong></div>
+    <div class="summary-item"><span>Low Stock</span><strong th:text="${summary.lowStockCount}">0</strong></div>
+    <div class="summary-item"><span>Out of Stock</span><strong th:text="${summary.outOfStockCount}">0</strong></div>
+</section>
+
+<section class="filters">
+    <h2>Applied Filters</h2>
+    <div th:each="filter : ${filters}">
+        <span th:text="${filter.key + ':'}">Filter:</span>
+        <strong th:text="${filter.value}">All</strong>
+    </div>
+</section>
+
+<table th:if="${!#lists.isEmpty(rows)}">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Product</th>
+        <th>SKU</th>
+        <th>Category</th>
+        <th>Vendor</th>
+        <th>Row</th>
+        <th class="num">Available</th>
+        <th class="num">Reserved</th>
+        <th class="num">On Hand</th>
+        <th class="num">Sold</th>
+        <th>Status</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="row, status : ${rows}">
+        <td th:text="${status.count}">1</td>
+        <td>
+            <strong th:text="${row.productTitle}">Product</strong>
+            <div class="muted" th:text="${row.variantSku != null ? 'Variant SKU: ' + row.variantSku : 'Product level stock'}">Product level stock</div>
+        </td>
+        <td th:text="${row.productSku}">SKU</td>
+        <td th:text="${row.categoryName != null ? row.categoryName : 'Uncategorized'}">Category</td>
+        <td>
+            <strong th:text="${row.vendorName != null ? row.vendorName : '-'}">Vendor</strong>
+            <div class="muted" th:text="${row.vendorCode != null ? row.vendorCode : ''}">Code</div>
+        </td>
+        <td th:text="${row.rowType}">Product</td>
+        <td class="num" th:text="${row.availableQuantity}">0</td>
+        <td class="num" th:text="${row.reservedQuantity}">0</td>
+        <td class="num" th:text="${row.totalOnHand}">0</td>
+        <td class="num" th:text="${row.soldQuantity}">0</td>
+        <td>
+            <span class="status"
+                  th:classappend="${row.stockStatus == 'In stock' ? ' status-in' : (row.stockStatus == 'Low stock' ? ' status-low' : ' status-out')}"
+                  th:text="${row.stockStatus}">In stock</span>
+        </td>
+    </tr>
+    </tbody>
+</table>
+<div class="empty" th:if="${#lists.isEmpty(rows)}">No stock rows match the selected filters.</div>
+</body>
+</html>

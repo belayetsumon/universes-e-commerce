@@ -2,7 +2,7 @@ package com.ecommerce.app.module.ReferralRewards.model;
 
 import com.ecommerce.app.module.ReferralRewards.enumvalue.GiftCardPurchaseStatus;
 import com.ecommerce.app.module.user.model.Users;
-import com.ecommerce.app.order.model.PaymentMethod;
+import com.ecommerce.app.module.order.model.PaymentMethod;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

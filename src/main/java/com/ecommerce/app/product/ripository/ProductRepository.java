@@ -37,6 +37,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByVendorprofile_IdOrderByIdDesc(Long vendorId);
 
+    @Query("SELECT p.vendorprofile.id, COUNT(p.id) FROM Product p "
+            + "WHERE p.vendorprofile.id IN :vendorIds GROUP BY p.vendorprofile.id")
+    List<Object[]> countProductsByVendorIds(@Param("vendorIds") List<Long> vendorIds);
+
     Optional<Product> findByUuid(String uuid);
 
     @Query("SELECT p FROM Product p WHERE p.status = 'ACTIVE' AND p.productcategory.id IN "

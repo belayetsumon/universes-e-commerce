@@ -1,6 +1,6 @@
 package com.ecommerce.app.module.ReferralRewards.dto;
 
-import com.ecommerce.app.order.model.PaymentMethod;
+import com.ecommerce.app.module.order.model.PaymentMethod;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

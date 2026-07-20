@@ -1,7 +1,7 @@
 package com.ecommerce.app.module.customer.dto;
 
 import com.ecommerce.app.module.user.model.Users;
-import com.ecommerce.app.order.model.BillingAddress;
+import com.ecommerce.app.module.order.model.BillingAddress;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

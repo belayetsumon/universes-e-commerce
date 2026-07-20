@@ -8,6 +8,9 @@ import com.ecommerce.app.module.ReferralRewards.model.Wallet;
 import com.ecommerce.app.module.ReferralRewards.model.WalletTransaction;
 import com.ecommerce.app.module.ReferralRewards.repository.WalletRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.WalletTransactionRepository;
+import com.ecommerce.app.module.fraud.dto.FraudGuardResult;
+import com.ecommerce.app.module.fraud.model.FraudPostOrderEventType;
+import com.ecommerce.app.module.fraud.services.FraudPostOrderMonitoringService;
 import com.ecommerce.app.module.user.model.Users;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -22,10 +25,13 @@ public class WalletService {
 
     private final WalletRepository walletRepository;
     private final WalletTransactionRepository walletTransactionRepository;
+    private final FraudPostOrderMonitoringService fraudPostOrderMonitoringService;
 
-    public WalletService(WalletRepository walletRepository, WalletTransactionRepository walletTransactionRepository) {
+    public WalletService(WalletRepository walletRepository, WalletTransactionRepository walletTransactionRepository,
+            FraudPostOrderMonitoringService fraudPostOrderMonitoringService) {
         this.walletRepository = walletRepository;
         this.walletTransactionRepository = walletTransactionRepository;
+        this.fraudPostOrderMonitoringService = fraudPostOrderMonitoringService;
     }
 
     @Transactional
@@ -65,6 +71,25 @@ public class WalletService {
 
         Wallet wallet = ensureWallet(user);
         BigDecimal normalizedAmount = amount.abs();
+        FraudGuardResult fraudGuard = fraudPostOrderMonitoringService.checkValueReleaseAllowed(
+                FraudPostOrderEventType.WALLET_CREDIT_RELEASED,
+                null,
+                user.getId(),
+                null,
+                sourceReference
+        );
+        if (!fraudGuard.isAllowed()) {
+            WalletTransaction txn = new WalletTransaction();
+            txn.setWallet(wallet);
+            txn.setAmount(normalizedAmount);
+            txn.setType(transactionType);
+            txn.setStatus(WalletTransactionStatus.PENDING);
+            txn.setIdempotencyKey(idempotencyKey);
+            walletTransactionRepository.save(txn);
+            fraudPostOrderMonitoringService.recordWalletCredit(user, normalizedAmount, sourceType, sourceReference, true);
+            return;
+        }
+
         wallet.setBalance(safeBalance(wallet).add(normalizedAmount));
         wallet.setLastTransactionAt(LocalDateTime.now());
         walletRepository.save(wallet);
@@ -76,6 +101,7 @@ public class WalletService {
         txn.setStatus(WalletTransactionStatus.SUCCESS);
         txn.setIdempotencyKey(idempotencyKey);
         walletTransactionRepository.save(txn);
+        fraudPostOrderMonitoringService.recordWalletCredit(user, normalizedAmount, sourceType, sourceReference, false);
     }
 
     @Transactional

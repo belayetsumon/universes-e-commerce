@@ -27,6 +27,7 @@ import com.ecommerce.app.product.services.CatalogProductAttributeService;
 import com.ecommerce.app.product.services.ProductDimensionService;
 import com.ecommerce.app.product.services.ProductImageStorageService;
 import com.ecommerce.app.product.services.ProductService;
+import com.ecommerce.app.product.services.ProductVideoEmbedService;
 import com.ecommerce.app.product.services.ProductVendorAssignmentService;
 import com.ecommerce.app.product.services.ProductVariantCatalogService;
 import com.ecommerce.app.product.services.UnitsOfMeasureService;
@@ -90,6 +91,9 @@ public class ProductController {
 
     @Autowired
     ProductService productService;
+
+    @Autowired
+    ProductVideoEmbedService productVideoEmbedService;
 
     @Autowired
     ManufacturerRepository manufacturerRepository;
@@ -569,6 +573,7 @@ public class ProductController {
             String activeTab) {
         Map<String, Object> productDetails = productService.all_Product_for_admin_By_Id(id);
         model.addAttribute("product_details", productDetails);
+        model.addAttribute("productVideoEmbedUrl", productVideoEmbedService.toYoutubeEmbedUrl(productDetails.get("video")));
         model.addAttribute("productSpecifications",
                 catalogProductAttributeService.buildSpecificationViews((String) productDetails.get("uuid")));
         model.addAttribute("img_list", productImageRepository.findByProductIdOrderByIdDesc(id));

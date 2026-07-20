@@ -230,6 +230,23 @@ public class GlobalSettingsService {
         return saveSection(settings, "SEO");
     }
 
+    public GlobalSettings updateSeoOgImage(Long version, MultipartFile ogImageFile) {
+        List<String> errors = new ArrayList<>();
+        if (!hasFile(ogImageFile)) {
+            errors.add("OG image is required.");
+        }
+        validateImage(ogImageFile, "OG image", errors);
+        if (!errors.isEmpty()) {
+            throw new SettingsValidationException(errors);
+        }
+
+        GlobalSettings settings = getActiveSettings();
+        assertVersionIsCurrent(version, settings);
+        prepareForSave(settings);
+        applyOgImage(settings, ogImageFile);
+        return saveSection(settings, "SEO OG image");
+    }
+
     public GlobalSettings updateStoreSettings(StoreSettingsForm form) {
         requireFormData(form, "Store settings form data is required.");
         GlobalSettings source = toGlobalSettings(form);

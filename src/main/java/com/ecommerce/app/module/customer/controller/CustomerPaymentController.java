@@ -4,7 +4,7 @@
  */
 package com.ecommerce.app.module.customer.controller;
 
-import com.ecommerce.app.order.model.PaymentMethod;
+import com.ecommerce.app.module.order.model.PaymentMethod;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -4,8 +4,12 @@
  */
 package com.ecommerce.app.vendor.services;
 
-import com.ecommerce.app.order.model.OrderItem;
-import com.ecommerce.app.order.model.SalesOrder;
+import com.ecommerce.app.module.fraud.dto.FraudGuardResult;
+import com.ecommerce.app.module.fraud.services.FraudPayoutGuard;
+import com.ecommerce.app.module.fraud.services.FraudPostOrderMonitoringService;
+import com.ecommerce.app.module.fraud.services.VendorRiskProfileService;
+import com.ecommerce.app.module.order.model.OrderItem;
+import com.ecommerce.app.module.order.model.SalesOrder;
 import com.ecommerce.app.vendor.model.VendorPayout;
 import com.ecommerce.app.vendor.model.VendorPayoutMethod;
 import com.ecommerce.app.vendor.model.VendorPayoutStatusEnum;
@@ -36,6 +40,12 @@ public class VendorFinanceService {
     private VendorPayoutRepository payoutRepo;
     @Autowired
     private VendorprofileRepository vendorprofileRepository;
+    @Autowired
+    private FraudPayoutGuard fraudPayoutGuard;
+    @Autowired
+    private FraudPostOrderMonitoringService fraudPostOrderMonitoringService;
+    @Autowired
+    private VendorRiskProfileService vendorRiskProfileService;
 
     public EnumMap<VendorTransactionStatusEnum, BigDecimal> getVendorBalance(Long vendorId) {
         EnumMap<VendorTransactionStatusEnum, BigDecimal> balanceMap = new EnumMap<>(VendorTransactionStatusEnum.class);
@@ -189,14 +199,24 @@ public class VendorFinanceService {
     @Transactional
     public void markPayoutAsPaid(Long payoutId, String gatewayRef) {
         VendorPayout payout = payoutRepo.findById(payoutId).orElseThrow();
+        enforcePayoutAllowed(payout, VendorPayoutStatusEnum.PAID);
         payout.setStatus(VendorPayoutStatusEnum.PAID);
         payout.setPayoutReference(gatewayRef);
         payout.setPaidAt(LocalDateTime.now());
         payoutRepo.save(payout);
+        recordPayoutEvent(payout, false, null);
     }
 
     @Transactional
     public VendorPayout requestPayout(Vendorprofile vendor, VendorPayoutMethod method) {
+        Long vendorId = vendor == null ? null : vendor.getId();
+        FraudGuardResult fraudGuard = fraudPayoutGuard.checkVendorPayoutAllowed(vendorId);
+        if (!fraudGuard.isAllowed()) {
+            vendorRiskProfileService.refreshVendorProfile(vendorId);
+            fraudPostOrderMonitoringService.recordVendorPayout(vendorId, null, null,
+                    VendorPayoutStatusEnum.REQUESTED.name(), true, fraudGuard.getReason());
+            throw new IllegalStateException(fraudGuard.getReason());
+        }
         BigDecimal available = getVendorBalance(vendor.getId()).get(VendorTransactionStatusEnum.AVAILABLE);
         if (available.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalStateException("No available balance.");
@@ -208,6 +228,8 @@ public class VendorFinanceService {
         payout.setStatus(VendorPayoutStatusEnum.REQUESTED);
         payout.setPayoutMethod(method);
         payoutRepo.save(payout);
+        recordPayoutEvent(payout, false, null);
+        vendorRiskProfileService.refreshVendorProfile(vendor.getId());
 
         // 2026-04-22: Reserve withdrawable earnings without marking them paid before transfer completion.
         transactionRepo.markAvailableAsRequested(vendor.getId());
@@ -217,16 +239,19 @@ public class VendorFinanceService {
     @Transactional
     public void approvePayout(Long payoutId, String ref, String note) {
         VendorPayout payout = payoutRepo.findById(payoutId).orElseThrow();
+        enforcePayoutAllowed(payout, VendorPayoutStatusEnum.PROCESSING);
         payout.setStatus(VendorPayoutStatusEnum.PROCESSING);
         payout.setPayoutReference(ref);
         payout.setAdminNote(note);
         payout.setProcessedAt(LocalDateTime.now());
         payoutRepo.save(payout);
+        recordPayoutEvent(payout, false, null);
     }
 
     @Transactional
     public void PaymentSent(Long payoutId, String ref, String note) {
         VendorPayout payout = payoutRepo.findById(payoutId).orElseThrow();
+        enforcePayoutAllowed(payout, VendorPayoutStatusEnum.PAID);
         payout.setStatus(VendorPayoutStatusEnum.PAID);
         payout.setPayoutReference(ref);
         payout.setAdminNote(note);
@@ -234,6 +259,7 @@ public class VendorFinanceService {
         payoutRepo.save(payout);
         transactionRepo.markRequestedAsPaid(payout.getVendor().getId());
         createPayoutLedgerTransactionIfMissing(payout);
+        recordPayoutEvent(payout, false, null);
     }
 
     @Transactional
@@ -270,6 +296,40 @@ public class VendorFinanceService {
         tx.setAmount(payout.getAmount() != null ? payout.getAmount() : BigDecimal.ZERO);
         tx.setDescription(description);
         transactionRepo.save(tx);
+    }
+
+    private void enforcePayoutAllowed(VendorPayout payout, VendorPayoutStatusEnum targetStatus) {
+        Long vendorId = payout == null || payout.getVendor() == null ? null : payout.getVendor().getId();
+        FraudGuardResult fraudGuard = fraudPayoutGuard.checkVendorPayoutAllowed(vendorId);
+        if (!fraudGuard.isAllowed()) {
+            fraudPostOrderMonitoringService.recordVendorPayout(
+                    vendorId,
+                    payout == null ? null : payout.getId(),
+                    payout == null ? null : payout.getAmount(),
+                    targetStatus == null ? null : targetStatus.name(),
+                    true,
+                    fraudGuard.getReason()
+            );
+            vendorRiskProfileService.refreshVendorProfile(vendorId);
+            throw new IllegalStateException(fraudGuard.getReason());
+        }
+    }
+
+    private void recordPayoutEvent(VendorPayout payout, boolean held, String reason) {
+        if (payout == null) {
+            return;
+        }
+        fraudPostOrderMonitoringService.recordVendorPayout(
+                payout.getVendor() == null ? null : payout.getVendor().getId(),
+                payout.getId(),
+                payout.getAmount(),
+                payout.getStatus() == null ? null : payout.getStatus().name(),
+                held,
+                reason
+        );
+        if (payout.getVendor() != null) {
+            vendorRiskProfileService.refreshVendorProfile(payout.getVendor().getId());
+        }
     }
 
     private String buildPayoutLedgerDescription(VendorPayout payout) {

@@ -1,0 +1,76 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <link rel="stylesheet" th:href="@{/assets/admin/css/fraud-admin.css}">
+    </th:block>
+
+    <main layout:fragment="main_content" class="main-content container-fluid px-3 py-3 fraud-admin-page">
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <header class="card shadow-sm mb-4 fraud-hero">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="fraud-hero-icon"><i class="bi bi-gear fs-4"></i></span>
+                        <div>
+                            <h1>Fraud Configuration</h1>
+                            <p class="fraud-hero-copy">Tune scoring thresholds, COD controls, vendor risk limits, and operational settings.</p>
+                        </div>
+                    </div>
+                    <a class="btn btn-outline-light btn-sm" th:href="@{/admin/fraud/rules}">Rules</a>
+                </div>
+            </div>
+        </header>
+
+        <div class="fraud-detail-grid">
+            <section class="fraud-panel shadow-sm">
+                <div class="border-bottom p-3"><h2 class="h6 mb-0">Configuration Keys</h2></div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 fraud-table">
+                        <thead><tr><th>Key</th><th>Value</th><th>Description</th><th>Status</th><th></th></tr></thead>
+                        <tbody>
+                            <tr th:each="config : ${configurations.content}">
+                                <td class="font-monospace" th:text="${config.configKey}">fraud.key</td>
+                                <td th:text="${config.displayValue}">0</td>
+                                <td th:text="${config.description} ?: '-'">-</td>
+                                <td><span class="fraud-chip" th:classappend="${config.active} ? ' fraud-chip-active' : ' fraud-chip-inactive'" th:text="${config.active ? 'ACTIVE' : 'INACTIVE'}">ACTIVE</span></td>
+                                <td class="text-end"><a class="btn btn-sm btn-light" th:href="@{/admin/fraud/configuration(editId=${config.id})}"><i class="bi bi-pencil"></i></a></td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(configurations.content)}"><td colspan="5"><div class="fraud-empty">No configuration records found</div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <aside class="fraud-panel shadow-sm p-3">
+                <h2 class="h6 mb-3" th:text="${editId == null ? 'New Configuration' : 'Edit Configuration'}">Configuration</h2>
+                <form method="post" th:action="@{/admin/fraud/configuration/save}" th:object="${configurationRequest}">
+                    <input type="hidden" th:name="${fraudCsrfParameterName}" th:value="${fraudCsrfToken}">
+                    <input type="hidden" name="id" th:value="${editId}">
+                    <div class="mb-2">
+                        <label class="form-label">Key</label>
+                        <input class="form-control font-monospace" th:field="*{configKey}" required maxlength="120">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Value</label>
+                        <textarea class="form-control" th:field="*{configValue}" required rows="4"></textarea>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" th:field="*{description}" maxlength="500" rows="3"></textarea>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" th:field="*{active}">
+                        <label class="form-check-label">Active</label>
+                    </div>
+                    <div class="fraud-action-bar">
+                        <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-save me-1"></i>Save</button>
+                        <a class="btn btn-light btn-sm" th:href="@{/admin/fraud/configuration}">Clear</a>
+                    </div>
+                </form>
+            </aside>
+        </div>
+    </main>
+</div>

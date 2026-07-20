@@ -2,6 +2,7 @@ package com.ecommerce.app.adminvendor.services;
 
 import com.ecommerce.app.adminvendor.dto.AdminVendorFilter;
 import com.ecommerce.app.adminvendor.dto.AdminVendorProfileForm;
+import com.ecommerce.app.product.ripository.ProductRepository;
 import com.ecommerce.app.vendor.model.VendorVerifications;
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import com.ecommerce.app.vendor.repository.VendorVerificationsRepository;
@@ -33,6 +34,9 @@ public class AdminVendorManagementService {
 
     @Autowired
     private VendorVerificationsRepository vendorVerificationsRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
 
     @Autowired
     private EntityManager entityManager;
@@ -139,6 +143,40 @@ public class AdminVendorManagementService {
             return verificationFlagByVendorUuid(false);
         } catch (RuntimeException ex) {
             throw new AdminVendorManagementException("Failed to load vendor mobile verification map.", ex);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, Long> productCountByVendorId(List<Vendorprofile> vendors) {
+        try {
+            Map<Long, Long> counts = new HashMap<>();
+
+            if (vendors == null || vendors.isEmpty()) {
+                return counts;
+            }
+
+            List<Long> vendorIds = new ArrayList<>();
+            for (Vendorprofile vendor : vendors) {
+                if (vendor != null && vendor.getId() != null) {
+                    vendorIds.add(vendor.getId());
+                    counts.put(vendor.getId(), 0L);
+                }
+            }
+
+            if (vendorIds.isEmpty()) {
+                return counts;
+            }
+
+            for (Object[] row : productRepository.countProductsByVendorIds(vendorIds)) {
+                if (row != null && row.length >= 2 && row[0] != null && row[1] != null) {
+                    counts.put(((Number) row[0]).longValue(), ((Number) row[1]).longValue());
+                }
+            }
+
+            return counts;
+
+        } catch (RuntimeException ex) {
+            throw new AdminVendorManagementException("Failed to load vendor product counts.", ex);
         }
     }
 

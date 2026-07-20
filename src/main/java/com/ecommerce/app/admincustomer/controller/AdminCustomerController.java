@@ -11,22 +11,25 @@ import com.ecommerce.app.module.user.model.Role;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.RoleRepository;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
-import com.ecommerce.app.order.model.OrderHistory;
-import com.ecommerce.app.order.model.OrderStatus;
-import com.ecommerce.app.order.model.SalesOrder;
-import com.ecommerce.app.order.repository.BillingAddressRepository;
-import com.ecommerce.app.order.repository.OrderHistoryRepository;
-import com.ecommerce.app.order.repository.SalesOrderRepository;
-import com.ecommerce.app.order.repository.ShippingAddressRepository;
-import com.ecommerce.app.order.services.OrderItemService;
-import com.ecommerce.app.order.services.SalesOrderPdfService;
-import com.ecommerce.app.order.services.SalesOrderService;
+import com.ecommerce.app.module.order.model.OrderHistory;
+import com.ecommerce.app.module.order.model.OrderPaymentPlan;
+import com.ecommerce.app.module.order.model.OrderPaymentState;
+import com.ecommerce.app.module.order.model.OrderStatus;
+import com.ecommerce.app.module.order.model.SalesOrder;
+import com.ecommerce.app.module.order.dto.SalesOrderListResult;
+import com.ecommerce.app.module.order.repository.BillingAddressRepository;
+import com.ecommerce.app.module.order.repository.OrderHistoryRepository;
+import com.ecommerce.app.module.order.repository.SalesOrderRepository;
+import com.ecommerce.app.module.order.repository.ShippingAddressRepository;
+import com.ecommerce.app.module.order.services.OrderItemService;
+import com.ecommerce.app.module.order.services.SalesOrderPdfService;
+import com.ecommerce.app.module.order.services.SalesOrderListViewService;
+import com.ecommerce.app.module.order.services.SalesOrderService;
+import com.ecommerce.app.vendor.repository.VendorprofileRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Locale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -72,6 +75,12 @@ public class AdminCustomerController {
     SalesOrderService salesOrderService;
 
     @Autowired
+    SalesOrderListViewService salesOrderListViewService;
+
+    @Autowired
+    VendorprofileRepository vendorprofileRepository;
+
+    @Autowired
     OrderItemService orderItemService;
 
     @Autowired
@@ -95,26 +104,81 @@ public class AdminCustomerController {
             @RequestParam(name = "q", required = false) String q,
             @RequestParam(name = "status", required = false) OrderStatus status,
             @RequestParam(name = "shipment", required = false) String shipment,
+            @RequestParam(name = "paymentPlan", required = false) OrderPaymentPlan paymentPlan,
+            @RequestParam(name = "paymentState", required = false) OrderPaymentState paymentState,
+            @RequestParam(name = "checkoutType", required = false) String checkoutType,
+            @RequestParam(name = "vendorId", required = false) Long vendorId,
+            @RequestParam(name = "minTotal", required = false) BigDecimal minTotal,
+            @RequestParam(name = "maxTotal", required = false) BigDecimal maxTotal,
+            @RequestParam(name = "dateRange", required = false, defaultValue = SalesOrderListViewService.DATE_RANGE_TODAY) String dateRange,
             @RequestParam(name = "fromDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-            @RequestParam(name = "toDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+            @RequestParam(name = "toDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam(name = "page", required = false, defaultValue = "0") int page,
+            @RequestParam(name = "size", required = false, defaultValue = "25") int size) {
         List<Map<String, Object>> orderRows = salesOrderService.admin_all_Sales_order_list(null, null);
         List<Map<String, Object>> enrichedRows = shipmentService.enrichOrderRowsWithShipmentData(orderRows);
-        List<Map<String, Object>> filteredRows = filterOrderRows(enrichedRows, q, status, shipment, fromDate, toDate);
-        model.addAttribute("orderlist", filteredRows);
-        model.addAttribute("allOrderCount", enrichedRows.size());
-        model.addAttribute("filteredOrderCount", filteredRows.size());
-        model.addAttribute("shipmentReadyCount", countShipmentState(enrichedRows, "READY"));
-        model.addAttribute("shipmentCreatedCount", countShipmentState(enrichedRows, "CREATED"));
-        model.addAttribute("shipmentBlockedCount", countShipmentState(enrichedRows, "BLOCKED"));
-        model.addAttribute("filteredGrandTotal", sumGrandTotal(filteredRows));
+        SalesOrderListResult result = salesOrderListViewService.build(
+                enrichedRows,
+                q,
+                status,
+                shipment,
+                paymentPlan,
+                paymentState,
+                checkoutType,
+                vendorId,
+                minTotal,
+                maxTotal,
+                dateRange,
+                fromDate,
+                toDate,
+                page,
+                size
+        );
+        populateOrderListModel(model, result, q, status, shipment, paymentPlan, paymentState, checkoutType, vendorId, minTotal, maxTotal);
         model.addAttribute("statuses", OrderStatus.values());
+        model.addAttribute("paymentPlans", OrderPaymentPlan.values());
+        model.addAttribute("paymentStates", OrderPaymentState.values());
+        model.addAttribute("dateRangeOptions", salesOrderListViewService.dateRangeOptions());
+        model.addAttribute("vendorOptions", vendorprofileRepository.findAll());
+        // model.addAttribute("orderlist", salesOrderRepository.findAllByOrderByIdDesc());
+        return "admin/sales/orderlist";
+    }
+
+    private void populateOrderListModel(Model model,
+            SalesOrderListResult result,
+            String q,
+            OrderStatus status,
+            String shipment,
+            OrderPaymentPlan paymentPlan,
+            OrderPaymentState paymentState,
+            String checkoutType,
+            Long vendorId,
+            BigDecimal minTotal,
+            BigDecimal maxTotal) {
+        model.addAttribute("orderlist", result.getOrderRows());
+        model.addAttribute("orderPage", result);
+        model.addAttribute("orderKpi", result.getKpi());
+        model.addAttribute("allOrderCount", result.getKpi().getAllOrderCount());
+        model.addAttribute("filteredOrderCount", result.getKpi().getFilteredOrderCount());
+        model.addAttribute("shipmentReadyCount", result.getKpi().getShipmentReadyCount());
+        model.addAttribute("shipmentCreatedCount", result.getKpi().getShipmentCreatedCount());
+        model.addAttribute("shipmentBlockedCount", result.getKpi().getShipmentBlockedCount());
+        model.addAttribute("filteredGrandTotal", result.getKpi().getFilteredGrandTotal());
+        model.addAttribute("filteredVendorTotal", result.getKpi().getFilteredVendorTotal());
         model.addAttribute("selectedQ", q);
         model.addAttribute("selectedStatus", status);
         model.addAttribute("selectedShipment", shipment);
-        model.addAttribute("selectedFromDate", fromDate);
-        model.addAttribute("selectedToDate", toDate);
-        // model.addAttribute("orderlist", salesOrderRepository.findAllByOrderByIdDesc());
-        return "admin/sales/orderlist";
+        model.addAttribute("selectedPaymentPlan", paymentPlan);
+        model.addAttribute("selectedPaymentState", paymentState);
+        model.addAttribute("selectedCheckoutType", checkoutType);
+        model.addAttribute("selectedVendorId", vendorId);
+        model.addAttribute("selectedMinTotal", minTotal);
+        model.addAttribute("selectedMaxTotal", maxTotal);
+        model.addAttribute("selectedDateRange", result.getSelectedDateRange());
+        model.addAttribute("selectedFromDate", result.getSelectedFromDate());
+        model.addAttribute("selectedToDate", result.getSelectedToDate());
+        model.addAttribute("reportDateRangeLabel", result.getReportDateRangeLabel());
+        model.addAttribute("size", result.getSize());
     }
 
     @RequestMapping("/order-by-customer/{cid}")
@@ -205,81 +269,6 @@ public class AdminCustomerController {
         headers.setContentLength(pdfBytes.length);
 
         return ResponseEntity.ok().headers(headers).body(pdfBytes);
-    }
-
-    private List<Map<String, Object>> filterOrderRows(List<Map<String, Object>> rows,
-            String q,
-            OrderStatus status,
-            String shipment,
-            LocalDate fromDate,
-            LocalDate toDate) {
-        String normalizedQuery = q != null ? q.trim().toLowerCase(Locale.ROOT) : "";
-        String normalizedShipment = shipment != null ? shipment.trim().toUpperCase(Locale.ROOT) : "";
-        return rows.stream()
-                .filter(row -> normalizedQuery.isBlank() || rowMatchesQuery(row, normalizedQuery))
-                .filter(row -> status == null || status.equals(row.get("status")))
-                .filter(row -> normalizedShipment.isBlank() || rowMatchesShipmentState(row, normalizedShipment))
-                .filter(row -> fromDate == null || !asLocalDate(row.get("created")).isBefore(fromDate))
-                .filter(row -> toDate == null || !asLocalDate(row.get("created")).isAfter(toDate))
-                .toList();
-    }
-
-    private boolean rowMatchesQuery(Map<String, Object> row, String query) {
-        String searchable = String.join(" ",
-                value(row.get("orderCode")),
-                value(row.get("firstName")),
-                value(row.get("lastName")),
-                value(row.get("vendorName")),
-                value(row.get("mobile")),
-                value(row.get("email")),
-                value(row.get("status"))
-        ).toLowerCase(Locale.ROOT);
-        return searchable.contains(query);
-    }
-
-    private long countShipmentState(List<Map<String, Object>> rows, String shipmentState) {
-        return rows.stream().filter(row -> rowMatchesShipmentState(row, shipmentState)).count();
-    }
-
-    private boolean rowMatchesShipmentState(Map<String, Object> row, String shipmentState) {
-        boolean hasShipment = Boolean.TRUE.equals(row.get("hasShipment"));
-        boolean shipmentEligible = Boolean.TRUE.equals(row.get("shipmentEligible"));
-        return switch (shipmentState) {
-            case "READY" -> shipmentEligible;
-            case "CREATED" -> hasShipment;
-            case "BLOCKED" -> !shipmentEligible && !hasShipment;
-            default -> true;
-        };
-    }
-
-    private BigDecimal sumGrandTotal(List<Map<String, Object>> rows) {
-        return rows.stream()
-                .map(row -> asBigDecimal(row.get("grandTotal")))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    private BigDecimal asBigDecimal(Object value) {
-        if (value instanceof BigDecimal amount) {
-            return amount;
-        }
-        if (value instanceof Number number) {
-            return BigDecimal.valueOf(number.doubleValue());
-        }
-        return BigDecimal.ZERO;
-    }
-
-    private LocalDate asLocalDate(Object value) {
-        if (value instanceof LocalDateTime dateTime) {
-            return dateTime.toLocalDate();
-        }
-        if (value instanceof LocalDate date) {
-            return date;
-        }
-        return LocalDate.now();
-    }
-
-    private String value(Object value) {
-        return value != null ? String.valueOf(value) : "";
     }
 
 }

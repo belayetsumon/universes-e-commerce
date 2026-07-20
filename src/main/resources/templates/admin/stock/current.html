@@ -1,195 +1,267 @@
-<div xmlns:th="http://www.thymeleaf.org" layout:decorate="admin-layout">
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <style>
+            .main-content > section.stock-workspace:first-child { background: transparent; border: 0; box-shadow: none; padding: 0; }
+            .stock-hero { background: #113459; border: 0; color: #fff; overflow: hidden; }
+            .stock-hero .card-header { background: rgba(255,255,255,.08); border-bottom-color: rgba(255,255,255,.12); }
+            .stock-kicker { color: #9fd8ff; font-size: .75rem; font-weight: 700; letter-spacing: 0; margin: 0 0 .35rem; text-transform: uppercase; }
+            .stock-hero h1 { color: #fff; font-size: 1.65rem; font-weight: 700; letter-spacing: 0; margin: 0; }
+            .stock-hero-copy { color: rgba(255,255,255,.78); margin: .45rem 0 0; max-width: 760px; }
+            .stock-hero-icon { align-items: center; background: #fff; border-radius: 50%; color: #113459; display: inline-flex; flex: 0 0 48px; height: 48px; justify-content: center; width: 48px; }
+            .stock-primary-action { background: linear-gradient(135deg,#0d6efd 0%,#00a6c8 100%); border: 0; box-shadow: 0 .55rem 1rem rgba(0,166,200,.24); color: #fff; }
+            .stock-primary-action:hover, .stock-primary-action:focus { background: linear-gradient(135deg,#0b5ed7 0%,#0089a8 100%); color: #fff; }
+            .stock-hero-actions { display: grid; gap: .5rem; grid-template-columns: repeat(3,max-content); justify-content: end; }
+            .stock-hero-actions .btn { white-space: nowrap; }
+            .stock-metrics { display: grid; gap: 1rem; grid-template-columns: repeat(6,minmax(0,1fr)); }
+            .stock-metric { border: 1px solid rgba(17,52,89,.12); border-radius: .5rem; min-width: 0; padding: 1rem; }
+            .stock-metric-icon { align-items: center; background: #eaf4ff; border-radius: .5rem; color: #0d6efd; display: inline-flex; height: 38px; justify-content: center; width: 38px; }
+            .stock-metric-icon.is-rows { background: #eef2ff; color: #4f46e5; }
+            .stock-metric-icon.is-available { background: #dcfce7; color: #15803d; }
+            .stock-metric-icon.is-reserved { background: #fff7ed; color: #c2410c; }
+            .stock-metric-icon.is-sold { background: #e0f2fe; color: #0369a1; }
+            .stock-metric-icon.is-low { background: #fef3c7; color: #b45309; }
+            .stock-metric-icon.is-out { background: #fee2e2; color: #b91c1c; }
+            .stock-metric-label { color: #6c757d; font-size: .75rem; font-weight: 700; letter-spacing: 0; margin-top: .7rem; text-transform: uppercase; }
+            .stock-metric-value { color: #212529; font-size: 1.45rem; font-weight: 700; line-height: 1.1; margin-top: .2rem; }
+            .stock-metric-value.is-available { color: #15803d; }
+            .stock-metric-value.is-reserved { color: #c2410c; }
+            .stock-metric-value.is-sold { color: #0369a1; }
+            .stock-metric-value.is-low { color: #b45309; }
+            .stock-metric-value.is-out { color: #b91c1c; }
+            .stock-filter-panel { border-color: rgba(17,52,89,.13); }
+            .stock-filter-grid { align-items: end; display: grid; gap: .85rem; grid-template-columns: minmax(220px,2fr) repeat(5,minmax(120px,1fr)) auto; }
+            .stock-table { min-width: 1180px; }
+            .stock-table th { background: #f4f7fa; color: #506070; font-size: .75rem; letter-spacing: 0; text-transform: uppercase; white-space: nowrap; }
+            .stock-table th, .stock-table td { padding: .8rem .75rem; vertical-align: middle; }
+            .stock-name { color: #1f2937; display: block; font-weight: 700; max-width: 290px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .stock-meta { color: #6c757d; display: block; font-size: .8rem; margin-top: .18rem; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .stock-action { align-items: center; display: inline-flex; gap: .35rem; justify-content: flex-end; }
+            .stock-action .btn { align-items: center; border-radius: 7px; display: inline-flex; height: 34px; justify-content: center; padding: 0; width: 34px; }
+            .stock-empty { display: grid; gap: .75rem; justify-items: center; padding: 3.5rem 1rem; }
+            .stock-alert { align-items: center; display: flex; gap: .6rem; }
+            .stock-qty { font-weight: 700; }
+            @media (max-width: 1399.98px) { .stock-filter-grid { grid-template-columns: repeat(3,minmax(0,1fr)); } .stock-filter-grid .stock-search { grid-column: span 3; } .stock-metrics { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+            @media (max-width: 991.98px) { .stock-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+            @media (max-width: 767.98px) { .stock-metrics, .stock-filter-grid, .stock-hero-actions { grid-template-columns: 1fr; } .stock-filter-grid .stock-search { grid-column: auto; } .stock-hero .card-body > .d-flex { align-items: stretch !important; flex-direction: column; } .stock-hero-actions { justify-content: stretch; } }
+            @media print { .stock-hero .btn, .stock-filter-panel, .stock-action { display: none !important; } .stock-hero, .stock-metric, .card { box-shadow: none !important; } }
+        </style>
+    </th:block>
+
     <div layout:fragment="main_content">
-        <section class="mb-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h4 class="mb-1"><i class="bi bi-boxes me-2 text-primary"></i>Current Product Stock</h4>
-                    <div class="text-muted">Live stock snapshot by product and catalog variant.</div>
+        <section class="py-4 stock-workspace">
+            <header class="card shadow-sm mb-4 stock-hero">
+                <div class="card-header d-flex align-items-center justify-content-between py-3">
+                    <span class="fw-semibold"><i class="bi bi-boxes text-warning me-2"></i>Inventory operations</span>
+                    <span class="badge text-bg-light border border-white border-opacity-25" th:text="${totalRows} + ' stock rows'">0 stock rows</span>
                 </div>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="#" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Current Stock</li>
-                    </ol>
-                </nav>
+                <div class="card-body py-4">
+                    <div class="d-flex align-items-start justify-content-between gap-4">
+                        <div class="d-flex align-items-start gap-3">
+                            <span class="stock-hero-icon"><i class="bi bi-box-seam fs-4"></i></span>
+                            <div>
+                                <p class="stock-kicker">Stock operations</p>
+                                <h1>Current Product Stock</h1>
+                                <p class="stock-hero-copy">Review live product and catalog-variant inventory, vendor ownership, reserved stock, sold quantity, and stock readiness from one operational view.</p>
+                            </div>
+                        </div>
+                        <div class="stock-hero-actions flex-shrink-0">
+                            <a class="btn btn-light" th:href="@{/admin/index}"><i class="bi bi-arrow-left me-1"></i> Dashboard</a>
+                            <a class="btn btn-outline-light" th:href="@{/admin/stock/transactions}"><i class="bi bi-clock-history me-1"></i> View Ledger</a>
+                            <a class="btn btn-outline-light" th:href="@{/admin/stock/adjust}"><i class="bi bi-sliders me-1"></i> Adjust Stock</a>
+                            <a class="btn btn-outline-light" th:href="@{/admin/stock/current/pdf(q=${q},vendorId=${selectedVendorId},categoryId=${selectedCategoryId},stockFilter=${stockFilter},lowStockThreshold=${lowStockThreshold})}"><i class="bi bi-file-earmark-pdf me-1"></i> Download PDF</a>
+                            <a class="btn stock-primary-action" th:href="@{/admin/stock/receive}"><i class="bi bi-plus-lg me-1"></i> Receive Stock</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="stock-metrics mb-4">
+                <article class="card stock-metric shadow-sm"><span class="stock-metric-icon is-rows"><i class="bi bi-list-check"></i></span><div class="stock-metric-label">Rows</div><div class="stock-metric-value" th:text="${summary.rowCount}">0</div></article>
+                <article class="card stock-metric shadow-sm"><span class="stock-metric-icon is-available"><i class="bi bi-check2-circle"></i></span><div class="stock-metric-label">Available</div><div class="stock-metric-value is-available" th:text="${summary.availableQuantity}">0</div></article>
+                <article class="card stock-metric shadow-sm"><span class="stock-metric-icon is-reserved"><i class="bi bi-pause-circle"></i></span><div class="stock-metric-label">Reserved</div><div class="stock-metric-value is-reserved" th:text="${summary.reservedQuantity}">0</div></article>
+                <article class="card stock-metric shadow-sm"><span class="stock-metric-icon is-sold"><i class="bi bi-bag-check"></i></span><div class="stock-metric-label">Sold</div><div class="stock-metric-value is-sold" th:text="${summary.soldQuantity}">0</div></article>
+                <article class="card stock-metric shadow-sm"><span class="stock-metric-icon is-low"><i class="bi bi-exclamation-triangle"></i></span><div class="stock-metric-label">Low Stock</div><div class="stock-metric-value is-low" th:text="${summary.lowStockCount}">0</div></article>
+                <article class="card stock-metric shadow-sm"><span class="stock-metric-icon is-out"><i class="bi bi-x-circle"></i></span><div class="stock-metric-label">Out of Stock</div><div class="stock-metric-value is-out" th:text="${summary.outOfStockCount}">0</div></article>
+            </div>
+
+            <div th:if="${not #strings.isEmpty(successMessage)}" class="alert alert-success alert-dismissible fade show shadow-sm stock-alert" role="alert">
+                <i class="bi bi-check-circle"></i>
+                <span th:text="${successMessage}">Stock updated successfully.</span>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div th:if="${not #strings.isEmpty(errorMessage)}" class="alert alert-danger alert-dismissible fade show shadow-sm stock-alert" role="alert">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span th:text="${errorMessage}">Unable to load stock.</span>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div class="card shadow-sm mb-4 stock-filter-panel">
+                <div class="card-body p-3">
+                    <form method="get" th:action="@{/admin/stock/current}">
+                        <input type="hidden" name="page" value="0">
+                        <div class="stock-filter-grid">
+                            <div class="stock-search">
+                                <label for="stockKeyword" class="form-label small fw-semibold text-uppercase text-muted mb-1">Find stock</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                                    <input id="stockKeyword" class="form-control" type="search" name="q" th:value="${q}" placeholder="Product, SKU, vendor">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="vendorId" class="form-label small fw-semibold text-uppercase text-muted mb-1">Vendor</label>
+                                <select id="vendorId" class="form-select" name="vendorId">
+                                    <option value="">All vendors</option>
+                                    <option th:each="vendor : ${vendors}" th:value="${vendor.id}" th:selected="${selectedVendorId != null and selectedVendorId.equals(vendor.id)}" th:text="${vendor.companyName != null ? vendor.companyName : vendor.vendorCode}">Vendor</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="categoryId" class="form-label small fw-semibold text-uppercase text-muted mb-1">Category</label>
+                                <select id="categoryId" class="form-select" name="categoryId">
+                                    <option value="">All categories</option>
+                                    <option th:each="category : ${categories}" th:value="${category.id}" th:selected="${selectedCategoryId != null and selectedCategoryId.equals(category.id)}" th:text="${category.name}">Category</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="stockFilter" class="form-label small fw-semibold text-uppercase text-muted mb-1">Stock</label>
+                                <select id="stockFilter" class="form-select" name="stockFilter">
+                                    <option value="all" th:selected="${stockFilter == 'all'}">All stock</option>
+                                    <option value="in_stock" th:selected="${stockFilter == 'in_stock'}">In stock</option>
+                                    <option value="low_stock" th:selected="${stockFilter == 'low_stock'}">Low stock</option>
+                                    <option value="out_of_stock" th:selected="${stockFilter == 'out_of_stock'}">Out of stock</option>
+                                    <option value="reserved" th:selected="${stockFilter == 'reserved'}">Has reserved</option>
+                                    <option value="sold" th:selected="${stockFilter == 'sold'}">Has sold</option>
+                                    <option value="product" th:selected="${stockFilter == 'product'}">Product rows</option>
+                                    <option value="variant" th:selected="${stockFilter == 'variant'}">Variant rows</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="lowStockThreshold" class="form-label small fw-semibold text-uppercase text-muted mb-1">Low threshold</label>
+                                <input id="lowStockThreshold" class="form-control" type="number" step="0.001" min="0" name="lowStockThreshold" th:value="${lowStockThreshold}">
+                            </div>
+                            <div>
+                                <label for="stockPageSize" class="form-label small fw-semibold text-uppercase text-muted mb-1">Rows</label>
+                                <select id="stockPageSize" class="form-select" name="size">
+                                    <option value="10" th:selected="${size == 10}">10</option>
+                                    <option value="25" th:selected="${size == 25}">25</option>
+                                    <option value="50" th:selected="${size == 50}">50</option>
+                                    <option value="100" th:selected="${size == 100}">100</option>
+                                </select>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-primary" type="submit" title="Apply filters" aria-label="Apply filters"><i class="bi bi-funnel"></i></button>
+                                <a class="btn btn-outline-secondary" th:href="@{/admin/stock/current}" title="Clear filters" aria-label="Clear filters"><i class="bi bi-arrow-counterclockwise"></i></a>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+                            <small class="text-muted" th:text="${totalRows} + ' stock row(s) found'">0 stock row(s) found</small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 py-3">
+                    <div><h2 class="h5 mb-1">Stock Directory</h2><p class="text-muted small mb-0" th:text="${totalRows} + ' matching stock rows'">0 matching stock rows</p></div>
+                    <span class="small text-muted">Live product and variant quantities</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 stock-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Product</th>
+                                <th>Category / Vendor</th>
+                                <th>Row</th>
+                                <th>Inventory</th>
+                                <th>Status</th>
+                                <th>Flags</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody th:if="${!#lists.isEmpty(rows)}">
+                            <tr th:each="row, status : ${rows}">
+                                <td class="text-muted" th:text="${stockPage.number * stockPage.size + status.count}">1</td>
+                                <td>
+                                    <a class="stock-name" th:href="@{/product/details/{id}(id=${row.productId})}" th:text="${row.productTitle}">Product</a>
+                                    <span class="stock-meta"><strong>SKU:</strong> <span th:text="${row.productSku}">0</span></span>
+                                    <span class="stock-meta" th:text="${row.variantSku != null ? 'Variant SKU: ' + row.variantSku : 'Product level stock'}">Product level stock</span>
+                                </td>
+                                <td>
+                                    <span class="badge text-bg-light border d-inline-flex mb-1"><i class="bi bi-tags me-1 text-primary"></i><span th:text="${row.categoryName != null ? row.categoryName : 'Uncategorized'}">Category</span></span>
+                                    <span class="stock-meta"><i class="bi bi-shop me-1"></i><span th:text="${row.vendorName != null ? row.vendorName : '-'}">Vendor</span></span>
+                                    <span class="stock-meta" th:text="${row.vendorCode != null ? row.vendorCode : ''}">VEN</span>
+                                </td>
+                                <td>
+                                    <span class="badge text-bg-dark" th:text="${row.rowType}">Product</span>
+                                </td>
+                                <td>
+                                    <span class="stock-qty text-success" th:text="${'Available: ' + row.availableQuantity}">Available: 0</span>
+                                    <span class="stock-meta" th:text="${'Reserved: ' + row.reservedQuantity + ' | On hand: ' + row.totalOnHand}">Reserved: 0 | On hand: 0</span>
+                                    <span class="stock-meta" th:text="${'Sold: ' + row.soldQuantity}">Sold: 0</span>
+                                </td>
+                                <td>
+                                    <span class="badge" th:classappend="${row.stockStatus == 'In stock' ? ' text-bg-success' : (row.stockStatus == 'Low stock' ? ' text-bg-warning' : ' text-bg-danger')}" th:text="${row.stockStatus}">In stock</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        <span class="badge text-bg-light border text-dark" th:text="${row.manageStock == true ? 'Stock managed' : 'Stock off'}">Stock managed</span>
+                                        <span class="badge text-bg-warning" th:if="${row.manageProductVariants == true}">Variants</span>
+                                        <span class="badge text-bg-secondary" th:if="${row.manageProductVariants != true}">Product</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="stock-action">
+                                        <a class="btn btn-outline-success" th:href="@{/admin/stock/receive(productId=${row.productId},catalogVariantUuid=${row.variantUuid})}" title="Receive stock" aria-label="Receive stock"><i class="bi bi-plus-lg"></i></a>
+                                        <a class="btn btn-outline-warning" th:href="@{/admin/stock/adjust(productId=${row.productId},catalogVariantUuid=${row.variantUuid})}" title="Adjust stock" aria-label="Adjust stock"><i class="bi bi-sliders"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody th:if="${#lists.isEmpty(rows)}">
+                            <tr>
+                                <td colspan="8">
+                                    <div class="stock-empty">
+                                        <span class="stock-hero-icon"><i class="bi bi-search fs-5"></i></span>
+                                        <div class="text-center">
+                                            <h3 class="h6 mb-1">No stock rows match these filters</h3>
+                                            <p class="text-muted small mb-0">Try clearing filters or receive stock for a product.</p>
+                                        </div>
+                                        <a class="btn btn-primary btn-sm" th:href="@{/admin/stock/receive}"><i class="bi bi-plus-lg me-1"></i>Receive Stock</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div class="text-muted small"
+                         th:text="${stockPage.totalElements == 0 ? 'Showing 0 rows' : 'Showing ' + (stockPage.number * stockPage.size + 1) + '-' + (stockPage.number * stockPage.size + stockPage.numberOfElements) + ' of ' + stockPage.totalElements}">
+                        Showing 0 rows
+                    </div>
+                    <nav th:if="${stockPage.totalPages > 1}" aria-label="Current stock pagination">
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item" th:classappend="${stockPage.first} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/stock/current(q=${q},vendorId=${selectedVendorId},categoryId=${selectedCategoryId},stockFilter=${stockFilter},lowStockThreshold=${lowStockThreshold},size=${size},page=0)}">First</a>
+                            </li>
+                            <li class="page-item" th:classappend="${stockPage.first} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/stock/current(q=${q},vendorId=${selectedVendorId},categoryId=${selectedCategoryId},stockFilter=${stockFilter},lowStockThreshold=${lowStockThreshold},size=${size},page=${stockPage.first ? 0 : stockPage.number - 1})}">Previous</a>
+                            </li>
+                            <li class="page-item" th:each="pageNumber : ${pageNumbers}" th:classappend="${pageNumber == stockPage.number} ? 'active'">
+                                <a class="page-link" th:href="@{/admin/stock/current(q=${q},vendorId=${selectedVendorId},categoryId=${selectedCategoryId},stockFilter=${stockFilter},lowStockThreshold=${lowStockThreshold},size=${size},page=${pageNumber})}" th:text="${pageNumber + 1}">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${stockPage.last} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/stock/current(q=${q},vendorId=${selectedVendorId},categoryId=${selectedCategoryId},stockFilter=${stockFilter},lowStockThreshold=${lowStockThreshold},size=${size},page=${stockPage.last ? stockPage.number : stockPage.number + 1})}">Next</a>
+                            </li>
+                            <li class="page-item" th:classappend="${stockPage.last} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/stock/current(q=${q},vendorId=${selectedVendorId},categoryId=${selectedCategoryId},stockFilter=${stockFilter},lowStockThreshold=${lowStockThreshold},size=${size},page=${stockPage.totalPages - 1})}">Last</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
             </div>
         </section>
-
-        <div th:if="${not #strings.isEmpty(errorMessage)}" class="alert alert-danger alert-dismissible fade show" role="alert">
-            <span th:text="${errorMessage}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-
-        <div class="row g-3 mb-3">
-            <div class="col-md-2">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="text-muted small">Rows</div>
-                        <div class="fs-4 fw-bold" th:text="${summary.rowCount}">0</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="text-muted small">Available</div>
-                        <div class="fs-4 fw-bold text-success" th:text="${summary.availableQuantity}">0</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="text-muted small">Reserved</div>
-                        <div class="fs-4 fw-bold text-warning" th:text="${summary.reservedQuantity}">0</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="text-muted small">Sold</div>
-                        <div class="fs-4 fw-bold text-primary" th:text="${summary.soldQuantity}">0</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="text-muted small">Low Stock</div>
-                        <div class="fs-4 fw-bold text-danger" th:text="${summary.lowStockCount}">0</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="text-muted small">Out of Stock</div>
-                        <div class="fs-4 fw-bold text-danger" th:text="${summary.outOfStockCount}">0</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card mb-3">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <strong><i class="bi bi-funnel me-2"></i>Filter Current Stock</strong>
-                <div class="d-flex gap-2">
-                    <a class="btn btn-sm btn-outline-secondary" th:href="@{/admin/stock/transactions}">Transactions</a>
-                    <a class="btn btn-sm btn-outline-success" th:href="@{/admin/stock/receive}">Receive</a>
-                    <a class="btn btn-sm btn-outline-warning" th:href="@{/admin/stock/adjust}">Adjust</a>
-                </div>
-            </div>
-            <div class="card-body">
-                <form method="get" th:action="@{/admin/stock/current}" class="row g-3 align-items-end">
-                    <div class="col-lg-3">
-                        <label class="form-label">Search</label>
-                        <input class="form-control" type="search" name="q" th:value="${q}" placeholder="Product, SKU, vendor">
-                    </div>
-                    <div class="col-lg-2">
-                        <label class="form-label">Vendor</label>
-                        <select class="form-select" name="vendorId">
-                            <option value="">All vendors</option>
-                            <option th:each="vendor : ${vendors}"
-                                    th:value="${vendor.id}"
-                                    th:selected="${selectedVendorId != null and selectedVendorId.equals(vendor.id)}"
-                                    th:text="${vendor.companyName != null ? vendor.companyName : vendor.vendorCode}">
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-lg-2">
-                        <label class="form-label">Category</label>
-                        <select class="form-select" name="categoryId">
-                            <option value="">All categories</option>
-                            <option th:each="category : ${categories}"
-                                    th:value="${category.id}"
-                                    th:selected="${selectedCategoryId != null and selectedCategoryId.equals(category.id)}"
-                                    th:text="${category.name}">
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-lg-2">
-                        <label class="form-label">Stock</label>
-                        <select class="form-select" name="stockFilter">
-                            <option value="all" th:selected="${stockFilter == 'all'}">All stock</option>
-                            <option value="in_stock" th:selected="${stockFilter == 'in_stock'}">In stock</option>
-                            <option value="low_stock" th:selected="${stockFilter == 'low_stock'}">Low stock</option>
-                            <option value="out_of_stock" th:selected="${stockFilter == 'out_of_stock'}">Out of stock</option>
-                            <option value="reserved" th:selected="${stockFilter == 'reserved'}">Has reserved</option>
-                            <option value="sold" th:selected="${stockFilter == 'sold'}">Has sold</option>
-                            <option value="product" th:selected="${stockFilter == 'product'}">Product rows</option>
-                            <option value="variant" th:selected="${stockFilter == 'variant'}">Variant rows</option>
-                        </select>
-                    </div>
-                    <div class="col-lg-1">
-                        <label class="form-label">Low</label>
-                        <input class="form-control" type="number" step="0.001" min="0" name="lowStockThreshold" th:value="${lowStockThreshold}">
-                    </div>
-                    <div class="col-lg-2 d-flex gap-2">
-                        <button class="btn btn-primary w-100" type="submit">Apply</button>
-                        <a class="btn btn-outline-secondary" th:href="@{/admin/stock/current}">Reset</a>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <strong>Current Stock Snapshot</strong>
-                <span class="badge bg-secondary" th:text="${#lists.size(rows)} + ' rows'">0 rows</span>
-            </div>
-            <div class="card-body table-responsive">
-                <table class="table table-bordered table-striped table-hover align-middle">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Product</th>
-                            <th>Vendor</th>
-                            <th>Category</th>
-                            <th>Row</th>
-                            <th>Variant SKU</th>
-                            <th>Available</th>
-                            <th>Reserved</th>
-                            <th>On Hand</th>
-                            <th>Sold</th>
-                            <th>Status</th>
-                            <th>Manage</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:if="${#lists.isEmpty(rows)}">
-                            <td colspan="12" class="text-center text-muted py-4">No stock rows match this filter.</td>
-                        </tr>
-                        <tr th:each="row, status : ${rows}">
-                            <td th:text="${status.count}">1</td>
-                            <td>
-                                <div class="fw-semibold" th:text="${row.productTitle}">Product</div>
-                                <div class="small text-muted">SKU: <span th:text="${row.productSku}">0</span></div>
-                            </td>
-                            <td>
-                                <div th:text="${row.vendorName != null ? row.vendorName : '-'}">Vendor</div>
-                                <div class="small text-muted" th:text="${row.vendorCode != null ? row.vendorCode : ''}">VEN</div>
-                            </td>
-                            <td th:text="${row.categoryName != null ? row.categoryName : '-'}">Category</td>
-                            <td><span class="badge bg-dark" th:text="${row.rowType}">Product</span></td>
-                            <td th:text="${row.variantSku != null ? row.variantSku : '-'}">-</td>
-                            <td class="fw-bold text-success" th:text="${row.availableQuantity}">0</td>
-                            <td class="text-warning fw-semibold" th:text="${row.reservedQuantity}">0</td>
-                            <td th:text="${row.totalOnHand}">0</td>
-                            <td th:text="${row.soldQuantity}">0</td>
-                            <td>
-                                <span class="badge"
-                                      th:classappend="${row.stockStatus == 'In stock' ? ' bg-success' : (row.stockStatus == 'Low stock' ? ' bg-warning text-dark' : ' bg-danger')}"
-                                      th:text="${row.stockStatus}">In stock</span>
-                            </td>
-                            <td>
-                                <span class="badge bg-light text-dark border" th:text="${row.manageStock == true ? 'Stock on' : 'Stock off'}">Stock on</span>
-                                <span class="badge bg-light text-dark border" th:text="${row.manageProductVariants == true ? 'Variants' : 'Product'}">Product</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
 </div>

@@ -221,7 +221,7 @@
                     </section>
 
                     <section class="tab-pane fade settings-panel" id="seo" role="tabpanel" aria-labelledby="seo-tab">
-                        <form th:action="@{/admin/settings/seo}" th:object="${seoSettingsForm}" method="post" enctype="multipart/form-data" class="settings-section-form" novalidate>
+                        <form th:action="@{/admin/settings/seo}" th:object="${seoSettingsForm}" method="post" class="settings-section-form" novalidate>
                             <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                             <input type="hidden" th:field="*{version}">
                             <div class="settings-panel-head">
@@ -265,11 +265,14 @@
                                         <div class="settings-field settings-field--wide"><label class="form-label">Default Open Graph Description</label><textarea th:field="*{ogDescription}" class="form-control" rows="3" maxlength="500"></textarea></div>
                                         <div class="settings-upload settings-field--wide">
                                             <label class="form-label">Default Open Graph Image</label>
-                                            <input type="file" name="ogImageFile" class="form-control" accept="image/jpeg,image/png,image/webp">
+                                            <input type="file" name="ogImageFile" class="form-control" accept="image/jpeg,image/png,image/webp" form="seoOgImageUploadForm">
                                             <div class="form-text">Recommended 1200 x 630 JPG, PNG, or WEBP. Public pages use this when a page-specific image is missing.</div>
                                             <div class="settings-inline-preview" th:if="${settings.ogImage}">
                                                 <img th:src="${settings.ogImage}" class="settings-media-preview settings-media-preview--og-image" alt="OG image">
                                             </div>
+                                            <button type="submit" class="btn btn-outline-primary btn-sm mt-2" form="seoOgImageUploadForm">
+                                                <i class="bi bi-upload"></i><span>Upload OG Image</span>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -399,6 +402,10 @@
                                     </div>
                                 </div>
                             </div>
+                        </form>
+                        <form id="seoOgImageUploadForm" th:action="@{/admin/settings/seo/og-image}" method="post" enctype="multipart/form-data" class="d-none">
+                            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <input type="hidden" name="version" th:value="${seoSettingsForm.version}">
                         </form>
                         <div class="settings-savebar justify-content-start mt-3">
                             <form th:if="${settings.ogImage}" th:action="@{/admin/settings/images/delete}" method="post">

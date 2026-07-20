@@ -1,0 +1,87 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <link rel="stylesheet" th:href="@{/assets/admin/css/fraud-admin.css}">
+    </th:block>
+
+    <main layout:fragment="main_content" class="main-content container-fluid px-3 py-3 fraud-admin-page">
+        <header class="card shadow-sm mb-4 fraud-hero">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="fraud-hero-icon"><i class="bi bi-clipboard2-pulse fs-4"></i></span>
+                        <div>
+                            <h1>Fraud Assessments</h1>
+                            <p class="fraud-hero-copy">Review scored order assessments, triggered risk, verification states, and reviewer outcomes.</p>
+                        </div>
+                    </div>
+                    <a class="btn btn-light btn-sm" th:href="@{/admin/fraud/dashboard}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+                </div>
+            </div>
+        </header>
+
+        <form class="fraud-panel shadow-sm p-3 mb-3" method="get" th:action="@{/admin/fraud/assessments}" th:object="${filter}">
+            <div class="fraud-filter-grid">
+                <input class="form-control" type="search" th:field="*{q}" placeholder="Search">
+                <input class="form-control" type="number" th:field="*{orderId}" placeholder="Order ID">
+                <input class="form-control" type="number" th:field="*{customerId}" placeholder="Customer ID">
+                <input class="form-control" type="number" th:field="*{vendorId}" placeholder="Vendor ID">
+                <select class="form-select" th:field="*{riskLevel}">
+                    <option value="">Risk level</option>
+                    <option th:each="level : ${riskLevels}" th:value="${level}" th:text="${level}">LOW</option>
+                </select>
+                <select class="form-select" th:field="*{assessmentStatus}">
+                    <option value="">Status</option>
+                    <option th:each="status : ${assessmentStatuses}" th:value="${status}" th:text="${status}">APPROVED</option>
+                </select>
+                <select class="form-select" th:field="*{decision}">
+                    <option value="">Decision</option>
+                    <option th:each="decision : ${fraudDecisions}" th:value="${decision}" th:text="${decision}">APPROVE</option>
+                </select>
+                <input class="form-control" type="date" th:field="*{fromDate}">
+                <input class="form-control" type="date" th:field="*{toDate}">
+            </div>
+            <div class="fraud-action-bar mt-3">
+                <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-funnel me-1"></i>Filter</button>
+                <a class="btn btn-light btn-sm" th:href="@{/admin/fraud/assessments}">Reset</a>
+            </div>
+        </form>
+
+        <section class="fraud-panel shadow-sm">
+            <div class="d-flex align-items-center justify-content-between border-bottom p-3">
+                <h2 class="h6 mb-0">Assessment Queue</h2>
+                <span class="text-muted small" th:text="${assessments.totalElements + ' records'}">0 records</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 fraud-table">
+                    <thead>
+                        <tr><th>ID</th><th>Order</th><th>Customer</th><th>Vendor</th><th>Risk</th><th>Score</th><th>Decision</th><th>Status</th><th>Evaluated</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item : ${assessments.content}">
+                            <td th:text="${item.id}">1</td>
+                            <td th:text="${item.orderId}">10</td>
+                            <td th:text="${item.customerId}">20</td>
+                            <td th:text="${item.vendorId} ?: '-'">30</td>
+                            <td><span class="fraud-chip" th:text="${item.riskLevel}">LOW</span></td>
+                            <td class="fw-semibold" th:text="${item.riskScore}">0</td>
+                            <td th:text="${item.decision}">APPROVE</td>
+                            <td th:text="${item.status}">APPROVED</td>
+                            <td th:text="${item.evaluatedAt != null ? #temporals.format(item.evaluatedAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-light" th:href="@{/admin/fraud/assessments/{id}(id=${item.id})}"><i class="bi bi-eye"></i></a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(assessments.content)}"><td colspan="10"><div class="fraud-empty"><i class="bi bi-search"></i>No assessments found</div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex align-items-center justify-content-between p-3 border-top">
+                <a class="btn btn-sm btn-outline-secondary" th:classappend="${assessments.first} ? ' disabled' : ''" th:href="@{/admin/fraud/assessments(page=${assessments.number - 1})}">Previous</a>
+                <span class="small text-muted" th:text="${'Page ' + (assessments.number + 1) + ' of ' + assessments.totalPages}">Page</span>
+                <a class="btn btn-sm btn-outline-secondary" th:classappend="${assessments.last} ? ' disabled' : ''" th:href="@{/admin/fraud/assessments(page=${assessments.number + 1})}">Next</a>
+            </div>
+        </section>
+    </main>
+</div>

@@ -4,7 +4,7 @@
  */
 package com.ecommerce.app.vendor.model;
 
-import com.ecommerce.app.order.model.SalesOrder;
+import com.ecommerce.app.module.order.model.SalesOrder;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;

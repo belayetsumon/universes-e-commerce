@@ -173,15 +173,18 @@ and open the template in the editor.
                                         <td>
                                             <span th:text="${product_details.video}"></span>
 
-                                            <!--                                            <iframe width="560" height="315" th:src="https://www.youtube.com/embed/oQu3W1vnMLg?si=R94_mR4T3TLG8wpP" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>-->
-                                            <div class="" th:if="${product_details.video != null}">
+                                            <div class="" th:if="${productVideoEmbedUrl != null}">
                                                 <iframe width="560" height="315"
-                                                        th:src="'https://www.youtube.com/embed/' + ${#strings.substringAfter(product_details.video,'v=')} + '?si=q54JZcE512Kb-OkG'"
+                                                        th:src="${productVideoEmbedUrl}"
                                                         title="YouTube video player"
                                                         frameborder="0"
                                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                                        referrerpolicy="strict-origin-when-cross-origin"
                                                         allowfullscreen>
                                                 </iframe>
+                                            </div>
+                                            <div class="text-muted small" th:if="${product_details.video != null and productVideoEmbedUrl == null}">
+                                                This product has a video link, but it is not a supported YouTube watch, share, shorts, live, or embed URL.
                                             </div>
                                         </td>
 

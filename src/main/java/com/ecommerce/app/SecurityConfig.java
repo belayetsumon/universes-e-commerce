@@ -94,6 +94,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                 .requestMatchers(STATIC_WHITELIST).permitAll()
                 .requestMatchers(PUBLIC_URLS).permitAll()
+                .requestMatchers("/admin/fraud/**").hasAnyAuthority(
+                        "admin", "fraud-admin", "fraud-supervisor", "fraud-analyst", "finance",
+                        "ROLE_ADMIN", "ROLE_FRAUD_ADMIN", "ROLE_FRAUD_SUPERVISOR", "ROLE_FRAUD_ANALYST", "ROLE_FINANCE")
+                .requestMatchers("/api/fraud/**").hasAnyAuthority(
+                        "admin", "fraud-admin", "fraud-supervisor", "fraud-analyst", "finance",
+                        "ROLE_ADMIN", "ROLE_FRAUD_ADMIN", "ROLE_FRAUD_SUPERVISOR", "ROLE_FRAUD_ANALYST", "ROLE_FINANCE")
                 .anyRequest().authenticated()
                 )
                 .formLogin(login -> login

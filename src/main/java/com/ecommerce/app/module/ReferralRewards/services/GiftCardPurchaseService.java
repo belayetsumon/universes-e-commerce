@@ -13,7 +13,7 @@ import com.ecommerce.app.module.ReferralRewards.repository.GiftCardRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.GiftCardTransactionRepository;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
-import com.ecommerce.app.order.model.PaymentMethod;
+import com.ecommerce.app.module.order.model.PaymentMethod;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.SecureRandom;

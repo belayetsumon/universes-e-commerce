@@ -9,7 +9,7 @@ import com.ecommerce.app.module.user.model.Status;
 import com.ecommerce.app.module.user.model.UserType;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
-import com.ecommerce.app.order.repository.SalesOrderRepository;
+import com.ecommerce.app.module.order.repository.SalesOrderRepository;
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import com.ecommerce.app.vendor.repository.VendorprofileRepository;
 import java.util.ArrayList;

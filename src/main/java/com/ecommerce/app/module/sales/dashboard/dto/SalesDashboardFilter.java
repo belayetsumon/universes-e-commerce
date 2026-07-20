@@ -1,7 +1,7 @@
 package com.ecommerce.app.module.sales.dashboard.dto;
 
-import com.ecommerce.app.order.model.OrderStatus;
-import com.ecommerce.app.order.model.PaymentMethod;
+import com.ecommerce.app.module.order.model.OrderStatus;
+import com.ecommerce.app.module.order.model.PaymentMethod;
 import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 

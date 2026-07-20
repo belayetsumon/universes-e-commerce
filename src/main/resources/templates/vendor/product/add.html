@@ -1,7 +1,157 @@
 <!DOCTYPE html>
 <div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
     <div layout:fragment="main_content">
-        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+        <style>
+            #productForm {
+                --vendor-product-blue: #0d6efd;
+                --vendor-product-cyan: #00a6c8;
+                --vendor-product-green: #087443;
+                --vendor-product-amber: #b7791f;
+                --vendor-product-rose: #bd3038;
+                --vendor-product-violet: #6941c6;
+            }
+
+            .vendor-product-heading .btn-outline-secondary {
+                color: var(--bs-primary);
+                background: #eef8ff;
+                border-color: #b9e4ff;
+            }
+
+            .vendor-product-heading .btn-outline-secondary:hover,
+            .vendor-product-heading .btn-outline-secondary:focus {
+                color: #fff;
+                background: #0d6efd;
+                border-color: #0d6efd;
+            }
+
+            .vendor-product-heading .btn-danger {
+                background: linear-gradient(135deg, #dc3545 0%, #bd3038 100%);
+                border: 0;
+                box-shadow: 0 .45rem .9rem rgba(189, 48, 56, .18);
+            }
+
+            #productForm .card {
+                border: 1px solid rgba(17, 52, 89, .13);
+                border-top: 4px solid var(--vendor-product-blue);
+                border-radius: .5rem;
+            }
+
+            #productForm .col-xl-8 > .card:nth-of-type(2) { border-top-color: var(--vendor-product-green); }
+            #productForm .col-xl-8 > .card:nth-of-type(3) { border-top-color: var(--vendor-product-violet); }
+            #productForm .col-xl-8 > .card:nth-of-type(4) { border-top-color: var(--vendor-product-amber); }
+            #productForm .col-xl-4 > .card:nth-of-type(1) { border-top-color: var(--vendor-product-cyan); }
+            #productForm .col-xl-4 > .card:nth-of-type(2) { border-top-color: var(--vendor-product-violet); }
+            #productForm .col-xl-4 > .card:nth-of-type(3) { border-top-color: var(--vendor-product-amber); }
+            #productForm .col-xl-4 > .card:nth-of-type(4) { border-top-color: var(--vendor-product-green); }
+
+            #productForm .card-header {
+                background: linear-gradient(180deg, #fff 0%, #f8fbff 100%) !important;
+                border-bottom-color: #dce8f5;
+            }
+
+            #productForm .card-header i {
+                color: var(--vendor-product-blue) !important;
+            }
+
+            #productForm .form-label {
+                color: #24466d;
+                font-size: .76rem;
+                font-weight: 800;
+                letter-spacing: .02em;
+                text-transform: uppercase;
+            }
+
+            #productForm .form-control,
+            #productForm .form-select {
+                background-color: #fbfdff;
+                border-color: #cfd8e3;
+                border-radius: .45rem;
+                box-shadow: inset 3px 0 0 rgba(13, 110, 253, .14);
+            }
+
+            #productForm textarea.form-control {
+                box-shadow: inset 3px 0 0 rgba(8, 116, 67, .16);
+            }
+
+            #productForm .form-control:focus,
+            #productForm .form-select:focus {
+                background-color: #fff;
+                border-color: var(--vendor-product-blue);
+                box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .12), inset 3px 0 0 var(--vendor-product-blue);
+            }
+
+            #productForm .input-group-text {
+                color: var(--vendor-product-blue);
+                background: #eef8ff;
+                border-color: #cfd8e3;
+                font-weight: 800;
+            }
+
+            #productForm .list-group-item:has(#onlineShow) { border-left: 4px solid var(--vendor-product-blue); }
+            #productForm .list-group-item:has(#featuredProduct) { border-left: 4px solid var(--vendor-product-violet); }
+            #productForm .list-group-item:has(#newProduct) { border-left: 4px solid var(--vendor-product-cyan); }
+            #productForm .list-group-item:has(#manageStock) { border-left: 4px solid var(--vendor-product-green); }
+            #productForm .list-group-item:has(#allowPreorder) { border-left: 4px solid var(--vendor-product-amber); }
+            #productForm .list-group-item:has(#manageProductVariants) { border-left: 4px solid #155eef; }
+            #productForm .list-group-item:has(#emiavailable) { border-left: 4px solid #c11574; }
+            #productForm .form-check-input { background-color: #eef2f6; border-color: #98a2b3; box-shadow: none; }
+            #onlineShow[type="checkbox"] { background-color: #eef8ff; border-color: var(--vendor-product-blue); }
+            #featuredProduct[type="checkbox"] { background-color: #f4f0ff; border-color: var(--vendor-product-violet); }
+            #newProduct[type="checkbox"] { background-color: #ecfdff; border-color: var(--vendor-product-cyan); }
+            #manageStock[type="checkbox"] { background-color: #ecfdf3; border-color: var(--vendor-product-green); }
+            #allowPreorder[type="checkbox"] { background-color: #fffaeb; border-color: var(--vendor-product-amber); }
+            #manageProductVariants[type="checkbox"] { background-color: #eff4ff; border-color: #155eef; }
+            #emiavailable[type="checkbox"] { background-color: #fdf2fa; border-color: #c11574; }
+            #onlineShow[type="checkbox"]:focus { box-shadow: 0 0 0 .2rem rgba(13,110,253,.18); }
+            #featuredProduct[type="checkbox"]:focus { box-shadow: 0 0 0 .2rem rgba(105,65,198,.18); }
+            #newProduct[type="checkbox"]:focus { box-shadow: 0 0 0 .2rem rgba(0,166,200,.18); }
+            #manageStock[type="checkbox"]:focus { box-shadow: 0 0 0 .2rem rgba(8,116,67,.18); }
+            #allowPreorder[type="checkbox"]:focus { box-shadow: 0 0 0 .2rem rgba(183,121,31,.18); }
+            #manageProductVariants[type="checkbox"]:focus { box-shadow: 0 0 0 .2rem rgba(21,94,239,.18); }
+            #emiavailable[type="checkbox"]:focus { box-shadow: 0 0 0 .2rem rgba(193,21,116,.18); }
+            #productForm .list-group-item:has(.form-check-input:checked) { background: #eef8ff; border-color: #9fd8ff; }
+            #productForm .list-group-item:has(#featuredProduct:checked) { background: #f4f0ff; border-color: #d9ccff; }
+            #productForm .list-group-item:has(#newProduct:checked) { background: #ecfdff; border-color: #a5f0fc; }
+            #productForm .list-group-item:has(#manageStock:checked) { background: #ecfdf3; border-color: #abefc6; }
+            #productForm .list-group-item:has(#allowPreorder:checked) { background: #fffaeb; border-color: #fedf89; }
+            #productForm .list-group-item:has(#manageProductVariants:checked) { background: #eff4ff; border-color: #b2ccff; }
+            #productForm .list-group-item:has(#emiavailable:checked) { background: #fdf2fa; border-color: #fcceee; }
+            #onlineShow:checked { background-color: var(--vendor-product-blue); border-color: var(--vendor-product-blue); }
+            #featuredProduct:checked { background-color: var(--vendor-product-violet); border-color: var(--vendor-product-violet); }
+            #newProduct:checked { background-color: var(--vendor-product-cyan); border-color: var(--vendor-product-cyan); }
+            #manageStock:checked { background-color: var(--vendor-product-green); border-color: var(--vendor-product-green); }
+            #allowPreorder:checked { background-color: var(--vendor-product-amber); border-color: var(--vendor-product-amber); }
+            #manageProductVariants:checked { background-color: #155eef; border-color: #155eef; }
+            #emiavailable:checked { background-color: #c11574; border-color: #c11574; }
+
+            #productForm .product-form-savebar .btn-success {
+                color: #fff;
+                background: linear-gradient(135deg, #087443 0%, #00a6c8 100%);
+                border: 0;
+                box-shadow: 0 .55rem 1rem rgba(8, 116, 67, .2);
+            }
+
+            #productForm .product-form-savebar .btn-success:hover,
+            #productForm .product-form-savebar .btn-success:focus {
+                background: linear-gradient(135deg, #066237 0%, #0089a8 100%);
+                color: #fff;
+            }
+
+            #productForm .product-form-savebar .btn-outline-secondary {
+                color: var(--vendor-product-rose);
+                background: #fff5f5;
+                border-color: rgba(189, 48, 56, .35);
+            }
+
+            #productForm .product-form-savebar .btn-outline-secondary:hover,
+            #productForm .product-form-savebar .btn-outline-secondary:focus {
+                color: #fff;
+                background: var(--vendor-product-rose);
+                border-color: var(--vendor-product-rose);
+            }
+        </style>
+
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4 vendor-product-heading">
             <div>
                 <div class="text-uppercase small fw-semibold text-body-secondary mb-1">Vendor Catalog</div>
                 <h1 class="h3 mb-2" th:text="${product.id == null} ? 'Create Product' : 'Edit Product'">Create Product</h1>
@@ -321,6 +471,7 @@
                                            th:field="*{video}"
                                            th:errorclass="is-invalid"
                                            placeholder="https://www.youtube.com/watch?v=...">
+                                    <div class="form-text">Use a YouTube watch, share, shorts, live, or embed link. The storefront will convert it for playback automatically.</div>
                                     <div class="invalid-feedback" th:if="${#fields.hasErrors('video')}" th:errors="*{video}">Video error</div>
                                 </div>
                                 <div class="col-12">
@@ -571,9 +722,9 @@
                             </div>
                         </div>
 
-                        <div class="card shadow-sm">
+                        <div class="card shadow-sm mb-4 product-form-savebar">
                             <div class="card-header bg-white py-3">
-                                <h2 class="h6 mb-0">Save</h2>
+                                <h2 class="h6 mb-0">Form Actions</h2>
                             </div>
                             <div class="card-body">
                                 <div class="d-grid gap-2">

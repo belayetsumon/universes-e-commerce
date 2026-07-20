@@ -1,0 +1,112 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <link rel="stylesheet" th:href="@{/assets/admin/css/fraud-admin.css}">
+    </th:block>
+
+    <main layout:fragment="main_content" class="main-content container-fluid px-3 py-3 fraud-admin-page">
+        <header class="card shadow-sm mb-4 fraud-hero">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="fraud-hero-icon"><i class="bi bi-graph-up-arrow fs-4"></i></span>
+                        <div>
+                            <h1>Fraud Reports</h1>
+                            <p class="fraud-hero-copy">Review risk distribution, triggered rules, suspicious values, vendor risk, and fraud event activity.</p>
+                        </div>
+                    </div>
+                    <a class="btn btn-outline-light btn-sm" th:href="@{/admin/fraud/dashboard}">Dashboard</a>
+                </div>
+            </div>
+        </header>
+
+        <div class="fraud-metrics mb-4">
+            <div class="fraud-metric shadow-sm" th:each="metric : ${metrics}">
+                <div class="fraud-metric-value" th:text="${metric.value()}">0</div>
+                <div class="text-muted small" th:text="${metric.label()}">Metric</div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-xl-6">
+                <section class="fraud-panel shadow-sm h-100">
+                    <div class="border-bottom p-3"><h2 class="h6 mb-0">Rule Trigger Frequency</h2></div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 fraud-table">
+                            <thead><tr><th>Signal</th><th class="text-end">Count</th></tr></thead>
+                            <tbody>
+                                <tr th:each="row : ${ruleRows}">
+                                    <td th:text="${row.label()}">SIGNAL</td>
+                                    <td class="text-end" th:text="${row.count()}">0</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(ruleRows)}"><td colspan="2"><div class="fraud-empty">No rule triggers recorded</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+            <div class="col-xl-6">
+                <section class="fraud-panel shadow-sm h-100">
+                    <div class="border-bottom p-3"><h2 class="h6 mb-0">Suspicious Values</h2></div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 fraud-table">
+                            <thead><tr><th>Category</th><th>Value</th><th class="text-end">Count</th></tr></thead>
+                            <tbody>
+                                <tr th:each="row : ${suspiciousRows}">
+                                    <td th:text="${row.label()}">DEVICE</td>
+                                    <td th:text="${row.value()}">****</td>
+                                    <td class="text-end" th:text="${row.count()}">0</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(suspiciousRows)}"><td colspan="3"><div class="fraud-empty">No suspicious values recorded</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-xl-5">
+                <section class="fraud-panel shadow-sm">
+                    <div class="border-bottom p-3"><h2 class="h6 mb-0">Vendor Risk</h2></div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 fraud-table">
+                            <thead><tr><th>Vendor</th><th>Risk</th><th>Score</th><th>Payout</th><th>Reason</th></tr></thead>
+                            <tbody>
+                                <tr th:each="profile : ${vendorProfiles.content}">
+                                    <td th:text="${profile.vendorId}">1</td>
+                                    <td th:text="${profile.riskLevel}">LOW</td>
+                                    <td th:text="${profile.riskScore}">0</td>
+                                    <td th:text="${profile.payoutHeld ? 'HELD' : 'CLEAR'}">CLEAR</td>
+                                    <td th:text="${profile.lastRiskReason} ?: '-'">-</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(vendorProfiles.content)}"><td colspan="5"><div class="fraud-empty">No vendor risk profiles</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+            <div class="col-xl-7">
+                <section class="fraud-panel shadow-sm">
+                    <div class="border-bottom p-3"><h2 class="h6 mb-0">Event Activity</h2></div>
+                    <div class="table-responsive fraud-scroll-table">
+                        <table class="table table-hover mb-0 fraud-table">
+                            <thead><tr><th>Event</th><th>Order</th><th>Vendor</th><th>Aggregate</th><th>Time</th></tr></thead>
+                            <tbody>
+                                <tr th:each="event : ${events.content}">
+                                    <td th:text="${event.eventType}">EVENT</td>
+                                    <td th:text="${event.orderId} ?: '-'">-</td>
+                                    <td th:text="${event.vendorId} ?: '-'">-</td>
+                                    <td th:text="${event.aggregateType} ?: '-'">-</td>
+                                    <td th:text="${event.eventTime != null ? #temporals.format(event.eventTime, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(events.content)}"><td colspan="5"><div class="fraud-empty">No fraud events recorded</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+</div>

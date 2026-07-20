@@ -1,9 +1,9 @@
 package com.ecommerce.app.module.customer.controller;
 
 import com.ecommerce.app.module.user.services.LoggedUserService;
-import com.ecommerce.app.order.model.EmiPaymentPlan;
-import com.ecommerce.app.order.services.EmiPaymentPlanService;
-import com.ecommerce.app.order.services.PaymentService;
+import com.ecommerce.app.module.order.model.EmiPaymentPlan;
+import com.ecommerce.app.module.order.services.EmiPaymentPlanService;
+import com.ecommerce.app.module.order.services.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

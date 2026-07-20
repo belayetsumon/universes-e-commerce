@@ -1,0 +1,19 @@
+package com.ecommerce.app.module.fraud.model;
+
+public enum FraudEvaluationSource {
+    CHECKOUT_PRE_ORDER,
+    ORDER_CREATED,
+    PAYMENT_CALLBACK,
+    SHIPMENT_CREATED,
+    DELIVERY_EVENT,
+    RETURN_EVENT,
+    REFUND_EVENT,
+    CASHBACK_EVENT,
+    WALLET_EVENT,
+    GIFT_CARD_EVENT,
+    REFERRAL_EVENT,
+    VENDOR_PAYOUT_EVENT,
+    ADMIN_REVIEW,
+    SCHEDULED_MONITORING,
+    API
+}

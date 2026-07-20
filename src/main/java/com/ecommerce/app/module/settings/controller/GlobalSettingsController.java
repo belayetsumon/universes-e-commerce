@@ -128,6 +128,16 @@ public class GlobalSettingsController {
                 () -> globalSettingsService.updateSeoSettings(form, ogImageFile));
     }
 
+    @PostMapping("/seo/og-image")
+    public String updateSeoOgImage(
+            @RequestParam(name = "version", required = false) Long version,
+            @RequestParam(name = "ogImageFile", required = false) MultipartFile ogImageFile,
+            RedirectAttributes redirectAttributes
+    ) {
+        return saveSection("SEO OG image", "seo", SEO_FORM_ATTRIBUTE, null, redirectAttributes,
+                () -> globalSettingsService.updateSeoOgImage(version, ogImageFile));
+    }
+
     @PostMapping("/store")
     public String updateStore(
             @Valid @ModelAttribute(STORE_FORM_ATTRIBUTE) StoreSettingsForm form,
@@ -234,12 +244,20 @@ public class GlobalSettingsController {
     }
 
     @ExceptionHandler(Exception.class)
-    public String handleUnexpectedError(Exception ex, Model model) {
+    public String handleUnexpectedError(Exception ex, HttpServletRequest request, Model model, RedirectAttributes redirectAttributes) {
         String reference = errorReference();
         LOGGER.error("Unexpected settings page error. reference={}", reference, ex);
+        String sectionId = resolveSectionId(request);
+        if (request != null && "POST".equalsIgnoreCase(request.getMethod())) {
+            redirectAttributes.addFlashAttribute(ACTIVE_SECTION_ATTRIBUTE, sectionId);
+            redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE,
+                    "Settings page could not complete the request. Error reference: " + reference + ".");
+            return REDIRECT + "#" + sectionId;
+        }
         GlobalSettings settings = globalSettingsService.defaultSettingsForForm();
         model.addAttribute(SETTINGS_ATTRIBUTE, settings);
         addSectionForms(model, settings);
+        model.addAttribute(ACTIVE_SECTION_ATTRIBUTE, sectionId);
         model.addAttribute(ERROR_ATTRIBUTE, "Settings page could not complete the request. Error reference: " + reference + ".");
         return VIEW;
     }
@@ -271,7 +289,9 @@ public class GlobalSettingsController {
         } catch (SettingsValidationException ex) {
             LOGGER.warn("{} settings validation failed: {}", sectionName, ex.getMessage());
             redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE, sectionName + " settings could not be saved: " + String.join(" ", ex.getErrors()));
-            redirectAttributes.addFlashAttribute(formAttribute, form);
+            if (form != null) {
+                redirectAttributes.addFlashAttribute(formAttribute, form);
+            }
         } catch (OptimisticLockingFailureException ex) {
             LOGGER.warn("{} settings update rejected because the submitted version is stale", sectionName, ex);
             redirectAttributes.addFlashAttribute(ERROR_ATTRIBUTE, ex.getMessage());
@@ -363,6 +383,9 @@ public class GlobalSettingsController {
         }
         String uri = request.getRequestURI().toLowerCase();
         if (uri.endsWith("/seo")) {
+            return "seo";
+        }
+        if (uri.endsWith("/seo/og-image")) {
             return "seo";
         }
         if (uri.endsWith("/store")) {

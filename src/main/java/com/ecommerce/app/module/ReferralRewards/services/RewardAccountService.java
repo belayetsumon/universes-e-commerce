@@ -6,6 +6,9 @@ import com.ecommerce.app.module.ReferralRewards.model.RewardTransactionStatus;
 import com.ecommerce.app.module.ReferralRewards.model.TransactionType;
 import com.ecommerce.app.module.ReferralRewards.repository.RewardAccountRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.RewardTransactionRepository;
+import com.ecommerce.app.module.fraud.dto.FraudGuardResult;
+import com.ecommerce.app.module.fraud.model.FraudPostOrderEventType;
+import com.ecommerce.app.module.fraud.services.FraudPostOrderMonitoringService;
 import com.ecommerce.app.module.user.model.Users;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -25,6 +28,9 @@ public class RewardAccountService {
 
     @Autowired
     private PromotionNotificationService promotionNotificationService;
+
+    @Autowired
+    private FraudPostOrderMonitoringService fraudPostOrderMonitoringService;
 
     @Transactional
     public RewardAccount ensureRewardAccount(Users user) {
@@ -69,6 +75,37 @@ public class RewardAccountService {
 
         RewardAccount rewardAccount = ensureRewardAccount(user);
         BigDecimal balanceBefore = safeMoney(rewardAccount.getBalance());
+        if (isFraudControlledReward(sourceType)) {
+            FraudGuardResult fraudGuard = fraudPostOrderMonitoringService.checkValueReleaseAllowed(
+                    FraudPostOrderEventType.REFERRAL_REWARD_RELEASED,
+                    orderId == null ? extractOrderId(sourceReference) : parseOrderId(orderId),
+                    user.getId(),
+                    null,
+                    sourceReference
+            );
+            if (!fraudGuard.isAllowed()) {
+                RewardTransaction txn = new RewardTransaction();
+                txn.setRewardAccount(rewardAccount);
+                txn.setUsers(user);
+                txn.setAmount(amount);
+                txn.setBalanceBefore(balanceBefore);
+                txn.setBalanceAfter(balanceBefore);
+                txn.setDescription(description);
+                txn.setType(type);
+                txn.setCreatedAt(LocalDateTime.now());
+                txn.setExpiryDate(expiryDate);
+                txn.setSourceType(sourceType);
+                txn.setSourceReference(sourceReference);
+                txn.setOrderId(orderId);
+                txn.setIdempotencyKey(normalizedIdempotencyKey);
+                txn.setLevelNumber(levelNumber);
+                txn.setStatus(RewardTransactionStatus.PENDING);
+                RewardTransaction saved = rewardTransactionRepository.save(txn);
+                fraudPostOrderMonitoringService.recordEvent(heldRewardEvent(user, amount, sourceType, sourceReference, parseOrderId(orderId)));
+                return saved;
+            }
+        }
+
         BigDecimal balanceAfter = balanceBefore.add(amount);
 
         rewardAccount.setBalance(balanceAfter);
@@ -97,6 +134,9 @@ public class RewardAccountService {
                 "Reward points credited: " + amount,
                 "transactionId=" + saved.getId() + ", sourceType=" + sourceType + ", sourceReference=" + sourceReference
         );
+        if (isFraudControlledReward(sourceType)) {
+            fraudPostOrderMonitoringService.recordReferralReward(user, parseOrderId(orderId), amount, sourceType, sourceReference);
+        }
         return saved;
     }
 
@@ -198,6 +238,52 @@ public class RewardAccountService {
             case "REFERRAL", "REFERRAL_BONUS" -> "PROMOTION_REFERRAL_QUALIFIED";
             default -> "PROMOTION_REWARD_EARNED";
         };
+    }
+
+    private boolean isFraudControlledReward(String sourceType) {
+        if (sourceType == null) {
+            return false;
+        }
+        String normalized = sourceType.trim().toUpperCase();
+        return "REFERRAL".equals(normalized)
+                || "REFERRAL_BONUS".equals(normalized)
+                || "REFERRAL_REWARD".equals(normalized)
+                || "LEVEL_COMMISSION".equals(normalized);
+    }
+
+    private com.ecommerce.app.module.fraud.dto.FraudPostOrderEventRequest heldRewardEvent(
+            Users user, BigDecimal amount, String sourceType, String sourceReference, Long orderId) {
+        com.ecommerce.app.module.fraud.dto.FraudPostOrderEventRequest request =
+                new com.ecommerce.app.module.fraud.dto.FraudPostOrderEventRequest();
+        request.setEventType(FraudPostOrderEventType.REFERRAL_REWARD_HELD);
+        request.setOrderId(orderId);
+        request.setCustomerId(user == null ? null : user.getId());
+        request.setAggregateType("REWARD_TRANSACTION");
+        request.setAggregateId(user == null ? null : user.getId());
+        request.setAmount(amount);
+        request.setReason("Reward release held while fraud review is open.");
+        request.setSource(sourceType);
+        request.getMetadata().put("sourceReference", sourceReference);
+        request.setIdempotencyKey("FRAUD:POST:REWARD_HELD:" + sourceType + ":" + sourceReference + ":" + amount);
+        return request;
+    }
+
+    private Long extractOrderId(String sourceReference) {
+        if (sourceReference == null || !sourceReference.trim().toUpperCase().startsWith("ORDER:")) {
+            return null;
+        }
+        return parseOrderId(sourceReference.trim().substring("ORDER:".length()));
+    }
+
+    private Long parseOrderId(String orderId) {
+        if (orderId == null || orderId.isBlank()) {
+            return null;
+        }
+        try {
+            return Long.valueOf(orderId.trim());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 
     private BigDecimal safeMoney(BigDecimal amount) {

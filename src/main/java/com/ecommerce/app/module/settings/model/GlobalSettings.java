@@ -5,6 +5,7 @@
 package com.ecommerce.app.module.settings.model;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
@@ -257,7 +258,7 @@ public class GlobalSettings implements Serializable {
     @Column(name = "server_side_gtm_url", length = 500)
     private String serverSideGtmUrl;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = TrackingImplementationModeConverter.class)
     @Column(name = "tracking_implementation_mode", nullable = false, length = 30)
     private TrackingImplementationMode trackingImplementationMode = TrackingImplementationMode.DIRECT;
 

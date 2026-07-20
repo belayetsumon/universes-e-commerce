@@ -294,6 +294,15 @@ $(document).ready(function () {
     });
 
     adminTables.each(function () {
+        const emptyRow = $(this).find('tbody tr').filter(function () {
+            const cells = $(this).children('td');
+            return cells.length === 1 && Number(cells.attr('colspan') || 1) > 1;
+        }).first();
+        const emptyTableMessage = emptyRow.length ? $.trim(emptyRow.text()).replace(/\s+/g, ' ') : "No records found.";
+        if (emptyRow.length) {
+            emptyRow.remove();
+        }
+
         const table = $(this).DataTable({
             ordering: true,
             lengthChange: true,
@@ -308,6 +317,8 @@ $(document).ready(function () {
                 {targets: '_all', visible: true}
             ],
             language: {
+                emptyTable: emptyTableMessage || "No records found.",
+                zeroRecords: "No matching records found.",
                 search: "Search",
                 lengthMenu: "Rows _MENU_",
                 info: "_START_ to _END_ of _TOTAL_ records"

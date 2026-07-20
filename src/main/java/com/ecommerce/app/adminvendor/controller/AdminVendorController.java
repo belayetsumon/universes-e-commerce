@@ -6,6 +6,7 @@ import com.ecommerce.app.adminvendor.services.AdminVendorManagementService;
 import com.ecommerce.app.vendor.model.VendorStatusEnum;
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,9 @@ public class AdminVendorController {
             RedirectAttributes redirectAttributes
     ) {
         try {
-            model.addAttribute("list", adminVendorManagementService.search(filter));
+            List<Vendorprofile> vendors = adminVendorManagementService.search(filter);
+            model.addAttribute("list", vendors);
+            model.addAttribute("productCountByVendorId", adminVendorManagementService.productCountByVendorId(vendors));
 
             model.addAttribute(
                     "emailVerifiedByVendorUuid",

@@ -1,0 +1,69 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <link rel="stylesheet" th:href="@{/assets/admin/css/fraud-admin.css}">
+    </th:block>
+
+    <main layout:fragment="main_content" class="main-content container-fluid px-3 py-3 fraud-admin-page">
+        <header class="card shadow-sm mb-4 fraud-hero">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="fraud-hero-icon"><i class="bi bi-folder2-open fs-4"></i></span>
+                        <div>
+                            <h1>Fraud Cases</h1>
+                            <p class="fraud-hero-copy">Manage investigations, assignment, escalation, and resolution records.</p>
+                        </div>
+                    </div>
+                    <a class="btn btn-light btn-sm" th:href="@{/admin/fraud/dashboard}">Dashboard</a>
+                </div>
+            </div>
+        </header>
+
+        <form class="fraud-panel shadow-sm p-3 mb-3" method="get" th:action="@{/admin/fraud/cases}" th:object="${filter}">
+            <div class="fraud-filter-grid">
+                <input class="form-control" type="search" th:field="*{q}" placeholder="Search">
+                <input class="form-control" type="number" th:field="*{orderId}" placeholder="Order ID">
+                <input class="form-control" type="number" th:field="*{customerId}" placeholder="Customer ID">
+                <input class="form-control" type="number" th:field="*{vendorId}" placeholder="Vendor ID">
+                <select class="form-select" th:field="*{caseStatus}">
+                    <option value="">Case status</option>
+                    <option th:each="status : ${caseStatuses}" th:value="${status}" th:text="${status}">OPEN</option>
+                </select>
+                <input class="form-control" type="date" th:field="*{fromDate}">
+                <input class="form-control" type="date" th:field="*{toDate}">
+            </div>
+            <div class="fraud-action-bar mt-3">
+                <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-funnel me-1"></i>Filter</button>
+                <a class="btn btn-light btn-sm" th:href="@{/admin/fraud/cases}">Reset</a>
+            </div>
+        </form>
+
+        <section class="fraud-panel shadow-sm">
+            <div class="d-flex align-items-center justify-content-between border-bottom p-3">
+                <h2 class="h6 mb-0">Investigation Queue</h2>
+                <span class="text-muted small" th:text="${cases.totalElements + ' records'}">0 records</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 fraud-table">
+                    <thead><tr><th>Case</th><th>Status</th><th>Priority</th><th>Order</th><th>Customer</th><th>Vendor</th><th>Assigned</th><th>Opened</th><th></th></tr></thead>
+                    <tbody>
+                        <tr th:each="item : ${cases.content}">
+                            <td th:text="${item.caseNumber}">FRD</td>
+                            <td th:text="${item.caseStatus}">OPEN</td>
+                            <td><span class="fraud-chip fraud-chip-medium" th:text="${item.priority}">MEDIUM</span></td>
+                            <td th:text="${item.orderId} ?: '-'">-</td>
+                            <td th:text="${item.customerId} ?: '-'">-</td>
+                            <td th:text="${item.vendorId} ?: '-'">-</td>
+                            <td th:text="${item.assignedInvestigator} ?: '-'">-</td>
+                            <td th:text="${item.openedAt != null ? #temporals.format(item.openedAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
+                            <td class="text-end"><a class="btn btn-sm btn-light" th:href="@{/admin/fraud/cases/{id}(id=${item.id})}"><i class="bi bi-eye"></i></a></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(cases.content)}"><td colspan="9"><div class="fraud-empty">No fraud cases found</div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>

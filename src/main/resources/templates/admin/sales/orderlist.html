@@ -21,6 +21,7 @@
                             </div>
                         </div>
                         <div class="orders-header-actions">
+                            <span class="badge text-bg-light">Period <span th:text="${reportDateRangeLabel}">Today</span></span>
                             <span class="badge text-bg-light">Filtered <span th:text="${filteredOrderCount}">0</span></span>
                             <span class="badge text-bg-light">All <span th:text="${allOrderCount}">0</span></span>
                         </div>
@@ -32,9 +33,25 @@
                 <i class="bi bi-info-circle"></i><span><strong>Shipment instruction:</strong> Create shipment appears only for packed physical orders with vendor and shipping district ready.</span>
             </div>
 
+            <div class="orders-section-head">
+                <div>
+                    <p>Performance snapshot</p>
+                    <h2>Order KPI overview</h2>
+                </div>
+                <span class="orders-chip"><i class="bi bi-calendar3 me-1"></i><span th:text="${reportDateRangeLabel}">Today</span></span>
+            </div>
             <section class="orders-status-grid mb-4">
                 <div class="orders-metric"><span class="orders-metric-icon"><i class="bi bi-cash-stack"></i></span><div><span>Total value</span>
                         <strong th:text="${#numbers.formatDecimal(filteredGrandTotal, 0, 'COMMA', 2, 'POINT')}">0.00</strong>
+                </div></div>
+                <div class="orders-metric"><span class="orders-metric-icon"><i class="bi bi-graph-up-arrow"></i></span><div><span>Average order</span>
+                        <strong th:text="${#numbers.formatDecimal(orderKpi.averageOrderValue, 0, 'COMMA', 2, 'POINT')}">0.00</strong>
+                </div></div>
+                <div class="orders-metric"><span class="orders-metric-icon"><i class="bi bi-wallet2"></i></span><div><span>Vendor amount</span>
+                        <strong th:text="${#numbers.formatDecimal(orderKpi.filteredVendorTotal, 0, 'COMMA', 2, 'POINT')}">0.00</strong>
+                </div></div>
+                <div class="orders-metric"><span class="orders-metric-icon"><i class="bi bi-percent"></i></span><div><span>Commission</span>
+                        <strong th:text="${#numbers.formatDecimal(orderKpi.filteredCommissionTotal, 0, 'COMMA', 2, 'POINT')}">0.00</strong>
                 </div></div>
                 <div class="orders-metric"><span class="orders-metric-icon"><i class="bi bi-truck"></i></span><div><span>Shipment ready</span>
                         <strong th:text="${shipmentReadyCount}">0</strong>
@@ -45,17 +62,49 @@
                 <div class="orders-metric"><span class="orders-metric-icon"><i class="bi bi-hourglass-split"></i></span><div><span>Not ready</span>
                         <strong th:text="${shipmentBlockedCount}">0</strong>
                 </div></div>
+                <div class="orders-metric"><span class="orders-metric-icon"><i class="bi bi-credit-card"></i></span><div><span>Paid / unpaid</span>
+                        <strong><span th:text="${orderKpi.paidOrderCount}">0</span> / <span th:text="${orderKpi.unpaidOrderCount}">0</span></strong>
+                </div></div>
+                <div class="orders-metric"><span class="orders-metric-icon"><i class="bi bi-person-badge"></i></span><div><span>Guest orders</span>
+                        <strong th:text="${orderKpi.guestOrderCount}">0</strong>
+                </div></div>
+                <div class="orders-metric"><span class="orders-metric-icon"><i class="bi bi-arrow-return-left"></i></span><div><span>Return flow</span>
+                        <strong th:text="${orderKpi.returnedOrderCount}">0</strong>
+                </div></div>
+                <div class="orders-metric"><span class="orders-metric-icon"><i class="bi bi-x-circle"></i></span><div><span>Cancelled</span>
+                        <strong th:text="${orderKpi.cancelledOrderCount}">0</strong>
+                </div></div>
+            </section>
+
+            <div class="orders-section-head">
+                <div>
+                    <p>Status distribution</p>
+                    <h2>Order status KPI</h2>
+                </div>
+                <span class="orders-chip">All <span th:text="${allOrderCount}">0</span></span>
+            </div>
+            <section class="orders-status-kpi-board" aria-label="Order status KPI">
+                <a class="orders-status-kpi"
+                   th:each="statusKpi : ${orderKpi.statusKpis}"
+                   th:classappend="${statusKpi.selected} ? ' is-active'"
+                   th:href="@{/admin-customer/orderlist(q=${selectedQ},status=${statusKpi.status},shipment=${selectedShipment},paymentPlan=${selectedPaymentPlan},paymentState=${selectedPaymentState},checkoutType=${selectedCheckoutType},vendorId=${selectedVendorId},minTotal=${selectedMinTotal},maxTotal=${selectedMaxTotal},dateRange=${selectedDateRange},fromDate=${selectedFromDate},toDate=${selectedToDate},size=${size},page=0)}">
+                    <span th:text="${statusKpi.label}">STATUS</span>
+                    <strong th:text="${statusKpi.count}">0</strong>
+                </a>
             </section>
 
             <form class="orders-panel orders-filter-panel mb-4" method="get" th:action="@{/admin-customer/orderlist}">
                 <div class="orders-panel-head"><div><p>Find orders</p><h2>Filters and fulfilment state</h2></div><a class="btn btn-sm btn-outline-secondary" th:href="@{/admin-customer/orderlist}"><i class="bi bi-x-circle"></i> Clear filters</a></div>
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-3">
+                <input type="hidden" name="page" value="0">
+                <div class="orders-filter-body">
+                    <div class="orders-filter-section-title"><i class="bi bi-sliders"></i><span>Search, status, payment, and date controls</span></div>
+                    <div class="row g-3 align-items-end">
+                    <div class="col-xl-3 col-lg-4">
                         <label class="form-label">Search</label>
                         <input type="search" class="form-control" name="q" th:value="${selectedQ}"
-                               placeholder="Order code, customer, vendor, email, mobile" />
+                               placeholder="Order code, UUID, customer, vendor, payment, email, mobile" />
                     </div>
-                    <div class="col-lg-2">
+                    <div class="col-xl-2 col-lg-4">
                         <label class="form-label">Order Status</label>
                         <select class="form-select" name="status">
                             <option value="">All status</option>
@@ -65,7 +114,7 @@
                                     th:text="${#strings.replace(s.name(), '_', ' ')}"></option>
                         </select>
                     </div>
-                    <div class="col-lg-2">
+                    <div class="col-xl-2 col-lg-4">
                         <label class="form-label">Shipment</label>
                         <select class="form-select" name="shipment">
                             <option value="">All shipment</option>
@@ -74,18 +123,72 @@
                             <option value="BLOCKED" th:selected="${selectedShipment == 'BLOCKED'}">Not ready</option>
                         </select>
                     </div>
-                    <div class="col-lg-2">
+                    <div class="col-xl-2 col-lg-4">
+                        <label class="form-label">Payment plan</label>
+                        <select class="form-select" name="paymentPlan">
+                            <option value="">All plans</option>
+                            <option th:each="plan : ${paymentPlans}" th:value="${plan}" th:selected="${selectedPaymentPlan == plan}" th:text="${#strings.replace(plan.name(), '_', ' ')}">Plan</option>
+                        </select>
+                    </div>
+                    <div class="col-xl-2 col-lg-4">
+                        <label class="form-label">Payment state</label>
+                        <select class="form-select" name="paymentState">
+                            <option value="">All payment</option>
+                            <option th:each="state : ${paymentStates}" th:value="${state}" th:selected="${selectedPaymentState == state}" th:text="${#strings.replace(state.name(), '_', ' ')}">State</option>
+                        </select>
+                    </div>
+                    <div class="col-xl-2 col-lg-4">
+                        <label class="form-label">Checkout</label>
+                        <select class="form-select" name="checkoutType">
+                            <option value="">All checkout</option>
+                            <option value="CUSTOMER" th:selected="${selectedCheckoutType == 'CUSTOMER'}">Customer account</option>
+                            <option value="GUEST" th:selected="${selectedCheckoutType == 'GUEST'}">Guest checkout</option>
+                        </select>
+                    </div>
+                    <div class="col-xl-3 col-lg-4">
+                        <label class="form-label">Vendor</label>
+                        <select class="form-select" name="vendorId">
+                            <option value="">All vendors</option>
+                            <option th:each="vendor : ${vendorOptions}" th:value="${vendor.id}" th:selected="${selectedVendorId == vendor.id}" th:text="${(vendor.companyName != null ? vendor.companyName : 'Vendor #' + vendor.id) + (vendor.vendorCode != null ? ' - ' + vendor.vendorCode : '')}">Vendor</option>
+                        </select>
+                    </div>
+                    <div class="col-xl-2 col-lg-4">
+                        <label class="form-label">Date range</label>
+                        <select class="form-select" name="dateRange">
+                            <option th:each="range : ${dateRangeOptions}" th:value="${range.value}" th:selected="${selectedDateRange == range.value}" th:text="${range.label}">Today</option>
+                        </select>
+                        <span class="orders-help">Use Custom date for manual dates.</span>
+                    </div>
+                    <div class="col-xl-2 col-lg-4">
                         <label class="form-label">From</label>
                         <input type="date" class="form-control" name="fromDate" th:value="${selectedFromDate}" />
                     </div>
-                    <div class="col-lg-2">
+                    <div class="col-xl-2 col-lg-4">
                         <label class="form-label">To</label>
                         <input type="date" class="form-control" name="toDate" th:value="${selectedToDate}" />
                     </div>
-                    <div class="col-lg-1 d-grid">
+                    <div class="col-xl-2 col-lg-4">
+                        <label class="form-label">Min total</label>
+                        <input type="number" step="0.01" min="0" class="form-control" name="minTotal" th:value="${selectedMinTotal}" placeholder="0.00" />
+                    </div>
+                    <div class="col-xl-2 col-lg-4">
+                        <label class="form-label">Max total</label>
+                        <input type="number" step="0.01" min="0" class="form-control" name="maxTotal" th:value="${selectedMaxTotal}" placeholder="50000.00" />
+                    </div>
+                    <div class="col-xl-2 col-lg-4">
+                        <label class="form-label">Rows</label>
+                        <select class="form-select" name="size">
+                            <option value="10" th:selected="${size == 10}">10</option>
+                            <option value="25" th:selected="${size == 25}">25</option>
+                            <option value="50" th:selected="${size == 50}">50</option>
+                            <option value="100" th:selected="${size == 100}">100</option>
+                        </select>
+                    </div>
+                    <div class="col-xl-1 col-lg-4 d-grid">
                         <button class="btn orders-gradient-btn" type="submit">
                             <i class="bi bi-funnel"></i>
                         </button>
+                    </div>
                     </div>
                 </div>
             </form>
@@ -105,6 +208,8 @@
                                 <th>Customer</th>
                                 <th>Vendor</th>
                                 <th>Status</th>
+                                <th>Payment</th>
+                                <th>Checkout</th>
                                 <th>Shipment</th>
                                 <th class="text-end">Item Total</th>
                                 <th class="text-end">Shipping</th>
@@ -134,6 +239,14 @@
                                 <td th:text="${orderlists.vendorName}">Vendor</td>
                                 <td>
                                     <span class="badge bg-secondary" th:text="${#strings.replace(orderlists.status, '_', ' ')}">STATUS</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border" th:text="${orderlists.paymentState != null ? #strings.replace(orderlists.paymentState.name(), '_', ' ') : 'UNPAID'}">UNPAID</span>
+                                    <span class="compact-meta" th:text="${orderlists.paymentPlan != null ? #strings.replace(orderlists.paymentPlan.name(), '_', ' ') : '-'}">Plan</span>
+                                    <span class="compact-meta" th:if="${orderlists.codDue != null}" th:text="${'COD due ' + #numbers.formatDecimal(orderlists.codDue, 0, 'COMMA', 2, 'POINT')}">COD due</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border" th:text="${orderlists.guestCheckout == true ? 'Guest' : 'Customer'}">Customer</span>
                                 </td>
                                 <td>
                                     <a class="btn btn-sm orders-gradient-btn"
@@ -181,6 +294,18 @@
                     <div class="text-center text-muted py-5" th:if="${#lists.isEmpty(orderlist)}">
                         No orders matched the selected filters.
                     </div>
+                </div>
+                <div class="orders-pagination">
+                    <div class="text-muted small" th:text="${filteredOrderCount == 0 ? 'Showing 0 orders' : 'Showing ' + (orderPage.page * orderPage.size + 1) + '-' + (orderPage.page * orderPage.size + #lists.size(orderlist)) + ' of ' + filteredOrderCount}">Showing 0 orders</div>
+                    <nav th:if="${orderPage.totalPages > 1}" aria-label="Order pagination">
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item" th:classappend="${orderPage.first} ? 'disabled'"><a class="page-link" th:href="@{/admin-customer/orderlist(q=${selectedQ},status=${selectedStatus},shipment=${selectedShipment},paymentPlan=${selectedPaymentPlan},paymentState=${selectedPaymentState},checkoutType=${selectedCheckoutType},vendorId=${selectedVendorId},minTotal=${selectedMinTotal},maxTotal=${selectedMaxTotal},dateRange=${selectedDateRange},fromDate=${selectedFromDate},toDate=${selectedToDate},size=${size},page=0)}">First</a></li>
+                            <li class="page-item" th:classappend="${orderPage.first} ? 'disabled'"><a class="page-link" th:href="@{/admin-customer/orderlist(q=${selectedQ},status=${selectedStatus},shipment=${selectedShipment},paymentPlan=${selectedPaymentPlan},paymentState=${selectedPaymentState},checkoutType=${selectedCheckoutType},vendorId=${selectedVendorId},minTotal=${selectedMinTotal},maxTotal=${selectedMaxTotal},dateRange=${selectedDateRange},fromDate=${selectedFromDate},toDate=${selectedToDate},size=${size},page=${orderPage.first ? 0 : orderPage.page - 1})}">Previous</a></li>
+                            <li class="page-item" th:each="pageNumber : ${orderPage.pageNumbers}" th:classappend="${pageNumber == orderPage.page} ? 'active'"><a class="page-link" th:href="@{/admin-customer/orderlist(q=${selectedQ},status=${selectedStatus},shipment=${selectedShipment},paymentPlan=${selectedPaymentPlan},paymentState=${selectedPaymentState},checkoutType=${selectedCheckoutType},vendorId=${selectedVendorId},minTotal=${selectedMinTotal},maxTotal=${selectedMaxTotal},dateRange=${selectedDateRange},fromDate=${selectedFromDate},toDate=${selectedToDate},size=${size},page=${pageNumber})}" th:text="${pageNumber + 1}">1</a></li>
+                            <li class="page-item" th:classappend="${orderPage.last} ? 'disabled'"><a class="page-link" th:href="@{/admin-customer/orderlist(q=${selectedQ},status=${selectedStatus},shipment=${selectedShipment},paymentPlan=${selectedPaymentPlan},paymentState=${selectedPaymentState},checkoutType=${selectedCheckoutType},vendorId=${selectedVendorId},minTotal=${selectedMinTotal},maxTotal=${selectedMaxTotal},dateRange=${selectedDateRange},fromDate=${selectedFromDate},toDate=${selectedToDate},size=${size},page=${orderPage.last ? orderPage.page : orderPage.page + 1})}">Next</a></li>
+                            <li class="page-item" th:classappend="${orderPage.last} ? 'disabled'"><a class="page-link" th:href="@{/admin-customer/orderlist(q=${selectedQ},status=${selectedStatus},shipment=${selectedShipment},paymentPlan=${selectedPaymentPlan},paymentState=${selectedPaymentState},checkoutType=${selectedCheckoutType},vendorId=${selectedVendorId},minTotal=${selectedMinTotal},maxTotal=${selectedMaxTotal},dateRange=${selectedDateRange},fromDate=${selectedFromDate},toDate=${selectedToDate},size=${size},page=${orderPage.totalPages - 1})}">Last</a></li>
+                        </ul>
+                    </nav>
                 </div>
             </section>
         </div>

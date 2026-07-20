@@ -31,7 +31,11 @@
                         <label class="form-label">Product</label>
                         <select id="productId" name="productId" class="form-select" required>
                             <option value="">-- Select Product --</option>
-                            <option th:each="product : ${products}" th:value="${product.id}" th:text="${product.title}"></option>
+                            <option th:each="product : ${products}"
+                                    th:value="${product.id}"
+                                    th:selected="${selectedProductId != null and selectedProductId.equals(product.id)}"
+                                    th:text="${product.title}">
+                            </option>
                         </select>
                     </div>
 
@@ -42,6 +46,7 @@
                             <option th:each="variant : ${catalogVariants}"
                                     th:value="${variant.uuid}"
                                     th:attr="data-product-id=${variant.product.id}"
+                                    th:selected="${selectedCatalogVariantUuid != null and selectedCatalogVariantUuid.equals(variant.uuid)}"
                                     th:text="${variant.product.title + ' | SKU: ' + variant.sku}">
                             </option>
                         </select>

@@ -567,15 +567,6 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:if="${#lists.isEmpty(alluser)}">
-                                <td colspan="9">
-                                    <div class="users-empty">
-                                        <i class="bi bi-people"></i>
-                                        <h3 class="h5 mb-2">No users found</h3>
-                                        <p class="mb-0">Create a user account to begin managing access.</p>
-                                    </div>
-                                </td>
-                            </tr>
                             <tr th:each="alluser,status:${alluser}">
                                 <td class="text-muted" th:text="${status.count}">1</td>
                                 <td>
@@ -650,6 +641,11 @@
                             </tr>
                         </tbody>
                     </table>
+                    <div class="users-empty" th:if="${#lists.isEmpty(alluser)}">
+                        <i class="bi bi-people"></i>
+                        <h3 class="h5 mb-2">No users found</h3>
+                        <p class="mb-0">Create a user account to begin managing access.</p>
+                    </div>
                     <div class="d-flex justify-content-between align-items-center mt-3">
                         <div id="example_info" class="dataTables_info" role="status" aria-live="polite"></div>
                         <div id="example_paginate" class="dataTables_paginate paging_simple_numbers"></div>

@@ -1,0 +1,110 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="admin-layout">
+    <th:block layout:fragment="page_css">
+        <link rel="stylesheet" th:href="@{/assets/admin/css/fraud-admin.css}">
+    </th:block>
+
+    <main layout:fragment="main_content" class="main-content container-fluid px-3 py-3 fraud-admin-page">
+        <header class="card shadow-sm mb-4 fraud-hero">
+            <div class="card-header py-2">
+                <span class="small text-uppercase fw-semibold">Fraud Control Center</span>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="fraud-hero-icon"><i class="bi bi-shield-lock fs-4"></i></span>
+                        <div>
+                            <h1>Fraud Dashboard</h1>
+                            <p class="fraud-hero-copy">Monitor order risk, manual review queues, blocked exposure, and vendor fraud indicators.</p>
+                        </div>
+                    </div>
+                    <div class="fraud-action-bar">
+                        <a class="btn btn-light btn-sm" th:href="@{/admin/fraud/assessments}"><i class="bi bi-list-check me-1"></i>Assessments</a>
+                        <a class="btn btn-outline-light btn-sm" th:href="@{/admin/fraud/reports}"><i class="bi bi-graph-up-arrow me-1"></i>Reports</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="fraud-metrics mb-4">
+            <div class="fraud-metric shadow-sm" th:each="metric : ${metrics}">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="fraud-metric-icon"
+                          th:classappend="| bg-${metric.tone()}-subtle text-${metric.tone()}|">
+                        <i class="bi" th:classappend="${metric.icon()}"></i>
+                    </span>
+                    <span class="badge rounded-pill text-bg-light" th:text="${metric.tone()}">primary</span>
+                </div>
+                <div class="fraud-metric-value" th:text="${metric.value()}">0</div>
+                <div class="text-muted small" th:text="${metric.label()}">Metric</div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-lg-6">
+                <section class="fraud-panel shadow-sm h-100">
+                    <div class="d-flex align-items-center justify-content-between border-bottom p-3">
+                        <h2 class="h6 mb-0">Open Cases</h2>
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/fraud/cases}">View all</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 fraud-table">
+                            <thead><tr><th>Case</th><th>Priority</th><th>Status</th><th>Order</th><th></th></tr></thead>
+                            <tbody>
+                                <tr th:each="item : ${openCases}">
+                                    <td th:text="${item.caseNumber}">FRD</td>
+                                    <td><span class="fraud-chip fraud-chip-medium" th:text="${item.priority}">MEDIUM</span></td>
+                                    <td th:text="${item.caseStatus}">OPEN</td>
+                                    <td th:text="${item.orderId}">1</td>
+                                    <td class="text-end"><a class="btn btn-sm btn-light" th:href="@{/admin/fraud/cases/{id}(id=${item.id})}"><i class="bi bi-eye"></i></a></td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(openCases)}"><td colspan="5"><div class="fraud-empty"><i class="bi bi-check2-circle"></i>No open fraud cases</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+            <div class="col-lg-6">
+                <section class="fraud-panel shadow-sm h-100">
+                    <div class="d-flex align-items-center justify-content-between border-bottom p-3">
+                        <h2 class="h6 mb-0">Rule Trigger Frequency</h2>
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/fraud/rules}">Rules</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 fraud-table">
+                            <thead><tr><th>Signal</th><th class="text-end">Triggers</th></tr></thead>
+                            <tbody>
+                                <tr th:each="row : ${ruleRows}">
+                                    <td th:text="${row.label()}">SIGNAL</td>
+                                    <td class="text-end fw-semibold" th:text="${row.count()}">0</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(ruleRows)}"><td colspan="2"><div class="fraud-empty"><i class="bi bi-sliders"></i>No triggered signals yet</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <section class="fraud-panel shadow-sm">
+            <div class="d-flex align-items-center justify-content-between border-bottom p-3">
+                <h2 class="h6 mb-0">Suspicious Signal Values</h2>
+                <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/fraud/blocklist}">Blocklist</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 fraud-table">
+                    <thead><tr><th>Category</th><th>Value</th><th class="text-end">Count</th></tr></thead>
+                    <tbody>
+                        <tr th:each="row : ${suspiciousRows}">
+                            <td th:text="${row.label()}">DEVICE</td>
+                            <td th:text="${row.value()}">****</td>
+                            <td class="text-end fw-semibold" th:text="${row.count()}">0</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(suspiciousRows)}"><td colspan="3"><div class="fraud-empty"><i class="bi bi-search"></i>No suspicious values recorded</div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>

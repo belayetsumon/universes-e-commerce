@@ -1,9 +1,9 @@
 package com.ecommerce.app.product.services;
 
-import com.ecommerce.app.order.model.OrderItem;
-import com.ecommerce.app.order.model.SalesOrder;
-import com.ecommerce.app.order.repository.OrderItemRepository;
-import com.ecommerce.app.order.repository.SalesOrderRepository;
+import com.ecommerce.app.module.order.model.OrderItem;
+import com.ecommerce.app.module.order.model.SalesOrder;
+import com.ecommerce.app.module.order.repository.OrderItemRepository;
+import com.ecommerce.app.module.order.repository.SalesOrderRepository;
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.ProductVariant;
 import com.ecommerce.app.product.model.StockBucketEnum;

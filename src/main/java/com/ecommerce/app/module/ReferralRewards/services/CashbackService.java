@@ -8,9 +8,12 @@ import com.ecommerce.app.module.ReferralRewards.model.CashbackTransaction;
 import com.ecommerce.app.module.ReferralRewards.model.TransactionType;
 import com.ecommerce.app.module.ReferralRewards.repository.CashbackPolicyRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.CashbackTransactionRepository;
+import com.ecommerce.app.module.fraud.dto.FraudGuardResult;
+import com.ecommerce.app.module.fraud.model.FraudPostOrderEventType;
+import com.ecommerce.app.module.fraud.services.FraudPostOrderMonitoringService;
 import com.ecommerce.app.module.user.model.Users;
-import com.ecommerce.app.order.model.OrderItem;
-import com.ecommerce.app.order.model.SalesOrder;
+import com.ecommerce.app.module.order.model.OrderItem;
+import com.ecommerce.app.module.order.model.SalesOrder;
 import com.ecommerce.app.product.model.Productcategory;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -26,15 +29,18 @@ public class CashbackService {
     private final CashbackPolicyRepository cashbackPolicyRepository;
     private final CashbackTransactionRepository cashbackTransactionRepository;
     private final WalletService walletService;
+    private final FraudPostOrderMonitoringService fraudPostOrderMonitoringService;
 
     public CashbackService(
             CashbackPolicyRepository cashbackPolicyRepository,
             CashbackTransactionRepository cashbackTransactionRepository,
-            WalletService walletService
+            WalletService walletService,
+            FraudPostOrderMonitoringService fraudPostOrderMonitoringService
     ) {
         this.cashbackPolicyRepository = cashbackPolicyRepository;
         this.cashbackTransactionRepository = cashbackTransactionRepository;
         this.walletService = walletService;
+        this.fraudPostOrderMonitoringService = fraudPostOrderMonitoringService;
     }
 
     @Transactional(readOnly = true)
@@ -169,10 +175,26 @@ public class CashbackService {
             return;
         }
 
+        Long numericOrderId = parseOrderId(orderId);
+        FraudGuardResult fraudGuard = fraudPostOrderMonitoringService.checkValueReleaseAllowed(
+                FraudPostOrderEventType.CASHBACK_RELEASED,
+                numericOrderId,
+                user.getId(),
+                null,
+                "ORDER:" + orderId
+        );
+        if (!fraudGuard.isAllowed()) {
+            txn.setRemarks("Cashback held by fraud control for order #" + orderId);
+            cashbackTransactionRepository.save(txn);
+            fraudPostOrderMonitoringService.recordCashbackRelease(numericOrderId, user.getId(), amount, true, fraudGuard.getReason());
+            return;
+        }
+
         txn.setStatus(CashbackStatus.CREDITED);
         txn.setCreditedAt(LocalDateTime.now());
         txn.setRemarks("Cashback credited to wallet for order #" + orderId);
         cashbackTransactionRepository.save(txn);
+        fraudPostOrderMonitoringService.recordCashbackRelease(numericOrderId, user.getId(), amount, false, null);
 
         walletService.creditWallet(
                 user,
@@ -198,6 +220,17 @@ public class CashbackService {
             return policy.getCurrency().trim().toUpperCase();
         }
         return "BDT";
+    }
+
+    private Long parseOrderId(String orderId) {
+        if (orderId == null || orderId.isBlank()) {
+            return null;
+        }
+        try {
+            return Long.valueOf(orderId.trim());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 
     private static final class CashbackQuote {

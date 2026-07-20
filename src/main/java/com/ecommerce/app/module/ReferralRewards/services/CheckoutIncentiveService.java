@@ -14,7 +14,7 @@ import com.ecommerce.app.module.ReferralRewards.repository.RewardAccountReposito
 import com.ecommerce.app.module.ReferralRewards.repository.RewardTransactionRepository;
 import com.ecommerce.app.module.cart.model.CartItem;
 import com.ecommerce.app.module.user.model.Users;
-import com.ecommerce.app.order.model.SalesOrder;
+import com.ecommerce.app.module.order.model.SalesOrder;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
