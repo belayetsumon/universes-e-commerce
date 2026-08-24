@@ -16,7 +16,11 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <div class="alert alert-success" th:if="${success}" th:text="${success}"></div>
+                        <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
                         <form  class="" action="#" th:action="@{/module/save}" th:object="${modules}" method="post">
+                            <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}"
+                                 th:each="globalError : ${#fields.globalErrors()}" th:text="${globalError}"></div>
                             <input type="hidden" class="form-control"  th:field="*{id}" /> 
                             
                             <div class="form-group mb-3 row">
@@ -30,7 +34,7 @@
                             <div class="form-group mb-3 row">
                                 <label for="colFormLabel" class="col-sm-2 col-form-label  text-right">Slug<span class="text-danger">*</span>:</label>
                                 <div class="col-sm-5">
-                                    <input type="text" class="form-control col-sm-3" id="colFormLabel" placeholder="Slug" th:field="*{slug}" >
+                                    <input type="text" class="form-control col-sm-3" id="colFormLabel" placeholder="Slug" th:field="*{slug}" readonly>
                                     <span  class="help-block text-danger col-sm-8" th:if="${#fields.hasErrors('slug')}" th:errors="*{slug}">First Name Error</span>
                                 </div>
                             </div>
@@ -68,7 +72,7 @@
                                 <td>
                                     <a type="batton"class="btn btn-success btn-sm"th:href="@{/module/edit/{id} (id=${list.id})}" > Edit</a>
                                 </td>
-                                <td> <a  type="batton" class="btn btn-danger btn-sm" th:href="@{/module/delete/{id} (id=${list.id})}" > Delete </a></td>
+                                <td><span class="badge text-bg-secondary">Protected</span></td>
                             </tr>                              
                         </table>
 

@@ -76,7 +76,13 @@
                                 <td>
                                     <a type="button" class="btn  btn-warning btn-xs bg-maroon" th:href="@{/users/edit/{id} (id=${alluser.id})}" > Edit</a>
                                 </td>
-                                <td> <a  type="button" class="btn  btn-warning btn-xs bg-red " th:href="@{/users/delete/{id} (id=${alluser.id})}" > Delete </a></td>
+                                <td>
+                                    <form th:action="@{/users/delete/{id}(id=${alluser.id})}" method="post">
+                                        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                        <button type="submit" class="btn btn-warning btn-xs bg-red"
+                                                onclick="return confirm('Delete this user? This action cannot be undone.');">Delete</button>
+                                    </form>
+                                </td>
                             </tr>                                
                         </table>
 

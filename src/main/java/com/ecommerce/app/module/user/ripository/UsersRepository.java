@@ -7,6 +7,7 @@ package com.ecommerce.app.module.user.ripository;
 
 import com.ecommerce.app.module.user.model.*;
 import java.util.*;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
@@ -48,6 +49,10 @@ import org.springframework.data.repository.query.Param;
 public interface UsersRepository extends JpaRepository<Users, Long> {
 
     Optional<Users> findByEmail(String email);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from Users u where u.email = :email")
+    Optional<Users> findByEmailForUpdate(@Param("email") String email);
 
     Users findByMobile(String mobile);
 

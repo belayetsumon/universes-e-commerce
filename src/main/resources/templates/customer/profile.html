@@ -40,6 +40,7 @@
 
                             <div class="card-body px-4 pb-4">
                                 <form th:action="@{/customer-profile/update}" th:object="${accountForm}" method="post" class="row g-3">
+                                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                     <div class="col-md-6">
                                         <label class="form-label" for="firstName">First name</label>
                                         <input id="firstName" type="text" class="form-control"
@@ -88,6 +89,7 @@
 
                             <div class="card-body px-4 pb-4">
                                 <form th:action="@{/customer-profile/update-billing}" th:object="${billingAddressForm}" method="post" class="row g-3">
+                                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                     <div class="col-md-6">
                                         <label class="form-label" for="billingFirstName">First name</label>
                                         <input id="billingFirstName" type="text" class="form-control" th:field="*{firstName}" placeholder="First name">
@@ -234,6 +236,7 @@
 
                         <div class="card-body px-4 pb-4">
                             <form th:action="@{/customer-profile/change-password}" th:object="${passwordForm}" method="post" class="row g-3">
+                                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                 <div class="col-12">
                                     <label class="form-label" for="currentPassword">Current password</label>
                                     <input id="currentPassword" type="password" class="form-control"

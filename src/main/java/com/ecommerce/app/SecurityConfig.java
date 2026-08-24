@@ -16,7 +16,11 @@ import org.springframework.security.config.annotation.web.builders.*;
 import org.springframework.security.config.annotation.web.configuration.*;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.security.crypto.bcrypt.*;
+import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.security.web.*;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
@@ -24,6 +28,31 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    // Browser-owned state-changing workflows. Fraud admin forms retain their
+    // dedicated token interceptor, while signed provider callbacks remain out
+    // of Spring's session-bound CSRF matcher.
+    private static final RequestMatcher BROWSER_CSRF_PROTECTED_ROUTES = new OrRequestMatcher(
+            new AntPathRequestMatcher("/role/**"),
+            new AntPathRequestMatcher("/privilege/**"),
+            new AntPathRequestMatcher("/module/**"),
+            new AntPathRequestMatcher("/admin/settings/**"),
+            new AntPathRequestMatcher("/users/save"),
+            new AntPathRequestMatcher("/users/change-password/**"),
+            new AntPathRequestMatcher("/users/generate-referral-code/**"),
+            new AntPathRequestMatcher("/users/delete/**"),
+            new AntPathRequestMatcher("/users/deletewithexception/**"),
+            new AntPathRequestMatcher("/users/usave"),
+            new AntPathRequestMatcher("/users/frontRegistrationSave"),
+            new AntPathRequestMatcher("/customer_registration/customer_registration_save"),
+            new AntPathRequestMatcher("/register"),
+            new AntPathRequestMatcher("/customerregister/register"),
+            new AntPathRequestMatcher("/customer-profile/**"),
+            new AntPathRequestMatcher("/checkout/guest/mobile/**"),
+            new AntPathRequestMatcher("/checkout/customer/mobile/**"),
+            new AntPathRequestMatcher("/cart_address/**"),
+            new AntPathRequestMatcher("/order/**")
+    );
 
     @Autowired
     private CustomLoginSuccessHandler customLoginSuccessHandler;
@@ -72,6 +101,8 @@ public class SecurityConfig {
         "/users/uregistrations",
         "/users/usave",
         "/users/frontRegistrationSave",
+        "/register",
+        "/customerregister/register",
         "/customer_registration/registration",
         "/customer_registration/customer_registration_save",
         "/users/userforgotpassword",
@@ -86,14 +117,17 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(
-                        csrf -> csrf.disable()
-                //                        csrf -> csrf
-                //                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                //                .ignoringRequestMatchers(PUBLIC_URLS)
+                        csrf -> csrf.requireCsrfProtectionMatcher(
+                                new AndRequestMatcher(
+                                        CsrfFilter.DEFAULT_CSRF_MATCHER,
+                                        BROWSER_CSRF_PROTECTED_ROUTES
+                                )
+                        )
                 )
                 .authorizeHttpRequests(auth -> auth
                 .requestMatchers(STATIC_WHITELIST).permitAll()
                 .requestMatchers(PUBLIC_URLS).permitAll()
+                .requestMatchers("/admin/settings/**").hasAnyAuthority("admin", "ROLE_ADMIN")
                 .requestMatchers("/admin/fraud/**").hasAnyAuthority(
                         "admin", "fraud-admin", "fraud-supervisor", "fraud-analyst", "finance",
                         "ROLE_ADMIN", "ROLE_FRAUD_ADMIN", "ROLE_FRAUD_SUPERVISOR", "ROLE_FRAUD_ANALYST", "ROLE_FINANCE")

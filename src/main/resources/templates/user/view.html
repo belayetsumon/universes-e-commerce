@@ -263,11 +263,13 @@
                             <a th:href="@{/users/login-history/{uid}(uid=${users.id})}" class="btn btn-info">
                                 <i class="bi bi-clock-history me-1"></i>Login History
                             </a>
-                            <a th:href="@{/users/deletewithexception/{id}(id=${users.id})}"
-                               class="btn user-danger-btn"
-                               onclick="return confirm('Delete this user? This action cannot be undone.');">
-                                <i class="bi bi-trash me-1"></i>Delete
-                            </a>
+                            <form th:action="@{/users/deletewithexception/{id}(id=${users.id})}" method="post" class="d-inline">
+                                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <button type="submit" class="btn user-danger-btn"
+                                        onclick="return confirm('Delete this user? This action cannot be undone.');">
+                                    <i class="bi bi-trash me-1"></i>Delete
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -423,11 +425,13 @@
                             <div class="user-detail-row">
                                 <div class="user-detail-label">Danger Zone</div>
                                 <div class="user-detail-value">
-                                    <a th:href="@{/users/deletewithexception/{id}(id=${users.id})}"
-                                       class="btn btn-outline-danger btn-sm"
-                                       onclick="return confirm('Delete this user? This action cannot be undone.');">
-                                        <i class="bi bi-trash me-1"></i>Delete user
-                                    </a>
+                                    <form th:action="@{/users/deletewithexception/{id}(id=${users.id})}" method="post" class="d-inline">
+                                        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                onclick="return confirm('Delete this user? This action cannot be undone.');">
+                                            <i class="bi bi-trash me-1"></i>Delete user
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>

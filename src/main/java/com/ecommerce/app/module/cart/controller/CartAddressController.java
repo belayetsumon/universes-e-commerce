@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -41,7 +42,7 @@ public class CartAddressController {
     @Autowired
     CheckoutAvailabilityService checkoutAvailabilityService;
 
-    @RequestMapping("/add_billing_address")
+    @PostMapping("/add_billing_address")
     public String addBillingAddress(Model model, HttpSession session, BillingAddress billingAddress,
             @RequestParam(name = "sameAddress", required = false) Boolean sameAddress,
             RedirectAttributes redirectAttributes
@@ -81,7 +82,7 @@ public class CartAddressController {
         return "redirect:/order/create";
     }
 
-    @RequestMapping("/add_shipping_address")
+    @PostMapping("/add_shipping_address")
     public String addShippingAddress(Model model, HttpSession session, ShippingAddress shippingAddress, RedirectAttributes redirectAttributes) {
         String availabilityRedirect = checkoutAvailabilityRedirect(redirectAttributes);
         if (availabilityRedirect != null) {
@@ -93,7 +94,7 @@ public class CartAddressController {
         return "redirect:/order/create";
     }
 
-    @RequestMapping("/guest_delivery_address")
+    @PostMapping("/guest_delivery_address")
     public String saveGuestDeliveryAddress(
             Model model,
             HttpSession session,

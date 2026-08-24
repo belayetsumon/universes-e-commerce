@@ -13,6 +13,7 @@ import com.ecommerce.app.module.ReferralRewards.repository.WalletRepository;
 import com.ecommerce.app.module.ReferralRewards.services.CheckoutIncentiveService;
 import com.ecommerce.app.module.checkout.availability.CheckoutAvailability;
 import com.ecommerce.app.module.checkout.availability.CheckoutAvailabilityService;
+import com.ecommerce.app.module.checkout.customer.services.CustomerCodMobileVerificationService;
 import com.ecommerce.app.module.checkout.guest.services.GuestCheckoutSessionService;
 import com.ecommerce.app.module.checkout.guest.services.MobileNumberNormalizationService;
 import com.ecommerce.app.module.checkout.guest.session.GuestCheckoutSession;
@@ -106,6 +107,9 @@ public class CartController {
 
     @Autowired
     MobileNumberNormalizationService mobileNumberNormalizationService;
+
+    @Autowired
+    CustomerCodMobileVerificationService customerCodMobileVerificationService;
 
     private static final Logger log = LoggerFactory.getLogger(CartService.class);
 
@@ -308,12 +312,38 @@ public class CartController {
                 ? ""
                 : guestSession.getMobileVerificationStatus().name();
         model.addAttribute("guestMobileVerificationStatus", guestMobileVerificationStatus);
+        boolean codEnabled = storeOperationModeService.isCodEnabled();
+        model.addAttribute("codEnabled", codEnabled);
+        Users authenticatedUser = authenticatedCustomer
+                ? loggedUserService.activeUserOptional().orElse(null)
+                : null;
+        boolean registeredCustomerCodVerificationEnabled = authenticatedCustomer
+                && storeOperationModeService.isRegisteredCustomerCodMobileVerificationEnabled();
+        boolean registeredCustomerCurrentMobileVerified = authenticatedUser != null
+                && customerCodMobileVerificationService.isCurrentMobileVerified(authenticatedUser);
+        boolean registeredCustomerCodVerificationRequired = registeredCustomerCodVerificationEnabled
+                && !registeredCustomerCurrentMobileVerified;
+        model.addAttribute("registeredCustomerCodMobileVerificationEnabled", registeredCustomerCodVerificationEnabled);
+        model.addAttribute("registeredCustomerCodMobileVerified", registeredCustomerCurrentMobileVerified);
+        model.addAttribute("registeredCustomerCodMobileVerificationRequired", registeredCustomerCodVerificationRequired);
+        model.addAttribute(
+                "registeredCustomerMobileDisplay",
+                authenticatedUser == null ? "01*********" : mobileNumberNormalizationService.mask(authenticatedUser.getMobile())
+        );
         model.addAttribute("selectedShippingLocation", currentShippingLocation(session));
         model.addAttribute("walletBalance", authenticatedCustomer ? resolveWalletBalance() : BigDecimal.ZERO);
         model.addAttribute("rewardBalance", authenticatedCustomer ? resolveRewardBalance() : BigDecimal.ZERO);
         model.addAttribute("emiEligible", authenticatedCustomer && cartService.cartSupportsEmi(cart));
-        if (!model.containsAttribute("selectedPaymentPlan")) {
-            model.addAttribute("selectedPaymentPlan", "FULL_COD");
+        Object selectedPaymentPlan = model.getAttribute("selectedPaymentPlan");
+        boolean selectedPlanNeedsCodVerification = "FULL_COD".equals(selectedPaymentPlan)
+                || "PARTIAL_ADVANCE_COD".equals(selectedPaymentPlan);
+        if (selectedPaymentPlan == null
+                || (!codEnabled && selectedPlanNeedsCodVerification)
+                || (registeredCustomerCodVerificationRequired && selectedPlanNeedsCodVerification)) {
+            model.addAttribute(
+                    "selectedPaymentPlan",
+                    (!codEnabled || registeredCustomerCodVerificationRequired) ? "FULL_PREPAID" : "FULL_COD"
+            );
         }
         if (!model.containsAttribute("selectedPaymentMethod")) {
             model.addAttribute("selectedPaymentMethod", authenticatedCustomer ? "SSLCOMMERZ" : "COD");

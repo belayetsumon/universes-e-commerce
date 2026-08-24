@@ -11,7 +11,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -23,11 +22,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
-    @Autowired
-    UsersRepository usersRepository;
+    private final UsersRepository usersRepository;
+    private final BrowsingHistoryService browsingHistoryService;
 
-    @Autowired
-    private BrowsingHistoryService browsingHistoryService;
+    public CustomLoginSuccessHandler(
+            UsersRepository usersRepository,
+            BrowsingHistoryService browsingHistoryService) {
+        this.usersRepository = usersRepository;
+        this.browsingHistoryService = browsingHistoryService;
+    }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {

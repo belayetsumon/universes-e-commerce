@@ -30,7 +30,8 @@ public class DefaultDeviceRiskSignalEvaluator extends AbstractFraudSignalEvaluat
         String deviceIdentifier = blankToNull(context.getDeviceIdentifier());
         Long customerId = customerId(order);
 
-        boolean unknownDevice = deviceIdentifier != null && deviceIdentityRepository.findByDeviceIdentifier(deviceIdentifier).isEmpty();
+        boolean unknownDevice = deviceIdentifier != null
+                && deviceIdentityRepository.findFirstByDeviceIdentifierOrderByIdAsc(deviceIdentifier).isEmpty();
         signals.add(signal("UNKNOWN_DEVICE", category(), unknownDevice, 10, FraudSignalSeverity.MEDIUM,
                 null, String.valueOf(unknownDevice), "device-identity", null));
 
@@ -44,7 +45,7 @@ public class DefaultDeviceRiskSignalEvaluator extends AbstractFraudSignalEvaluat
                 null, String.valueOf(trusted), "trusted-device", null));
 
         long accountsOnDevice = deviceIdentifier == null ? 0
-                : deviceIdentityRepository.countDistinctByDeviceIdentifierAndCustomerIdIsNotNull(deviceIdentifier);
+                : deviceIdentityRepository.countDistinctCustomersByDeviceIdentifier(deviceIdentifier);
         signals.add(signal("ACCOUNTS_PER_DEVICE", category(), accountsOnDevice > 1, 30, FraudSignalSeverity.HIGH,
                 FraudReasonCode.MULTIPLE_ACCOUNTS_SAME_DEVICE, String.valueOf(accountsOnDevice), "device-identity", "{\"threshold\":1}"));
 

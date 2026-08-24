@@ -34,6 +34,8 @@ public class StoreSettingsForm {
 
     private Boolean guestMobileOtpVerificationEnabled;
 
+    private Boolean registeredCustomerCodMobileVerificationEnabled;
+
     @Min(value = 1, message = "Guest OTP expiry must be at least 1 minute.")
     private Integer guestOtpExpiryMinutes;
 
@@ -70,6 +72,7 @@ public class StoreSettingsForm {
         form.setAllowGuestCheckout(settings.getAllowGuestCheckout());
         form.setGuestMobileRequired(settings.getGuestMobileRequired());
         form.setGuestMobileOtpVerificationEnabled(settings.getGuestMobileOtpVerificationEnabled());
+        form.setRegisteredCustomerCodMobileVerificationEnabled(settings.getRegisteredCustomerCodMobileVerificationEnabled());
         form.setGuestOtpExpiryMinutes(settings.getGuestOtpExpiryMinutes());
         form.setGuestOtpMaximumAttempts(settings.getGuestOtpMaximumAttempts());
         form.setGuestOtpResendCooldownSeconds(settings.getGuestOtpResendCooldownSeconds());
@@ -160,6 +163,14 @@ public class StoreSettingsForm {
 
     public void setGuestMobileOtpVerificationEnabled(Boolean guestMobileOtpVerificationEnabled) {
         this.guestMobileOtpVerificationEnabled = guestMobileOtpVerificationEnabled;
+    }
+
+    public Boolean getRegisteredCustomerCodMobileVerificationEnabled() {
+        return registeredCustomerCodMobileVerificationEnabled;
+    }
+
+    public void setRegisteredCustomerCodMobileVerificationEnabled(Boolean registeredCustomerCodMobileVerificationEnabled) {
+        this.registeredCustomerCodMobileVerificationEnabled = registeredCustomerCodMobileVerificationEnabled;
     }
 
     public Integer getGuestOtpExpiryMinutes() {

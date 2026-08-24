@@ -22,6 +22,7 @@ import org.springframework.data.domain.Sort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -38,6 +39,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/admin/settings")
+@PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
 public class GlobalSettingsController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalSettingsController.class);

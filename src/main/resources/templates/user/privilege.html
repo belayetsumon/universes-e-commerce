@@ -14,7 +14,11 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <div class="alert alert-success" th:if="${success}" th:text="${success}"></div>
+                        <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
                         <form  class="" action="#" th:action="@{/privilege/save}" th:object="${privilege}" method="post">
+                            <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}"
+                                 th:each="globalError : ${#fields.globalErrors()}" th:text="${globalError}"></div>
                             <input type="hidden" class="form-control"  th:field="*{id}" /> 
 
                             <div class="form-group row">
@@ -72,7 +76,7 @@
                                 <td>
                                     <a th:href="@{/privilege/edit/{id} (id=${list.id})}" > Edit</a>
                                 </td>
-                                <td> <a th:href="@{/privilege/delete/{id} (id=${list.id})}" > Delete </a></td>
+                            <td><span class="badge text-bg-secondary">Protected</span></td>
                             </tr>                              
                         </table>
 

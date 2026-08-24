@@ -392,6 +392,7 @@ public class GlobalSettingsService {
         settings.setAllowGuestCheckout(form.getAllowGuestCheckout());
         settings.setGuestMobileRequired(Boolean.TRUE.equals(form.getAllowGuestCheckout()));
         settings.setGuestMobileOtpVerificationEnabled(form.getGuestMobileOtpVerificationEnabled());
+        settings.setRegisteredCustomerCodMobileVerificationEnabled(form.getRegisteredCustomerCodMobileVerificationEnabled());
         settings.setGuestOtpExpiryMinutes(form.getGuestOtpExpiryMinutes());
         settings.setGuestOtpMaximumAttempts(form.getGuestOtpMaximumAttempts());
         settings.setGuestOtpResendCooldownSeconds(form.getGuestOtpResendCooldownSeconds());
@@ -552,6 +553,7 @@ public class GlobalSettingsService {
         settings.setAllowGuestCheckout(true);
         settings.setGuestMobileRequired(true);
         settings.setGuestMobileOtpVerificationEnabled(true);
+        settings.setRegisteredCustomerCodMobileVerificationEnabled(true);
         settings.setGuestOtpExpiryMinutes(5);
         settings.setGuestOtpMaximumAttempts(5);
         settings.setGuestOtpResendCooldownSeconds(60);
@@ -663,10 +665,13 @@ public class GlobalSettingsService {
         nonNegative(source.getLowStockAlertQty(), "Low stock alert quantity", errors);
         if (Boolean.TRUE.equals(source.getAllowGuestCheckout())) {
             source.setGuestMobileRequired(true);
-            positive(source.getGuestOtpExpiryMinutes(), "Guest OTP expiry minutes", errors);
-            positive(source.getGuestOtpMaximumAttempts(), "Guest OTP maximum attempts", errors);
-            positive(source.getGuestOtpDailySendLimit(), "Guest OTP daily send limit", errors);
-            nonNegative(source.getGuestOtpResendCooldownSeconds(), "Guest OTP resend cooldown seconds", errors);
+        }
+        if (Boolean.TRUE.equals(source.getAllowGuestCheckout())
+                || Boolean.TRUE.equals(source.getRegisteredCustomerCodMobileVerificationEnabled())) {
+            positive(source.getGuestOtpExpiryMinutes(), "Mobile OTP expiry minutes", errors);
+            positive(source.getGuestOtpMaximumAttempts(), "Mobile OTP maximum attempts", errors);
+            positive(source.getGuestOtpDailySendLimit(), "Mobile OTP daily send limit", errors);
+            nonNegative(source.getGuestOtpResendCooldownSeconds(), "Mobile OTP resend cooldown seconds", errors);
         }
         if (source.getStoreMode() == null) {
             errors.add("Store mode is required.");
@@ -822,6 +827,7 @@ public class GlobalSettingsService {
         target.setAllowGuestCheckout(checked(source.getAllowGuestCheckout()));
         target.setGuestMobileRequired(Boolean.TRUE.equals(target.getAllowGuestCheckout()));
         target.setGuestMobileOtpVerificationEnabled(checked(source.getGuestMobileOtpVerificationEnabled()));
+        target.setRegisteredCustomerCodMobileVerificationEnabled(checked(source.getRegisteredCustomerCodMobileVerificationEnabled()));
         target.setGuestOtpExpiryMinutes(positiveInteger(source.getGuestOtpExpiryMinutes(), 5));
         target.setGuestOtpMaximumAttempts(positiveInteger(source.getGuestOtpMaximumAttempts(), 5));
         target.setGuestOtpResendCooldownSeconds(nonNegativeInteger(source.getGuestOtpResendCooldownSeconds(), 60));

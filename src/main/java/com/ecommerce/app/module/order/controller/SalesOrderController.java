@@ -24,14 +24,18 @@ import com.ecommerce.app.module.checkout.guest.services.GuestCheckoutOtpService;
 import com.ecommerce.app.module.checkout.guest.services.GuestCheckoutSessionService;
 import com.ecommerce.app.module.checkout.guest.services.MobileNumberNormalizationService;
 import com.ecommerce.app.module.checkout.guest.session.GuestCheckoutSession;
+import com.ecommerce.app.module.checkout.customer.services.CustomerCodMobileVerificationService;
 import com.ecommerce.app.module.fraud.dto.FraudContext;
 import com.ecommerce.app.module.fraud.dto.FraudGuardResult;
+import com.ecommerce.app.module.fraud.model.FraudAssessmentStatus;
+import com.ecommerce.app.module.fraud.model.FraudDecision;
 import com.ecommerce.app.module.fraud.services.CodEligibilityService;
 import com.ecommerce.app.module.fraud.services.CodRiskProfileService;
 import com.ecommerce.app.module.fraud.services.FraudOrderAssessmentGuard;
 import com.ecommerce.app.module.fraud.services.FraudPaymentCaptureGuard;
 import com.ecommerce.app.module.fraud.services.FraudPreOrderGuard;
 import com.ecommerce.app.module.fraud.services.VendorRiskProfileService;
+import com.ecommerce.app.module.fraud.support.FraudHashingSupport;
 import com.ecommerce.app.module.shipping.model.ShippingLocation;
 import com.ecommerce.app.module.settings.services.StoreOperationModeService;
 import com.ecommerce.app.module.user.model.Users;
@@ -56,6 +60,9 @@ import com.ecommerce.app.module.order.repository.OrderItemRepository;
 import com.ecommerce.app.module.order.repository.SalesOrderRepository;
 import com.ecommerce.app.module.order.repository.ShippingAddressRepository;
 import com.ecommerce.app.module.order.services.EmiPaymentPlanService;
+import com.ecommerce.app.module.order.services.CheckoutPlacementIdempotencyException;
+import com.ecommerce.app.module.order.services.CheckoutPlacementIdempotencyService;
+import com.ecommerce.app.module.order.services.CheckoutPlacementTransactionExecutor;
 import com.ecommerce.app.module.order.services.CustomerOrderGroupCodeGeneratorService;
 import com.ecommerce.app.module.order.services.PaymentService;
 import com.ecommerce.app.module.order.services.SalesOrderCodeGeneratorService;
@@ -67,20 +74,23 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
+import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
@@ -92,6 +102,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 //@PreAuthorize("hasAuthority('order')")
 public class SalesOrderController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SalesOrderController.class);
     private static final String PAYMENT_METHOD_COD = "COD";
     private static final String PAYMENT_METHOD_WALLET = "WALLET";
     private static final String PAYMENT_METHOD_EMI = "EMI";
@@ -104,6 +115,7 @@ public class SalesOrderController {
     private static final BigDecimal DEFAULT_ADVANCE_RATIO = new BigDecimal("0.20");
     private static final String PRODUCT_SHARE_REFERRAL_CODE_SESSION_KEY = "productShareReferralCode";
     private static final String PRODUCT_SHARE_REFERRAL_PRODUCT_SESSION_KEY = "productShareReferralProductUuid";
+    private static final String CHECKOUT_REQUEST_ID_SESSION_KEY = "checkoutPlacement.requestId";
 
     @Autowired
     SalesOrderRepository salesOrderRepository;
@@ -160,6 +172,12 @@ public class SalesOrderController {
     CustomerOrderGroupCodeGeneratorService customerOrderGroupCodeGeneratorService;
 
     @Autowired
+    CheckoutPlacementIdempotencyService checkoutPlacementIdempotencyService;
+
+    @Autowired
+    CheckoutPlacementTransactionExecutor checkoutPlacementTransactionExecutor;
+
+    @Autowired
     SalesOrderService salesOrderService;
 
     @Autowired
@@ -187,6 +205,9 @@ public class SalesOrderController {
     MobileNumberNormalizationService mobileNumberNormalizationService;
 
     @Autowired
+    CustomerCodMobileVerificationService customerCodMobileVerificationService;
+
+    @Autowired
     FraudPreOrderGuard fraudPreOrderGuard;
 
     @Autowired
@@ -210,7 +231,7 @@ public class SalesOrderController {
         return "order/order/index";
     }
 
-    @RequestMapping(value = {"create"})
+    @GetMapping("/create")
     public String create(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
         boolean authenticatedCustomer = loggedUserService.isAuthenticatedUser();
         CheckoutAvailability availability = checkoutAvailabilityService.availability(authenticatedCustomer);
@@ -235,6 +256,33 @@ public class SalesOrderController {
                 : guestSession.getMobileVerificationStatus().name();
         model.addAttribute("guestMobileVerificationStatus", guestMobileVerificationStatus);
         model.addAttribute("guestMobileVerificationRequired", guestSession != null && guestSession.isMobileVerificationRequired());
+        Users authenticatedUser = authenticatedCustomer
+                ? loggedUserService.activeUserOptional().orElse(null)
+                : null;
+        boolean registeredCustomerCodVerificationEnabled = authenticatedCustomer
+                && storeOperationModeService.isRegisteredCustomerCodMobileVerificationEnabled();
+        boolean registeredCustomerCurrentMobileVerified = authenticatedUser != null
+                && customerCodMobileVerificationService.isCurrentMobileVerified(authenticatedUser);
+        boolean registeredCustomerCodVerificationRequired = registeredCustomerCodVerificationEnabled
+                && !registeredCustomerCurrentMobileVerified;
+        boolean codEnabled = storeOperationModeService.isCodEnabled();
+        model.addAttribute("codEnabled", codEnabled);
+        model.addAttribute("registeredCustomerCodMobileVerificationEnabled", registeredCustomerCodVerificationEnabled);
+        model.addAttribute("registeredCustomerCodMobileVerified", registeredCustomerCurrentMobileVerified);
+        model.addAttribute("registeredCustomerCodMobileVerificationRequired", registeredCustomerCodVerificationRequired);
+        model.addAttribute(
+                "registeredCustomerMobileDisplay",
+                authenticatedUser == null ? "01*********" : mobileNumberNormalizationService.mask(authenticatedUser.getMobile())
+        );
+        Object selectedPaymentPlan = model.getAttribute("selectedPaymentPlan");
+        boolean selectedPlanUsesCod = PAYMENT_PLAN_FULL_COD.equals(selectedPaymentPlan)
+                || PAYMENT_PLAN_PARTIAL_ADVANCE_COD.equals(selectedPaymentPlan);
+        if (selectedPaymentPlan == null || ((!codEnabled || registeredCustomerCodVerificationRequired) && selectedPlanUsesCod)) {
+            model.addAttribute("selectedPaymentPlan",
+                    !codEnabled || registeredCustomerCodVerificationRequired
+                            ? PAYMENT_PLAN_FULL_PREPAID
+                            : PAYMENT_PLAN_FULL_COD);
+        }
         model.addAttribute("selectedShippingLocation", currentShippingLocation(session));
         model.addAttribute("walletBalance", authenticatedCustomer ? loadCurrentUserWalletBalance() : BigDecimal.ZERO);
         model.addAttribute("rewardBalance", authenticatedCustomer ? loadCurrentUserRewardBalance() : BigDecimal.ZERO);
@@ -245,6 +293,8 @@ public class SalesOrderController {
             model.addAttribute("selectedPaymentMethod", authenticatedCustomer ? PAYMENT_METHOD_SSLCOMMERZ : PAYMENT_METHOD_COD);
         }
         List<CartItem> cartItems = cartService.getCartFromSession(session);
+        model.addAttribute("checkoutRequestId", resolveCheckoutRequestKey(session, null));
+        model.addAttribute("checkoutCartFingerprint", checkoutCartFingerprint(cartItems));
         BigDecimal orderTotal = calculateCartTotal(cartItems, session, false);
         boolean requiresShipping = cartService.cartRequiresShipping(cartItems);
         model.addAttribute("requiresShipping", requiresShipping);
@@ -344,91 +394,7 @@ public class SalesOrderController {
         return "order/order/create";
     }
 
-    @RequestMapping(value = {"/save"})
-    @Transactional
-    public String save(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-
-        String availabilityRedirect = validateCheckoutAvailabilityForOrder(session, redirectAttributes, "/order/create");
-        if (availabilityRedirect != null) {
-            return availabilityRedirect;
-        }
-        if (!loggedUserService.isAuthenticatedUser()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Please continue through the guest checkout flow.");
-            return "redirect:/cart/checkout";
-        }
-
-        List<CartItem> cartItems = cartService.getCartFromSession(session);
-        boolean requiresShipping = cartService.cartRequiresShipping(cartItems);
-
-        if (session.getAttribute("session_Billing_address") == null
-                || (requiresShipping && session.getAttribute("session_Shipping_address") == null)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Billing or shipping  address is missing or empty!");
-
-            return "redirect:/order/create";
-        }
-
-        BigDecimal grandtotal = BigDecimal.ZERO;
-
-        List<CartItem> cartitem = new ArrayList<>();
-
-        SalesOrder order = new SalesOrder();
-
-        Users userId = new Users();
-
-        userId.setId(loggedUserService.activeUserid());
-
-        order.setCustomer(userId);
-
-        order.setStatus(OrderStatus.PENDING);
-
-        salesOrderRepository.save(order);
-
-        Set<OrderItem> orderitems = new HashSet<>();
-
-        for (int i = 0; i < cartitem.size(); i++) {
-
-            OrderItem orderitem = new OrderItem();
-            orderitem.setSalesOrder(order);
-            orderitem.setProduct(cartitem.get(i).getProduct());
-            orderitem.setVendorId(cartitem.get(i).getVendorId());
-            orderitem.setProductid(cartitem.get(i).getProductId());
-            orderitem.setCatalogVariantUuid(cartitem.get(i).getCatalogVariantUuid());
-            orderitem.setVariantSummary(cartitem.get(i).getVariantSummary());
-            orderitem.setPreorder(cartitem.get(i).getPreorder());
-            orderitem.setPreorderAvailableFrom(cartitem.get(i).getPreorderAvailableFrom());
-            orderitem.setDigitalAccessUrl(cartitem.get(i).getProduct().getDigitalAccessUrl());
-            orderitem.setDigitalLicenseCode(cartitem.get(i).getProduct().getDigitalLicenseCode());
-            orderitem.setDigitalDeliveryNote(cartitem.get(i).getProduct().getDigitalDeliveryNote());
-            orderitem.setQuantity(cartitem.get(i).getQuantity());
-            orderitem.setDiscountRate(cartitem.get(i).getDiscountRate());
-            orderitem.setDiscountAmount(cartitem.get(i).getDiscountAmount());
-            orderitem.setItemTotal(cartitem.get(i).getItemTotal());
-            orderitems.add(orderitem);
-        }
-        orderItemRepository.saveAll(orderitems);
-
-        BillingAddress billingAddress = (BillingAddress) session.getAttribute("session_Billing_address");
-
-        billingAddress.setUserId(userId);
-
-//        billingAddress.setSalesOrder(order);
-        billingAddressRepository.save(billingAddress);
-
-        if (requiresShipping) {
-            ShippingAddress shippingAddress = (ShippingAddress) session.getAttribute("session_Shipping_address");
-            shippingAddress.setOrder(order);
-            shippingAddressRepository.save(shippingAddress);
-        }
-
-        session.removeAttribute("sessioncart");
-        session.removeAttribute("session_Shipping_address");
-        session.removeAttribute("session_Billing_address");
-
-        return "redirect:/customerorder/index";
-    }
-
-    @RequestMapping(value = {"/savebyvendor"})
-    @Transactional
+    @PostMapping("/savebyvendor")
     public String savebyvendor(
             Model model,
             HttpSession session,
@@ -442,6 +408,56 @@ public class SalesOrderController {
             @RequestParam(name = "giftCardCode", required = false) String giftCardCode,
             @RequestParam(name = "giftCardAmount", required = false) BigDecimal giftCardAmount,
             HttpServletRequest request) {
+        CheckoutExecutionState executionState = prepareCheckoutExecutionState(
+                "savebyvendor",
+                session,
+                request,
+                paymentPlan,
+                paymentMethod,
+                advanceAmount,
+                emiTenureMonths,
+                couponCode,
+                rewardPointsToUse,
+                giftCardCode,
+                giftCardAmount
+        );
+        return executeIdempotentCheckout(
+                executionState,
+                session,
+                redirectAttributes,
+                "/order/create",
+                () -> placeOrderByVendor(
+                        model,
+                        session,
+                        redirectAttributes,
+                        paymentPlan,
+                        paymentMethod,
+                        advanceAmount,
+                        emiTenureMonths,
+                        couponCode,
+                        rewardPointsToUse,
+                        giftCardCode,
+                        giftCardAmount,
+                        request,
+                        executionState
+                )
+        );
+    }
+
+    private String placeOrderByVendor(
+            Model model,
+            HttpSession session,
+            RedirectAttributes redirectAttributes,
+            String paymentPlan,
+            String paymentMethod,
+            BigDecimal advanceAmount,
+            Integer emiTenureMonths,
+            String couponCode,
+            BigDecimal rewardPointsToUse,
+            String giftCardCode,
+            BigDecimal giftCardAmount,
+            HttpServletRequest request,
+            CheckoutExecutionState executionState) {
 
         String availabilityRedirect = validateCheckoutAvailabilityForOrder(session, redirectAttributes, "/order/create");
         if (availabilityRedirect != null) {
@@ -512,7 +528,7 @@ public class SalesOrderController {
             return fraudCheckoutRedirect;
         }
 
-        BigDecimal grossPayableTotal = calculateCartTotal(cartitem, session, false);
+        BigDecimal grossPayableTotal = calculateCartTotal(cartitem, session, true);
         CheckoutIncentiveQuote incentiveQuote;
         try {
             incentiveQuote = checkoutIncentiveService.prepareQuote(
@@ -568,8 +584,6 @@ public class SalesOrderController {
             return walletCheckoutRedirect;
         }
 
-        applyProductShareReferral(customer, session);
-
 //        String stockAvailabilityMessage = validateCartStockAvailability(cartitem);
 //        if (stockAvailabilityMessage != null) {
 //            redirectAttributes.addFlashAttribute("errorMessage", stockAvailabilityMessage);
@@ -580,7 +594,12 @@ public class SalesOrderController {
                 .collect(Collectors.groupingBy(CartItem::getVendorId));
 
         // Prepare customer
-        CustomerOrderGroup orderGroup = createInitialOrderGroup(customer, session, normalizedPaymentMethod);
+        CustomerOrderGroup orderGroup = createInitialOrderGroup(
+                customer,
+                session,
+                normalizedPaymentMethod,
+                executionState
+        );
         List<SalesOrder> orders = new ArrayList<>();
 
         // Loop per vendor
@@ -596,16 +615,23 @@ public class SalesOrderController {
 
             salesOrder.setStatus(OrderStatus.NEW_ORDER);
 
+            boolean vendorRequiresShipping = cartService.vendorCartRequiresShipping(items);
+            BigDecimal shippingCost = vendorRequiresShipping
+                    ? getSessionMoney(session, "shippingCost_" + vendorId)
+                    : BigDecimal.ZERO;
+            BigDecimal packingCost = vendorRequiresShipping
+                    ? getSessionMoney(session, "packagingCost_" + vendorId)
+                    : BigDecimal.ZERO;
+            salesOrder.setDeliveryCharge(shippingCost);
+            salesOrder.setPackingCharge(packingCost);
+
             // Save shipping address with order
-            if (cartService.vendorCartRequiresShipping(items)) {
+            if (vendorRequiresShipping) {
                 ShippingAddress shippingAddress = (ShippingAddress) session.getAttribute("session_Shipping_address");
                 ShippingAddress newShipping = new ShippingAddress();
                 newShipping.copyFrom(shippingAddress);
                 newShipping.setOrder(salesOrder);
                 salesOrder.setShippingAddress(newShipping);
-            } else {
-                salesOrder.setDeliveryCharge(BigDecimal.ZERO);
-                salesOrder.setPackingCharge(BigDecimal.ZERO);
             }
 
             salesOrder.setOrderCode(salesOrderCodeGeneratorService.generateNextDailyOrderCode());
@@ -639,6 +665,7 @@ public class SalesOrderController {
                 orderItem.setVendorAmount(cartItem.getVendorAmount());
                 orderItem.setItemTotal(cartItem.getItemTotal());
                 orderItemRepository.save(orderItem);
+                salesOrder.getOrderItem().add(orderItem);
 
                 // Sum item total to grand total
                 if (cartItem.getItemTotal() != null) {
@@ -652,16 +679,10 @@ public class SalesOrderController {
 
             }
             // Save grand total in sales order
-            salesOrder.setGrandTotal(grandTotal);
+            salesOrder.setItemtotal(grandTotal);
+            salesOrder.setGrandTotal(grandTotal.add(shippingCost).add(packingCost));
             salesOrder.setTotalMarketPlaceCommissionAmount(totalmarketPlaceCommissionAmount);
             salesOrderRepository.save(salesOrder); // update with grand total
-            salesOrderService.reserveStockForOrder(salesOrder.getId());
-            // 10% for refarel
-            BigDecimal commission = totalmarketPlaceCommissionAmount.multiply(BigDecimal.valueOf(0.10))
-                    .setScale(2, RoundingMode.HALF_UP);
-            if (customer != null) {
-                referralService.distributeCommission(customer, commission, salesOrder.getId());
-            }
 
             orders.add(salesOrder);
         }
@@ -669,19 +690,13 @@ public class SalesOrderController {
         // Save billing address only if it's new (null ID)
         BillingAddress billingAddress = (BillingAddress) session.getAttribute("session_Billing_address");
 
-        persistCheckoutBillingAddress(billingAddress, customer);
-
-        checkoutIncentiveService.applyQuoteToOrders(incentiveQuote, customer, orders);
-        orders.forEach(salesOrderRepository::save);
-        finalizeOrderGroup(orderGroup, orders, normalizedPaymentMethod);
-
         Map<Long, BigDecimal> paymentDueNowByOrder = applyPaymentPlanToOrders(
                 orders,
                 normalizedPaymentPlan,
                 immediatePaymentTotal
         );
         finalizeOrderGroup(orderGroup, orders, normalizedPaymentMethod);
-        persistOrderIncentiveUsage(orders, incentiveQuote, paymentDueNowByOrder, normalizedPaymentMethod);
+        persistCheckoutBillingAddress(billingAddress, customer);
 
         FraudGuardResult orderFraudGuard = assessPlacedOrders(
                 orders,
@@ -692,16 +707,22 @@ public class SalesOrderController {
                 paymentDueNowByOrder
         );
 
-        // Clean session
-        session.removeAttribute("sessioncart");
-        session.removeAttribute("session_Shipping_address");
-        session.removeAttribute("session_Billing_address");
-
-        consumeGuestCheckoutSession(session);
-        clearProductShareReferral(session);
+        if (orderFraudGuard.isAllowed()) {
+            applyProductShareReferral(customer, session);
+            checkoutIncentiveService.applyQuoteToOrders(incentiveQuote, customer, orders);
+            orders.forEach(salesOrderRepository::save);
+            paymentDueNowByOrder = applyPaymentPlanToOrders(
+                    orders,
+                    normalizedPaymentPlan,
+                    immediatePaymentTotal
+            );
+            persistOrderIncentiveUsage(orders, incentiveQuote, paymentDueNowByOrder, normalizedPaymentMethod);
+            reserveStockAndDistributeReferral(orders, customer);
+        }
+        finalizeOrderGroup(orderGroup, orders, normalizedPaymentMethod);
 
         if (!orderFraudGuard.isAllowed()) {
-            redirectAttributes.addFlashAttribute("errorMessage", orderFraudGuard.getReason());
+            redirectAttributes.addFlashAttribute("errorMessage", safeFraudHoldMessage(orderFraudGuard));
             return placedOrderRedirect(customer, orderGroup);
         }
 
@@ -718,8 +739,7 @@ public class SalesOrderController {
         );
     }
 
-    @RequestMapping(value = {"/savebyvendorupdate"})
-    @Transactional
+    @PostMapping("/savebyvendorupdate")
     public String savebyvendorupdate(
             Model model,
             HttpSession session,
@@ -733,6 +753,56 @@ public class SalesOrderController {
             @RequestParam(name = "giftCardCode", required = false) String giftCardCode,
             @RequestParam(name = "giftCardAmount", required = false) BigDecimal giftCardAmount,
             HttpServletRequest request) {
+        CheckoutExecutionState executionState = prepareCheckoutExecutionState(
+                "savebyvendorupdate",
+                session,
+                request,
+                paymentPlan,
+                paymentMethod,
+                advanceAmount,
+                emiTenureMonths,
+                couponCode,
+                rewardPointsToUse,
+                giftCardCode,
+                giftCardAmount
+        );
+        return executeIdempotentCheckout(
+                executionState,
+                session,
+                redirectAttributes,
+                "/cart/checkout",
+                () -> placeOrderByVendorUpdate(
+                        model,
+                        session,
+                        redirectAttributes,
+                        paymentPlan,
+                        paymentMethod,
+                        advanceAmount,
+                        emiTenureMonths,
+                        couponCode,
+                        rewardPointsToUse,
+                        giftCardCode,
+                        giftCardAmount,
+                        request,
+                        executionState
+                )
+        );
+    }
+
+    private String placeOrderByVendorUpdate(
+            Model model,
+            HttpSession session,
+            RedirectAttributes redirectAttributes,
+            String paymentPlan,
+            String paymentMethod,
+            BigDecimal advanceAmount,
+            Integer emiTenureMonths,
+            String couponCode,
+            BigDecimal rewardPointsToUse,
+            String giftCardCode,
+            BigDecimal giftCardAmount,
+            HttpServletRequest request,
+            CheckoutExecutionState executionState) {
 
         String availabilityRedirect = validateCheckoutAvailabilityForOrder(session, redirectAttributes, "/cart/checkout");
         if (availabilityRedirect != null) {
@@ -853,8 +923,6 @@ public class SalesOrderController {
             return walletCheckoutRedirect;
         }
 
-        applyProductShareReferral(customer, session);
-
 //        String stockAvailabilityMessage = validateCartStockAvailability(cartitem);
 //        if (stockAvailabilityMessage != null) {
 //            redirectAttributes.addFlashAttribute("errorMessage", stockAvailabilityMessage);
@@ -864,7 +932,12 @@ public class SalesOrderController {
         Map<Long, List<CartItem>> itemsByVendors = cartitem.stream()
                 .collect(Collectors.groupingBy(CartItem::getVendorId));
 
-        CustomerOrderGroup orderGroup = createInitialOrderGroup(customer, session, normalizedPaymentMethod);
+        CustomerOrderGroup orderGroup = createInitialOrderGroup(
+                customer,
+                session,
+                normalizedPaymentMethod,
+                executionState
+        );
         List<SalesOrder> orders = new ArrayList<>();
 
         // 3. Loop per vendor
@@ -929,6 +1002,7 @@ public class SalesOrderController {
                 orderItem.setItemTotal(cartItem.getItemTotal());
 
                 orderItemRepository.save(orderItem);
+                salesOrder.getOrderItem().add(orderItem);
 
                 if (cartItem.getItemTotal() != null) {
                     subTotal = subTotal.add(cartItem.getItemTotal());
@@ -942,23 +1016,12 @@ public class SalesOrderController {
             BigDecimal grandTotal = subTotal.add(sCost).add(pCost);
 
             salesOrder.setGrandTotal(grandTotal);
+            salesOrder.setItemtotal(subTotal);
             salesOrder.setTotalMarketPlaceCommissionAmount(totalCommission);
             salesOrderRepository.save(salesOrder);
-            salesOrderService.reserveStockForOrder(salesOrder.getId());
-
-            // 7. Referral Commission
-            BigDecimal referralCommission = totalCommission.multiply(new BigDecimal("0.10"))
-                    .setScale(2, RoundingMode.HALF_UP);
-            if (customer != null) {
-                referralService.distributeCommission(customer, referralCommission, salesOrder.getId());
-            }
 
             orders.add(salesOrder);
         }
-
-        checkoutIncentiveService.applyQuoteToOrders(incentiveQuote, customer, orders);
-        orders.forEach(salesOrderRepository::save);
-        finalizeOrderGroup(orderGroup, orders, normalizedPaymentMethod);
 
         Map<Long, BigDecimal> paymentDueNowByOrder = applyPaymentPlanToOrders(
                 orders,
@@ -966,7 +1029,7 @@ public class SalesOrderController {
                 immediatePaymentTotal
         );
         finalizeOrderGroup(orderGroup, orders, normalizedPaymentMethod);
-        persistOrderIncentiveUsage(orders, incentiveQuote, paymentDueNowByOrder, normalizedPaymentMethod);
+        persistCheckoutBillingAddress(sessionBillingAddress, customer);
 
         FraudGuardResult orderFraudGuard = assessPlacedOrders(
                 orders,
@@ -977,26 +1040,22 @@ public class SalesOrderController {
                 paymentDueNowByOrder
         );
 
-        // 8. Finalize Billing and Cleanup
-        persistCheckoutBillingAddress(sessionBillingAddress, customer);
-        // Clean up all related session attributes
-        session.removeAttribute("sessioncart");
-        session.removeAttribute("session_Shipping_address");
-        session.removeAttribute("session_Billing_address");
-
-        consumeGuestCheckoutSession(session);
-        clearProductShareReferral(session);
-
-        // Clear dynamic session keys for costs
-        itemsByVendors.keySet().forEach(vId -> {
-            session.removeAttribute("shippingCost_" + vId);
-            session.removeAttribute("packagingCost_" + vId);
-            session.removeAttribute("shippingOption_" + vId);
-            session.removeAttribute("packagingRate_" + vId);
-        });
+        if (orderFraudGuard.isAllowed()) {
+            applyProductShareReferral(customer, session);
+            checkoutIncentiveService.applyQuoteToOrders(incentiveQuote, customer, orders);
+            orders.forEach(salesOrderRepository::save);
+            paymentDueNowByOrder = applyPaymentPlanToOrders(
+                    orders,
+                    normalizedPaymentPlan,
+                    immediatePaymentTotal
+            );
+            persistOrderIncentiveUsage(orders, incentiveQuote, paymentDueNowByOrder, normalizedPaymentMethod);
+            reserveStockAndDistributeReferral(orders, customer);
+        }
+        finalizeOrderGroup(orderGroup, orders, normalizedPaymentMethod);
 
         if (!orderFraudGuard.isAllowed()) {
-            redirectAttributes.addFlashAttribute("errorMessage", orderFraudGuard.getReason());
+            redirectAttributes.addFlashAttribute("errorMessage", safeFraudHoldMessage(orderFraudGuard));
             return placedOrderRedirect(customer, orderGroup);
         }
 
@@ -1131,7 +1190,12 @@ public class SalesOrderController {
         return null;
     }
 
-    private CustomerOrderGroup createInitialOrderGroup(Users customer, HttpSession session, String paymentMethod) {
+    private CustomerOrderGroup createInitialOrderGroup(
+            Users customer,
+            HttpSession session,
+            String paymentMethod,
+            CheckoutExecutionState executionState
+    ) {
         CustomerOrderGroup group = new CustomerOrderGroup();
         group.setOrderGroupCode(customerOrderGroupCodeGeneratorService.generateNextDailyOrderGroupCode());
         group.setCustomer(customer);
@@ -1158,7 +1222,17 @@ public class SalesOrderController {
             group.setGuestSessionId(session.getId());
         }
 
-        return customerOrderGroupRepository.save(group);
+        CustomerOrderGroup savedGroup = customerOrderGroupRepository.save(group);
+        if (executionState != null) {
+            checkoutPlacementIdempotencyService.linkCompletedOrderGroup(
+                    executionState.actorScope(),
+                    executionState.requestKey(),
+                    executionState.payload(),
+                    savedGroup.getUuid()
+            );
+            executionState.setOrderGroupUuid(savedGroup.getUuid());
+        }
+        return savedGroup;
     }
 
     private void finalizeOrderGroup(CustomerOrderGroup group, List<SalesOrder> orders, String paymentMethod) {
@@ -1294,8 +1368,11 @@ public class SalesOrderController {
         if (guestSession == null) {
             return;
         }
-        guestCheckoutOtpService.markUsed(guestSession.getOtpVerificationUuid());
-        guestCheckoutSessionService.clear(session);
+        try {
+            guestCheckoutOtpService.markUsed(guestSession.getOtpVerificationUuid());
+        } finally {
+            guestCheckoutSessionService.clear(session);
+        }
     }
 
     private void applyGuestCheckoutMetadata(SalesOrder salesOrder, HttpSession session) {
@@ -1368,6 +1445,62 @@ public class SalesOrderController {
         }
 
         return total;
+    }
+
+    private Map<Long, BigDecimal> calculateVendorNetPayables(
+            List<CartItem> cartItems,
+            HttpSession session,
+            BigDecimal checkoutNetPayable
+    ) {
+        if (cartItems == null || cartItems.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, List<CartItem>> itemsByVendor = cartItems.stream()
+                .filter(Objects::nonNull)
+                .filter(item -> item.getVendorId() != null)
+                .collect(Collectors.groupingBy(
+                        CartItem::getVendorId,
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+        Map<Long, BigDecimal> vendorGrossTotals = new LinkedHashMap<>();
+        BigDecimal checkoutGrossTotal = BigDecimal.ZERO;
+        for (Map.Entry<Long, List<CartItem>> entry : itemsByVendor.entrySet()) {
+            BigDecimal vendorGross = entry.getValue().stream()
+                    .map(item -> safeMoney(item.getItemTotal()))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            if (cartService.vendorCartRequiresShipping(entry.getValue())) {
+                vendorGross = vendorGross
+                        .add(getSessionMoney(session, "shippingCost_" + entry.getKey()))
+                        .add(getSessionMoney(session, "packagingCost_" + entry.getKey()));
+            }
+            vendorGross = safeMoney(vendorGross);
+            vendorGrossTotals.put(entry.getKey(), vendorGross);
+            checkoutGrossTotal = checkoutGrossTotal.add(vendorGross);
+        }
+
+        if (checkoutGrossTotal.compareTo(BigDecimal.ZERO) <= 0) {
+            return vendorGrossTotals;
+        }
+
+        BigDecimal amountToAllocate = safeMoney(checkoutNetPayable)
+                .max(BigDecimal.ZERO)
+                .min(safeMoney(checkoutGrossTotal));
+        Map<Long, BigDecimal> vendorNetTotals = new LinkedHashMap<>();
+        BigDecimal allocated = BigDecimal.ZERO;
+        int index = 0;
+        for (Map.Entry<Long, BigDecimal> entry : vendorGrossTotals.entrySet()) {
+            index++;
+            BigDecimal vendorNet = index == vendorGrossTotals.size()
+                    ? amountToAllocate.subtract(allocated)
+                    : amountToAllocate.multiply(entry.getValue())
+                            .divide(checkoutGrossTotal, 2, RoundingMode.HALF_UP);
+            vendorNet = safeMoney(vendorNet.max(BigDecimal.ZERO).min(entry.getValue()));
+            vendorNetTotals.put(entry.getKey(), vendorNet);
+            allocated = allocated.add(vendorNet);
+        }
+        return vendorNetTotals;
     }
 
     private BigDecimal getSessionMoney(HttpSession session, String attributeName) {
@@ -1659,6 +1792,13 @@ public class SalesOrderController {
         if (!PAYMENT_PLAN_FULL_COD.equals(paymentPlan) && !PAYMENT_PLAN_PARTIAL_ADVANCE_COD.equals(paymentPlan)) {
             return null;
         }
+        if (!storeOperationModeService.isCodEnabled()) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "Cash on Delivery is currently disabled. Please choose a prepaid payment option."
+            );
+            return "redirect:" + redirectPath;
+        }
 
         FraudContext context = buildFraudContext(session, request, PAYMENT_METHOD_COD);
         context.getMetadata().putIfAbsent("mobileNumber", resolveFraudMobileNumber(customer, session));
@@ -1666,34 +1806,31 @@ public class SalesOrderController {
                 (ShippingAddress) session.getAttribute("session_Shipping_address"),
                 (BillingAddress) session.getAttribute("session_Billing_address")
         ));
+        boolean mobileVerificationSatisfied = isMobileVerifiedForCod(customer, session);
 
-        Map<Long, BigDecimal> vendorTotals = cartItems == null ? Map.of() : cartItems.stream()
-                .filter(item -> item != null && item.getVendorId() != null)
-                .collect(Collectors.groupingBy(
-                        CartItem::getVendorId,
-                        Collectors.reducing(BigDecimal.ZERO, item -> safeMoney(item.getItemTotal()), BigDecimal::add)
-                ));
-        if (vendorTotals.isEmpty()) {
-            FraudGuardResult codGuard = codEligibilityService.checkCodCheckoutEligibility(
-                    customer == null ? null : customer.getId(),
-                    null,
-                    payableTotal,
-                    paymentPlan,
-                    isMobileVerifiedForCod(customer, session),
-                    context
-            );
-            if (!codGuard.isAllowed()) {
-                redirectAttributes.addFlashAttribute("errorMessage", codGuard.getReason());
-                return "redirect:" + redirectPath;
-            }
+        FraudGuardResult aggregateGuard = codEligibilityService.checkCodCheckoutEligibility(
+                customer == null ? null : customer.getId(),
+                null,
+                safeMoney(payableTotal),
+                paymentPlan,
+                mobileVerificationSatisfied,
+                context
+        );
+        if (!aggregateGuard.isAllowed()) {
+            redirectAttributes.addFlashAttribute("errorMessage", aggregateGuard.getReason());
+            return "redirect:" + redirectPath;
         }
+
+        Map<Long, BigDecimal> vendorTotals = calculateVendorNetPayables(cartItems, session, payableTotal);
         for (Map.Entry<Long, BigDecimal> entry : vendorTotals.entrySet()) {
+            context.setVendorId(entry.getKey());
+            context.setOrderValue(entry.getValue());
             FraudGuardResult codGuard = codEligibilityService.checkCodCheckoutEligibility(
                     customer == null ? null : customer.getId(),
                     entry.getKey(),
                     entry.getValue(),
                     paymentPlan,
-                    isMobileVerifiedForCod(customer, session),
+                    mobileVerificationSatisfied,
                     context
             );
             if (!codGuard.isAllowed()) {
@@ -1709,6 +1846,9 @@ public class SalesOrderController {
         if (orders == null || orders.isEmpty()) {
             return FraudGuardResult.allowed();
         }
+        FraudGuardResult firstBlockedResult = null;
+        Map<SalesOrder, FraudContext> assessedContexts = new LinkedHashMap<>();
+        Map<SalesOrder, FraudGuardResult> assessmentResults = new LinkedHashMap<>();
         for (SalesOrder order : orders) {
             FraudContext context = buildFraudContext(session, request, paymentMethod);
             context.setVendorId(order.getVendorId());
@@ -1734,13 +1874,70 @@ public class SalesOrderController {
             context.getMetadata().put("correlationId", order.getUuid());
 
             FraudGuardResult fraudGuard = fraudOrderAssessmentGuard.checkOrderAllowed(order, context);
-            if (!fraudGuard.isAllowed()) {
-                return fraudGuard;
-            }
-            recordCodRiskProfile(order, context);
+            assessedContexts.put(order, context);
+            assessmentResults.put(order, fraudGuard);
             vendorRiskProfileService.evaluateOrderForVendorRisk(order, context);
+            if (!fraudGuard.isAllowed()) {
+                if (firstBlockedResult == null) {
+                    firstBlockedResult = fraudGuard;
+                }
+            }
         }
+        if (firstBlockedResult != null) {
+            for (SalesOrder order : orders) {
+                applyFraudDisposition(order, assessmentResults.get(order), firstBlockedResult);
+            }
+            return firstBlockedResult;
+        }
+        assessedContexts.forEach(this::recordCodRiskProfile);
         return FraudGuardResult.allowed();
+    }
+
+    private void applyFraudDisposition(
+            SalesOrder order,
+            FraudGuardResult orderFraudGuard,
+            FraudGuardResult groupFraudGuard
+    ) {
+        if (order == null) {
+            return;
+        }
+        boolean rejected = isFraudRejected(orderFraudGuard);
+        OrderStatus status = rejected ? OrderStatus.CANCELLED : OrderStatus.PENDING;
+        order.setStatus(status);
+        salesOrderRepository.save(order);
+
+        OrderHistory history = new OrderHistory();
+        history.setSalesOrder(order);
+        history.setStatus(status);
+        history.setOrderStatusChanged(OrderStatusChangedBy.MarketPlace);
+        history.setRemark(rejected
+                ? "Order rejected by automated fraud controls. Fraud assessment reference: " + assessmentReference(orderFraudGuard) + "."
+                : "Order group held for fraud verification. Order assessment reference: "
+                        + assessmentReference(orderFraudGuard)
+                        + "; blocking assessment reference: " + assessmentReference(groupFraudGuard) + ".");
+        orderHistoryRepository.save(history);
+    }
+
+    private boolean isFraudRejected(FraudGuardResult fraudGuard) {
+        return fraudGuard != null
+                && (fraudGuard.getAssessmentStatus() == FraudAssessmentStatus.FRAUD_REJECTED
+                || fraudGuard.getAssessmentStatus() == FraudAssessmentStatus.CANCELLED
+                || fraudGuard.getDecision() == FraudDecision.REJECT
+                || fraudGuard.getDecision() == FraudDecision.BLOCK
+                || fraudGuard.getDecision() == FraudDecision.CANCEL);
+    }
+
+    private String assessmentReference(FraudGuardResult fraudGuard) {
+        return fraudGuard == null || fraudGuard.getAssessmentId() == null
+                ? "unavailable"
+                : String.valueOf(fraudGuard.getAssessmentId());
+    }
+
+    private String safeFraudHoldMessage(FraudGuardResult fraudGuard) {
+        if (fraudGuard != null && fraudGuard.getReason() != null && !fraudGuard.getReason().isBlank()) {
+            return fraudGuard.getReason();
+        }
+        return "Order was recorded but is held for fraud verification. Payment and fulfilment remain blocked.";
     }
 
     private FraudContext buildFraudContext(HttpSession session, HttpServletRequest request, String paymentMethod) {
@@ -1750,6 +1947,24 @@ public class SalesOrderController {
         if (request != null) {
             context.setIpAddress(resolveClientIp(request));
             context.setUserAgent(request.getHeader("User-Agent"));
+        }
+        GuestCheckoutSession guestSession = guestCheckoutSessionService.current(session).orElse(null);
+        if (guestSession != null && guestSession.getDeviceFingerprintHash() != null
+                && !guestSession.getDeviceFingerprintHash().isBlank()) {
+            String fingerprintHash = guestSession.getDeviceFingerprintHash().trim();
+            context.setDeviceFingerprint(fingerprintHash);
+            context.setDeviceIdentifier(fingerprintHash);
+            context.getMetadata().put("deviceFingerprintHash", fingerprintHash);
+        } else if (session != null) {
+            Object registeredDeviceHash = session.getAttribute(
+                    CustomerCodMobileVerificationService.CUSTOMER_COD_DEVICE_HASH_SESSION_ATTRIBUTE
+            );
+            if (registeredDeviceHash instanceof String fingerprintHash && !fingerprintHash.isBlank()) {
+                fingerprintHash = fingerprintHash.trim();
+                context.setDeviceFingerprint(fingerprintHash);
+                context.setDeviceIdentifier(fingerprintHash);
+                context.getMetadata().put("deviceFingerprintHash", fingerprintHash);
+            }
         }
         ShippingAddress shippingAddress = session == null ? null : (ShippingAddress) session.getAttribute("session_Shipping_address");
         BillingAddress billingAddress = session == null ? null : (BillingAddress) session.getAttribute("session_Billing_address");
@@ -1768,10 +1983,6 @@ public class SalesOrderController {
     private String resolveClientIp(HttpServletRequest request) {
         if (request == null) {
             return null;
-        }
-        String forwardedFor = request.getHeader("X-Forwarded-For");
-        if (forwardedFor != null && !forwardedFor.isBlank()) {
-            return forwardedFor.split(",")[0].trim();
         }
         return request.getRemoteAddr();
     }
@@ -1796,8 +2007,27 @@ public class SalesOrderController {
         }
     }
 
+    private void reserveStockAndDistributeReferral(List<SalesOrder> orders, Users customer) {
+        if (orders == null || orders.isEmpty()) {
+            return;
+        }
+        for (SalesOrder order : orders) {
+            salesOrderService.reserveStockForOrder(order.getId());
+            if (customer == null) {
+                continue;
+            }
+            BigDecimal referralCommission = safeMoney(order.getTotalMarketPlaceCommissionAmount())
+                    .multiply(new BigDecimal("0.10"))
+                    .setScale(2, RoundingMode.HALF_UP);
+            referralService.distributeCommission(customer, referralCommission, order.getId());
+        }
+    }
+
     private boolean isMobileVerifiedForCod(Users customer, HttpSession session) {
-        if (customer != null && customer.isMobileVerified()) {
+        if (loggedUserService.isAuthenticatedUser()) {
+            return customerCodMobileVerificationService.isCodMobileVerificationSatisfied(customer);
+        }
+        if (!storeOperationModeService.isGuestMobileOtpVerificationEnabled()) {
             return true;
         }
         GuestCheckoutSession guestSession = guestCheckoutSessionService.current(session).orElse(null);
@@ -2075,6 +2305,284 @@ public class SalesOrderController {
         return PAYMENT_METHOD_SSLCOMMERZ.equals(paymentMethod) || PAYMENT_METHOD_BKASH.equals(paymentMethod);
     }
 
+    private CheckoutExecutionState prepareCheckoutExecutionState(
+            String endpoint,
+            HttpSession session,
+            HttpServletRequest request,
+            String paymentPlan,
+            String paymentMethod,
+            BigDecimal advanceAmount,
+            Integer emiTenureMonths,
+            String couponCode,
+            BigDecimal rewardPointsToUse,
+            String giftCardCode,
+            BigDecimal giftCardAmount
+    ) {
+        String requestKey = resolveCheckoutRequestKey(session, request);
+        String actorScope = resolveCheckoutActorScope(session);
+        List<CartItem> currentCart = cartService.getCartFromSession(session);
+        String currentCartFingerprint = checkoutCartFingerprint(currentCart);
+        String suppliedCartFingerprint = request == null
+                ? null
+                : trimToNull(request.getHeader("Checkout-Cart-Fingerprint"));
+        if (suppliedCartFingerprint == null && request != null) {
+            suppliedCartFingerprint = trimToNull(request.getParameter("checkoutCartFingerprint"));
+        }
+        String validationError = null;
+        if (suppliedCartFingerprint != null && !suppliedCartFingerprint.matches("(?i)[a-f0-9]{64}")) {
+            validationError = "Checkout cart fingerprint is invalid. Please refresh checkout and try again.";
+        } else if (suppliedCartFingerprint != null && currentCart != null && !currentCart.isEmpty()
+                && !suppliedCartFingerprint.equalsIgnoreCase(currentCartFingerprint)) {
+            validationError = "Your cart changed after checkout was opened. Please review it and submit again.";
+        }
+        String effectiveCartFingerprint = suppliedCartFingerprint == null
+                ? currentCartFingerprint
+                : suppliedCartFingerprint.toLowerCase();
+        String payload = buildCheckoutPayload(
+                endpoint,
+                effectiveCartFingerprint,
+                paymentPlan,
+                paymentMethod,
+                advanceAmount,
+                emiTenureMonths,
+                couponCode,
+                rewardPointsToUse,
+                giftCardCode,
+                giftCardAmount
+        );
+        return new CheckoutExecutionState(actorScope, requestKey, payload, validationError);
+    }
+
+    private String executeIdempotentCheckout(
+            CheckoutExecutionState executionState,
+            HttpSession session,
+            RedirectAttributes redirectAttributes,
+            String retryPath,
+            Supplier<String> placementAction
+    ) {
+        if (executionState == null || executionState.requestKey() == null
+                || executionState.validationError() != null) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    executionState != null && executionState.validationError() != null
+                            ? executionState.validationError()
+                            : "Checkout request ID must be a valid UUID. Please refresh checkout and try again."
+            );
+            return "redirect:" + retryPath;
+        }
+        try {
+            CheckoutPlacementIdempotencyService.ClaimResult completed
+                    = checkoutPlacementIdempotencyService.findCompleted(
+                            executionState.actorScope(),
+                            executionState.requestKey(),
+                            executionState.payload()
+                    );
+            if (completed != null) {
+                redirectAttributes.addFlashAttribute(
+                        "successMessage",
+                        "This checkout was already placed. The original order result is shown below."
+                );
+                return completed.redirectPath();
+            }
+
+            CheckoutPlacementIdempotencyService.ClaimResult claim = checkoutPlacementIdempotencyService.claim(
+                    executionState.actorScope(),
+                    executionState.requestKey(),
+                    executionState.payload()
+            );
+            if (claim.state() == CheckoutPlacementIdempotencyService.ClaimState.COMPLETED) {
+                redirectAttributes.addFlashAttribute(
+                        "successMessage",
+                        "This checkout was already placed. The original order result is shown below."
+                );
+                return claim.redirectPath();
+            }
+            if (claim.state() == CheckoutPlacementIdempotencyService.ClaimState.IN_PROGRESS) {
+                redirectAttributes.addFlashAttribute(
+                        "errorMessage",
+                        "This checkout is already being processed. Please wait before trying again."
+                );
+                return "redirect:" + retryPath;
+            }
+
+            String redirect = checkoutPlacementTransactionExecutor.execute(placementAction);
+            if (executionState.orderGroupUuid() != null) {
+                checkoutPlacementIdempotencyService.complete(
+                        executionState.actorScope(),
+                        executionState.requestKey(),
+                        executionState.payload(),
+                        redirect
+                );
+                try {
+                    cleanupCheckoutSessionAfterCommit(session);
+                } catch (RuntimeException cleanupFailure) {
+                    LOGGER.error(
+                            "Checkout {} committed but post-commit session cleanup failed.",
+                            executionState.orderGroupUuid(),
+                            cleanupFailure
+                    );
+                    redirectAttributes.addFlashAttribute(
+                            "errorMessage",
+                            "Your order was placed, but checkout session cleanup needs attention. The order was not duplicated."
+                    );
+                } finally {
+                    clearCheckoutRequestKey(session, executionState.requestKey());
+                }
+            } else {
+                checkoutPlacementIdempotencyService.fail(
+                        executionState.actorScope(),
+                        executionState.requestKey(),
+                        executionState.payload(),
+                        "Checkout validation did not create an order group."
+                );
+                clearCheckoutRequestKey(session, executionState.requestKey());
+            }
+            return redirect;
+        } catch (CheckoutPlacementIdempotencyException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            return "redirect:" + retryPath;
+        } catch (RuntimeException ex) {
+            try {
+                checkoutPlacementIdempotencyService.fail(
+                        executionState.actorScope(),
+                        executionState.requestKey(),
+                        executionState.payload(),
+                        "Checkout placement failed before completion."
+                );
+            } catch (RuntimeException ignored) {
+                // Preserve the original checkout failure; recovery uses the stale-claim timeout.
+            }
+            throw ex;
+        }
+    }
+
+    private String resolveCheckoutRequestKey(HttpSession session, HttpServletRequest request) {
+        String supplied = request == null ? null : trimToNull(request.getHeader("Idempotency-Key"));
+        if (supplied == null && request != null) {
+            supplied = trimToNull(request.getParameter("checkoutRequestId"));
+        }
+        if (supplied != null) {
+            return isUuid(supplied) ? supplied : null;
+        }
+        if (session == null) {
+            return null;
+        }
+        synchronized (session) {
+            Object existing = session.getAttribute(CHECKOUT_REQUEST_ID_SESSION_KEY);
+            if (existing instanceof String existingKey && isUuid(existingKey)) {
+                return existingKey;
+            }
+            String generated = UUID.randomUUID().toString();
+            session.setAttribute(CHECKOUT_REQUEST_ID_SESSION_KEY, generated);
+            return generated;
+        }
+    }
+
+    private String resolveCheckoutActorScope(HttpSession session) {
+        if (loggedUserService.isAuthenticatedUser()) {
+            return "CUSTOMER:" + loggedUserService.activeUserid();
+        }
+        GuestCheckoutSession guestSession = guestCheckoutSessionService.current(session).orElse(null);
+        if (guestSession != null && guestSession.getCheckoutSessionUuid() != null) {
+            return "GUEST_CHECKOUT:" + guestSession.getCheckoutSessionUuid();
+        }
+        return "HTTP_SESSION:" + (session == null ? "missing" : session.getId());
+    }
+
+    private String buildCheckoutPayload(
+            String endpoint,
+            String cartFingerprint,
+            String paymentPlan,
+            String paymentMethod,
+            BigDecimal advanceAmount,
+            Integer emiTenureMonths,
+            String couponCode,
+            BigDecimal rewardPointsToUse,
+            String giftCardCode,
+            BigDecimal giftCardAmount
+    ) {
+        return String.join("|",
+                safeText(endpoint),
+                safeText(cartFingerprint),
+                normalizePaymentPlan(paymentPlan, paymentMethod),
+                resolveCheckoutPaymentMethod(normalizePaymentPlan(paymentPlan, paymentMethod), paymentMethod),
+                String.valueOf(safeMoney(advanceAmount)),
+                String.valueOf(emiTenureMonths),
+                safeText(couponCode),
+                String.valueOf(safeMoney(rewardPointsToUse)),
+                safeText(giftCardCode),
+                String.valueOf(safeMoney(giftCardAmount)));
+    }
+
+    private String checkoutCartFingerprint(List<CartItem> cartItems) {
+        List<String> itemParts = new ArrayList<>();
+        if (cartItems != null) {
+            for (CartItem item : cartItems) {
+                if (item == null) {
+                    continue;
+                }
+                itemParts.add(String.join(":",
+                        String.valueOf(item.getVendorId()),
+                        String.valueOf(item.getProductId()),
+                        safeText(item.getCatalogVariantUuid()),
+                        String.valueOf(item.getQuantity()),
+                        String.valueOf(safeMoney(item.getItemTotal()))));
+            }
+        }
+        itemParts.sort(String::compareTo);
+        return FraudHashingSupport.sha256(String.join(",", itemParts));
+    }
+
+    private void clearCheckoutRequestKey(HttpSession session, String completedRequestKey) {
+        if (session == null) {
+            return;
+        }
+        synchronized (session) {
+            Object current = session.getAttribute(CHECKOUT_REQUEST_ID_SESSION_KEY);
+            if (Objects.equals(current, completedRequestKey)) {
+                session.removeAttribute(CHECKOUT_REQUEST_ID_SESSION_KEY);
+            }
+        }
+    }
+
+    private void cleanupCheckoutSessionAfterCommit(HttpSession session) {
+        if (session == null) {
+            return;
+        }
+        List<CartItem> cartItems = cartService.getCartFromSession(session);
+        List<Long> vendorIds = cartItems == null
+                ? List.of()
+                : cartItems.stream()
+                        .filter(Objects::nonNull)
+                        .map(CartItem::getVendorId)
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .toList();
+        try {
+            consumeGuestCheckoutSession(session);
+        } finally {
+            session.removeAttribute("sessioncart");
+            session.removeAttribute("session_Shipping_address");
+            session.removeAttribute("session_Billing_address");
+            clearProductShareReferral(session);
+            for (Long vendorId : vendorIds) {
+                session.removeAttribute("shippingCost_" + vendorId);
+                session.removeAttribute("packagingCost_" + vendorId);
+                session.removeAttribute("shippingOption_" + vendorId);
+                session.removeAttribute("packagingRate_" + vendorId);
+            }
+        }
+    }
+
+    private boolean isUuid(String value) {
+        try {
+            UUID.fromString(value);
+            return true;
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
+    }
+
     private String validateCheckoutSelection(String paymentPlan, String paymentMethod, List<CartItem> cartItems,
             BigDecimal payableTotal, BigDecimal advanceAmount, RedirectAttributes redirectAttributes,
             String redirectPath) {
@@ -2184,6 +2692,34 @@ public class SalesOrderController {
 
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private static final class CheckoutExecutionState {
+
+        private final String actorScope;
+        private final String requestKey;
+        private final String payload;
+        private final String validationError;
+        private String orderGroupUuid;
+
+        private CheckoutExecutionState(
+                String actorScope,
+                String requestKey,
+                String payload,
+                String validationError
+        ) {
+            this.actorScope = actorScope;
+            this.requestKey = requestKey;
+            this.payload = payload;
+            this.validationError = validationError;
+        }
+
+        private String actorScope() { return actorScope; }
+        private String requestKey() { return requestKey; }
+        private String payload() { return payload; }
+        private String validationError() { return validationError; }
+        private String orderGroupUuid() { return orderGroupUuid; }
+        private void setOrderGroupUuid(String orderGroupUuid) { this.orderGroupUuid = orderGroupUuid; }
     }
 
 }

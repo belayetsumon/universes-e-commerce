@@ -3,6 +3,7 @@ package com.ecommerce.app.module.communication.model;
 public enum MessageEventType {
     CUSTOMER_REGISTERED,
     GUEST_CHECKOUT_OTP,
+    CUSTOMER_COD_OTP,
     CUSTOMER_LOGIN_OTP,
     PASSWORD_RESET_REQUEST,
     ORDER_PLACED,

@@ -14,6 +14,7 @@ import com.ecommerce.app.module.blog.repository.BlogRepository;
 import com.ecommerce.app.module.browsinghistory.model.BrowsingHistory;
 import com.ecommerce.app.module.browsinghistory.model.BrowsingHistoryViewType;
 import com.ecommerce.app.module.browsinghistory.service.BrowsingHistoryService;
+import com.ecommerce.app.module.customer.dto.CustomerRegistrationForm;
 import com.ecommerce.app.module.settings.model.GlobalSettings;
 import com.ecommerce.app.module.settings.services.GlobalSettingsService;
 import com.ecommerce.app.module.user.model.UserType;
@@ -75,6 +76,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -224,11 +227,11 @@ public class PublicController {
         return "frontview/member-login";
     }
 
-    @RequestMapping("/front-registration")
+    @GetMapping("/front-registration")
     public String studentRegistration(Model model,
             @RequestParam(name = "ref", required = false) String referralCode,
             HttpSession session,
-            Users users,
+            @ModelAttribute("users") CustomerRegistrationForm form,
             HttpServletRequest request) {
 
         /////Role instructor = roleRepository.findBySlug("instructor");

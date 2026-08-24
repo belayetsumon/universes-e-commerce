@@ -21,6 +21,7 @@ import com.ecommerce.app.module.fraud.services.FraudPreOrderGuard;
 import com.ecommerce.app.module.fraud.support.FraudHashingSupport;
 import com.ecommerce.app.module.order.model.SalesOrder;
 import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,10 +75,13 @@ public class DefaultFraudIntegrationGuard implements FraudPreOrderGuard, FraudOr
     @Transactional
     public FraudGuardResult checkOrderAllowed(SalesOrder order, FraudContext context) {
         FraudAssessmentResponse assessment = ensureAssessment(order, context);
+        if (isApproved(assessment)) {
+            return withAssessment(FraudGuardResult.allowed(), assessment);
+        }
         if (isRejected(assessment)) {
             return withAssessment(FraudGuardResult.blocked(SAFE_REJECT_MESSAGE), assessment);
         }
-        return withAssessment(FraudGuardResult.allowed(), assessment);
+        return withAssessment(FraudGuardResult.blocked(SAFE_BLOCK_MESSAGE), assessment);
     }
 
     @Override
@@ -134,6 +138,9 @@ public class DefaultFraudIntegrationGuard implements FraudPreOrderGuard, FraudOr
 
     private FraudGuardResult requireApproved(SalesOrder order, String reason) {
         FraudAssessmentResponse assessment = ensureAssessment(order, null);
+        if (hasBlockingAssessmentInOrderGroup(order)) {
+            return withAssessment(FraudGuardResult.blocked(SAFE_BLOCK_MESSAGE), assessment);
+        }
         if (assessment.getStatus() == FraudAssessmentStatus.APPROVED && assessment.getDecision() == FraudDecision.APPROVE) {
             return withAssessment(FraudGuardResult.allowed(), assessment);
         }
@@ -141,6 +148,23 @@ public class DefaultFraudIntegrationGuard implements FraudPreOrderGuard, FraudOr
             return withAssessment(FraudGuardResult.blocked(SAFE_REJECT_MESSAGE), assessment);
         }
         return withAssessment(FraudGuardResult.blocked(reason), assessment);
+    }
+
+    private boolean hasBlockingAssessmentInOrderGroup(SalesOrder order) {
+        if (order == null || order.getOrderGroup() == null || order.getOrderGroup().getId() == null) {
+            return false;
+        }
+        return fraudAssessmentRepository.countByOrderGroupIdAndStatusIn(
+                order.getOrderGroup().getId(),
+                EnumSet.of(
+                        FraudAssessmentStatus.FRAUD_EVALUATION_PENDING,
+                        FraudAssessmentStatus.VERIFICATION_REQUIRED,
+                        FraudAssessmentStatus.MANUAL_REVIEW,
+                        FraudAssessmentStatus.FRAUD_HOLD,
+                        FraudAssessmentStatus.FRAUD_REJECTED,
+                        FraudAssessmentStatus.CANCELLED
+                )
+        ) > 0;
     }
 
     private FraudAssessmentResponse ensureAssessment(SalesOrder order, FraudContext context) {
@@ -168,6 +192,12 @@ public class DefaultFraudIntegrationGuard implements FraudPreOrderGuard, FraudOr
                 || assessment.getDecision() == FraudDecision.CANCEL);
     }
 
+    private boolean isApproved(FraudAssessmentResponse assessment) {
+        return assessment != null
+                && assessment.getStatus() == FraudAssessmentStatus.APPROVED
+                && assessment.getDecision() == FraudDecision.APPROVE;
+    }
+
     private boolean isBlockingStatus(FraudAssessmentStatus status) {
         return status == FraudAssessmentStatus.FRAUD_EVALUATION_PENDING
                 || status == FraudAssessmentStatus.VERIFICATION_REQUIRED
@@ -177,7 +207,10 @@ public class DefaultFraudIntegrationGuard implements FraudPreOrderGuard, FraudOr
     }
 
     private boolean isBlocked(FraudBlockType blockType, String rawValue) {
-        String hashedValue = FraudHashingSupport.sha256(rawValue);
+        String cleanedValue = rawValue == null ? null : rawValue.trim();
+        String hashedValue = cleanedValue != null && cleanedValue.matches("(?i)[a-f0-9]{64}")
+                ? cleanedValue.toLowerCase()
+                : FraudHashingSupport.sha256(cleanedValue);
         if (hashedValue == null) {
             return false;
         }
@@ -197,6 +230,8 @@ public class DefaultFraudIntegrationGuard implements FraudPreOrderGuard, FraudOr
     private FraudGuardResult withAssessment(FraudGuardResult result, FraudAssessmentResponse assessment) {
         if (result != null && assessment != null) {
             result.setAssessmentId(assessment.getId());
+            result.setAssessmentStatus(assessment.getStatus());
+            result.setDecision(assessment.getDecision());
         }
         return result;
     }
@@ -204,6 +239,8 @@ public class DefaultFraudIntegrationGuard implements FraudPreOrderGuard, FraudOr
     private FraudGuardResult withAssessment(FraudGuardResult result, FraudAssessment assessment) {
         if (result != null && assessment != null) {
             result.setAssessmentId(assessment.getId());
+            result.setAssessmentStatus(assessment.getStatus());
+            result.setDecision(assessment.getDecision());
         }
         return result;
     }

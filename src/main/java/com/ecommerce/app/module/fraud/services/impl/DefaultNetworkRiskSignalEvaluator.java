@@ -5,6 +5,7 @@ import com.ecommerce.app.module.fraud.dto.FraudSignalResult;
 import com.ecommerce.app.module.fraud.model.FraudSignalSeverity;
 import com.ecommerce.app.module.fraud.repository.DeviceIdentityRepository;
 import com.ecommerce.app.module.fraud.services.evaluator.NetworkRiskSignalEvaluator;
+import com.ecommerce.app.module.fraud.support.FraudHashingSupport;
 import com.ecommerce.app.module.order.model.SalesOrder;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,8 @@ public class DefaultNetworkRiskSignalEvaluator extends AbstractFraudSignalEvalua
         String ipAddress = blankToNull(context.getIpAddress());
         Map<String, Object> metadata = context.getMetadata();
 
-        long ordersFromIp = ipAddress == null ? 0 : deviceIdentityRepository.countByIpAddress(ipAddress);
+        String ipAddressHash = FraudHashingSupport.sha256(ipAddress);
+        long ordersFromIp = ipAddressHash == null ? 0 : deviceIdentityRepository.countByIpAddress(ipAddressHash);
         signals.add(signal("ORDERS_FROM_IP", category(), ordersFromIp > 3, 10, FraudSignalSeverity.MEDIUM,
                 null, String.valueOf(ordersFromIp), "network-risk", "{\"threshold\":3}"));
 

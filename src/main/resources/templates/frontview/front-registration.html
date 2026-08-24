@@ -71,6 +71,7 @@
                         </div>
 
                         <form class="registration-form" th:action="@{/users/frontRegistrationSave}" th:object="${users}" method="post">
+                            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                             <div class="alert alert-danger alert-dismissible fade show registration-alert"
                                  th:if="${#fields.hasErrors('*')}" role="alert">
                                 <div class="registration-alert-title">
@@ -89,8 +90,6 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
 
-                            <input type="hidden" th:field="*{id}" />
-
                             <div class="registration-field-grid">
                                 <div class="registration-field">
                                     <label for="registrationFirstName">First name</label>
@@ -98,7 +97,7 @@
                                         <i class="bi bi-person"></i>
                                         <input type="text"
                                                id="registrationFirstName"
-                                               minlength="5"
+                                               minlength="3"
                                                required="true"
                                                class="form-control"
                                                th:field="*{firstName}"
@@ -116,7 +115,7 @@
                                         <i class="bi bi-person-badge"></i>
                                         <input type="text"
                                                id="registrationLastName"
-                                               minlength="5"
+                                               minlength="1"
                                                required="true"
                                                class="form-control"
                                                th:field="*{lastName}"
@@ -173,11 +172,11 @@
                                         <i class="bi bi-key"></i>
                                         <input type="password"
                                                id="registrationPassword"
-                                               minlength="6"
+                                               minlength="8"
                                                required="true"
                                                th:field="*{password}"
                                                class="form-control"
-                                               placeholder="Minimum 6 characters"
+                                               placeholder="Minimum 8 characters"
                                                autocomplete="new-password">
                                     </div>
                                     <span class="registration-field-error"

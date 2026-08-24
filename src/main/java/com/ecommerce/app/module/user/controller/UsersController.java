@@ -11,10 +11,16 @@ import com.ecommerce.app.module.ReferralRewards.model.Referral;
 import com.ecommerce.app.module.ReferralRewards.model.Wallet;
 import com.ecommerce.app.module.ReferralRewards.repository.ReferralRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.WalletRepository;
+import com.ecommerce.app.module.checkout.customer.services.CustomerCodMobileVerificationService;
+import com.ecommerce.app.module.checkout.guest.services.MobileNumberNormalizationService;
+import com.ecommerce.app.module.customer.dto.CustomerRegistrationForm;
+import com.ecommerce.app.module.customer.services.CustomerRegistrationException;
+import com.ecommerce.app.module.customer.services.CustomerRegistrationService;
 import com.ecommerce.app.module.user.componant.UserValidator;
 import com.ecommerce.app.module.user.dto.AdminUserPasswordForm;
 import com.ecommerce.app.module.user.model.LoginHistory;
 import com.ecommerce.app.module.user.model.LoginStatus;
+import com.ecommerce.app.module.user.model.RegistrationSource;
 import com.ecommerce.app.module.user.model.Role;
 import com.ecommerce.app.module.user.model.Status;
 import com.ecommerce.app.module.user.model.UserType;
@@ -33,6 +39,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -40,7 +49,9 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.*;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -56,6 +67,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/users")
 //@PreAuthorize("hasAuthority('users')")
 public class UsersController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UsersController.class);
+    private static final String REGISTRATION_VIEW = "frontview/front-registration";
+    private static final String REFERRAL_SESSION_ATTRIBUTE = "productShareReferralCode";
 
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -89,6 +104,26 @@ public class UsersController {
 
     @Autowired
     ReferralService referralService;
+
+    @Autowired
+    CustomerRegistrationService customerRegistrationService;
+
+    @Autowired
+    CustomerCodMobileVerificationService customerCodMobileVerificationService;
+
+    @Autowired
+    MobileNumberNormalizationService mobileNumberNormalizationService;
+
+    @InitBinder("users")
+    void configureUserBinding(WebDataBinder binder) {
+        if (binder.getTarget() instanceof CustomerRegistrationForm) {
+            binder.setAllowedFields("firstName", "lastName", "email", "mobile", "password");
+            return;
+        }
+        binder.setAllowedFields(
+                "id", "firstName", "lastName", "email", "mobile", "password",
+                "role", "status", "userType", "remarks");
+    }
 
     @RequestMapping(value = {"", "/", "/index"})
     public String index(
@@ -174,6 +209,7 @@ public class UsersController {
     }
 
     @GetMapping("/change-password/{id}")
+    @PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
     public String changePasswordForm(Model model, @PathVariable Long id, RedirectAttributes redirectAttributes) {
         Users user = usersRepository.findById(id).orElse(null);
         if (user == null) {
@@ -187,6 +223,7 @@ public class UsersController {
     }
 
     @GetMapping("/change-password")
+    @PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
     public String currentUserChangePassword(RedirectAttributes redirectAttributes) {
         Long activeUserId = loggedUserService.activeUserIdOrNull();
         if (activeUserId == null) {
@@ -207,6 +244,7 @@ public class UsersController {
     }
 
     @PostMapping("/change-password/{id}")
+    @PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
     public String changePassword(
             Model model,
             @PathVariable Long id,
@@ -243,27 +281,28 @@ public class UsersController {
         return "redirect:/users/view/" + user.getId();
     }
 
-    @RequestMapping("/registrations")
-    public String registrations(Model model, Users users) {
-        model.addAttribute("roles", roleRepository.findAll());
-        model.addAttribute("status", Status.values());
-        model.addAttribute("userTypes", UserType.values());
-
+    @GetMapping("/registrations")
+    @PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
+    public String registrations(Model model, @ModelAttribute("users") Users users) {
+        addUserFormOptions(model);
         return "user/registrations";
     }
 
-    @RequestMapping("/edit/{id}")
-    public String edit(Model model, @PathVariable Long id, Users users) {
+    @GetMapping("/edit/{id}")
+    @PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
+    public String edit(Model model, @PathVariable Long id) {
         model.addAttribute("users", usersRepository.findById(id).orElse(null));
-        model.addAttribute("roles", roleRepository.findAll());
-        model.addAttribute("status", Status.values());
-        model.addAttribute("userTypes", UserType.values());
+        addUserFormOptions(model);
         return "user/registrations";
     }
 
-    @RequestMapping("/save")
-    //@Transactional
-    public String save(Model model, @Valid Users users, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+    @PostMapping("/save")
+    @PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
+    public String save(
+            Model model,
+            @Valid @ModelAttribute("users") Users users,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes) {
 
         String submittedPassword = users.getPassword();
         boolean passwordBlank = submittedPassword == null || submittedPassword.isBlank();
@@ -276,50 +315,104 @@ public class UsersController {
             bindingResult.rejectValue("password", "size", "Password must be at least 8 characters.");
         }
 
-        if (bindingResult.hasErrors()) {
+        if (users.getStatus() == null) {
+            bindingResult.rejectValue("status", "required", "Status is required.");
+        }
+        if (users.getUserType() == null) {
+            bindingResult.rejectValue("userType", "required", "User type is required.");
+        }
+        if (users.getRole() == null || users.getRole().isEmpty()) {
+            bindingResult.rejectValue("role", "required", "At least one role is required.");
+        }
 
-            model.addAttribute("roles", roleRepository.findAll());
-            model.addAttribute("status", Status.values());
-            model.addAttribute("userTypes", UserType.values());
+        if (bindingResult.hasErrors()) {
+            addUserFormOptions(model);
             return "user/registrations";
         }
 
-        // users.setPassword(bCryptPasswordEncoder.encode(users.getPassword()));
         try {
-
-            if (passwordBlank && users.getId() != null) {
-                Users existingUser = usersRepository.findById(users.getId()).orElse(null);
-                if (existingUser == null) {
-                    redirectAttributes.addFlashAttribute("error", "User not found.");
-                    return "redirect:/users/index";
-                }
-
-                users.setPassword(existingUser.getPassword());
-            } else {
-
-                users.setPassword(bCryptPasswordEncoder.encode(submittedPassword));
+            Users target = users.getId() == null
+                    ? new Users()
+                    : usersRepository.findById(users.getId()).orElse(null);
+            if (target == null) {
+                redirectAttributes.addFlashAttribute("error", "User not found.");
+                return "redirect:/users/index";
             }
 
-            usersRepository.save(users);
+            String normalizedEmail = users.getEmail() == null
+                    ? null
+                    : users.getEmail().trim().toLowerCase(Locale.ROOT);
+            Optional<Users> emailOwner = normalizedEmail == null
+                    ? Optional.empty()
+                    : usersRepository.findByEmail(normalizedEmail);
+            if (emailOwner.isPresent() && !Objects.equals(emailOwner.get().getId(), target.getId())) {
+                bindingResult.rejectValue("email", "duplicate", "This email address is already used by another account.");
+            }
+
+            String normalizedMobile = null;
+            try {
+                normalizedMobile = mobileNumberNormalizationService.normalizeBangladeshMobile(users.getMobile());
+            } catch (IllegalArgumentException ex) {
+                bindingResult.rejectValue("mobile", "invalid", ex.getMessage());
+            }
+            Users mobileOwner = findMobileOwner(normalizedMobile);
+            if (mobileOwner != null && !Objects.equals(mobileOwner.getId(), target.getId())) {
+                bindingResult.rejectValue("mobile", "duplicate", "This mobile number is already used by another account.");
+            }
+
+            Set<Long> submittedRoleIds = users.getRole().stream()
+                    .filter(Objects::nonNull)
+                    .map(Role::getId)
+                    .filter(Objects::nonNull)
+                    .collect(java.util.stream.Collectors.toSet());
+            List<Role> resolvedRoles = roleRepository.findAllById(submittedRoleIds);
+            if (resolvedRoles.size() != submittedRoleIds.size()) {
+                bindingResult.rejectValue("role", "invalid", "One or more selected roles are invalid.");
+            }
+
+            if (bindingResult.hasErrors()) {
+                addUserFormOptions(model);
+                return "user/registrations";
+            }
+
+            target.setFirstName(users.getFirstName().trim());
+            target.setLastName(users.getLastName() == null ? null : users.getLastName().trim());
+            target.setEmail(normalizedEmail);
+            customerCodMobileVerificationService.updateMobileAndInvalidateVerificationIfChanged(target, normalizedMobile);
+            target.setRole(new HashSet<>(resolvedRoles));
+            target.setStatus(users.getStatus());
+            target.setUserType(users.getUserType());
+            target.setRemarks(trimToNull(users.getRemarks()));
+            if (!passwordBlank) {
+                target.setPassword(bCryptPasswordEncoder.encode(submittedPassword));
+            }
+            if (target.getId() == null) {
+                target.setRegistrationSource(RegistrationSource.ADMIN);
+                target.setGuestAccount(false);
+                target.setPasswordConfigured(true);
+                target.setEmailVerified(false);
+            }
+
+            usersRepository.save(target);
             return "redirect:/users/index";
 
         } catch (Exception e) {
-
-            model.addAttribute("roles", roleRepository.findAll());
-            model.addAttribute("status", Status.values());
-            model.addAttribute("userTypes", UserType.values());
+            LOGGER.error("Admin user save failed", e);
+            addUserFormOptions(model);
             model.addAttribute("error", "Unable to save user. Please verify unique email, unique mobile number, and required access fields.");
             return "user/registrations";
         }
     }
 
-    @RequestMapping("/delete/{id}")
-    public String delete(Model model, @PathVariable Long id, Users users) {
+    @PostMapping("/delete/{id}")
+    @PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
+    public String delete(@PathVariable Long id) {
         usersRepository.deleteById(id);
         return "redirect:/users/index";
     }
 
-    @GetMapping("/deletewithexception/{id}")
+    @PostMapping("/deletewithexception/{id}")
+    @PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
     public String deletewithexception(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             usersService.deleteById(id);
@@ -332,6 +425,7 @@ public class UsersController {
     }
 
     @PostMapping("/generate-referral-code/{id}")
+    @PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
     public String generateReferralCode(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             Referral referral = referralService.generateMissingReferralCodeForCustomer(id);
@@ -372,71 +466,37 @@ public class UsersController {
         return "pims/details/details";
     }
 
-    @RequestMapping("/uregistrations")
-    public String uregistrations(Model model, Users users) {
-
-        model.addAttribute("role", roleRepository.findAll());
-        return "user/uregistrations";
+    @GetMapping("/uregistrations")
+    public String uregistrations(
+            Model model,
+            @ModelAttribute("users") CustomerRegistrationForm form,
+            @RequestParam(name = "ref", required = false) String referralCode,
+            HttpSession session) {
+        rememberReferralCode(referralCode, session);
+        addRegistrationReferralCode(model, referralCode, session);
+        return REGISTRATION_VIEW;
     }
 
-    @RequestMapping("/usave")
-    public String usave(Model model, @Valid Users users, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
-
-        if (bindingResult.hasErrors()) {
-
-            model.addAttribute("role", roleRepository.findAll());
-            return "user/uregistrations";
-        }
-        users.setStatus(Status.Pending);
-        users.setPassword(bCryptPasswordEncoder.encode(users.getPassword()));
-        usersRepository.save(users);
-        redirectAttributes.addAttribute("success", " Congratulations you have successfully registered. please contact with system adminstrator.");
-        return "redirect:users/uregistrations";
+    @PostMapping("/usave")
+    public String usave(
+            Model model,
+            @Valid @ModelAttribute("users") CustomerRegistrationForm form,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes,
+            @RequestParam(name = "ref_code", required = false) String referralCode,
+            HttpSession session) {
+        return registerPublicCustomer(model, form, bindingResult, redirectAttributes, referralCode, session);
     }
 
-    @RequestMapping("/frontRegistrationSave")
-    public String frontUserSave(Model model, @Valid Users users, BindingResult bindingResult, RedirectAttributes redirectAttributes,
-            @RequestParam(name = "parent", required = false) String parent,
-            @RequestParam(name = "ref_code", required = false) String ref,
-            HttpSession session
-    ) {
-        // System.out.println("ref_code" + ref);
-        //userValidator.validate(users, bindingResult);
-        //   Users parents = usersRepository.findByReferralcode(parent);
-//        if (parents == null) {
-//
-//            ObjectError cartItemListError;
-//
-//            cartItemListError = new ObjectError("parent", "Your referral code is invalid");
-//
-//            bindingResult.addError(cartItemListError);
-//        }
-        if (bindingResult.hasErrors()) {
-
-            return "frontview/front-registration";
-        }
-
-        Set<Role> customerRole = new HashSet<Role>();
-        Role role = roleRepository.findBySlug("customer");
-        customerRole.add(role);
-
-        users.setRole(customerRole);
-
-        users.setUserType(UserType.customer);
-
-        users.setStatus(Status.Active);
-
-        users.setPassword(bCryptPasswordEncoder.encode(users.getPassword()));
-
-        usersRepository.save(users);
-
-        String resolvedReferralCode = resolveRegistrationReferralCode(ref, session);
-        Users referringUsers = referralService.resolveReferrerByCode(resolvedReferralCode);
-        referralService.createReferralProfileAndGrantSignupReward(users, referringUsers);
-        redirectAttributes.addFlashAttribute(
-                "success", "Congratulations! You have successfully registered.");
-
-        return "redirect:/public/member-login";
+    @PostMapping("/frontRegistrationSave")
+    public String frontUserSave(
+            Model model,
+            @Valid @ModelAttribute("users") CustomerRegistrationForm form,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes,
+            @RequestParam(name = "ref_code", required = false) String referralCode,
+            HttpSession session) {
+        return registerPublicCustomer(model, form, bindingResult, redirectAttributes, referralCode, session);
     }
 
     private String resolveRegistrationReferralCode(String submittedReferralCode, HttpSession session) {
@@ -446,9 +506,93 @@ public class UsersController {
         if (session == null) {
             return null;
         }
-        Object sharedProductReferralCode = session.getAttribute("productShareReferralCode");
+        Object sharedProductReferralCode = session.getAttribute(REFERRAL_SESSION_ATTRIBUTE);
         return sharedProductReferralCode instanceof String ? ((String) sharedProductReferralCode).trim() : null;
     }
+
+    private String registerPublicCustomer(
+            Model model,
+            CustomerRegistrationForm form,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes,
+            String referralCode,
+            HttpSession session) {
+        if (bindingResult.hasErrors()) {
+            addRegistrationReferralCode(model, referralCode, session);
+            return REGISTRATION_VIEW;
+        }
+
+        try {
+            customerRegistrationService.register(form, resolveRegistrationReferralCode(referralCode, session));
+        } catch (CustomerRegistrationException ex) {
+            if (ex.getField() == null || ex.getField().isBlank()) {
+                bindingResult.reject("registration.failed", ex.getMessage());
+            } else {
+                bindingResult.rejectValue(ex.getField(), "duplicate", ex.getMessage());
+            }
+        } catch (IllegalArgumentException ex) {
+            bindingResult.rejectValue("mobile", "invalid", ex.getMessage());
+        } catch (RuntimeException ex) {
+            LOGGER.error("Customer registration failed", ex);
+            bindingResult.reject("registration.failed", "Registration could not be completed. Please try again.");
+        }
+
+        if (bindingResult.hasErrors()) {
+            addRegistrationReferralCode(model, referralCode, session);
+            return REGISTRATION_VIEW;
+        }
+
+        if (session != null) {
+            session.removeAttribute(REFERRAL_SESSION_ATTRIBUTE);
+        }
+        redirectAttributes.addFlashAttribute("success", "Congratulations! You have successfully registered.");
+        return "redirect:/public/member-login";
+    }
+
+    private void rememberReferralCode(String referralCode, HttpSession session) {
+        String normalizedReferralCode = trimToNull(referralCode);
+        if (normalizedReferralCode != null && session != null) {
+            session.setAttribute(REFERRAL_SESSION_ATTRIBUTE, normalizedReferralCode);
+        }
+    }
+
+    private void addRegistrationReferralCode(Model model, String submittedReferralCode, HttpSession session) {
+        String referralCode = trimToNull(submittedReferralCode);
+        if (referralCode == null && session != null) {
+            Object storedReferralCode = session.getAttribute(REFERRAL_SESSION_ATTRIBUTE);
+            referralCode = storedReferralCode instanceof String ? trimToNull((String) storedReferralCode) : null;
+        }
+        model.addAttribute("prefilledReferralCode", referralCode == null ? "" : referralCode);
+    }
+
+    private void addUserFormOptions(Model model) {
+        model.addAttribute("roles", roleRepository.findAll());
+        model.addAttribute("status", Status.values());
+        model.addAttribute("userTypes", UserType.values());
+    }
+
+    private Users findMobileOwner(String normalizedMobile) {
+        if (normalizedMobile == null) {
+            return null;
+        }
+        Users owner = usersRepository.findByMobile(normalizedMobile);
+        if (owner == null) {
+            owner = usersRepository.findByMobile("+" + normalizedMobile);
+        }
+        if (owner == null && normalizedMobile.startsWith("880")) {
+            owner = usersRepository.findByMobile("0" + normalizedMobile.substring(3));
+        }
+        return owner;
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
     private boolean passwordMatches(String rawPassword, String storedPassword) {
         if (rawPassword == null || storedPassword == null) {
             return false;

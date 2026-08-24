@@ -297,6 +297,9 @@ public class GlobalSettings implements Serializable {
     @Column(name = "guest_mobile_otp_verification_enabled", nullable = false)
     private Boolean guestMobileOtpVerificationEnabled = true;
 
+    @Column(name = "registered_customer_cod_mobile_verification_enabled", nullable = false)
+    private Boolean registeredCustomerCodMobileVerificationEnabled = true;
+
     @Min(1)
     @Column(name = "guest_otp_expiry_minutes", nullable = false)
     private Integer guestOtpExpiryMinutes = 5;
@@ -1110,6 +1113,14 @@ public class GlobalSettings implements Serializable {
 
     public void setGuestMobileOtpVerificationEnabled(Boolean guestMobileOtpVerificationEnabled) {
         this.guestMobileOtpVerificationEnabled = guestMobileOtpVerificationEnabled;
+    }
+
+    public Boolean getRegisteredCustomerCodMobileVerificationEnabled() {
+        return registeredCustomerCodMobileVerificationEnabled;
+    }
+
+    public void setRegisteredCustomerCodMobileVerificationEnabled(Boolean registeredCustomerCodMobileVerificationEnabled) {
+        this.registeredCustomerCodMobileVerificationEnabled = registeredCustomerCodMobileVerificationEnabled;
     }
 
     public Integer getGuestOtpExpiryMinutes() {

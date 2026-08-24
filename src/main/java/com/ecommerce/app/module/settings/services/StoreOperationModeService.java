@@ -70,6 +70,14 @@ public class StoreOperationModeService {
         return Boolean.TRUE.equals(settings().getGuestMobileOtpVerificationEnabled());
     }
 
+    public boolean isRegisteredCustomerCodMobileVerificationEnabled() {
+        return !Boolean.FALSE.equals(settings().getRegisteredCustomerCodMobileVerificationEnabled());
+    }
+
+    public boolean isCodEnabled() {
+        return Boolean.TRUE.equals(settings().getCodEnabled());
+    }
+
     public boolean isGuestAutoCreateCustomerAccountEnabled() {
         return Boolean.TRUE.equals(settings().getGuestAutoCreateCustomerAccount());
     }

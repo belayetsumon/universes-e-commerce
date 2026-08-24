@@ -24,7 +24,8 @@ public class CustomerAccountForm {
     private String lastName;
 
     @NotBlank(message = "*Please provide your mobile")
-    @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Invalid mobile number")
+    @Size(max = 32, message = "Mobile number is too long")
+    @Pattern(regexp = "^\\+?[0-9\\s().-]+$", message = "Enter a valid Bangladesh mobile number")
     private String mobile;
 
     public static CustomerAccountForm fromUser(Users user) {

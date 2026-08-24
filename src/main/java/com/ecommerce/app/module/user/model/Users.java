@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.io.*;
+import java.time.LocalDateTime;
 import java.util.*;
 import org.springframework.data.jpa.domain.support.*;
 
@@ -57,6 +58,12 @@ public class Users implements Serializable {
 
     @Column(name = "mobile_verified", nullable = false)
     private boolean mobileVerified = false;
+
+    @Column(name = "mobile_verified_at")
+    private LocalDateTime mobileVerifiedAt;
+
+    @Column(name = "mobile_verified_number", length = 20)
+    private String mobileVerifiedNumber;
 
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified = false;
@@ -215,6 +222,22 @@ public class Users implements Serializable {
 
     public void setMobileVerified(boolean mobileVerified) {
         this.mobileVerified = mobileVerified;
+    }
+
+    public LocalDateTime getMobileVerifiedAt() {
+        return mobileVerifiedAt;
+    }
+
+    public void setMobileVerifiedAt(LocalDateTime mobileVerifiedAt) {
+        this.mobileVerifiedAt = mobileVerifiedAt;
+    }
+
+    public String getMobileVerifiedNumber() {
+        return mobileVerifiedNumber;
+    }
+
+    public void setMobileVerifiedNumber(String mobileVerifiedNumber) {
+        this.mobileVerifiedNumber = mobileVerifiedNumber;
     }
 
     public boolean isEmailVerified() {

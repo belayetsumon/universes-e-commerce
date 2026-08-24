@@ -67,6 +67,13 @@ This is an enterprise-grade Java Spring Boot eCommerce / multi-vendor marketplac
 * Do not disable CSRF unless there is a clear reason.
 * Protect admin, vendor, and customer areas separately.
 
+### Module Permission Catalogue
+
+* Every feature and use case must map to a named, immutable permission or policy capability before implementation and release; this includes endpoints, service entry points, UI actions, files, reports, jobs, APIs, callbacks, and webhooks.
+* Use `platform.*`, `customer.*`, `vendor.*`, `api.*`, `webhook.*`, `internal.*`, and `public.*` namespaces. A `public.*` capability is an explicit ingress policy and is never assignable to a principal or role.
+* Permission checks do not replace ownership, membership, tenant, branch, aggregate, or repository scope checks.
+* Reject blank, `N/A`, inferred-only, inactive, unknown, or arbitrary capability slugs, and add completeness tests for all feature surfaces.
+
 ## Logging and Debugging
 
 * When fixing an error, identify:

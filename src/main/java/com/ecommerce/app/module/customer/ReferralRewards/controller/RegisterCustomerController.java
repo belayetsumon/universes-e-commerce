@@ -5,27 +5,24 @@
 package com.ecommerce.app.module.customer.ReferralRewards.controller;
 
 import com.ecommerce.app.module.ReferralRewards.model.Referral;
-import com.ecommerce.app.module.ReferralRewards.model.Wallet;
 import com.ecommerce.app.module.ReferralRewards.model.WalletTransaction;
 import com.ecommerce.app.module.ReferralRewards.repository.ReferralRepository;
-import com.ecommerce.app.module.ReferralRewards.repository.WalletRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.WalletTransactionRepository;
-import com.ecommerce.app.module.ReferralRewards.services.ReferralService;
-import com.ecommerce.app.module.ReferralRewards.services.ReferralRewardService;
-import com.ecommerce.app.module.ReferralRewards.services.WalletTransactionService;
+import com.ecommerce.app.module.customer.dto.CustomerRegistrationForm;
+import com.ecommerce.app.module.customer.services.CustomerRegistrationException;
+import com.ecommerce.app.module.customer.services.CustomerRegistrationService;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import java.math.BigDecimal;
 import java.security.Principal;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,42 +47,43 @@ public class RegisterCustomerController {
     private WalletTransactionRepository walletTransactionRepository;
 
     @Autowired
-    ReferralRewardService referralRewardService;
-
-    @Autowired
-    WalletTransactionService walletTransactionService;
-
-    @Autowired
-    WalletRepository walletRepository;
-
-    @Autowired
-    private ReferralService referralService;
+    private CustomerRegistrationService customerRegistrationService;
 
     @GetMapping("/register")
     public String showRegisterForm(@RequestParam(required = false) String ref, Model model) {
-        model.addAttribute("user", new Users());
-        model.addAttribute("ref", ref);
-        return "register";
+        model.addAttribute("users", new CustomerRegistrationForm());
+        model.addAttribute("prefilledReferralCode", ref == null ? "" : ref.trim());
+        return "frontview/front-registration";
     }
 
     @PostMapping("/register")
-    public String registerUser(@ModelAttribute Users user, @RequestParam(required = false) String ref, RedirectAttributes redirect) {
-        if (usersRepository.findByEmail(user.getEmail()).isPresent()) {
-            redirect.addFlashAttribute("error", "Email already registered!");
-            return "redirect:/register";
+    public String registerUser(
+            @Valid @ModelAttribute("users") CustomerRegistrationForm form,
+            BindingResult bindingResult,
+            @RequestParam(required = false) String ref,
+            Model model,
+            RedirectAttributes redirect) {
+        if (!bindingResult.hasErrors()) {
+            try {
+                customerRegistrationService.register(form, ref);
+            } catch (CustomerRegistrationException ex) {
+                if (ex.getField() == null || ex.getField().isBlank()) {
+                    bindingResult.reject("registration.failed", ex.getMessage());
+                } else {
+                    bindingResult.rejectValue(ex.getField(), "duplicate", ex.getMessage());
+                }
+            } catch (IllegalArgumentException ex) {
+                bindingResult.rejectValue("mobile", "invalid", ex.getMessage());
+            } catch (RuntimeException ex) {
+                bindingResult.reject("registration.failed", "Registration could not be completed. Please try again.");
+            }
         }
-
-        user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
-//        user.setVerified(false);
-//        user.setEmailVerificationToken(UUID.randomUUID().toString());
-        usersRepository.save(user);
-
-        Users referrer = referralService.resolveReferrerByCode(ref);
-        referralService.createReferralProfileAndGrantSignupReward(user, referrer);
-
-        // TODO: Send verification email with token (user.getEmailVerificationToken())
-        redirect.addFlashAttribute("message", "Registration successful! Please verify your email.");
-        return "redirect:/login";
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("prefilledReferralCode", ref == null ? "" : ref.trim());
+            return "frontview/front-registration";
+        }
+        redirect.addFlashAttribute("success", "Congratulations! You have successfully registered.");
+        return "redirect:/public/member-login";
     }
 
     @GetMapping("/verify")
@@ -145,61 +143,11 @@ public class RegisterCustomerController {
     }
 
     @GetMapping("/admin/referrals")
+    @PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
     public String referralStats(Model model) {
         List<Referral> referrals = referralRepository.findAll();
         model.addAttribute("referrals", referrals);
         return "admin/referrals";
-    }
-
-    @PostMapping("/order/complete")
-    public String completeOrder(@RequestParam Long userId, @RequestParam BigDecimal total) {
-        Users user = usersRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
-
-//        Orders order = new Orders();
-//        order.setUsers(user); // Set the User entity, not just the ID
-////        order.setStatus("COMPLETED");
-//        order.setCreatedAt(LocalDateTime.now());
-//        order.setAmount(total);
-//        orderRepository.save(order);
-        referralRewardService.grantReferralReward(userId);
-
-        return "redirect:/dashboard";
-    }
-
-    @PostMapping("/order/create")
-    public String createOrder(@RequestParam double amount, Principal principal, RedirectAttributes redirect) {
-        Users user = usersRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
-        // Fetch wallet linked to the user
-        Wallet wallet = walletRepository.findByUsers(user).get();
-
-        BigDecimal amountBD = BigDecimal.valueOf(amount);
-
-        // Check if wallet has sufficient balance
-        if (wallet.getBalance().compareTo(amountBD) < 0) {
-            redirect.addFlashAttribute("error", "Insufficient wallet balance. Please add funds or choose another payment method.");
-            return "redirect:/cart";
-        }
-
-        // Deduct wallet balance
-        boolean deducted = walletTransactionService.deductFromWallet(wallet, amountBD, "Purchase order payment");
-
-        if (!deducted) {
-            redirect.addFlashAttribute("error", "Could not deduct wallet balance. Please try again.");
-            return "redirect:/cart";
-        }
-
-//        // Create order and save (linking user)
-//        Orders order = new Orders();
-//        order.setUsers(user);
-//        order.setAmount(amountBD);
-////    order.setStatus("COMPLETED");
-//        order.setCreatedAt(LocalDateTime.now());
-//        orderRepository.save(order);
-        redirect.addFlashAttribute("message", "Order placed successfully using wallet balance!");
-        return "redirect:/orders";
     }
 
 //Verify referral code exists

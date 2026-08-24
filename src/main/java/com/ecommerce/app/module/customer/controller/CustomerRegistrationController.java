@@ -1,171 +1,105 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/springframework/Controller.java to edit this template
- */
 package com.ecommerce.app.module.customer.controller;
 
-import com.ecommerce.app.module.communication.model.MessageChannel;
-import com.ecommerce.app.module.communication.model.MessageEventType;
-import com.ecommerce.app.module.communication.events.CommunicationRequestedEvent;
-import com.ecommerce.app.module.ReferralRewards.model.Referral;
-import com.ecommerce.app.module.ReferralRewards.model.Wallet;
-import com.ecommerce.app.module.ReferralRewards.repository.ReferralRepository;
-import com.ecommerce.app.module.ReferralRewards.repository.WalletRepository;
-import com.ecommerce.app.module.ReferralRewards.services.ReferralService;
-import com.ecommerce.app.module.user.model.Status;
-import com.ecommerce.app.module.user.componant.UserValidator;
-import com.ecommerce.app.module.user.model.Role;
-import com.ecommerce.app.module.user.model.UserType;
-import com.ecommerce.app.module.user.model.Users;
-import com.ecommerce.app.module.user.ripository.RoleRepository;
-import com.ecommerce.app.module.user.ripository.UsersRepository;
-import com.ecommerce.app.module.user.services.LoggedUserService;
-import com.ecommerce.app.module.user.services.LoginEventService;
-import com.ecommerce.app.module.user.services.UsersService;
+import com.ecommerce.app.module.customer.dto.CustomerRegistrationForm;
+import com.ecommerce.app.module.customer.services.CustomerRegistrationException;
+import com.ecommerce.app.module.customer.services.CustomerRegistrationService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-import java.math.BigDecimal;
-import java.security.Principal;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-/**
- *
- * @author libertyerp_local
- */
 @Controller
 @RequestMapping("/customer_registration")
 public class CustomerRegistrationController {
 
-    @Autowired
-    LoggedUserService loggedUserService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustomerRegistrationController.class);
+    private static final String REGISTRATION_VIEW = "frontview/front-registration";
+    private static final String REFERRAL_SESSION_ATTRIBUTE = "productShareReferralCode";
 
-    @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final CustomerRegistrationService customerRegistrationService;
 
-    @Autowired
-    UsersRepository usersRepository;
-
-    @Autowired
-    RoleRepository roleRepository;
-
-    @Autowired
-    UserValidator userValidator;
-
-    @Autowired
-    LoginEventService loginEventService;
-
-    @Autowired
-    UsersService usersService;
-
-    @Autowired
-    private ReferralRepository referralRepository;
-
-    @Autowired
-    WalletRepository walletRepository;
-
-    @Autowired
-    ReferralService referralService;
-
-    @Autowired
-    ApplicationEventPublisher applicationEventPublisher;
-
-    @RequestMapping("/registration")
-    public String index(Model model,
-            @RequestParam(name = "ref", required = false) String referralCode,
-            HttpSession session,
-            Users users) {
-
-//        Users userId = new Users();
-//        userId.setId(loggedUserService.activeUserid());
-//
-//        users.setParent(userId);
-//
-//        model.addAttribute("userId", userId.getId());
-        String normalizedReferralCode = trimToNull(referralCode);
-        if (normalizedReferralCode != null && session != null) {
-            session.setAttribute("productShareReferralCode", normalizedReferralCode);
-        }
-
-        Object prefilledReferralCode = session == null ? null : session.getAttribute("productShareReferralCode");
-        model.addAttribute("prefilledReferralCode", prefilledReferralCode instanceof String ? prefilledReferralCode : "");
-        return "frontview/front-registration";
+    public CustomerRegistrationController(CustomerRegistrationService customerRegistrationService) {
+        this.customerRegistrationService = customerRegistrationService;
     }
 
-    @RequestMapping("/customer_registration_save")
-    public String registrationSave(Model model, @Valid Users users, BindingResult bindingResult,
+    @GetMapping("/registration")
+    public String index(
+            Model model,
+            @RequestParam(name = "ref", required = false) String referralCode,
+            HttpSession session,
+            @ModelAttribute("users") CustomerRegistrationForm form) {
+        rememberReferralCode(referralCode, session);
+        addReferralCode(model, session, referralCode);
+        return REGISTRATION_VIEW;
+    }
+
+    @PostMapping("/customer_registration_save")
+    public String registrationSave(
+            Model model,
+            @Valid @ModelAttribute("users") CustomerRegistrationForm form,
+            BindingResult bindingResult,
             RedirectAttributes redirectAttributes,
             @RequestParam(name = "ref_code", required = false) String referralCode,
-            HttpSession session
-    ) {
+            HttpSession session) {
 
-        // userValidator.validate(users, bindingResult);
-//       Users parents = usersRepository.findByReferralcode(users.getParent().getId().toString());
-//
-//        if (parents == null) {
-//
-//            ObjectError cartItemListError;
-//
-//            cartItemListError = new ObjectError("parent", "Your referral code is invalid");
-//
-//            bindingResult.addError(cartItemListError);
-//        }
         if (bindingResult.hasErrors()) {
-
-            model.addAttribute("prefilledReferralCode", trimToEmpty(referralCode));
-            return "frontview/front-registration";
+            addReferralCode(model, session, referralCode);
+            return REGISTRATION_VIEW;
         }
 
-        Set<Role> customerRole = new HashSet<Role>();
-        Role role = roleRepository.findBySlug("customer");
-        customerRole.add(role);
+        try {
+            customerRegistrationService.register(form, resolveRegistrationReferralCode(referralCode, session));
+        } catch (CustomerRegistrationException ex) {
+            rejectRegistration(bindingResult, ex);
+            addReferralCode(model, session, referralCode);
+            return REGISTRATION_VIEW;
+        } catch (IllegalArgumentException ex) {
+            bindingResult.rejectValue("mobile", "invalid", ex.getMessage());
+            addReferralCode(model, session, referralCode);
+            return REGISTRATION_VIEW;
+        } catch (RuntimeException ex) {
+            LOGGER.error("Customer registration failed", ex);
+            bindingResult.reject("registration.failed", "Registration could not be completed. Please try again.");
+            addReferralCode(model, session, referralCode);
+            return REGISTRATION_VIEW;
+        }
 
-        users.setRole(customerRole);
-
-        users.setUserType(UserType.customer);
-
-        users.setStatus(Status.Active);
-        users.setPassword(bCryptPasswordEncoder.encode(users.getPassword()));
-
-//        users.setReferralcode(output);
-        usersRepository.save(users);
-
-        Users referringUser = referralService.resolveReferrerByCode(resolveRegistrationReferralCode(referralCode, session));
-
-//        if (logduser != null) {
-//            Optional<Referral> referringReferral = referralRepository.findByUsers_Id(logduser);
-//
-//            if (referringReferral.isPresent()) {
-//                referringUsers = referringReferral.get().getUsers();
-//            }
-//        }
-        referralService.createReferralProfileAndGrantSignupReward(users, referringUser);
-        applicationEventPublisher.publishEvent(
-                CommunicationRequestedEvent.customer(
-                    MessageEventType.CUSTOMER_REGISTERED,
-                    users,
-                    MessageChannel.EMAIL,
-                    users.getEmail(),
-                    Map.of("customerName", users.getFirstName())
-                )
-        );
-
-        redirectAttributes.addFlashAttribute(
-                "success", "Congratulations! You have successfully registered.");
-
-        redirectAttributes.addFlashAttribute("success", " Congratulations you have successfully registered.");
+        clearReferralCode(session);
+        redirectAttributes.addFlashAttribute("success", "Congratulations! You have successfully registered.");
         return "redirect:/public/member-login";
+    }
+
+    private void rejectRegistration(BindingResult bindingResult, CustomerRegistrationException ex) {
+        if (ex.getField() == null || ex.getField().isBlank()) {
+            bindingResult.reject("registration.failed", ex.getMessage());
+        } else {
+            bindingResult.rejectValue(ex.getField(), "duplicate", ex.getMessage());
+        }
+    }
+
+    private void rememberReferralCode(String referralCode, HttpSession session) {
+        String normalizedReferralCode = trimToNull(referralCode);
+        if (normalizedReferralCode != null && session != null) {
+            session.setAttribute(REFERRAL_SESSION_ATTRIBUTE, normalizedReferralCode);
+        }
+    }
+
+    private void addReferralCode(Model model, HttpSession session, String submittedReferralCode) {
+        String referralCode = trimToNull(submittedReferralCode);
+        if (referralCode == null && session != null) {
+            Object sessionReferralCode = session.getAttribute(REFERRAL_SESSION_ATTRIBUTE);
+            referralCode = sessionReferralCode instanceof String ? trimToNull((String) sessionReferralCode) : null;
+        }
+        model.addAttribute("prefilledReferralCode", referralCode == null ? "" : referralCode);
     }
 
     private String resolveRegistrationReferralCode(String submittedReferralCode, HttpSession session) {
@@ -176,13 +110,14 @@ public class CustomerRegistrationController {
         if (session == null) {
             return null;
         }
-        Object sharedProductReferralCode = session.getAttribute("productShareReferralCode");
+        Object sharedProductReferralCode = session.getAttribute(REFERRAL_SESSION_ATTRIBUTE);
         return sharedProductReferralCode instanceof String ? trimToNull((String) sharedProductReferralCode) : null;
     }
 
-    private String trimToEmpty(String value) {
-        String trimmed = trimToNull(value);
-        return trimmed == null ? "" : trimmed;
+    private void clearReferralCode(HttpSession session) {
+        if (session != null) {
+            session.removeAttribute(REFERRAL_SESSION_ATTRIBUTE);
+        }
     }
 
     private String trimToNull(String value) {
@@ -192,5 +127,4 @@ public class CustomerRegistrationController {
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
     }
-
 }

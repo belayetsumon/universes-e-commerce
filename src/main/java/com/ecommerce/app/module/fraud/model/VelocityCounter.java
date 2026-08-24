@@ -6,10 +6,16 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "fraud_velocity_counters", indexes = {
+@Table(name = "fraud_velocity_counters", uniqueConstraints = {
+    @UniqueConstraint(
+            name = "uk_fraud_velocity_bucket",
+            columnNames = {"counter_scope", "counter_value_hash", "window_start_at", "window_end_at"}
+    )
+}, indexes = {
     @Index(name = "idx_fraud_velocity_scope_value", columnList = "counter_scope,counter_value_hash"),
     @Index(name = "idx_fraud_velocity_window", columnList = "window_start_at,window_end_at")
 })

@@ -27,6 +27,7 @@ import com.ecommerce.app.module.fraud.services.FraudAuditService;
 import com.ecommerce.app.module.fraud.services.FraudCaseService;
 import com.ecommerce.app.module.fraud.services.FraudDecisionService;
 import com.ecommerce.app.module.fraud.services.FraudEventPublisher;
+import com.ecommerce.app.module.fraud.services.FraudContextRecorderService;
 import com.ecommerce.app.module.fraud.services.FraudIdempotencyService;
 import com.ecommerce.app.module.fraud.services.FraudRiskScoringService;
 import com.ecommerce.app.module.fraud.services.FraudRuleEngine;
@@ -60,6 +61,7 @@ public class DefaultFraudAssessmentService implements FraudAssessmentService {
     private final FraudAuditService fraudAuditService;
     private final FraudEventPublisher fraudEventPublisher;
     private final FraudIdempotencyService fraudIdempotencyService;
+    private final FraudContextRecorderService fraudContextRecorderService;
 
     public DefaultFraudAssessmentService(FraudAssessmentRepository fraudAssessmentRepository,
             FraudSignalRepository fraudSignalRepository,
@@ -74,7 +76,8 @@ public class DefaultFraudAssessmentService implements FraudAssessmentService {
             FraudCaseService fraudCaseService,
             FraudAuditService fraudAuditService,
             FraudEventPublisher fraudEventPublisher,
-            FraudIdempotencyService fraudIdempotencyService) {
+            FraudIdempotencyService fraudIdempotencyService,
+            FraudContextRecorderService fraudContextRecorderService) {
         this.fraudAssessmentRepository = fraudAssessmentRepository;
         this.fraudSignalRepository = fraudSignalRepository;
         this.fraudReviewHistoryRepository = fraudReviewHistoryRepository;
@@ -89,6 +92,7 @@ public class DefaultFraudAssessmentService implements FraudAssessmentService {
         this.fraudAuditService = fraudAuditService;
         this.fraudEventPublisher = fraudEventPublisher;
         this.fraudIdempotencyService = fraudIdempotencyService;
+        this.fraudContextRecorderService = fraudContextRecorderService;
     }
 
     @Override
@@ -117,6 +121,7 @@ public class DefaultFraudAssessmentService implements FraudAssessmentService {
         FraudAssessmentResponse response;
         if (hardDecision.isPresent()) {
             response = persistAndApply(order, collectedSignals, hardDecision.get(), context);
+            fraudContextRecorderService.recordOrderAttempt(order, context);
             completeAssessmentIdempotency(idempotencyKey, response);
             return response;
         }
@@ -125,6 +130,7 @@ public class DefaultFraudAssessmentService implements FraudAssessmentService {
         int score = fraudRiskScoringService.calculate(adjustedSignals, context);
         FraudDecisionResult decision = fraudDecisionService.decide(order, score, adjustedSignals, context);
         response = persistAndApply(order, adjustedSignals, decision, context);
+        fraudContextRecorderService.recordOrderAttempt(order, context);
         completeAssessmentIdempotency(idempotencyKey, response);
         return response;
     }

@@ -105,7 +105,18 @@ public class GuestCheckoutOtpService {
         verification.setDeviceFingerprintHash(deviceHash);
         verification = repository.save(verification);
 
-        dispatchOtp(verification, otp, otpTtlMinutes);
+        if (!dispatchOtp(verification, otp, otpTtlMinutes)) {
+            verification.setStatus(OtpStatus.FAILED);
+            verification.setExpiresAt(now);
+            repository.save(verification);
+            GuestOtpResponse response = GuestOtpResponse.failure(
+                    "We could not send a verification code right now. Please try again later."
+            );
+            response.setMaskedMobile(mobileNumberService.mask(mobile));
+            response.setOtpRequired(true);
+            response.setMobileVerificationStatus(OtpStatus.FAILED.name());
+            return response;
+        }
 
         GuestOtpResponse response = GuestOtpResponse.success("If the mobile number is valid, a verification code has been sent.");
         response.setSessionToken(verification.getSessionToken());
@@ -118,23 +129,31 @@ public class GuestCheckoutOtpService {
 
     @Transactional
     public GuestOtpResponse verifyOtp(String sessionToken, String otp, String deviceFingerprint, HttpServletRequest request, HttpSession session) {
-        OtpVerification verification = repository.findBySessionToken(clean(sessionToken))
-                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired verification code."));
+        OtpVerification verification = repository.findBySessionTokenForUpdate(clean(sessionToken)).orElse(null);
+        if (verification == null) {
+            return invalidOtpResponse();
+        }
 
         LocalDateTime now = LocalDateTime.now();
-        if (!session.getId().equals(verification.getHttpSessionId())) {
-            throw new IllegalArgumentException("Invalid or expired verification code.");
+        String submittedDeviceHash = hash(deviceFingerprint);
+        if (verification.getPurpose() != OtpPurpose.GUEST_CHECKOUT
+                || !session.getId().equals(verification.getHttpSessionId())
+                || (verification.getDeviceFingerprintHash() != null
+                && !secureEquals(verification.getDeviceFingerprintHash(), submittedDeviceHash))) {
+            return invalidOtpResponse();
         }
         if (verification.getStatus() != OtpStatus.PENDING || verification.isExpired(now)) {
-            verification.setStatus(OtpStatus.EXPIRED);
-            repository.save(verification);
-            throw new IllegalArgumentException("Invalid or expired verification code.");
+            if (verification.getStatus() == OtpStatus.PENDING) {
+                verification.setStatus(OtpStatus.EXPIRED);
+                repository.save(verification);
+            }
+            return invalidOtpResponse();
         }
         int maximumAttempts = storeOperationModeService.guestOtpMaximumAttempts();
         if (verification.getAttemptCount() >= maximumAttempts) {
             verification.setStatus(OtpStatus.BLOCKED);
             repository.save(verification);
-            throw new IllegalArgumentException("Invalid or expired verification code.");
+            return invalidOtpResponse();
         }
 
         if (!passwordEncoder.matches(clean(otp), verification.getOtpHash())) {
@@ -143,7 +162,7 @@ public class GuestCheckoutOtpService {
                 verification.setStatus(OtpStatus.BLOCKED);
             }
             repository.save(verification);
-            throw new IllegalArgumentException("Invalid or expired verification code.");
+            return invalidOtpResponse();
         }
 
         verification.setStatus(OtpStatus.VERIFIED);
@@ -236,7 +255,7 @@ public class GuestCheckoutOtpService {
         sessionService.store(session, guestSession);
     }
 
-    private void dispatchOtp(OtpVerification verification, String otp, int otpTtlMinutes) {
+    private boolean dispatchOtp(OtpVerification verification, String otp, int otpTtlMinutes) {
         MessageDispatchRequest request = new MessageDispatchRequest();
         request.setEventType(MessageEventType.GUEST_CHECKOUT_OTP);
         request.setChannel(MessageChannel.SMS);
@@ -247,10 +266,26 @@ public class GuestCheckoutOtpService {
         request.setBody("Your Universes Commerce guest checkout verification code is " + otp + ". It expires in " + otpTtlMinutes + " minutes.");
         request.setIdempotencyKey("guest-checkout-otp:" + verification.getUuid());
         request.setVariables(Map.of("otp", otp, "ttlMinutes", otpTtlMinutes));
-        var result = messageDispatchService.dispatch(request);
-        if (result == null || !result.isSuccess()) {
-            LOGGER.warn("Guest checkout OTP dispatch did not confirm success for mobile {}.", mobileNumberService.mask(verification.getMobileNumber()));
+        try {
+            var result = messageDispatchService.dispatch(request);
+            boolean accepted = result != null
+                    && result.isSuccess()
+                    && ("SENT".equals(result.getStatus()) || "QUEUED".equals(result.getStatus()));
+            if (!accepted) {
+                LOGGER.warn("Guest checkout OTP dispatch was not accepted.");
+            }
+            return accepted;
+        } catch (RuntimeException ex) {
+            LOGGER.error("Guest checkout OTP dispatch failed unexpectedly.");
+            return false;
         }
+    }
+
+    private GuestOtpResponse invalidOtpResponse() {
+        GuestOtpResponse response = GuestOtpResponse.failure("Invalid or expired verification code.");
+        response.setOtpRequired(true);
+        response.setMobileVerificationStatus(OtpStatus.FAILED.name());
+        return response;
     }
 
     private void enforceSendLimits(String mobile, String ipHash, String deviceHash, String httpSessionId, LocalDateTime now) {
@@ -315,6 +350,16 @@ public class GuestCheckoutOtpService {
         } catch (Exception ex) {
             return Integer.toHexString(cleaned.hashCode());
         }
+    }
+
+    private boolean secureEquals(String first, String second) {
+        if (first == null || second == null) {
+            return false;
+        }
+        return MessageDigest.isEqual(
+                first.getBytes(StandardCharsets.UTF_8),
+                second.getBytes(StandardCharsets.UTF_8)
+        );
     }
 
     private String clean(String value) {

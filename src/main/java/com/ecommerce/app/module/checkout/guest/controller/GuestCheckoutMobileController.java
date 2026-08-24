@@ -46,7 +46,10 @@ public class GuestCheckoutMobileController {
             return ResponseEntity.badRequest().body(GuestOtpResponse.failure(bindingResult.getAllErrors().get(0).getDefaultMessage()));
         }
         try {
-            return ResponseEntity.ok(otpService.sendOtp(form.getMobileNumber(), form.getDeviceFingerprint(), request, session));
+            GuestOtpResponse response = otpService.sendOtp(form.getMobileNumber(), form.getDeviceFingerprint(), request, session);
+            return response.isSuccess()
+                    ? ResponseEntity.ok(response)
+                    : ResponseEntity.status(503).body(response);
         } catch (IllegalArgumentException | IllegalStateException ex) {
             return ResponseEntity.badRequest().body(GuestOtpResponse.failure(ex.getMessage()));
         }
@@ -75,7 +78,10 @@ public class GuestCheckoutMobileController {
             return ResponseEntity.badRequest().body(GuestOtpResponse.failure(bindingResult.getAllErrors().get(0).getDefaultMessage()));
         }
         try {
-            return ResponseEntity.ok(otpService.verifyOtp(form.getSessionToken(), form.getOtp(), form.getDeviceFingerprint(), request, session));
+            GuestOtpResponse response = otpService.verifyOtp(form.getSessionToken(), form.getOtp(), form.getDeviceFingerprint(), request, session);
+            return response.isSuccess()
+                    ? ResponseEntity.ok(response)
+                    : ResponseEntity.badRequest().body(response);
         } catch (IllegalArgumentException | IllegalStateException ex) {
             return ResponseEntity.badRequest().body(GuestOtpResponse.failure(ex.getMessage()));
         }

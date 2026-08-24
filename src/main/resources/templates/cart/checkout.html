@@ -231,12 +231,74 @@
                 <a class="btn btn-sm btn-outline-success" th:href="@{/order/create}">Add delivery address</a>
             </div>
 
-            <div class="cart-guest-note mb-4" th:if="${guestCheckout and !guestCheckoutVerificationRequired}">
+            <div class="cart-guest-note mb-4" th:if="${guestCheckout and !guestCheckoutVerificationRequired and codEnabled}">
                 <i class="bi bi-info-circle"></i>
                 <div>
                     <strong>Guest payment is limited to COD or fully covered gift-card orders.</strong>
                     <div>Login to use online payment, wallet, reward points, coupons, advance payment, or EMI.</div>
                 </div>
+            </div>
+
+            <div class="guest-otp-card mb-4"
+                 th:if="${codEnabled and !guestCheckout and registeredCustomerCodMobileVerificationRequired}"
+                 data-customer-cod-otp-card>
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                        <div>
+                            <h2 class="h5 mb-1">Verify Mobile for Cash on Delivery</h2>
+                            <p class="text-muted mb-0">
+                                For account security, COD verification codes are sent only to your current account mobile.
+                            </p>
+                        </div>
+                        <span class="cart-checkout-badge">
+                            <i class="bi bi-shield-check"></i>
+                            <span th:text="${registeredCustomerMobileDisplay}">01*********</span>
+                        </span>
+                    </div>
+                    <form data-customer-cod-otp-form>
+                        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <input type="hidden" name="sessionToken" data-customer-cod-otp-token>
+                        <input type="hidden" name="deviceFingerprint" data-customer-cod-device>
+                        <div class="d-grid gap-2 d-md-flex">
+                            <button class="btn btn-primary" type="button" data-customer-cod-send-otp>
+                                <i class="bi bi-send me-1"></i> Send verification code
+                            </button>
+                            <a class="btn btn-outline-secondary" th:href="@{/customer-profile/index}">
+                                Update account mobile
+                            </a>
+                        </div>
+                        <div class="mt-3 d-none" data-customer-cod-otp-area>
+                            <label class="form-label" for="customerCodOtp">Enter the 6-digit code sent to your account mobile.</label>
+                            <input class="form-control guest-otp-code"
+                                   id="customerCodOtp"
+                                   name="otp"
+                                   type="text"
+                                   inputmode="numeric"
+                                   maxlength="6"
+                                   pattern="[0-9]{6}"
+                                   autocomplete="one-time-code"
+                                   placeholder="______">
+                            <div class="d-grid gap-2 mt-3 d-md-flex align-items-center">
+                                <button class="btn btn-success" type="button" data-customer-cod-verify-otp>
+                                    Verify for COD
+                                </button>
+                                <button class="btn btn-link" type="button" data-customer-cod-resend-otp disabled>
+                                    Resend code
+                                </button>
+                            </div>
+                        </div>
+                        <div class="small mt-3" role="status" aria-live="polite" data-customer-cod-otp-message></div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="guest-verified-strip mb-4"
+                 th:if="${codEnabled and !guestCheckout and registeredCustomerCodMobileVerificationEnabled and registeredCustomerCodMobileVerified}">
+                <div>
+                    <strong>Mobile verified for COD</strong>
+                    <span class="ms-2" th:text="${registeredCustomerMobileDisplay}">01*********</span>
+                </div>
+                <i class="bi bi-patch-check-fill text-success fs-4" aria-hidden="true"></i>
             </div>
 
             <div th:each="entry : ${grouped}" class="card mb-4 border-0 shadow-sm cart-checkout-card">
@@ -305,29 +367,33 @@
                     <div class="card border-0 shadow-sm cart-checkout-card">
                         <div class="card-body">
                             <h5 class="card-title mb-3">Payment Plan</h5>
-                            <div class="cart-guest-note mb-3" th:if="${guestCheckout}">
+                            <div class="cart-guest-note mb-3" th:if="${guestCheckout and codEnabled}">
                                 <i class="bi bi-shield-check"></i>
                                 <div>COD is selected for guest checkout. Gift card can still reduce or fully cover the payable amount.</div>
                             </div>
-                            <div class="form-check cart-payment-option">
+                            <div class="alert alert-warning mb-3" th:if="${!codEnabled}">
+                                Cash on Delivery is currently unavailable. Signed-in customers can continue with prepaid or eligible EMI checkout.
+                            </div>
+                            <div class="form-check cart-payment-option" th:if="${codEnabled}">
                                 <input class="form-check-input"
                                        type="radio"
                                        name="paymentPlan"
                                        id="checkoutPlanFullCod"
                                        value="FULL_COD"
-                                       th:checked="${selectedPaymentPlan == 'FULL_COD'}">
+                                       th:checked="${selectedPaymentPlan == 'FULL_COD'}"
+                                       th:disabled="${registeredCustomerCodMobileVerificationRequired}">
                                 <label class="form-check-label" for="checkoutPlanFullCod">
                                     Full COD
                                 </label>
                             </div>
-                            <div class="form-check cart-payment-option">
+                            <div class="form-check cart-payment-option" th:if="${codEnabled}">
                                 <input class="form-check-input"
                                        type="radio"
                                        name="paymentPlan"
                                        id="checkoutPlanAdvanceCod"
                                        value="PARTIAL_ADVANCE_COD"
                                        th:checked="${selectedPaymentPlan == 'PARTIAL_ADVANCE_COD'}"
-                                       th:disabled="${guestCheckout}">
+                                       th:disabled="${guestCheckout or registeredCustomerCodMobileVerificationRequired}">
                                 <label class="form-check-label" for="checkoutPlanAdvanceCod">
                                     Pay Advance Now, Rest COD
                                 </label>
@@ -499,16 +565,23 @@
                                 Full COD keeps the whole order for delivery collection. Full online collects the whole amount now.
                                 Advance + COD keeps only the entered advance payable now and stores the rest as COD.
                             </div>
+                            <div class="alert alert-warning mt-3 mb-0"
+                                 th:if="${codEnabled and registeredCustomerCodMobileVerificationRequired}">
+                                Verify your account mobile above to unlock Full COD and Advance + COD. Full prepaid and eligible EMI checkout remain available.
+                            </div>
                             <div class="small mt-3" data-checkout-incentive-summary></div>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-success btn-lg w-100">
+                    <button type="submit"
+                            class="btn btn-success btn-lg w-100"
+                            th:disabled="${guestCheckout and !codEnabled}">
                         Place Order (BDT [[${#numbers.formatDecimal(grandTotal, 0, 'COMMA', 2, 'POINT')}]])
                     </button>
                 </form>
             </div>
         </div>
+        <script th:src="@{/js/customer-cod-mobile-verification.js}"></script>
         <script>
             (function () {
                 const form = document.querySelector('[data-guest-otp-form]');

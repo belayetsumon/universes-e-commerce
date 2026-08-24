@@ -3,6 +3,8 @@ package com.ecommerce.app.module.customer.controller;
 import com.ecommerce.app.module.customer.dto.CustomerAccountForm;
 import com.ecommerce.app.module.customer.dto.CustomerBillingAddressForm;
 import com.ecommerce.app.module.customer.dto.CustomerPasswordForm;
+import com.ecommerce.app.module.checkout.customer.services.CustomerCodMobileVerificationService;
+import com.ecommerce.app.module.checkout.guest.services.MobileNumberNormalizationService;
 import com.ecommerce.app.module.ReferralRewards.model.Referral;
 import com.ecommerce.app.module.ReferralRewards.repository.ReferralRepository;
 import com.ecommerce.app.module.user.model.Users;
@@ -53,6 +55,12 @@ public class CustomerProfileController {
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @Autowired
+    private MobileNumberNormalizationService mobileNumberNormalizationService;
+
+    @Autowired
+    private CustomerCodMobileVerificationService customerCodMobileVerificationService;
+
     @GetMapping(value = {"", "/", "/index"})
     public String index(Model model) {
         Users currentUser = currentUser();
@@ -78,9 +86,20 @@ public class CustomerProfileController {
 
         Users currentUser = currentUser();
 
-        Users duplicateMobileUser = usersRepository.findByMobile(accountForm.getMobile());
-        if (duplicateMobileUser != null && !duplicateMobileUser.getId().equals(currentUser.getId())) {
-            bindingResult.rejectValue("mobile", "duplicate", "This mobile number is already used by another account.");
+        String normalizedMobile = null;
+        if (!bindingResult.hasFieldErrors("mobile")) {
+            try {
+                normalizedMobile = mobileNumberNormalizationService.normalizeBangladeshMobile(accountForm.getMobile());
+            } catch (IllegalArgumentException ex) {
+                bindingResult.rejectValue("mobile", "invalid", ex.getMessage());
+            }
+        }
+
+        if (normalizedMobile != null) {
+            Users duplicateMobileUser = findMobileOwner(normalizedMobile);
+            if (duplicateMobileUser != null && !duplicateMobileUser.getId().equals(currentUser.getId())) {
+                bindingResult.rejectValue("mobile", "duplicate", "This mobile number is already used by another account.");
+            }
         }
 
         if (bindingResult.hasErrors()) {
@@ -97,12 +116,17 @@ public class CustomerProfileController {
             return PROFILE_VIEW;
         }
 
+        boolean mobileChanged = !normalizedMobile.equals(normalizeOrNull(currentUser.getMobile()));
         currentUser.setFirstName(accountForm.getFirstName().trim());
         currentUser.setLastName(accountForm.getLastName().trim());
-        currentUser.setMobile(accountForm.getMobile().trim());
+        customerCodMobileVerificationService.updateMobileAndInvalidateVerificationIfChanged(currentUser, normalizedMobile);
         usersRepository.save(currentUser);
 
-        redirectAttributes.addFlashAttribute("accountSuccess", "Your profile has been updated successfully.");
+        redirectAttributes.addFlashAttribute(
+                "accountSuccess",
+                mobileChanged
+                        ? "Your profile was updated. Verify the new mobile number before using COD."
+                        : "Your profile has been updated successfully.");
         return "redirect:/customer-profile/index";
     }
 
@@ -260,6 +284,28 @@ public class CustomerProfileController {
         }
 
         return rawPassword.equals(storedPassword);
+    }
+
+    private Users findMobileOwner(String normalizedMobile) {
+        if (normalizedMobile == null) {
+            return null;
+        }
+        Users owner = usersRepository.findByMobile(normalizedMobile);
+        if (owner == null) {
+            owner = usersRepository.findByMobile("+" + normalizedMobile);
+        }
+        if (owner == null && normalizedMobile.startsWith("880")) {
+            owner = usersRepository.findByMobile(mobileNumberNormalizationService.toLocalDisplay(normalizedMobile));
+        }
+        return owner;
+    }
+
+    private String normalizeOrNull(String mobile) {
+        try {
+            return mobileNumberNormalizationService.normalizeBangladeshMobile(mobile);
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 
     private String trimToNull(String value) {

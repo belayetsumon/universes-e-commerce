@@ -16,6 +16,9 @@ import java.time.LocalDateTime;
 })
 public class DeviceIdentity extends BaseFraudEntity {
 
+    @Column(name = "identity_key", unique = true, length = 64)
+    private String identityKey;
+
     @Column(name = "customer_id")
     private Long customerId;
 
@@ -65,6 +68,8 @@ public class DeviceIdentity extends BaseFraudEntity {
     @Column(name = "metadata_json", columnDefinition = "TEXT")
     private String metadataJson;
 
+    public String getIdentityKey() { return identityKey; }
+    public void setIdentityKey(String identityKey) { this.identityKey = identityKey; }
     public Long getCustomerId() { return customerId; }
     public void setCustomerId(Long customerId) { this.customerId = customerId; }
     public String getDeviceIdentifier() { return deviceIdentifier; }

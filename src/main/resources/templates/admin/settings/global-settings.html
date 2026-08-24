@@ -72,6 +72,13 @@
                         <strong th:text="${settings.guestMobileOtpVerificationEnabled} ? 'Enabled' : 'Disabled'">Enabled</strong>
                     </div>
                 </div>
+                <div class="settings-status" th:classappend="${settings.registeredCustomerCodMobileVerificationEnabled} ? '' : ' settings-status--warning'">
+                    <span class="settings-status-icon"><i class="bi bi-person-lock"></i></span>
+                    <div>
+                        <span>Customer COD OTP</span>
+                        <strong th:text="${settings.registeredCustomerCodMobileVerificationEnabled} ? 'Enabled' : 'Disabled'">Enabled</strong>
+                    </div>
+                </div>
                 <div class="settings-status">
                     <span class="settings-status-icon"><i class="bi bi-credit-card"></i></span>
                     <div>
@@ -464,19 +471,20 @@
                                 <div class="settings-field"><label class="form-label">Minimum Order Amount</label><div class="input-group"><span class="input-group-text" th:text="*{defaultCurrency}">BDT</span><input type="number" step="0.01" min="0" th:field="*{minimumOrderAmount}" class="form-control"></div></div>
                                 <div class="settings-field"><label class="form-label">Maximum Order Amount</label><div class="input-group"><span class="input-group-text" th:text="*{defaultCurrency}">BDT</span><input type="number" step="0.01" min="0" th:field="*{maximumOrderAmount}" class="form-control"></div></div>
                                 <div class="settings-field">
-                                    <label class="form-label">Guest OTP Expiry Minutes</label>
+                                    <label class="form-label">Mobile OTP Expiry Minutes</label>
                                     <input type="number" min="1" th:field="*{guestOtpExpiryMinutes}" class="form-control">
+                                    <div class="form-text">Shared by guest checkout and registered-customer COD verification.</div>
                                 </div>
                                 <div class="settings-field">
-                                    <label class="form-label">Guest OTP Max Attempts</label>
+                                    <label class="form-label">Mobile OTP Max Attempts</label>
                                     <input type="number" min="1" th:field="*{guestOtpMaximumAttempts}" class="form-control">
                                 </div>
                                 <div class="settings-field">
-                                    <label class="form-label">Guest OTP Resend Cooldown Seconds</label>
+                                    <label class="form-label">Mobile OTP Resend Cooldown Seconds</label>
                                     <input type="number" min="0" th:field="*{guestOtpResendCooldownSeconds}" class="form-control">
                                 </div>
                                 <div class="settings-field">
-                                    <label class="form-label">Guest OTP Daily Send Limit</label>
+                                    <label class="form-label">Mobile OTP Daily Send Limit</label>
                                     <input type="number" min="1" th:field="*{guestOtpDailySendLimit}" class="form-control">
                                 </div>
                                 <div class="settings-toggle-group settings-field--wide">
@@ -485,6 +493,7 @@
                                     <label><input class="form-check-input" type="checkbox" th:field="*{secureCheckoutEnabled}"> <span><strong>Secure Checkout</strong><small>Require customer login before checkout.</small></span></label>
                                     <label><input class="form-check-input" type="checkbox" th:field="*{allowGuestCheckout}"> <span><strong>Guest Checkout</strong><small>Allow checkout without logging into an existing account.</small></span></label>
                                     <label><input class="form-check-input" type="checkbox" th:field="*{guestMobileOtpVerificationEnabled}"> <span>Guest Checkout Mobile OTP Verification</span></label>
+                                    <label><input class="form-check-input" type="checkbox" th:field="*{registeredCustomerCodMobileVerificationEnabled}"> <span><strong>Registered Customer COD Mobile OTP</strong><small>Require the signed-in customer's current account mobile to be verified before any COD payment plan.</small></span></label>
                                     <label><input class="form-check-input" type="checkbox" th:field="*{guestAutoCreateCustomerAccount}"> <span>Auto-create Customer Account</span></label>
                                 </div>
                                 <input type="hidden" th:field="*{guestMobileRequired}" value="true">

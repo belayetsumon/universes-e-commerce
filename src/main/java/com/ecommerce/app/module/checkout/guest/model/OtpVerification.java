@@ -27,6 +27,9 @@ public class OtpVerification {
     @Column(name = "mobile_number", nullable = false, length = 20)
     private String mobileNumber;
 
+    @Column(name = "user_id")
+    private Long userId;
+
     @Column(name = "otp_hash", nullable = false, length = 100)
     private String otpHash;
 
@@ -92,6 +95,8 @@ public class OtpVerification {
     public void setUuid(String uuid) { this.uuid = uuid; }
     public String getMobileNumber() { return mobileNumber; }
     public void setMobileNumber(String mobileNumber) { this.mobileNumber = mobileNumber; }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
     public String getOtpHash() { return otpHash; }
     public void setOtpHash(String otpHash) { this.otpHash = otpHash; }
     public OtpPurpose getPurpose() { return purpose; }

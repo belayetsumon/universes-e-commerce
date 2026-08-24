@@ -633,9 +633,13 @@
                                                 <i class="bi bi-ticket-perforated"></i>
                                             </button>
                                         </form>
-                                        <a class="btn btn-outline-danger btn-sm" th:href="@{/users/deletewithexception/{id}(id=${alluser.id})}" title="Delete user">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
+                                        <form th:action="@{/users/deletewithexception/{id}(id=${alluser.id})}" method="post" class="d-inline">
+                                            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete user"
+                                                    onclick="return confirm('Delete this user? This action cannot be undone.');">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
