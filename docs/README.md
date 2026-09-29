@@ -40,6 +40,7 @@ This folder is organized by document purpose and business module.
 - [Application Security Endpoint Inventory](security/application-security-endpoint-inventory.csv)
 - [Application Security Permission Catalogue](security/application-security-permission-catalogue.csv)
 - [Test Flow](testing/test-flow.md)
+- [Enterprise SQA Business Feature Matrix](testing/enterprise-sqa-business-feature-matrix.md)
 
 ## Cleanup Notes
 
