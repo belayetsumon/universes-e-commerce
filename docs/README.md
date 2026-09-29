@@ -41,6 +41,7 @@ This folder is organized by document purpose and business module.
 - [Application Security Permission Catalogue](security/application-security-permission-catalogue.csv)
 - [Test Flow](testing/test-flow.md)
 - [Enterprise SQA Business Feature Matrix](testing/enterprise-sqa-business-feature-matrix.md)
+- [E2E UAT User Guide](testing/e2e-uat-user-guide.md)
 
 ## Cleanup Notes
 
