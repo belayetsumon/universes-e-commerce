@@ -213,7 +213,10 @@
                                     <div class="attribute-action">
                                         <a class="btn btn-outline-primary" th:href="@{/catalog-attributes/edit/{uuid}(uuid=${attribute.uuid})}" title="Edit attribute" aria-label="Edit attribute"><i class="bi bi-pencil"></i></a>
                                         <a class="btn btn-outline-secondary" th:href="@{/catalog-attributes/options/{uuid}(uuid=${attribute.uuid})}" title="Manage options" aria-label="Manage options"><i class="bi bi-list-check"></i></a>
-                                        <a class="btn btn-outline-danger" th:href="@{/catalog-attributes/delete/{uuid}(uuid=${attribute.uuid})}" title="Delete attribute" aria-label="Delete attribute"><i class="bi bi-trash3"></i></a>
+                                        <form th:action="@{/catalog-attributes/delete/{uuid}(uuid=${attribute.uuid})}" method="post" class="d-inline">
+                                            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                            <button type="submit" class="btn btn-outline-danger" title="Delete attribute" aria-label="Delete attribute"><i class="bi bi-trash3"></i></button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>

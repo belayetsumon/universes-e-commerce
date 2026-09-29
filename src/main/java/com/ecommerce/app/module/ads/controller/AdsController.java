@@ -154,7 +154,7 @@ public class AdsController {
         return "ads/ads_form";
     }
 
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
 
         String BASE_FOLDER = Paths.get(System.getProperty("user.home"), "universesecommerce").toString();

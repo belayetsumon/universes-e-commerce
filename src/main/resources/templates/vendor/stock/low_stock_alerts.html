@@ -1,0 +1,211 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="front-layout-inner-vendor-page">
+    <th:block layout:fragment="page_css">
+        <style>
+            .alert-report { padding: 1.5rem 0; }
+            .alert-hero { background: #7f1d1d; border: 0; color: #fff; overflow: hidden; }
+            .alert-hero .card-header { background: rgba(255,255,255,.08); border-bottom-color: rgba(255,255,255,.12); }
+            .alert-kicker { color: #fecaca; font-size: .75rem; font-weight: 700; letter-spacing: 0; margin: 0 0 .35rem; text-transform: uppercase; }
+            .alert-hero h1 { color: #fff; font-size: 1.65rem; font-weight: 700; letter-spacing: 0; margin: 0; }
+            .alert-copy { color: rgba(255,255,255,.82); margin: .45rem 0 0; max-width: 780px; }
+            .alert-icon { align-items: center; background: #fff; border-radius: 50%; color: #7f1d1d; display: inline-flex; flex: 0 0 48px; height: 48px; justify-content: center; width: 48px; }
+            .alert-actions { display: grid; gap: .5rem; grid-template-columns: repeat(3,max-content); justify-content: end; }
+            .alert-actions .btn { white-space: nowrap; }
+            .alert-metrics { display: grid; gap: 1rem; grid-template-columns: repeat(5,minmax(0,1fr)); }
+            .alert-metric { border: 1px solid rgba(127,29,29,.14); border-radius: .5rem; min-width: 0; padding: 1rem; }
+            .alert-metric-icon { align-items: center; background: #fee2e2; border-radius: .5rem; color: #b91c1c; display: inline-flex; height: 38px; justify-content: center; width: 38px; }
+            .alert-metric-icon.is-low { background: #fef3c7; color: #b45309; }
+            .alert-metric-icon.is-available { background: #dcfce7; color: #15803d; }
+            .alert-metric-icon.is-reserved { background: #fff7ed; color: #c2410c; }
+            .alert-metric-label { color: #6c757d; font-size: .75rem; font-weight: 700; letter-spacing: 0; margin-top: .7rem; text-transform: uppercase; }
+            .alert-metric-value { color: #212529; font-size: 1.45rem; font-weight: 700; line-height: 1.1; margin-top: .2rem; }
+            .alert-filter-grid { align-items: end; display: grid; gap: .85rem; grid-template-columns: minmax(220px,2fr) repeat(3,minmax(120px,1fr)) auto; }
+            .alert-table { min-width: 1040px; }
+            .alert-table th { background: #fff1f2; color: #7f1d1d; font-size: .75rem; letter-spacing: 0; text-transform: uppercase; white-space: nowrap; }
+            .alert-table th, .alert-table td { padding: .8rem .75rem; vertical-align: middle; }
+            .alert-name { color: #1f2937; display: block; font-weight: 700; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .alert-meta { color: #6c757d; display: block; font-size: .8rem; margin-top: .18rem; max-width: 310px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .alert-action { align-items: center; display: inline-flex; gap: .35rem; justify-content: flex-end; }
+            .alert-action .btn { align-items: center; border-radius: 7px; display: inline-flex; height: 34px; justify-content: center; padding: 0; width: 34px; }
+            .alert-empty { display: grid; gap: .75rem; justify-items: center; padding: 3.5rem 1rem; }
+            @media (max-width: 1399.98px) { .alert-filter-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } .alert-filter-grid .alert-search { grid-column: span 2; } .alert-metrics { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+            @media (max-width: 991.98px) { .alert-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+            @media (max-width: 767.98px) { .alert-metrics, .alert-filter-grid, .alert-actions { grid-template-columns: 1fr; } .alert-filter-grid .alert-search { grid-column: auto; } .alert-hero .card-body > .d-flex { align-items: stretch !important; flex-direction: column; } .alert-actions { justify-content: stretch; } }
+            @media print { .alert-hero .btn, .alert-filter-panel, .alert-action { display: none !important; } .alert-hero, .alert-metric, .card { box-shadow: none !important; } }
+        </style>
+    </th:block>
+
+    <div layout:fragment="main_content">
+        <section class="alert-report">
+            <header class="card shadow-sm mb-4 alert-hero">
+                <div class="card-header d-flex align-items-center justify-content-between py-3">
+                    <span class="fw-semibold"><i class="bi bi-exclamation-triangle text-warning me-2"></i>Inventory alerts</span>
+                    <span class="badge text-bg-light border border-white border-opacity-25" th:text="${totalRows} + ' alert rows'">0 alert rows</span>
+                </div>
+                <div class="card-body py-4">
+                    <div class="d-flex align-items-start justify-content-between gap-4">
+                        <div class="d-flex align-items-start gap-3">
+                            <span class="alert-icon"><i class="bi bi-bell fs-4"></i></span>
+                            <div>
+                                <p class="alert-kicker">Vendor stock report</p>
+                                <h1>Low Stock Alert Report</h1>
+                                <p class="alert-copy">Review product and variant rows that are out of stock or at/below your selected low-stock threshold.</p>
+                            </div>
+                        </div>
+                        <div class="alert-actions flex-shrink-0">
+                            <a class="btn btn-light" th:href="@{/vendor/home}"><i class="bi bi-arrow-left me-1"></i> Dashboard</a>
+                            <a class="btn btn-outline-light" th:href="@{/vendor/stock/current}"><i class="bi bi-clipboard-data me-1"></i> Current Stock</a>
+                            <a class="btn btn-outline-light" th:href="@{/vendor/stock/receive}"><i class="bi bi-plus-lg me-1"></i> Receive Stock</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="alert-metrics mb-4">
+                <article class="card alert-metric shadow-sm"><span class="alert-metric-icon"><i class="bi bi-bell"></i></span><div class="alert-metric-label">Alert Rows</div><div class="alert-metric-value" th:text="${summary.rowCount}">0</div></article>
+                <article class="card alert-metric shadow-sm"><span class="alert-metric-icon is-low"><i class="bi bi-exclamation-triangle"></i></span><div class="alert-metric-label">Low Stock</div><div class="alert-metric-value text-warning" th:text="${summary.lowStockCount}">0</div></article>
+                <article class="card alert-metric shadow-sm"><span class="alert-metric-icon"><i class="bi bi-x-circle"></i></span><div class="alert-metric-label">Out of Stock</div><div class="alert-metric-value text-danger" th:text="${summary.outOfStockCount}">0</div></article>
+                <article class="card alert-metric shadow-sm"><span class="alert-metric-icon is-available"><i class="bi bi-check2-circle"></i></span><div class="alert-metric-label">Available</div><div class="alert-metric-value text-success" th:text="${summary.availableQuantity}">0</div></article>
+                <article class="card alert-metric shadow-sm"><span class="alert-metric-icon is-reserved"><i class="bi bi-pause-circle"></i></span><div class="alert-metric-label">Reserved</div><div class="alert-metric-value text-warning" th:text="${summary.reservedQuantity}">0</div></article>
+            </div>
+
+            <div th:if="${not #strings.isEmpty(errorMessage)}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                <span th:text="${errorMessage}">Unable to load alerts.</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div class="card shadow-sm mb-4 alert-filter-panel">
+                <div class="card-body p-3">
+                    <form method="get" th:action="@{/vendor/stock/low-stock-alerts}">
+                        <input type="hidden" name="page" value="0">
+                        <div class="alert-filter-grid">
+                            <div class="alert-search">
+                                <label for="alertKeyword" class="form-label small fw-semibold text-uppercase text-muted mb-1">Find alert</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                                    <input id="alertKeyword" class="form-control" type="search" name="q" th:value="${q}" placeholder="Product or SKU">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="categoryId" class="form-label small fw-semibold text-uppercase text-muted mb-1">Category</label>
+                                <select id="categoryId" class="form-select" name="categoryId">
+                                    <option value="">All categories</option>
+                                    <option th:each="category : ${categories}" th:value="${category.id}" th:selected="${selectedCategoryId != null and selectedCategoryId.equals(category.id)}" th:text="${category.name}">Category</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="lowStockThreshold" class="form-label small fw-semibold text-uppercase text-muted mb-1">Low threshold</label>
+                                <input id="lowStockThreshold" class="form-control" type="number" step="0.001" min="0" name="lowStockThreshold" th:value="${lowStockThreshold}">
+                            </div>
+                            <div>
+                                <label for="alertPageSize" class="form-label small fw-semibold text-uppercase text-muted mb-1">Rows</label>
+                                <select id="alertPageSize" class="form-select" name="size">
+                                    <option value="10" th:selected="${size == 10}">10</option>
+                                    <option value="25" th:selected="${size == 25}">25</option>
+                                    <option value="50" th:selected="${size == 50}">50</option>
+                                    <option value="100" th:selected="${size == 100}">100</option>
+                                </select>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-danger" type="submit" title="Apply filters" aria-label="Apply filters"><i class="bi bi-funnel"></i></button>
+                                <a class="btn btn-outline-secondary" th:href="@{/vendor/stock/low-stock-alerts}" title="Clear filters" aria-label="Clear filters"><i class="bi bi-arrow-counterclockwise"></i></a>
+                            </div>
+                        </div>
+                        <small class="text-muted d-block mt-3" th:text="${totalRows} + ' low-stock alert row(s) found'">0 low-stock alert row(s) found</small>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 py-3">
+                    <div><h2 class="h5 mb-1">Alert Directory</h2><p class="text-muted small mb-0" th:text="${totalRows} + ' rows require attention'">0 rows require attention</p></div>
+                    <span class="small text-muted" th:text="${'Threshold: ' + lowStockThreshold}">Threshold: 5</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 alert-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Product</th>
+                                <th>Category / Row</th>
+                                <th>Inventory</th>
+                                <th>Alert</th>
+                                <th>Recommended Action</th>
+                            </tr>
+                        </thead>
+                        <tbody th:if="${!#lists.isEmpty(rows)}">
+                            <tr th:each="row, status : ${rows}">
+                                <td class="text-muted" th:text="${stockPage.number * stockPage.size + status.count}">1</td>
+                                <td>
+                                    <a class="alert-name" th:href="@{/productvendor/details/{id}(id=${row.productId})}" th:text="${row.productTitle}">Product</a>
+                                    <span class="alert-meta"><strong>SKU:</strong> <span th:text="${row.productSku}">0</span></span>
+                                    <span class="alert-meta" th:text="${row.variantSku != null ? 'Variant SKU: ' + row.variantSku : 'Product level stock'}">Product level stock</span>
+                                </td>
+                                <td>
+                                    <span class="badge text-bg-light border d-inline-flex mb-1"><i class="bi bi-tags me-1 text-primary"></i><span th:text="${row.categoryName != null ? row.categoryName : 'Uncategorized'}">Category</span></span>
+                                    <span class="alert-meta"><i class="bi bi-grid me-1"></i><span th:text="${row.rowType}">Product</span></span>
+                                </td>
+                                <td>
+                                    <strong th:classappend="${row.stockStatus == 'Out of stock' ? 'text-danger' : 'text-warning'}" th:text="${'Available: ' + row.availableQuantity}">Available: 0</strong>
+                                    <span class="alert-meta" th:text="${'Reserved: ' + row.reservedQuantity + ' | On hand: ' + row.totalOnHand}">Reserved: 0 | On hand: 0</span>
+                                    <span class="alert-meta" th:text="${'Sold: ' + row.soldQuantity}">Sold: 0</span>
+                                </td>
+                                <td>
+                                    <span class="badge" th:classappend="${row.stockStatus == 'Low stock' ? ' text-bg-warning' : ' text-bg-danger'}" th:text="${row.stockStatus}">Low stock</span>
+                                    <span class="alert-meta" th:text="${'Threshold: ' + lowStockThreshold}">Threshold: 5</span>
+                                </td>
+                                <td>
+                                    <div class="alert-action">
+                                        <a class="btn btn-outline-success" th:href="@{/vendor/stock/receive(productId=${row.productId},catalogVariantUuid=${row.variantUuid})}" title="Receive stock" aria-label="Receive stock"><i class="bi bi-plus-lg"></i></a>
+                                        <a class="btn btn-outline-warning" th:href="@{/vendor/stock/adjust(productId=${row.productId},catalogVariantUuid=${row.variantUuid})}" title="Adjust stock" aria-label="Adjust stock"><i class="bi bi-sliders"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody th:if="${#lists.isEmpty(rows)}">
+                            <tr>
+                                <td colspan="6">
+                                    <div class="alert-empty">
+                                        <span class="alert-icon"><i class="bi bi-check2-circle fs-5"></i></span>
+                                        <div class="text-center">
+                                            <h3 class="h6 mb-1">No low-stock alerts</h3>
+                                            <p class="text-muted small mb-0">All matching stock rows are above the selected threshold.</p>
+                                        </div>
+                                        <a class="btn btn-outline-secondary btn-sm" th:href="@{/vendor/stock/current}"><i class="bi bi-clipboard-data me-1"></i>View Current Stock</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div class="text-muted small"
+                         th:text="${stockPage.totalElements == 0 ? 'Showing 0 alerts' : 'Showing ' + (stockPage.number * stockPage.size + 1) + '-' + (stockPage.number * stockPage.size + stockPage.numberOfElements) + ' of ' + stockPage.totalElements}">
+                        Showing 0 alerts
+                    </div>
+                    <nav th:if="${stockPage.totalPages > 1}" aria-label="Low stock alert pagination">
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item" th:classappend="${stockPage.first} ? 'disabled'">
+                                <a class="page-link" th:href="@{/vendor/stock/low-stock-alerts(q=${q},categoryId=${selectedCategoryId},lowStockThreshold=${lowStockThreshold},size=${size},page=0)}">First</a>
+                            </li>
+                            <li class="page-item" th:classappend="${stockPage.first} ? 'disabled'">
+                                <a class="page-link" th:href="@{/vendor/stock/low-stock-alerts(q=${q},categoryId=${selectedCategoryId},lowStockThreshold=${lowStockThreshold},size=${size},page=${stockPage.first ? 0 : stockPage.number - 1})}">Previous</a>
+                            </li>
+                            <li class="page-item" th:each="pageNumber : ${pageNumbers}" th:classappend="${pageNumber == stockPage.number} ? 'active'">
+                                <a class="page-link" th:href="@{/vendor/stock/low-stock-alerts(q=${q},categoryId=${selectedCategoryId},lowStockThreshold=${lowStockThreshold},size=${size},page=${pageNumber})}" th:text="${pageNumber + 1}">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${stockPage.last} ? 'disabled'">
+                                <a class="page-link" th:href="@{/vendor/stock/low-stock-alerts(q=${q},categoryId=${selectedCategoryId},lowStockThreshold=${lowStockThreshold},size=${size},page=${stockPage.last ? stockPage.number : stockPage.number + 1})}">Next</a>
+                            </li>
+                            <li class="page-item" th:classappend="${stockPage.last} ? 'disabled'">
+                                <a class="page-link" th:href="@{/vendor/stock/low-stock-alerts(q=${q},categoryId=${selectedCategoryId},lowStockThreshold=${lowStockThreshold},size=${size},page=${stockPage.totalPages - 1})}">Last</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

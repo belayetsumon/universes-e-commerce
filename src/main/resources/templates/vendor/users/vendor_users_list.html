@@ -48,6 +48,11 @@ and open the template in the editor.
                             <span th:text="${message}"></span>
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
+                        <div th:if="${not #strings.isEmpty(errorMessage)}"
+                             class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <span th:text="${errorMessage}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
                         <div class="table-responsive">
                             <table class="table table-bordered table-hover">
                                 <thead class="table-light">
@@ -72,10 +77,15 @@ and open the template in the editor.
                                             <!--                                            <a th:href="@{/vendor-users/edit/{id}(id=${uvr.id})}" class="btn btn-warning btn-sm">
                                                                                             <i class="bi bi-pencil-square"></i>
                                                                                         </a>-->
-                                            <a th:href="@{/vendor-users/delete/{id}(id=${uvr.id})}" class="btn btn-danger btn-sm"
-                                               onclick="return confirm('Are you sure?');">
-                                                <i class="bi bi-trash"></i>
-                                            </a>
+                                            <form th:action="@{/vendor-users/delete/{id}(id=${uvr.id})}"
+                                                  method="post"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('Are you sure?');">
+                                                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -179,9 +189,14 @@ and open the template in the editor.
                                     <td th:text="${vp.slug}">Slug</td>
                                     <td>
                                         <a th:href="@{/adminvendorusers/privileges_edit/{id}(id=${vp.id})}" class="btn btn-sm btn-warning">    <i class="bi bi-pencil-square me-2 text-black"></i> Edit</a>
-                                        <a th:href="@{/adminvendorusers/privileges_delete/{id}(id=${vp.id})}"
-                                           class="btn btn-sm btn-danger"
-                                           onclick="return confirm('Are you sure?')"> <i class="bi bi-trash"></i> Delete</a>
+                                        <form th:action="@{/adminvendorusers/privileges_delete/{id}(id=${vp.id})}"
+                                              method="post" class="d-inline"
+                                              onsubmit="return confirm('Are you sure?');">
+                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                             </tbody>

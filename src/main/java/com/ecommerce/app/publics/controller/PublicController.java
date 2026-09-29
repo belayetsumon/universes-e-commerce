@@ -76,6 +76,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -186,7 +187,7 @@ public class PublicController {
     @Autowired
     ReferralService referralService;
 
-    @RequestMapping("/about-us")
+    @GetMapping("/about-us")
     public String aboutUs(Model model) {
         GlobalSettings settings = globalSettingsService.getActiveSettings();
         return renderStaticPage(
@@ -202,7 +203,7 @@ public class PublicController {
         );
     }
 
-    @RequestMapping("/member-login")
+    @GetMapping("/member-login")
     public String memberlogin(Model model, HttpServletRequest request) {
         model.addAttribute("attribute", "value");
         publicSeoService.apply(model, publicSeoService.noIndexPage(
@@ -241,7 +242,7 @@ public class PublicController {
         return "frontview/front-registration";
     }
 
-    @RequestMapping("/forgot-password")
+    @GetMapping("/forgot-password")
     public String forgotPassword(Model model, HttpServletRequest request) {
         model.addAttribute("attribute", "value");
         publicSeoService.apply(model, publicSeoService.noIndexPage(
@@ -253,7 +254,7 @@ public class PublicController {
         return "frontview/forgot-password";
     }
 
-    @RequestMapping("/product")
+    @GetMapping("/product")
     public String product(Model model,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -282,7 +283,7 @@ public class PublicController {
         return renderProductList(model, allProducts, page, size, sort, selectedVendor, q, request);
     }
 
-    @RequestMapping("/search/suggestions")
+    @GetMapping("/search/suggestions")
     @ResponseBody
     public ProductSearchSuggestionResponse searchSuggestions(@RequestParam(required = false, name = "q") String query) {
         return productService.publicSearchSuggestions(query);
@@ -406,7 +407,7 @@ public class PublicController {
         return false;
     }
 
-    @RequestMapping("/product-by-category/{prodcatid}")
+    @GetMapping("/product-by-category/{prodcatid}")
     public String productByCategory(
             Model model,
             @PathVariable String prodcatid,
@@ -577,7 +578,7 @@ public class PublicController {
         return "frontview/product-by-category";
     }
 
-    @RequestMapping("/single-product/{prodid}")
+    @GetMapping("/single-product/{prodid}")
     public String single_product(Model model, @PathVariable String prodid, Product product, Principal principal,
             @RequestParam(name = "ref", required = false) String referralCode,
             HttpSession session, HttpServletRequest request, HttpServletResponse response) {
@@ -688,7 +689,7 @@ public class PublicController {
         return "frontview/single-product";
     }
 
-    @RequestMapping("/browsing-history")
+    @GetMapping("/browsing-history")
     public String browsingHistory(Model model, HttpServletRequest request, HttpServletResponse response) {
         List<BrowsingHistory> historyEntries = browsingHistoryService.getCurrentBrowsingHistory(request, response);
         boolean authenticatedUser = getAuthenticatedUser() != null;
@@ -720,14 +721,14 @@ public class PublicController {
         return "frontview/browsing-history";
     }
 
-    @RequestMapping("/blogdetails/{blogid}")
+    @GetMapping("/blogdetails/{blogid}")
     public String blogDetails(@PathVariable Long blogid) {
         return blogRepository.findById(blogid)
                 .map(blog -> "redirect:/public/blog/" + blog.getSlug())
                 .orElse("redirect:/public/blog");
     }
 
-    @RequestMapping("/blog-by-cat/{catid}")
+    @GetMapping("/blog-by-cat/{catid}")
     public String blogByCategory(@PathVariable Long catid) {
         return blogCategoryRepository.findById(catid)
                 .map(category -> "redirect:/public/blog/category/" + category.getSlug())
@@ -767,8 +768,13 @@ public class PublicController {
         String shareUrl = buildProductShareUrl(request, product.getUuid(), referralCode);
         String productTitle = getString(productDetails, "title");
         String productDescription = plainText(getString(productDetails, "shortDescription"));
-        String shareMessage = (productTitle == null || productTitle.isBlank() ? "Check this product" : "Check this product: " + productTitle)
-                + " " + shareUrl;
+        BigDecimal productPrice = getBigDecimal(productDetails, "afterDiscountRemainingAmount", "salesPrice");
+        String shareMessage = buildProductShareMessage(
+                productTitle,
+                productDescription,
+                productPrice,
+                textOrDefault(settings.getCurrency(), "BDT"),
+                shareUrl);
 
         model.addAttribute("customerProductReferralCode", referralCode);
         model.addAttribute("productShareUrl", shareUrl);
@@ -810,6 +816,24 @@ public class PublicController {
             builder.queryParam("ref", referralCode.trim());
         }
         return builder.build().toUriString();
+    }
+
+    private String buildProductShareMessage(
+            String productTitle,
+            String productDescription,
+            BigDecimal productPrice,
+            String currency,
+            String shareUrl) {
+        List<String> parts = new ArrayList<>();
+        parts.add(textOrDefault(productTitle, "Check this product"));
+        if (productDescription != null && !productDescription.isBlank()) {
+            parts.add(productDescription);
+        }
+        if (productPrice != null) {
+            parts.add("Price: " + textOrDefault(currency, "BDT") + " " + productPrice.stripTrailingZeros().toPlainString());
+        }
+        parts.add(shareUrl);
+        return String.join("\n", parts);
     }
 
     private String buildPublicUrl(HttpServletRequest request, String publicPath) {
@@ -933,7 +957,7 @@ public class PublicController {
         return usersRepository.findByEmail(authentication.getName()).orElse(null);
     }
 
-    @RequestMapping({"/contactUs", "/contact-us"})
+    @GetMapping({"/contactUs", "/contact-us"})
     public String contactUs(Model model) {
         GlobalSettings settings = globalSettingsService.getActiveSettings();
         return renderStaticPage(
@@ -949,7 +973,7 @@ public class PublicController {
         );
     }
 
-    @RequestMapping("/home-contact-save")
+    @PostMapping("/home-contact-save")
     public String homecontactsave(Model model, @Valid Contact contact, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
         model.addAttribute("attribute", "value");
 
@@ -963,7 +987,7 @@ public class PublicController {
         return "redirect:/";
     }
 
-    @RequestMapping({"/privacy_policy", "/privacy-policy"})
+    @GetMapping({"/privacy_policy", "/privacy-policy"})
     public String privacyPolicy(Model model) {
         GlobalSettings settings = globalSettingsService.getActiveSettings();
         return renderStaticPage(
@@ -980,7 +1004,7 @@ public class PublicController {
 
     }
 
-    @RequestMapping("/help")
+    @GetMapping("/help")
     public String help(Model model) {
         GlobalSettings settings = globalSettingsService.getActiveSettings();
         return renderStaticPage(
@@ -996,7 +1020,7 @@ public class PublicController {
         );
     }
 
-    @RequestMapping("/terms-of-use")
+    @GetMapping("/terms-of-use")
     public String termsOfUse(Model model) {
         GlobalSettings settings = globalSettingsService.getActiveSettings();
         return renderStaticPage(
@@ -1012,7 +1036,7 @@ public class PublicController {
         );
     }
 
-    @RequestMapping("/payment-methods")
+    @GetMapping("/payment-methods")
     public String paymentMethods(Model model) {
         GlobalSettings settings = globalSettingsService.getActiveSettings();
         return renderStaticPage(
@@ -1028,7 +1052,7 @@ public class PublicController {
         );
     }
 
-    @RequestMapping("/returns-replacements")
+    @GetMapping("/returns-replacements")
     public String returnsAndReplacements(Model model) {
         GlobalSettings settings = globalSettingsService.getActiveSettings();
         return renderStaticPage(
@@ -1044,7 +1068,7 @@ public class PublicController {
         );
     }
 
-    @RequestMapping({"/refund-returns-policy", "/refund-and-returns-policy"})
+    @GetMapping({"/refund-returns-policy", "/refund-and-returns-policy"})
     public String refundAndReturnsPolicy(Model model) {
         GlobalSettings settings = globalSettingsService.getActiveSettings();
         return renderStaticPage(
@@ -1060,7 +1084,7 @@ public class PublicController {
         );
     }
 
-    @RequestMapping("/shipping-rates-policies")
+    @GetMapping("/shipping-rates-policies")
     public String shippingRatesAndPolicies(Model model) {
         GlobalSettings settings = globalSettingsService.getActiveSettings();
         return renderStaticPage(
@@ -1076,7 +1100,7 @@ public class PublicController {
         );
     }
 
-    @RequestMapping({"/term-and-conditions", "/terms-and-conditions"})
+    @GetMapping({"/term-and-conditions", "/terms-and-conditions"})
     public String termsAndConditions(Model model) {
         GlobalSettings settings = globalSettingsService.getActiveSettings();
         return renderStaticPage(

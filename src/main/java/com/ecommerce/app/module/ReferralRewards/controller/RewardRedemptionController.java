@@ -66,7 +66,7 @@ public class RewardRedemptionController {
         return "customer/referral_rewards/reward-dashboard";
     }
 
-    @RequestMapping("/list")
+    @GetMapping("/list")
     public String showRedeemList(Model model) {
         model.addAttribute("rewardRedemptionlist", rewardRedemptionRepository.findAll());
         return "admin/referral_rewards/reward-redemption-list";

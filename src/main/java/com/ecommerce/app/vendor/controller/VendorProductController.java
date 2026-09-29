@@ -49,6 +49,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -128,7 +129,7 @@ public class VendorProductController {
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
 //            """)
-    @RequestMapping(value = {"", "/", "/index"})
+    @GetMapping(value = {"", "/", "/index"})
     public String index(Model model,
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "categoryId", required = false) Long categoryId,
@@ -271,7 +272,7 @@ public class VendorProductController {
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
 //            """)
-    @RequestMapping("/create")
+    @GetMapping("/create")
     public String create(Model model, Product product, HttpSession session) {
         int suk = (int) unixTimeComponent.unixTimeEpochSecond();
         product.setSku(suk);
@@ -292,7 +293,7 @@ public class VendorProductController {
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
 //            """)
-    @RequestMapping("/save")
+    @PostMapping("/save")
     public String create(Model model, @Valid Product product, BindingResult bindingResult, RedirectAttributes redirectAttributes,
             @RequestParam(value = "pic", required = false) MultipartFile pic,
             HttpServletRequest request
@@ -390,7 +391,7 @@ public class VendorProductController {
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
 //            """)
-    @RequestMapping("/details/{id}")
+    @GetMapping("/details/{id}")
     public String create(Model model,
             @PathVariable Long id,
             @RequestParam(value = "tab", required = false) String activeTab,
@@ -445,7 +446,7 @@ public class VendorProductController {
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
 //            """)
-    @RequestMapping("/edit/{id}")
+    @GetMapping("/edit/{id}")
     public String edit(Model model, @PathVariable Long id, Product product, RedirectAttributes redirectAttributes) {
         Product existingProduct = productRepository.findById(id).orElse(null);
         if (!isOwnedByActiveVendor(existingProduct)) {
@@ -470,7 +471,7 @@ public class VendorProductController {
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
 //            """)
-    @RequestMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
 
     public String delete(Model model, @PathVariable Long id, Product product, RedirectAttributes redirectAttributes) {
 

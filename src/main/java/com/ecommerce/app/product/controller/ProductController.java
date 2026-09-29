@@ -47,6 +47,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -126,7 +127,7 @@ public class ProductController {
 
     private static final Logger log = LoggerFactory.getLogger(ProductController.class);
 
-    @RequestMapping(value = {"", "/", "/index"})
+    @GetMapping(value = {"", "/", "/index"})
     public String index(Model model,
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "categoryId", required = false) Long categoryId,
@@ -289,7 +290,7 @@ public class ProductController {
         model.addAttribute("missingImageProductCount", missingImageProducts);
     }
 
-    @RequestMapping("/create")
+    @GetMapping("/create")
     public String create(Model model, Product product) {
 
 //        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -382,7 +383,7 @@ public class ProductController {
         }
     }
 
-    @RequestMapping("/details/{id}")
+    @GetMapping("/details/{id}")
     public String create(Model model,
             @PathVariable Long id,
             @RequestParam(value = "tab", required = false) String activeTab,
@@ -429,7 +430,7 @@ public class ProductController {
         }
     }
 
-    @RequestMapping("/edit/{id}")
+    @GetMapping("/edit/{id}")
     public String edit(Model model, @PathVariable Long id, Product product, RedirectAttributes redirectAttributes) {
         Product existingProduct = productRepository.findById(id).orElse(null);
         if (existingProduct == null) {
@@ -448,7 +449,7 @@ public class ProductController {
         return "product/add";
     }
 
-    @RequestMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
 
     public String delete(Model model, @PathVariable Long id, Product product, RedirectAttributes redirectAttributes) {
 

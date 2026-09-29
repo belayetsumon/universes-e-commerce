@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
@@ -24,7 +25,7 @@ public class AdminController {
     @Autowired
     private AdminDashboardService adminDashboardService;
 
-    @RequestMapping(value = {"", "/", "/index"})
+    @GetMapping(value = {"", "/", "/index"})
     public String page(Model model) {
         model.addAttribute("pageTitle", "Admin Dashboard");
         try {
@@ -36,12 +37,12 @@ public class AdminController {
         return "/admin/index";
     }
 
-    @RequestMapping(value = {"/returns-refunds", "/return-refund", "/return-refunds", "/returns"})
+    @GetMapping(value = {"/returns-refunds", "/return-refund", "/return-refunds", "/returns"})
     public String returnsRefunds() {
         return "redirect:/admin/finance/returns";
     }
 
-    @RequestMapping(value = {"/refunds"})
+    @GetMapping(value = {"/refunds"})
     public String refunds() {
         return "redirect:/admin/finance/refunds";
     }

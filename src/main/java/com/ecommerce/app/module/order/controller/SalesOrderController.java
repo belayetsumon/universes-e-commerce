@@ -42,6 +42,7 @@ import com.ecommerce.app.module.settings.services.StoreOperationModeService;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.user.services.LoggedUserService;
+import com.ecommerce.app.security.permission.PlatformOrderPermissions;
 import com.ecommerce.app.module.order.model.BillingAddress;
 import com.ecommerce.app.module.order.model.CustomerOrderGroup;
 import com.ecommerce.app.module.order.model.EmiPaymentPlan;
@@ -87,6 +88,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -234,7 +236,8 @@ public class SalesOrderController {
     @Autowired
     VendorRiskProfileService vendorRiskProfileService;
 
-    @RequestMapping(value = {"", "/", "/index"})
+    @GetMapping(value = {"", "/", "/index"})
+    @PreAuthorize(PlatformOrderPermissions.CAN_READ)
     public String index(Model model) {
         model.addAttribute("orderlist", salesOrderRepository.findAll());
         return "order/order/index";

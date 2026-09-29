@@ -5,6 +5,7 @@
 package com.ecommerce.app.vendor.user.repository;
 
 import com.ecommerce.app.vendor.user.model.VendorPrivilege;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -12,5 +13,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @author libertyerp_local
  */
 public interface VendorPrivilegeRepository extends JpaRepository<VendorPrivilege, Long> {
+
+    Optional<VendorPrivilege> findFirstBySlugIgnoreCase(String slug);
+
+    boolean existsBySlugIgnoreCase(String slug);
+
+    boolean existsBySlugIgnoreCaseAndIdNot(String slug, Long id);
 
 }

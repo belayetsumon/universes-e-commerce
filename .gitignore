@@ -1,1 +1,7 @@
 /target/
+.env
+.env.*
+!.env.example
+application-secrets.properties
+src/main/resources/application-secrets.properties
+userpassword

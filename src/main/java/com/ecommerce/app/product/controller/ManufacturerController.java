@@ -60,7 +60,7 @@ public class ManufacturerController {
         return "product/manufacturer/add";
     }
 
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public String deleteUnit(@PathVariable Long id) {
         manufacturerRepository.deleteById(id);
         return "redirect:/manufacturer/list";

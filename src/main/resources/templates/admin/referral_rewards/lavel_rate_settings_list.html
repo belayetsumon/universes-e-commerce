@@ -33,6 +33,7 @@
 
                     <div class="card-body table-responsive">
                         <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+                        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
                         <table class="table table-bordered table-hover table-striped">
                             <thead>
                                 <tr>

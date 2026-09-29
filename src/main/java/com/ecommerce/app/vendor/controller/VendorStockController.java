@@ -12,6 +12,7 @@ import com.ecommerce.app.product.ripository.ProductVariantRepository;
 import com.ecommerce.app.product.ripository.StockTransactionRepository;
 import com.ecommerce.app.product.services.StockInventoryReportService;
 import com.ecommerce.app.product.services.StockLedgerService;
+import com.ecommerce.app.vendor.model.Vendorprofile;
 import com.ecommerce.app.vendor.user.componant.VendorUserContext;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,6 +28,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -100,6 +102,53 @@ public class VendorStockController {
         model.addAttribute("size", normalizePageSize(size));
         model.addAttribute("categories", productcategoryRepository.findAll(Sort.by(Sort.Direction.ASC, "name", "id")));
         return "vendor/stock/current";
+    }
+
+    @PreAuthorize("""
+            @vendorAccessAuthorityChecker.hasAuthority(authentication, 'vendor.stock.read')
+            or @vendorAccessAuthorityChecker.hasAuthority(authentication, 'vendor.stock.manage')
+            or @vendorRoleChecker.hasVendorRole(authentication, 'ADMIN')
+            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
+            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
+            """)
+    @GetMapping("/low-stock-alerts")
+    public String lowStockAlerts(
+            @RequestParam(value = "q", required = false) String q,
+            @RequestParam(value = "categoryId", required = false) Long categoryId,
+            @RequestParam(value = "lowStockThreshold", required = false, defaultValue = "5") BigDecimal lowStockThreshold,
+            @RequestParam(value = "page", required = false, defaultValue = "0") int page,
+            @RequestParam(value = "size", required = false, defaultValue = "25") int size,
+            Model model
+    ) {
+        Page<ProductStockReportRow> alertPage = Page.empty(currentStockPageable(page, size));
+        ProductStockReportSummary summary = new ProductStockReportSummary();
+        Vendorprofile activeVendor = vendorUserContext.getActiveVendor();
+        try {
+            if (activeVendor == null || activeVendor.getId() == null) {
+                throw new IllegalStateException("Vendor context not found.");
+            }
+            List<ProductStockReportRow> rows = stockInventoryReportService.findCurrentStock(
+                    activeVendor.getId(), categoryId, q, "all", lowStockThreshold)
+                    .stream()
+                    .filter(row -> "Low stock".equals(row.getStockStatus()) || "Out of stock".equals(row.getStockStatus()))
+                    .toList();
+            summary = stockInventoryReportService.summarize(rows);
+            alertPage = currentStockPage(rows, page, size);
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Runtime error while loading low stock alerts: " + userFacingMessage(e));
+        }
+        model.addAttribute("rows", alertPage.getContent());
+        model.addAttribute("stockPage", alertPage);
+        model.addAttribute("pageNumbers", pageNumbers(alertPage));
+        model.addAttribute("totalRows", alertPage.getTotalElements());
+        model.addAttribute("summary", summary);
+        model.addAttribute("q", q);
+        model.addAttribute("selectedCategoryId", categoryId);
+        model.addAttribute("lowStockThreshold", lowStockThreshold);
+        model.addAttribute("size", normalizePageSize(size));
+        model.addAttribute("activeVendor", activeVendor);
+        model.addAttribute("categories", productcategoryRepository.findAll(Sort.by(Sort.Direction.ASC, "name", "id")));
+        return "vendor/stock/low_stock_alerts";
     }
 
     @GetMapping("/transactions")

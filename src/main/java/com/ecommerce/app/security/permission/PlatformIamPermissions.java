@@ -9,6 +9,7 @@ public final class PlatformIamPermissions {
     public static final String CAN_READ = "@platformIamAuthorization.canRead(authentication)";
     public static final String CAN_MANAGE = "@platformIamAuthorization.canManage(authentication)";
     public static final String CAN_MANAGE_PROTECTED = "@platformIamAuthorization.canManageProtected(authentication)";
+    public static final String CAN_SEED_PERMISSION_CATALOGUE = "@platformIamAuthorization.canSeedPermissionCatalogue(authentication)";
 
     private PlatformIamPermissions() {
     }

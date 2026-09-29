@@ -100,7 +100,7 @@ public class VendorSalesOrderController {
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
 //            """)
-    @RequestMapping(value = {"", "/", "/index"})
+    @GetMapping(value = {"", "/", "/index"})
     public String index(Model model,
             HttpSession session,
             @RequestParam(name = "q", required = false) String q,
@@ -238,7 +238,7 @@ public class VendorSalesOrderController {
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
 //            """)
-    @RequestMapping(value = {"/details/{oid}"})
+    @GetMapping(value = {"/details/{oid}"})
     public String details(Model model, @PathVariable Long oid, SalesOrder salesOrder, RedirectAttributes redirectAttributes) {
         Vendorprofile activeVendor = vendorUserContext.getActiveVendor();
         if (activeVendor == null || activeVendor.getId() == null) {

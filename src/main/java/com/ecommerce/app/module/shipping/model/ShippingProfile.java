@@ -55,12 +55,15 @@ public class ShippingProfile {
             inverseJoinColumns = @JoinColumn(name = "carrier_id")
     )
     @JsonIgnore
-    private List<Carrier> allowedCarriers; // Many-to-Many relation
+    private List<Carrier> allowedCarriers = new ArrayList<>(); // Many-to-Many relation
 
     /* Expose lightweight carrier info instead */
     @JsonProperty("carriers")
     public List<Map<String, Object>> getCarrierInfo() {
         List<Map<String, Object>> list = new ArrayList<>();
+        if (allowedCarriers == null) {
+            return list;
+        }
         for (Carrier c : allowedCarriers) {
             Map<String, Object> map = new HashMap<>();
             map.put("id", c.getId());

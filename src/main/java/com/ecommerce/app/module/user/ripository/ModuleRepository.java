@@ -5,6 +5,7 @@
 package com.ecommerce.app.module.user.ripository;
 
 import com.ecommerce.app.module.user.model.*;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -12,5 +13,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @author Admin
  */
 public interface ModuleRepository extends JpaRepository<Modules, Long> {
-    
+
+    Optional<Modules> findFirstBySlugIgnoreCase(String slug);
 }

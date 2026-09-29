@@ -87,7 +87,7 @@ public class VendorPayoutMethodController {
         return "vendor/payoutmethod/payout_method_form";
     }
 
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         service.delete(id);
         redirectAttributes.addFlashAttribute("message", "Payout method deleted successfully!");

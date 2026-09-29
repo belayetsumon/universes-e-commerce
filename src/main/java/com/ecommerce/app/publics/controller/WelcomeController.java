@@ -51,7 +51,7 @@ public class WelcomeController {
 //        return "redirect:/";
 //    }
 
-    @RequestMapping("/")
+    @GetMapping("/")
     public String welcome(Model model, HttpServletRequest request) {
         List<Map<String, Object>> banner = adsService.findAllAdsAsMap(Placement.HOME_BANNER);
         List<Map<String, Object>> afterFeaturedCategoryBanners = adsService.findAllAdsAsMap(Placement.HOME_FEATURED_CATEGORY_SHOWCASE);

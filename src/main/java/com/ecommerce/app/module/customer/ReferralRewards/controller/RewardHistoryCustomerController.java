@@ -31,7 +31,7 @@ public class RewardHistoryCustomerController {
     @Autowired
     private UsersRepository usersRepository;
 
-    @RequestMapping("/rewards")
+    @GetMapping("/rewards")
     public String getRewardHistory(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,

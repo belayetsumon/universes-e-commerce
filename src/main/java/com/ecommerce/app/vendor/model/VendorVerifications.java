@@ -37,7 +37,9 @@ public class VendorVerifications {
     private Vendorprofile vendorprofile;
     private String email;
     private String mobile;
+    @Column(length = 100)
     private String otp;
+    @Column(length = 64)
     private String token;
     private boolean emailVerified = false;
     private boolean mobileVerified = false;

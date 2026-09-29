@@ -53,6 +53,17 @@ public class VendorVerificationsController {
 
     @GetMapping("/verify-email")
     public String verifyEmail(@RequestParam(required = false) String token, Model model, RedirectAttributes redirectAttributes) {
+        if (token == null || token.isBlank()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Invalid email verification token.");
+            return "redirect:/vendorverifications";
+        }
+        model.addAttribute("verificationToken", token);
+        model.addAttribute("emailTokenValidMinutes", verificationService.emailTokenValidMinutes());
+        return "vendor/verifications/confirm_email";
+    }
+
+    @PostMapping("/verify-email")
+    public String verifyEmailSubmission(@RequestParam(required = false) String token, Model model, RedirectAttributes redirectAttributes) {
         EmailVerificationResult result = verificationService.verifyEmail(token);
         if (result == EmailVerificationResult.VERIFIED) {
             model.addAttribute("successMessage", "Vendor email verified successfully.");

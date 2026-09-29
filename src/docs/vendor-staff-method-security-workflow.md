@@ -10,10 +10,10 @@ This is a child plan of `docs/application-security-authentication-authorization-
 
 ## Implementation Boundary
 
-Status: `Planning only`
+Status: `Partial implementation in progress`
 
 - The codebase audit and this workflow are complete.
-- No security implementation, database migration, route change, or UI change is authorized by this document alone.
+- The existing `/vendor-users/**` staff and custom-role administration paths now have source-level containment evidence.
 - Review the decisions in this document before implementation starts.
 - Implement one phase at a time and keep the tracker current.
 
@@ -30,9 +30,9 @@ Status: `Planning only`
 | Measure | Count |
 | --- | ---: |
 | Planning work packages complete | 1 |
-| Implementation work packages complete | 0 |
-| Implementation work packages remaining | 12 |
-| Security implementation started | No |
+| Implementation work packages complete | 1 |
+| Implementation work packages remaining | 11 |
+| Security implementation started | Yes |
 
 ## Current Codebase Audit
 
@@ -47,7 +47,7 @@ Status: `Planning only`
 | Vendor-scoped repository examples | `Partial` | Some repositories query by vendor, such as payout lists, delivery-person lists, roles, shipments, and reports. Other mutation paths still load or delete by unscoped ID. |
 | Login/session history | `Partial` | Login history records session IDs and a session-destroyed listener exists. There is no service that invalidates all live sessions for revoked staff. |
 | JPA field auditing | `Partial` | Created/modified metadata exists on several entities. It is not an append-only staff-security event audit. |
-| Security tests | `Pending` | No vendor-membership or method-security tests were found under `test/java`. |
+| Security tests | `Partial` | Vendor staff IAM containment now has controller, service method-security, template, and CSRF coverage tests. Broader membership lifecycle, revocation, step-up, audit, and suspended-staff tests remain pending. |
 
 ### Verified Gaps
 
@@ -103,7 +103,7 @@ Status: `Planning only`
    - Branch-scoped grants must remain disabled until a real vendor-owned branch aggregate and scoped repositories exist.
 
 10. Security configuration has release-blocking baseline gaps.
-    - CSRF is disabled globally.
+    - Spring Security CSRF is enabled for selected browser mutation route families, including `/vendor-users/**`, but whole-application CSRF rollout and public-mutation review remain incomplete.
     - Some public order mutation routes require an explicit threat-model review before CSRF is re-enabled.
     - Database credentials are present in environment-specific property files and must be rotated and externalized without copying their values into logs or documentation.
     - No Flyway or Liquibase migration setup was found; schema changes currently rely on Hibernate update/manual SQL patterns.
@@ -292,7 +292,7 @@ Do not store raw passwords, raw invitation tokens, session cookies, API keys, or
 
 ### W01 - Security Baseline and Migration Decision
 
-Status: `Pending`
+Status: `Partial`
 
 - Confirm the live database engine and add versioned migration support.
 - Rotate and externalize credentials currently stored in property files.
@@ -344,6 +344,7 @@ Status: `Pending`
 - Keep controller annotations as defense in depth, not as the only guard.
 - Replace role-name bypasses with explicit owner semantics and permissions.
 - Deny by default when authentication, membership, vendor, permission, or ownership information is missing.
+- Completed containment slice: `VendorStaffAdministrationService` now protects the existing vendor staff and custom-role administration paths with service `@PreAuthorize`, active-vendor checks, vendor-scoped role/staff lookups, vendor-only privilege assignment, grant-ceiling validation, self-removal prevention, and final-owner deletion prevention.
 
 Exit gate:
 
@@ -351,7 +352,7 @@ Exit gate:
 
 ### W05 - Repository Scope Conversion
 
-Status: `Pending`
+Status: `Partial`
 
 Convert vendor-facing repositories and services in this order:
 
@@ -363,6 +364,8 @@ Convert vendor-facing repositories and services in this order:
 6. stock and stock transactions
 7. shipments, shipping documents, manifests, labels, invoices, and delivery persons
 8. finance reports, sales reports, PDFs, exports, and dashboard queries
+
+Completed containment slice: existing staff assignment deletion and custom-role edit/delete now use vendor-scoped service/repository lookups. Invitation and membership-transition repositories remain pending.
 
 For every slice:
 
@@ -422,12 +425,13 @@ Exit gate:
 
 ### W09 - Suspension, Revocation, Sessions, Tokens, and Caches
 
-Status: `Pending`
+Status: `Partial`
 
 - Implement suspend, reactivate, and revoke transitions; remove hard deletion from staff workflows.
 - Register or index active sessions so all sessions for a user/membership can be invalidated.
 - Revoke pending invitations and active step-up grants when appropriate.
 - Increment permission versions and evict any user/vendor effective-access caches after role, permission, scope, suspension, or revocation changes.
+- Completed containment slice: existing staff assignment creation/removal and vendor role permission updates now advance affected users' account credential epoch through `SessionCredentialVersionService`, expiring registered sessions and forcing the stale vendor-authority snapshot through the existing database epoch filter.
 - Deny the current request immediately after revocation commits.
 - Retain attribution and audit history.
 
@@ -560,17 +564,17 @@ Minimum aggregates:
 - [ ] Permission, vendor, ownership, membership state, and vendor state are evaluated.
 - [ ] Every vendor feature and service use case maps to an active `vendor.*` catalogue permission; blank, `N/A`, broad-role-only, and inferred permissions are denied.
 - [ ] Vendor-owned repository operations independently include vendor scope.
-- [ ] Owners can invite staff and assign only vendor-scoped roles.
-- [ ] Inviters cannot grant permissions or branch scopes broader than their effective access.
-- [ ] Self-permission changes, self-promotion, platform-role grants, and final-owner removal are denied.
+- [~] Owners can invite staff and assign only vendor-scoped roles. Existing direct staff assignment is contained; invitation workflow remains pending.
+- [~] Inviters cannot grant permissions or branch scopes broader than their effective access. Vendor privilege grant ceiling exists for current role/staff assignment paths; branch scopes remain disabled/pending.
+- [~] Self-permission changes, self-promotion, platform-role grants, and final-owner removal are denied. Existing self-removal, final-owner deletion, and platform privilege assignment are denied; full lifecycle self-promotion controls remain pending.
 - [ ] Invitations use expiring, single-use, hashed tokens.
 - [ ] Verification is required before membership activation.
 - [ ] Password step-up is enforced for payouts, refunds, staff-role administration, and sensitive settings.
 - [ ] Suspension/revocation preserves operational history.
 - [ ] Revocation invalidates sessions, tokens, step-up grants, vendor context, and permission caches.
 - [ ] Invitations and all membership, role, permission, branch, suspension, reactivation, and revocation events are audited.
-- [ ] Permitted, missing-permission, cross-vendor, suspended-staff, and privilege-escalation tests pass.
-- [ ] CSRF is enabled for authenticated browser mutations.
+- [~] Permitted, missing-permission, cross-vendor, suspended-staff, and privilege-escalation tests pass. Current vendor staff IAM containment has permitted, missing-permission, scoped-delete, self-removal, and privilege-escalation tests; suspended-staff tests require lifecycle state.
+- [~] CSRF is enabled for authenticated browser mutations. `/vendor-users/**` is covered; whole-application rollout remains pending.
 - [ ] Secrets are externalized and any exposed credentials are rotated.
 - [ ] Deployment-like runtime proof is recorded; source inspection or unauthenticated redirects alone do not count.
 
@@ -581,3 +585,5 @@ Update this section after each authorized phase:
 | Date | Work package | Files/migrations | Verification | Result | Remaining |
 | --- | --- | --- | --- | --- | --- |
 | 2026-08-14 | Codebase audit and workflow | `docs/vendor-staff-method-security-workflow.md` | Source trace and workflow coverage review | `Done` | W01-W12 implementation |
+| 2026-08-30 | Existing vendor staff IAM containment | `VendorStaffAdministrationService`, `VendorAccessControllController`, `VendorRoleManagementController`, `UserVendorRoleRepository`, `/vendor-users/**` templates, endpoint and permission ledgers | `D:\Maven_Home\bin\mvn.cmd -q -Dtest="VendorStaffAdministrationServiceMethodSecurityTest,VendorStaffIamControllerSecurityTest,VendorStaffIamTemplateSecurityContractTest,SecurityConfigCsrfCoverageTest" test`; regenerated ledgers: 737 endpoint decisions, 148 permission decisions, 39 implemented endpoint rows, 7 implemented permission rows | `Done` | Invitation lifecycle, membership state, session revocation, step-up, audit, branch scope, and deployment-like runtime proof |
+| 2026-08-31 | Existing staff revocation/session-cache containment | `VendorStaffAdministrationService`, `UserVendorRoleRepository`, `SessionCredentialVersionService` integration | `D:\Maven_Home\bin\mvn.cmd -q "-Dtest=VendorStaffAdministrationServiceMethodSecurityTest,VendorStaffIamControllerSecurityTest,SessionCredentialVersionServiceTest,CredentialVersionFilterTest,SessionCredentialVersionContractTest,VendorVerificationTokenLoggingContractTest,SecurityConfigCsrfCoverageTest" test` | `Partial - source verified` | Full membership state, invitation lifecycle, step-up grants, append-only audit, and deployment-like runtime proof |

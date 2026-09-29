@@ -7,10 +7,12 @@ package com.ecommerce.app.module.user.componant;
 import com.ecommerce.app.module.browsinghistory.service.BrowsingHistoryService;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
+import com.ecommerce.app.module.user.services.SessionCredentialVersionService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -24,18 +26,26 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final UsersRepository usersRepository;
     private final BrowsingHistoryService browsingHistoryService;
+    private final ObjectProvider<SessionCredentialVersionService> credentialVersionService;
 
     public CustomLoginSuccessHandler(
             UsersRepository usersRepository,
-            BrowsingHistoryService browsingHistoryService) {
+            BrowsingHistoryService browsingHistoryService,
+            ObjectProvider<SessionCredentialVersionService> credentialVersionService) {
         this.usersRepository = usersRepository;
         this.browsingHistoryService = browsingHistoryService;
+        this.credentialVersionService = credentialVersionService;
     }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         if (authentication != null) {
             browsingHistoryService.mergeGuestHistoryToUser(authentication.getName(), request, response);
+            SessionCredentialVersionService versionService = credentialVersionService == null
+                    ? null : credentialVersionService.getIfAvailable();
+            if (versionService != null) {
+                versionService.captureCurrentVersion(request, authentication);
+            }
         }
         handle(request, response, authentication);
     }

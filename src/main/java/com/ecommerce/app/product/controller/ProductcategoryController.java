@@ -29,7 +29,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -62,7 +64,7 @@ public class ProductcategoryController {
     @Autowired
     ProductImageStorageService productImageStorageService;
 
-    @RequestMapping(value = {"", "/", "/index"})
+    @GetMapping(value = {"", "/", "/index"})
     public String index(
             Model model,
             @RequestParam(required = false) String q,
@@ -121,7 +123,7 @@ public class ProductcategoryController {
     //         }
     //     }
     // }
-    @RequestMapping("/create")
+    @GetMapping("/create")
     public String create(Model model, Productcategory productcategory) {
 
         model.addAttribute("statuslist", ProductStatusEnum.values());
@@ -138,7 +140,7 @@ public class ProductcategoryController {
         return "product/productcategory/add";
     }
 
-    @RequestMapping("/save")
+    @PostMapping("/save")
     public String create(Model model, @Valid Productcategory productcategory, BindingResult bindingResult, RedirectAttributes redirectAttributes,
             @RequestParam("pic") MultipartFile pic
     ) {
@@ -195,14 +197,14 @@ public class ProductcategoryController {
 //        return "redirect:/news/index";
     }
 
-    @RequestMapping("/details/{id}")
+    @GetMapping("/details/{id}")
     public String create(Model model, @PathVariable Long id, Productcategory productcategory) {
         model.addAttribute("productcategory_details", productcategoryRepository.findById(id).orElse(null));
         return "product/productcategory/productcategory_details";
 
     }
 
-    @RequestMapping("/edit/{id}")
+    @GetMapping("/edit/{id}")
     public String edit(Model model, @PathVariable Long id, Productcategory productcategory) {
 
         model.addAttribute("productcategory", productcategoryRepository.findById(id).orElse(null));
@@ -216,7 +218,7 @@ public class ProductcategoryController {
         return "product/productcategory/add";
     }
 
-    @RequestMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public String delete(Model model, @PathVariable Long id, Productcategory productcategory, RedirectAttributes redirectAttributes) {
         productcategory = productcategoryRepository.findById(id).orElse(null);
         File file = new File(properties.getRootPath() + File.separator + productcategory.getImageName());

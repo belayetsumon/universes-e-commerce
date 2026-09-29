@@ -120,6 +120,84 @@
                 padding: 1.1rem;
             }
 
+            .role-picker-toolbar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: .75rem;
+                margin-bottom: .75rem;
+                flex-wrap: wrap;
+            }
+
+            .role-picker-filters {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 190px auto;
+                gap: .5rem;
+                margin-bottom: .75rem;
+            }
+
+            .role-picker-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: .75rem;
+            }
+
+            .role-permission-card {
+                padding: .85rem;
+                border: 1px solid var(--user-form-border);
+                border-radius: .6rem;
+                background: rgba(248, 250, 252, .78);
+                transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+            }
+
+            .role-permission-card.is-selected {
+                border-color: rgba(13, 110, 253, .45);
+                background: rgba(13, 110, 253, .06);
+                box-shadow: 0 0 0 .15rem rgba(13, 110, 253, .08);
+            }
+
+            .role-permission-card label {
+                display: flex;
+                align-items: center;
+                gap: .55rem;
+                font-weight: 700;
+                cursor: pointer;
+            }
+
+            .role-permission-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: .35rem;
+                margin-top: .65rem;
+            }
+
+            .role-permission-chip {
+                display: inline-flex;
+                align-items: center;
+                gap: .3rem;
+                padding: .25rem .45rem;
+                color: var(--user-form-muted);
+                background: #ffffff;
+                border: 1px solid var(--user-form-border);
+                border-radius: 999px;
+                font-size: .75rem;
+            }
+
+            .effective-permission-summary {
+                margin-top: .85rem;
+                padding: .8rem;
+                border-left: 3px solid #0d6efd;
+                background: rgba(13, 110, 253, .05);
+            }
+
+            .effective-permission-summary ul {
+                display: flex;
+                flex-wrap: wrap;
+                gap: .35rem .75rem;
+                margin: .55rem 0 0;
+                padding-left: 1.1rem;
+            }
+
             .user-form-panel + .user-form-panel {
                 margin-top: 1rem;
             }
@@ -341,6 +419,14 @@
                 .user-form-grid {
                     grid-template-columns: 1fr;
                 }
+
+                .role-picker-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .role-picker-filters {
+                    grid-template-columns: 1fr;
+                }
             }
         </style>
     </th:block>
@@ -472,16 +558,49 @@
 
                             <div class="user-form-grid">
                                 <div class="user-form-field">
-                                    <label class="form-label required" for="role">Role</label>
-                                    <select id="role" class="form-select"
-                                            th:field="*{role}"
-                                            th:classappend="${#fields.hasErrors('role')} ? ' is-invalid' : ''"
-                                            required>
-                                        <option value="">Select a role</option>
-                                        <option th:each="role : ${roles}" th:value="${role.id}" th:text="${role.name}">Administrator</option>
-                                    </select>
-                                    <div class="user-form-hint">Assign only the role needed for this user's daily work.</div>
-                                    <span class="user-form-example"><i class="bi bi-check2-circle"></i>Example: Admin or Customer</span>
+                                    <div class="role-picker-toolbar">
+                                        <label class="form-label required mb-0" for="roleSearch">Roles and permissions</label>
+                                        <div class="d-flex gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllRoles">Select all</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" id="clearAllRoles">Clear</button>
+                                        </div>
+                                    </div>
+                                    <div class="role-picker-filters">
+                                        <input id="roleSearch" type="search" class="form-control" placeholder="Search roles or permissions" autocomplete="off">
+                                        <select id="roleModuleFilter" class="form-select" aria-label="Filter by module">
+                                            <option value="">All modules</option>
+                                        </select>
+                                        <span class="align-self-center text-muted small" id="roleResultCount"></span>
+                                    </div>
+                                    <div id="rolePicker" class="role-picker-grid" aria-describedby="roleHelp">
+                                        <div th:each="role : ${roles}" class="role-permission-card" th:attr="data-role-id=${role.id}">
+                                            <label th:for="${'role-' + role.id}">
+                                                <input class="form-check-input role-option"
+                                                       type="checkbox"
+                                                       th:id="${'role-' + role.id}"
+                                                       th:field="*{role}"
+                                                       th:value="${role.id}">
+                                                <span th:text="${role.name}">Administrator</span>
+                                            </label>
+                                            <div class="role-permission-list">
+                                                <span th:each="privilege : ${role.privilege}"
+                                                      th:if="${privilege != null and privilege.slug != null and !privilege.slug.startsWith('public.') and !privilege.slug.startsWith('internal.') and !privilege.slug.startsWith('webhook.') and !privilege.slug.startsWith('api.')}"
+                                                      class="role-permission-chip"
+                                                      th:attr="data-permission-slug=${privilege.slug},data-permission-name=${privilege.name},data-permission-module=${privilege.module != null ? privilege.module.slug : ''}">
+                                                    <span th:text="${privilege.name}">Read</span>
+                                                </span>
+                                                <span th:if="${role.privilege == null or #lists.isEmpty(role.privilege)}" class="text-muted small">No assignable privileges</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="roleHelp" class="user-form-hint">Select one or more roles. The permissions below each role are the access the user will receive.</div>
+                                    <div class="effective-permission-summary" aria-live="polite">
+                                        <strong><i class="bi bi-shield-check me-1"></i>Effective permissions</strong>
+                                        <span id="effectivePermissionCount" class="text-muted small ms-2">0 selected</span>
+                                        <ul id="effectivePermissionList">
+                                            <li class="text-muted" id="noEffectivePermissions">Select a role to preview access.</li>
+                                        </ul>
+                                    </div>
                                     <span class="user-form-error" th:if="${#fields.hasErrors('role')}" th:errors="*{role}">Role error</span>
                                 </div>
 
@@ -607,6 +726,80 @@
                     </aside>
                 </div>
             </form>
+
+            <script>
+                (function () {
+                    const cards = Array.from(document.querySelectorAll('.role-permission-card'));
+                    const options = Array.from(document.querySelectorAll('.role-option'));
+                    const count = document.getElementById('effectivePermissionCount');
+                    const list = document.getElementById('effectivePermissionList');
+                    const empty = document.getElementById('noEffectivePermissions');
+                    const search = document.getElementById('roleSearch');
+                    const moduleFilter = document.getElementById('roleModuleFilter');
+                    const resultCount = document.getElementById('roleResultCount');
+
+                    Array.from(new Set(Array.from(document.querySelectorAll('[data-permission-module]'))
+                            .map(function (permission) { return permission.dataset.permissionModule; })
+                            .filter(Boolean)))
+                            .sort()
+                            .forEach(function (module) {
+                                const option = document.createElement('option');
+                                option.value = module;
+                                option.textContent = module;
+                                moduleFilter.appendChild(option);
+                            });
+
+                    function refreshPreview() {
+                        const permissions = new Map();
+                        cards.forEach(function (card) {
+                            const option = card.querySelector('.role-option');
+                            const selected = option && option.checked;
+                            card.classList.toggle('is-selected', selected);
+                            if (selected) {
+                                card.querySelectorAll('[data-permission-slug]').forEach(function (permission) {
+                                    permissions.set(permission.dataset.permissionSlug, permission.dataset.permissionName);
+                                });
+                            }
+                        });
+
+                        const query = (search.value || '').trim().toLowerCase();
+                        const module = moduleFilter.value;
+                        let visibleCards = 0;
+                        cards.forEach(function (card) {
+                            const cardText = card.textContent.toLowerCase();
+                            const moduleMatches = !module || Array.from(card.querySelectorAll('[data-permission-module]'))
+                                    .some(function (permission) { return permission.dataset.permissionModule === module; });
+                            const visible = (!query || cardText.includes(query)) && moduleMatches;
+                            card.hidden = !visible;
+                            if (visible) { visibleCards++; }
+                        });
+                        resultCount.textContent = visibleCards + ' role' + (visibleCards === 1 ? '' : 's');
+
+                        count.textContent = permissions.size + ' selected';
+                        list.querySelectorAll('li[data-effective-permission]').forEach(function (item) { item.remove(); });
+                        empty.hidden = permissions.size > 0;
+                        Array.from(permissions.entries()).sort(function (a, b) { return a[0].localeCompare(b[0]); }).forEach(function (entry) {
+                            const item = document.createElement('li');
+                            item.dataset.effectivePermission = entry[0];
+                            item.textContent = entry[1] + ' (' + entry[0] + ')';
+                            list.appendChild(item);
+                        });
+                    }
+
+                    options.forEach(function (option) { option.addEventListener('change', refreshPreview); });
+                    search.addEventListener('input', refreshPreview);
+                    moduleFilter.addEventListener('change', refreshPreview);
+                    document.getElementById('selectAllRoles')?.addEventListener('click', function () {
+                        options.forEach(function (option) { option.checked = true; });
+                        refreshPreview();
+                    });
+                    document.getElementById('clearAllRoles')?.addEventListener('click', function () {
+                        options.forEach(function (option) { option.checked = false; });
+                        refreshPreview();
+                    });
+                    refreshPreview();
+                }());
+            </script>
         </div>
     </div>
 </div>

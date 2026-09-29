@@ -27,6 +27,12 @@
 
             <div class="card-body">
                 <form th:action="@{/adminvendorusers/role_save}" th:object="${vendorRole}" method="post" class="needs-validation" novalidate>
+                    <input type="hidden" th:field="*{id}" />
+                    <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+                        <ul class="mb-0">
+                            <li th:each="error : ${#fields.globalErrors()}" th:text="${error}"></li>
+                        </ul>
+                    </div>
                     <div class="mb-3 d-flex justify-content-center">
                         <div class="w-50">
                             <label for="name" class="form-label fw-semibold">
@@ -55,7 +61,7 @@
                                     <input class="form-check-input"
                                            type="checkbox"
                                            th:value="${privilege.id}"
-                                           th:name="vendorPrivilege"
+                                           th:name="privilegeIds"
                                            th:id="'privilege__' + ${privilege.id}"
                                            th:checked="${vendorRole.vendorPrivilege != null and vendorRole.vendorPrivilege.contains(privilege)}" />
 

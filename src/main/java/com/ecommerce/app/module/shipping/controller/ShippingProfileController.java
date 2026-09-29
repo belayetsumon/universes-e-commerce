@@ -75,6 +75,12 @@ public class ShippingProfileController {
             return "admin/shipping/shipping_profiles/admin_shipping_profiles_create";
         }
 
+        if (service.hasAnotherProfileForVendor(profile.getVendorId(), profile.getId())) {
+            result.rejectValue("vendorId", "shippingProfile.vendorId", "This vendor already has a shipping profile.");
+            populateFormOptions(model);
+            return "admin/shipping/shipping_profiles/admin_shipping_profiles_create";
+        }
+
         // Handle carriers selection
         if (allowedCarriersIds != null) {
             List<Carrier> selectedCarriers = carrierService.findAllById(allowedCarriersIds);

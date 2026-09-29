@@ -14,6 +14,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
@@ -30,7 +31,7 @@ public class ReferralCustomerController {
     @Autowired
     private UsersRepository usersRepository;
 
-    @RequestMapping("/list")
+    @GetMapping("/list")
     public String list(Model model, Principal principal) {
 
         Users users = usersRepository.findByEmail(principal.getName())

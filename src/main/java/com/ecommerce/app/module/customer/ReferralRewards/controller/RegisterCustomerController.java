@@ -87,17 +87,7 @@ public class RegisterCustomerController {
     }
 
     @GetMapping("/verify")
-    public String verifyEmail(@RequestParam String token, RedirectAttributes redirect) {
-//        Optional<Users> userOpt = usersRepository.findByEmailVerificationToken(token);
-//        if (userOpt.isPresent()) {
-//            Users users = userOpt.get();
-////            user.setVerified(true);
-////            user.setEmailVerificationToken(null);
-//            usersRepository.save(users);
-//            redirect.addFlashAttribute("message", "Email verified! You can login now.");
-//        } else {
-//            redirect.addFlashAttribute("error", "Invalid verification token.");
-//        }
+    public String legacyEmailVerificationRedirect(@RequestParam(required = false) String token, RedirectAttributes redirect) {
         return "redirect:/login";
     }
 

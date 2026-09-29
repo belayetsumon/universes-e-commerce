@@ -5,11 +5,11 @@ import com.ecommerce.app.module.customer.dto.CustomerBillingAddressForm;
 import com.ecommerce.app.module.customer.dto.CustomerPasswordForm;
 import com.ecommerce.app.module.checkout.customer.services.CustomerCodMobileVerificationService;
 import com.ecommerce.app.module.checkout.guest.services.MobileNumberNormalizationService;
-import com.ecommerce.app.module.ReferralRewards.model.Referral;
-import com.ecommerce.app.module.ReferralRewards.repository.ReferralRepository;
+import com.ecommerce.app.module.ReferralRewards.services.ReferralService;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.user.services.LoggedUserService;
+import com.ecommerce.app.module.user.services.SessionCredentialVersionService;
 import com.ecommerce.app.module.order.model.BillingAddress;
 import com.ecommerce.app.module.order.repository.BillingAddressRepository;
 import com.ecommerce.app.services.BarcodeService;
@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Controller
 @RequestMapping("/customer-profile")
@@ -48,7 +49,7 @@ public class CustomerProfileController {
     BillingAddressRepository billingAddressRepository;
 
     @Autowired
-    ReferralRepository referralRepository;
+    ReferralService referralService;
 
     @Autowired
     BarcodeService barcodeService;
@@ -61,6 +62,9 @@ public class CustomerProfileController {
 
     @Autowired
     private CustomerCodMobileVerificationService customerCodMobileVerificationService;
+
+    @Autowired(required = false)
+    private SessionCredentialVersionService sessionCredentialVersionService;
 
     @GetMapping(value = {"", "/", "/index"})
     public String index(Model model) {
@@ -219,11 +223,28 @@ public class CustomerProfileController {
             return PROFILE_VIEW;
         }
 
-        currentUser.setPassword(bCryptPasswordEncoder.encode(passwordForm.getNewPassword()));
-        usersRepository.save(currentUser);
+        boolean passwordUpdated = sessionCredentialVersionService == null
+                ? savePasswordWithoutVersion(currentUser, passwordForm.getNewPassword())
+                : sessionCredentialVersionService.updatePassword(
+                        currentUser.getId(),
+                        bCryptPasswordEncoder.encode(passwordForm.getNewPassword()),
+                        true);
+        if (!passwordUpdated) {
+            redirectAttributes.addFlashAttribute("passwordError", "Unable to change your password. Please try again.");
+            return "redirect:/customer-profile/index";
+        }
 
         redirectAttributes.addFlashAttribute("passwordSuccess", "Your password has been changed successfully.");
         return "redirect:/customer-profile/index";
+    }
+
+    private boolean savePasswordWithoutVersion(Users user, String rawPassword) {
+        if (user == null || rawPassword == null || rawPassword.isBlank()) {
+            return false;
+        }
+        user.setPassword(bCryptPasswordEncoder.encode(rawPassword));
+        usersRepository.save(user);
+        return true;
     }
 
     private void populateProfilePage(
@@ -234,11 +255,9 @@ public class CustomerProfileController {
             CustomerBillingAddressForm billingAddressForm,
             BillingAddress billingAddress,
             String referralCode) {
-        String referralRegistrationUrl = referralCode == null || referralCode.isBlank()
-                ? "/customerregister/register"
-                : "/customerregister/register?ref=" + URLEncoder.encode(referralCode, StandardCharsets.UTF_8);
+        String referralRegistrationUrl = buildReferralRegistrationUrl(referralCode);
         String referralInviteMessage = referralCode == null || referralCode.isBlank()
-                ? "Register on our site and start shopping: /customerregister/register"
+                ? "Register on our site and start shopping: " + referralRegistrationUrl
                 : "Register on our site using my referral code " + referralCode
                         + " to join and buy products: " + referralRegistrationUrl;
         String referralWhatsAppUrl = "https://wa.me/?text="
@@ -280,9 +299,10 @@ public class CustomerProfileController {
     }
 
     private String referralCode(Users user) {
-        return referralRepository.findByUsers(user)
-                .map(Referral::getReferralCode)
-                .orElse("");
+        if (user == null || user.getId() == null) {
+            return "";
+        }
+        return referralService.generateMissingReferralCodeForCustomer(user.getId()).getReferralCode();
     }
 
     private boolean passwordMatches(String rawPassword, String storedPassword) {
@@ -334,5 +354,14 @@ public class CustomerProfileController {
         } catch (Exception ex) {
             return null;
         }
+    }
+
+    private String buildReferralRegistrationUrl(String referralCode) {
+        var builder = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/public/front-registration");
+        if (referralCode != null && !referralCode.isBlank()) {
+            builder.queryParam("ref", referralCode.trim());
+        }
+        return builder.build().toUriString();
     }
 }

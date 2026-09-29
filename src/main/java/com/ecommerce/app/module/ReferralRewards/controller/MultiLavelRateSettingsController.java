@@ -32,7 +32,7 @@ public class MultiLavelRateSettingsController {
     @Autowired
     LavelRateSettingsRepository lavelRateSettingsRepository;
 
-    @RequestMapping("/list")
+    @GetMapping("/list")
     public String list(Model model) {
         model.addAttribute("list", lavelRateSettingsRepository.findAll(Sort.by(Sort.Direction.ASC, "id")));
         return "admin/referral_rewards/lavel_rate_settings_list";
@@ -51,6 +51,13 @@ public class MultiLavelRateSettingsController {
             RedirectAttributes redirectAttributes,
             Model model) {
         if (result.hasErrors()) {
+            model.addAttribute("lavelRateSettings", lavelRateSettings);
+            model.addAttribute("levels", LevelEnum.values());
+            return "admin/referral_rewards/lavel_rate_settings_form";
+        }
+
+        if (levelAlreadyExists(lavelRateSettings)) {
+            result.rejectValue("level", "duplicate", "This level already has a commission rate setting.");
             model.addAttribute("lavelRateSettings", lavelRateSettings);
             model.addAttribute("levels", LevelEnum.values());
             return "admin/referral_rewards/lavel_rate_settings_form";
@@ -90,5 +97,14 @@ public class MultiLavelRateSettingsController {
 
         }
         return "redirect:/lavelratesettings/list";
+    }
+
+    private boolean levelAlreadyExists(MultiLavelRateSettings lavelRateSettings) {
+        if (lavelRateSettings == null || lavelRateSettings.getLevel() == null) {
+            return false;
+        }
+        return lavelRateSettings.getId() == null
+                ? lavelRateSettingsRepository.existsByLevel(lavelRateSettings.getLevel())
+                : lavelRateSettingsRepository.existsByLevelAndIdNot(lavelRateSettings.getLevel(), lavelRateSettings.getId());
     }
 }

@@ -7,6 +7,7 @@ package com.ecommerce.app.module.customer.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/customer-billingaddress")
 public class BillingAddressController {
 
-   @RequestMapping(value = {"", "/", "/index", "dashboards"})
+   @GetMapping(value = {"", "/", "/index", "dashboards"})
     public String index(Model model) {
         model.addAttribute("attribute", "value");
         return "view.name";

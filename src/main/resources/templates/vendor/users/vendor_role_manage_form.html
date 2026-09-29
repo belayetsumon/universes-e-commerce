@@ -25,7 +25,14 @@
 
             <div class="card-body">
                 <form th:action="@{/vendor-users/roles/save}" th:object="${vendorRole}" method="post">
+                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                     <input type="hidden" th:field="*{id}" />
+
+                    <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+                        <ul class="mb-0">
+                            <li th:each="err : ${#fields.globalErrors()}" th:text="${err}"></li>
+                        </ul>
+                    </div>
 
                     <div class="mb-3">
                         <label for="name" class="form-label fw-semibold">Role Name</label>

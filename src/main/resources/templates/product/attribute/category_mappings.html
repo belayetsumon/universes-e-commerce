@@ -134,6 +134,7 @@
                     </div>
                     <div class="card-body">
                         <form th:action="@{/catalog-attributes/category-mappings/save}" th:object="${categoryAttribute}" method="post">
+                            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                             <input type="hidden" th:field="*{id}">
                             <input type="hidden" th:field="*{uuid}">
                             <input type="hidden" th:field="*{version}">
@@ -253,9 +254,10 @@
                                             <a class="btn btn-outline-primary"
                                                th:href="@{/catalog-attributes/category-mappings(categoryUuid=${activeCategoryUuid}, editUuid=${mapping.uuid})}"
                                                title="Edit mapping" aria-label="Edit mapping"><i class="bi bi-pencil"></i></a>
-                                            <a class="btn btn-outline-danger"
-                                               th:href="@{/catalog-attributes/category-mappings/delete/{uuid}(uuid=${mapping.uuid})}"
-                                               title="Delete mapping" aria-label="Delete mapping"><i class="bi bi-trash3"></i></a>
+                                            <form th:action="@{/catalog-attributes/category-mappings/delete/{uuid}(uuid=${mapping.uuid})}" method="post" class="d-inline">
+                                                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                                <button type="submit" class="btn btn-outline-danger" title="Delete mapping" aria-label="Delete mapping"><i class="bi bi-trash3"></i></button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>

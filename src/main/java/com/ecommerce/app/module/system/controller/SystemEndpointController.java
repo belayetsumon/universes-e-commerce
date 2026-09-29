@@ -6,6 +6,9 @@ package com.ecommerce.app.module.system.controller;
 
 import com.ecommerce.app.module.system.services.EndpointScannerService;
 import com.ecommerce.app.module.system.services.BangladeshLocationSeedService;
+import com.ecommerce.app.module.system.services.PermissionCatalogueSeedService;
+import com.ecommerce.app.security.permission.PlatformIamPermissions;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,15 +23,19 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  */
 @Controller
 @RequestMapping("/admin/system")
+@PreAuthorize(PlatformIamPermissions.CAN_READ)
 public class SystemEndpointController {
 
     private final EndpointScannerService endpointScannerService;
     private final BangladeshLocationSeedService bangladeshLocationSeedService;
+    private final PermissionCatalogueSeedService permissionCatalogueSeedService;
 
     public SystemEndpointController(EndpointScannerService endpointScannerService,
-            BangladeshLocationSeedService bangladeshLocationSeedService) {
+            BangladeshLocationSeedService bangladeshLocationSeedService,
+            PermissionCatalogueSeedService permissionCatalogueSeedService) {
         this.endpointScannerService = endpointScannerService;
         this.bangladeshLocationSeedService = bangladeshLocationSeedService;
+        this.permissionCatalogueSeedService = permissionCatalogueSeedService;
     }
 
     @GetMapping({"", "/"})
@@ -53,6 +60,29 @@ public class SystemEndpointController {
         return "shipping-locations".equals(returnTo)
                 ? "redirect:/admin/shipping-locations/list"
                 : "redirect:/admin/system";
+    }
+
+    @GetMapping("/seed/permission-catalogue")
+    public String seedPermissionCatalogueInfo(RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("errorMessage",
+                "Use the Install all permissions button to update the permission catalogue.");
+        return "redirect:/admin/system";
+    }
+
+    @PostMapping("/seed/permission-catalogue")
+    @PreAuthorize(PlatformIamPermissions.CAN_SEED_PERMISSION_CATALOGUE)
+    public String seedPermissionCatalogue(RedirectAttributes redirectAttributes) {
+        try {
+            PermissionCatalogueSeedService.SeedResult result = permissionCatalogueSeedService.seedPermissionCatalogue();
+            redirectAttributes.addFlashAttribute("successMessage",
+                    result.permissionsCreated() + " permissions added; "
+                    + result.permissionsExisting() + " permissions already existed. "
+                    + result.modulesCreated() + " modules added; "
+                    + result.modulesExisting() + " modules already existed.");
+        } catch (IllegalStateException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
+        return "redirect:/admin/system";
     }
 
 }

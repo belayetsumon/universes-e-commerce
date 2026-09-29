@@ -336,17 +336,18 @@
                                 <div class="row g-3">
                                     <div class="col-md-4 product-form-field">
                                         <label for="purchasePrice" class="product-form-label">Purchase Price</label>
-                                        <input id="purchasePrice" type="number" min="0" step="0.01" class="form-control" th:field="*{purchasePrice}" th:errorclass="is-invalid" placeholder="850.00">
+                                        <input id="purchasePrice" type="number" min="0" step="0.01" class="form-control" th:field="*{purchasePrice}" th:errorclass="is-invalid" th:classappend="${#fields.hasErrors('salesPriceAtLeastPurchasePrice')} ? ' is-invalid'" placeholder="850.00">
                                         <div class="product-form-note">Internal buy cost used for margin and profitability review.</div>
                                         <span class="product-form-example"><i class="bi bi-currency-dollar"></i>Example: 850.00</span>
                                         <div class="invalid-feedback" th:if="${#fields.hasErrors('purchasePrice')}" th:errors="*{purchasePrice}">Purchase price error</div>
                                     </div>
                                     <div class="col-md-4 product-form-field">
                                         <label for="salesPrice" class="product-form-label required">Sales Price</label>
-                                        <input id="salesPrice" type="number" min="0" step="0.01" class="form-control" th:field="*{salesPrice}" th:errorclass="is-invalid" placeholder="999.00" required>
+                                        <input id="salesPrice" type="number" min="0" step="0.01" class="form-control" th:field="*{salesPrice}" th:errorclass="is-invalid" th:classappend="${#fields.hasErrors('salesPriceAtLeastPurchasePrice')} ? ' is-invalid'" placeholder="999.00" required>
                                         <div class="product-form-note">Customer-facing base price before optional discount rules are applied.</div>
                                         <span class="product-form-example"><i class="bi bi-tag"></i>Example: 999.00</span>
                                         <div class="invalid-feedback" th:if="${#fields.hasErrors('salesPrice')}" th:errors="*{salesPrice}">Sales price error</div>
+                                        <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('salesPriceAtLeastPurchasePrice')}" th:errors="*{salesPriceAtLeastPurchasePrice}">Purchase price must not be greater than sales price.</div>
                                     </div>
                                     <div class="col-md-4 product-form-field">
                                         <label for="uom" class="product-form-label required">Unit of Measure</label>

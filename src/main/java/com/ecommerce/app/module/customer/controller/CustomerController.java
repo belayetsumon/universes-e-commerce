@@ -7,11 +7,11 @@ package com.ecommerce.app.module.customer.controller;
 
 import com.ecommerce.app.model.Profile;
 import com.ecommerce.app.model.ProfileImage;
-import com.ecommerce.app.module.ReferralRewards.model.Referral;
 import com.ecommerce.app.module.ReferralRewards.model.CashOutRequest;
 import com.ecommerce.app.module.ReferralRewards.repository.CashOutRequestRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.ReferralRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.RewardAccountRepository;
+import com.ecommerce.app.module.ReferralRewards.services.ReferralService;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.user.services.LoggedUserService;
@@ -28,6 +28,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.ecommerce.app.module.order.repository.SalesOrderRepository;
 import com.ecommerce.app.vendor.model.VendorStatusEnum;
 import com.ecommerce.app.vendor.model.Vendorprofile;
@@ -105,6 +108,9 @@ public class CustomerController {
     ReferralRepository referralRepository;
 
     @Autowired
+    ReferralService referralService;
+
+    @Autowired
     ProfileImageRepository profileImageRepository;
 
     @Autowired
@@ -116,7 +122,7 @@ public class CustomerController {
     @Autowired
     BarcodeService barcodeService;
 
-    @RequestMapping(value = {"", "/", "/index", "dashboards"})
+    @GetMapping(value = {"", "/", "/index", "dashboards"})
     public String index(Model model) {
         Long activeUserId = loggedUserService.activeUserid();
         String username = loggedUserService.activeUserName();
@@ -140,14 +146,10 @@ public class CustomerController {
         BigDecimal walletBalance = rewardAccountRepository.findByUsers(user)
                 .map(com.ecommerce.app.module.ReferralRewards.model.RewardAccount::getBalance)
                 .orElse(BigDecimal.ZERO);
-        String referralCode = referralRepository.findByUsers(user)
-                .map(Referral::getReferralCode)
-                .orElse("");
-        String referralRegistrationUrl = referralCode == null || referralCode.isBlank()
-                ? "/public/front-registration"
-                : "/public/front-registration?ref=" + URLEncoder.encode(referralCode, StandardCharsets.UTF_8);
+        String referralCode = referralService.generateMissingReferralCodeForCustomer(activeUserId).getReferralCode();
+        String referralRegistrationUrl = buildReferralRegistrationUrl(referralCode);
         String referralInviteMessage = referralCode == null || referralCode.isBlank()
-                ? "Register on our site and start shopping: /customerregister/register"
+                ? "Register on our site and start shopping: " + referralRegistrationUrl
                 : "Register on our site using my referral code " + referralCode
                 + " to join and buy products: " + referralRegistrationUrl;
         String referralWhatsAppUrl = "https://wa.me/?text="
@@ -254,7 +256,7 @@ public class CustomerController {
         return "customer/index";
     }
 
-    @RequestMapping(value = {"/create"})
+    @GetMapping(value = {"/create"})
     public String create(Model model, Vendorprofile vendorprofile) {
 
         Users users = new Users();
@@ -268,7 +270,7 @@ public class CustomerController {
         return "customer/vendor_profile_create";
     }
 
-    @RequestMapping("/save")
+    @PostMapping("/save")
     public String save(Model model, @Valid Vendorprofile vendorprofile, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
 
         if (bindingResult.hasErrors()) {
@@ -283,7 +285,7 @@ public class CustomerController {
         return "redirect:/customer/storelist";
     }
 
-    @RequestMapping(value = {"/storelist"})
+    @GetMapping(value = {"/storelist"})
     public String storeList(Model model, HttpSession session) {
 
         model.addAttribute("username", loggedUserService.activeUserName());
@@ -397,6 +399,15 @@ public class CustomerController {
         } catch (Exception ex) {
             return null;
         }
+    }
+
+    private String buildReferralRegistrationUrl(String referralCode) {
+        var builder = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/public/front-registration");
+        if (referralCode != null && !referralCode.isBlank()) {
+            builder.queryParam("ref", referralCode.trim());
+        }
+        return builder.build().toUriString();
     }
 
     private List<Map<String, Object>> buildRecentOrders(List<SalesOrder> orders) {

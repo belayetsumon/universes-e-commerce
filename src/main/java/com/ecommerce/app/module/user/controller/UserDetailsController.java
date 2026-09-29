@@ -8,7 +8,9 @@ package com.ecommerce.app.module.user.controller;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import com.ecommerce.app.security.permission.PlatformIdentityPermissions;
 
 /**
  *
@@ -19,7 +21,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 //@PreAuthorize("hasAuthority('userdetails')")
 public class UserDetailsController {
 
-   @RequestMapping(value = {"","/", "/index"})
+   @GetMapping(value = {"","/", "/index"})
+   @PreAuthorize(PlatformIdentityPermissions.CAN_READ_USERS)
     public String page(Model model) {
         model.addAttribute("attribute", "value");
         return "pims/userdetails/index";

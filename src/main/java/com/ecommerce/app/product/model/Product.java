@@ -525,6 +525,16 @@ public class Product implements Serializable {
         return Boolean.TRUE.equals(manageStock) ^ Boolean.TRUE.equals(allowPreorder);
     }
 
+    @AssertTrue(message = "Purchase price must not be greater than sales price.")
+    @Transient
+    @JsonIgnore
+    public boolean isSalesPriceAtLeastPurchasePrice() {
+        if (purchasePrice == null || salesPrice == null) {
+            return true;
+        }
+        return salesPrice.compareTo(purchasePrice) >= 0;
+    }
+
     @PrePersist
     @PreUpdate
     private void enforceAvailabilityModeInvariant() {

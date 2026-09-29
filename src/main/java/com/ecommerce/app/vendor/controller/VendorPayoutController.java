@@ -109,7 +109,7 @@ public class VendorPayoutController {
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
 //            """)
-    @RequestMapping("/request")
+    @GetMapping("/request")
     public String showPayoutRequestPage(Model model, VendorPayout vendorPayout) {
         try {
             Vendorprofile vendor = vendorUserContext.getActiveVendor();
@@ -134,7 +134,7 @@ public class VendorPayoutController {
 //            or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
 //            """)
 
-    @RequestMapping("/save")
+    @PostMapping("/save")
     public String save(
             @Valid VendorPayout vendorPayout,
             BindingResult result,

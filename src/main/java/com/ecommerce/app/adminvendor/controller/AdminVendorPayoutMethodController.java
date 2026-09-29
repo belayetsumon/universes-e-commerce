@@ -50,7 +50,7 @@ public class AdminVendorPayoutMethodController {
         return "vendor_payout_method/form";
     }
 
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public String delete(@PathVariable Long id) {
         service.delete(id);
         return "redirect:/vendor-payout-methods";

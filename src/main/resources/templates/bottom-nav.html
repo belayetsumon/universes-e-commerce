@@ -40,7 +40,10 @@
 
         <li class="list-group-item">
             <div sec:authorize="isAuthenticated()">
-                <a class="textMaroon" th:href="@{/users/logout}"><i class="fas fa-sign-out-alt"></i>Log Out</a>
+                <form th:action="@{/users/logout}" method="post" class="m-0">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button type="submit" class="textMaroon border-0 bg-transparent p-0"><i class="fas fa-sign-out-alt"></i>Log Out</button>
+                </form>
             </div>
 
             <div sec:authorize="!isAuthenticated()">

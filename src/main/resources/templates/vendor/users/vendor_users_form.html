@@ -29,6 +29,7 @@
 
                 <div class="card-body">
                     <form th:action="@{/vendor-users/save}" method="post">
+                        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                         <div class="mb-3 d-flex justify-content-center"><div class="w-50">
                                 <!-- Show all errors in one place -->
                                 <div class="alert alert-danger" th:if="${globalErrors}">

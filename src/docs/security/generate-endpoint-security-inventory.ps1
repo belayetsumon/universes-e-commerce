@@ -206,10 +206,20 @@ function Get-TargetZoneCandidate {
     if ($Path -match '^/api(?:/|$)') { return 'API' }
     if ($Path -match '(?i)(webhook|callback)') { return 'WEBHOOK_CALLBACK' }
     if ($Path -eq '/' -or
+        $Path -in @('/robots.txt', '/sitemap.xml', '/llms.txt', '/maintenance', '/register', '/customerregister/register', '/users/login') -or
         $Path -match '^/(public|cart|carts|cart_address|checkout/guest|forgotpassword|customer_registration|district)(?:/|$)' -or
         $Path -match '^/users/(uregistrations|usave|frontRegistrationSave|userforgotpassword)(?:/|$)' -or
         $Path -match '^/order/(create|savebyvendor|savebyvendorupdate|placed)(?:/|$)') {
         return 'PUBLIC_EXPLICIT'
+    }
+    if (($Controller -eq 'UsersController' -and (
+            $Path -in @('/users', '/users/', '/users/index', '/users/userbystatus', '/users/login-history', '/users/registrations', '/users/save') -or
+            $Path -match '^/users/(?:login-history|change-password|edit|delete|deletewithexception|generate-referral-code|detailsinfo|view)(?:/|$)')) -or
+        $Controller -eq 'UserDetailsController') {
+        return 'ADMIN'
+    }
+    if ($Path -in @('/order', '/order/', '/order/index')) {
+        return 'ADMIN'
     }
     if ($Path -match '^/(admin|role|privilege|module)(?:/|$)' -or $PackageName -match '\.admin(?:\.|$)' -or
         $PackageName -match '\.admincustomer(?:\.|$)' -or $PackageName -match '\.adminvendor(?:\.|$)' -or
@@ -221,6 +231,7 @@ function Get-TargetZoneCandidate {
         return 'VENDOR'
     }
     if ($Path -match '^/(customer|customer-|customer_|customerprofileimage|wishlist)(?:/|$)' -or
+        $Path -eq '/users/profile' -or
         $PackageName -match '\.customer(?:\.|$)' -or $Controller -match '^Customer') {
         return 'CUSTOMER'
     }
@@ -302,7 +313,10 @@ function Get-ScopeCandidate {
 function Get-ReviewStatusCandidate {
     param([string]$Path)
 
-    if ($Path -match '^/(role|privilege|module)(?:/|$)') {
+    if ($Path -match '^/(role|privilege|module|adminvendorusers|vendor-users)(?:/|$)' -or
+        $Path -match '^/users/login-history(?:/|$)' -or
+        $Path -match '^/(adminvendor|admin-vendor-payout-methods|vendor-payout-methods|admin/ads|catalog-attributes|manufacturer|uom)(?:/|$).*delete(?:/|$)' -or
+        $Path -match '^/(product/delete|productcategory/(save|delete)|productvendor/(save|delete)|vendorprofile/save|vendor-payout/save|customer/save|public/home-contact-save|forgotpassword/(showemail|reset)|changepassword|vendorverifications/verify-email)(?:/|$)') {
         return 'SOURCE_IMPLEMENTED_PENDING_MIGRATION_AND_RUNTIME_PROOF'
     }
     return 'PENDING_MANUAL_CONFIRMATION'
@@ -323,6 +337,42 @@ function Get-PermissionCandidate {
     }
     if ($Zone -eq 'VENDOR' -and $moduleSegment.StartsWith('vendor.')) {
         $moduleSegment = $moduleSegment.Substring('vendor.'.Length)
+    }
+    if ($Zone -eq 'ADMIN' -and $Path -match '^/users/login-history(?:/|$)') {
+        return 'platform.security.audit.read'
+    }
+    if ($Zone -eq 'ADMIN' -and $Path -match '^/users/change-password(?:/|$)') {
+        return 'platform.identity.password.reset'
+    }
+    if ($Path -match '^/changepassword(?:/|$)') {
+        return 'internal.identity.access.disabled'
+    }
+    if ($Zone -eq 'ADMIN' -and (
+            $Path -match '^/users/(?:registrations|edit|save|delete|deletewithexception|generate-referral-code)(?:/|$)')) {
+        return 'platform.identity.user.manage'
+    }
+    if ($Zone -eq 'ADMIN' -and (
+            $Path -in @('/users', '/users/', '/users/index', '/users/userbystatus') -or
+            $Path -match '^/(?:users/detailsinfo|userdetails)(?:/|$)')) {
+        return 'platform.identity.user.read'
+    }
+    if ($Zone -eq 'ADMIN' -and $Path -match '^/adminvendorusers(?:/|$)') {
+        if ($Path -match '^/adminvendorusers/(?:role_delete|privileges_delete)(?:/|$)') {
+            return 'platform.vendor.management.delete'
+        }
+        if ($Path -match '^/adminvendorusers/privileges(?:_|list|/|$)') {
+            return 'platform.vendor.management.privilege'
+        }
+        if ($Path -match '^/adminvendorusers/role_save(?:/|$)') {
+            return 'platform.vendor.management.manage'
+        }
+        return 'platform.vendor.management.read'
+    }
+    if ($Zone -eq 'VENDOR' -and $Path -match '^/vendor-users/roles(?:/|$)') {
+        return 'vendor.role.manage'
+    }
+    if ($Zone -eq 'VENDOR' -and $Path -match '^/vendor-users(?:/|$)') {
+        return 'vendor.staff.manage'
     }
     if ($Zone -eq 'ADMIN' -and $Module -eq 'IAM') {
         if ($Action -eq 'READ') {
@@ -428,7 +478,10 @@ function New-ValidatedCsvExport {
 function Publish-ValidatedCsvExport {
     param([PSCustomObject]$Export)
 
-    [System.IO.File]::Move($Export.TemporaryPath, $Export.DestinationPath, $true)
+    if (Test-Path -LiteralPath $Export.DestinationPath) {
+        [System.IO.File]::Delete($Export.DestinationPath)
+    }
+    [System.IO.File]::Move($Export.TemporaryPath, $Export.DestinationPath)
 }
 
 $sourcePath = (Resolve-Path -LiteralPath $SourceRoot).Path

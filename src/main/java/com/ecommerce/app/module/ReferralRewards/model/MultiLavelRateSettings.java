@@ -14,6 +14,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -30,7 +31,13 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
  */
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "promotions_multi_lavel_rate_settings")
+@Table(
+        name = "promotions_multi_lavel_rate_settings",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_promotions_multi_lavel_rate_settings_level",
+                columnNames = "level"
+        )
+)
 public class MultiLavelRateSettings {
 
     @Id

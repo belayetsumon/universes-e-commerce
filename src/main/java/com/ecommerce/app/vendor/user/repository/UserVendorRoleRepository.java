@@ -8,6 +8,7 @@ import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import com.ecommerce.app.vendor.user.model.UserVendorRole;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,11 +22,34 @@ public interface UserVendorRoleRepository extends JpaRepository<UserVendorRole, 
 
     List<UserVendorRole> findAllByVendor(Vendorprofile vendor);
 
+    Optional<UserVendorRole> findByIdAndVendor(Long id, Vendorprofile vendor);
+
     List<UserVendorRole> findAllByUsers(Users user);
 
     boolean existsByUsers_EmailAndVendor_Id(String email, Long vendorId);
 
     boolean existsByUsers_EmailAndVendor_IdAndVendorRole_Name(String email, Long vendorId, String roleName);
+
+    boolean existsByVendorRole_Id(Long vendorRoleId);
+
+    @Query("""
+            SELECT DISTINCT uvr.users.id
+            FROM UserVendorRole uvr
+            WHERE uvr.vendorRole.id = :vendorRoleId
+              AND uvr.users.id IS NOT NULL
+            """)
+    List<Long> findAssignedUserIdsByVendorRoleId(@Param("vendorRoleId") Long vendorRoleId);
+
+    @Query("""
+            SELECT COUNT(uvr)
+            FROM UserVendorRole uvr
+            WHERE uvr.vendor = :vendor
+              AND (
+                    LOWER(uvr.vendorRole.name) IN ('admin', 'owner', 'vendor_owner')
+                 OR LOWER(uvr.vendorRole.slug) IN ('admin', 'owner', 'vendor_owner')
+              )
+            """)
+    long countVendorOwnerAssignments(@Param("vendor") Vendorprofile vendor);
 
     @Query("""
             SELECT CASE WHEN COUNT(uvr) > 0 THEN true ELSE false END

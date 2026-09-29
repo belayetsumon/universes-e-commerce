@@ -10,6 +10,7 @@ import com.ecommerce.app.module.ReferralRewards.repository.GiftCardRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.ReferralRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.RewardAccountRepository;
 import com.ecommerce.app.module.ReferralRewards.repository.RewardTransactionRepository;
+import com.ecommerce.app.module.ReferralRewards.services.ReferralService;
 import com.ecommerce.app.module.ReferralRewards.services.RedemptionService;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
@@ -19,6 +20,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
@@ -49,7 +51,10 @@ public class ReferralRewardsController {
     @Autowired
     ReferralRepository referralRepository;
 
-    @RequestMapping("/dashbords")
+    @Autowired
+    ReferralService referralService;
+
+    @GetMapping("/dashbords")
     public String deshbords(Model model, Principal principal) {
 
         Optional<Users> users = usersRepository.findByEmail(principal.getName());
@@ -74,9 +79,9 @@ public class ReferralRewardsController {
         Long totalref = referralRepository.countByReferredUser(currentUser);
 
         model.addAttribute("totalref", totalref);
-        Optional<Referral> referral = referralRepository.findByUsers(currentUser);
+        Referral referral = referralService.generateMissingReferralCodeForCustomer(currentUser.getId());
 
-        model.addAttribute("referral_code", referral.map(Referral::getReferralCode).orElse(""));
+        model.addAttribute("referral_code", referral.getReferralCode());
 
         return "customer/referral_rewards/customer_referrallist_dashbords";
     }

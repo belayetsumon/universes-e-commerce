@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
+    <th:block layout:fragment="page_css">
+        <style>
+            .email-confirmation-card {
+                max-width: 720px;
+                margin: 2rem auto;
+                border: 1px solid rgba(15, 23, 42, 0.08);
+                border-radius: 1.25rem;
+                box-shadow: 0 18px 42px rgba(15, 23, 42, 0.07);
+            }
+        </style>
+    </th:block>
+
+    <div layout:fragment="content">
+        <section class="container py-4">
+            <div class="card email-confirmation-card">
+                <div class="card-body p-4 p-lg-5">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <span class="badge rounded-pill text-bg-primary">Vendor verification</span>
+                        <span class="text-muted small">Token expires after <span th:text="${emailTokenValidMinutes}">15</span> minutes</span>
+                    </div>
+
+                    <h1 class="h3 mb-3">Confirm vendor email verification</h1>
+                    <p class="text-muted mb-4">
+                        This page only confirms that you want to verify the vendor email address.
+                        The verification token is consumed after you submit the protected form below.
+                    </p>
+
+                    <form th:action="@{/vendorverifications/verify-email}" method="post" class="d-flex flex-wrap gap-2">
+                        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <input type="hidden" name="token" th:value="${verificationToken}">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-shield-check me-2"></i>Verify Email
+                        </button>
+                        <a class="btn btn-outline-secondary" th:href="@{/vendorverifications}">
+                            Back To Verification Status
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

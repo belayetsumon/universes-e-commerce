@@ -7,6 +7,7 @@ package com.ecommerce.app.module.customer.controller;
 import com.ecommerce.app.module.order.model.PaymentMethod;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -19,7 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/customer_payment")
 public class CustomerPaymentController {
 
-    @RequestMapping("/payment_method")
+    @GetMapping("/payment_method")
     public String index(Model model,
             @RequestParam(name = "orderId", required = false) Long orderId,
             RedirectAttributes redirectAttributes) {

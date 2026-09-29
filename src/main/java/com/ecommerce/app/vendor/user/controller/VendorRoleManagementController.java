@@ -2,15 +2,11 @@ package com.ecommerce.app.vendor.user.controller;
 
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import com.ecommerce.app.vendor.user.componant.VendorUserContext;
-import com.ecommerce.app.vendor.user.model.VendorPrivilege;
 import com.ecommerce.app.vendor.user.model.VendorRole;
-import com.ecommerce.app.vendor.user.repository.VendorPrivilegeRepository;
-import com.ecommerce.app.vendor.user.services.VendorRoleService;
+import com.ecommerce.app.vendor.user.services.VendorStaffAdministrationService;
 import jakarta.validation.Valid;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,28 +21,23 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/vendor-users/roles")
-@PreAuthorize("""
-        @vendorAccessAuthorityChecker.hasAuthority(authentication, 'vendor.role.manage')
-        or @vendorAccessAuthorityChecker.hasAuthority(authentication, 'vendor.staff.manage')
-        or @vendorRoleChecker.hasVendorRole(authentication, 'ADMIN')
-        or @vendorRoleChecker.hasVendorRole(authentication, 'OWNER')
-        or @vendorRoleChecker.hasVendorRole(authentication, 'VENDOR_OWNER')
-        """)
+@PreAuthorize(VendorStaffAdministrationService.ROLE_MANAGE_AUTHORIZATION)
 public class VendorRoleManagementController {
 
-    @Autowired
-    private VendorUserContext vendorUserContext;
+    private final VendorUserContext vendorUserContext;
+    private final VendorStaffAdministrationService vendorStaffAdministrationService;
 
-    @Autowired
-    private VendorRoleService vendorRoleService;
-
-    @Autowired
-    private VendorPrivilegeRepository vendorPrivilegeRepository;
+    public VendorRoleManagementController(
+            VendorUserContext vendorUserContext,
+            VendorStaffAdministrationService vendorStaffAdministrationService) {
+        this.vendorUserContext = vendorUserContext;
+        this.vendorStaffAdministrationService = vendorStaffAdministrationService;
+    }
 
     @GetMapping
     public String list(Model model) {
         Vendorprofile vendor = vendorUserContext.getActiveVendor();
-        model.addAttribute("roles", vendorRoleService.findAllByVendor(vendor));
+        model.addAttribute("roles", vendorStaffAdministrationService.listRoles(vendor));
         model.addAttribute("companyName", vendor.getCompanyName());
         return "vendor/users/vendor_role_manage_list";
     }
@@ -56,15 +47,15 @@ public class VendorRoleManagementController {
         Vendorprofile vendor = vendorUserContext.getActiveVendor();
         VendorRole vendorRole = new VendorRole();
         vendorRole.setVendor(vendor);
-        populateForm(model, vendorRole, vendor.getCompanyName());
+        populateForm(model, vendorRole, vendor);
         return "vendor/users/vendor_role_manage_form";
     }
 
     @GetMapping("/edit/{id}")
     public String editForm(@PathVariable Long id, Model model) {
         Vendorprofile vendor = vendorUserContext.getActiveVendor();
-        VendorRole role = vendorRoleService.findByIdAndVendor(id, vendor);
-        populateForm(model, role, vendor.getCompanyName());
+        VendorRole role = vendorStaffAdministrationService.findRole(vendor, id);
+        populateForm(model, role, vendor);
         return "vendor/users/vendor_role_manage_form";
     }
 
@@ -77,39 +68,43 @@ public class VendorRoleManagementController {
             RedirectAttributes redirectAttributes
     ) {
         Vendorprofile vendor = vendorUserContext.getActiveVendor();
-        vendorRole.setVendor(vendor);
 
-        if (vendorRoleService.slugExistsForVendor(vendor, vendorRole.getSlug(), vendorRole.getId())) {
+        if (vendorStaffAdministrationService.slugExistsForVendor(vendor, vendorRole.getSlug(), vendorRole.getId())) {
             result.rejectValue("slug", "vendorRole.slug", "Slug already exists for this vendor.");
         }
 
         if (result.hasErrors()) {
-            populateForm(model, vendorRole, vendor.getCompanyName());
+            populateForm(model, vendorRole, vendor);
             return "vendor/users/vendor_role_manage_form";
         }
 
-        Set<VendorPrivilege> privileges = privilegeIds == null
-                ? new HashSet<>()
-                : new HashSet<>(vendorPrivilegeRepository.findAllById(privilegeIds));
-        vendorRole.setVendorPrivilege(privileges);
-
-        vendorRoleService.save(vendorRole);
+        try {
+            vendorStaffAdministrationService.saveRole(vendor, vendorRole, privilegeIds);
+        } catch (AccessDeniedException | IllegalArgumentException exception) {
+            result.reject("vendorRole.invalid", exception.getMessage());
+            populateForm(model, vendorRole, vendor);
+            return "vendor/users/vendor_role_manage_form";
+        }
         redirectAttributes.addFlashAttribute("message", "Vendor role saved successfully.");
         return "redirect:/vendor-users/roles";
     }
 
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         Vendorprofile vendor = vendorUserContext.getActiveVendor();
-        VendorRole role = vendorRoleService.findByIdAndVendor(id, vendor);
-        vendorRoleService.deleteById(role.getId());
-        redirectAttributes.addFlashAttribute("message", "Vendor role deleted successfully.");
+        try {
+            vendorStaffAdministrationService.deleteRole(vendor, id);
+            redirectAttributes.addFlashAttribute("message", "Vendor role deleted successfully.");
+        } catch (AccessDeniedException | IllegalArgumentException | IllegalStateException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
         return "redirect:/vendor-users/roles";
     }
 
-    private void populateForm(Model model, VendorRole vendorRole, String companyName) {
+    private void populateForm(Model model, VendorRole vendorRole, Vendorprofile vendor) {
+        vendorRole.setVendor(vendor);
         model.addAttribute("vendorRole", vendorRole);
-        model.addAttribute("companyName", companyName);
-        model.addAttribute("allPrivileges", vendorPrivilegeRepository.findAll());
+        model.addAttribute("companyName", vendor.getCompanyName());
+        model.addAttribute("allPrivileges", vendorStaffAdministrationService.findRoleAssignablePrivileges(vendor));
     }
 }

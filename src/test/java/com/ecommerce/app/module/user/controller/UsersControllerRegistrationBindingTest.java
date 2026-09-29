@@ -4,9 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.ecommerce.app.module.customer.dto.CustomerRegistrationForm;
+import com.ecommerce.app.module.user.services.SessionAdministrationService;
 import java.util.Arrays;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.web.bind.WebDataBinder;
 
@@ -16,7 +18,7 @@ class UsersControllerRegistrationBindingTest {
     void publicRegistrationSuppressesIdentityAndAuthorityParameters() {
         CustomerRegistrationForm form = new CustomerRegistrationForm();
         WebDataBinder binder = new WebDataBinder(form, "users");
-        new UsersController().configureUserBinding(binder);
+        new UsersController(Mockito.mock(SessionAdministrationService.class)).configureUserBinding(binder);
 
         binder.bind(new MutablePropertyValues(Map.ofEntries(
                 Map.entry("firstName", "Safe"),

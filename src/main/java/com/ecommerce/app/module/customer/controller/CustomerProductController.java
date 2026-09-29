@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import com.ecommerce.app.product.ripository.ProductRepository;
@@ -44,7 +45,7 @@ public class CustomerProductController {
     @Autowired
     SalesOrderRepository salesOrderRepository;
 
-    @RequestMapping(value = {"", "/", "/index"})
+    @GetMapping(value = {"", "/", "/index"})
     public String index(Model model) {
 
         Users userId = new Users();
@@ -54,7 +55,7 @@ public class CustomerProductController {
         return "student/exam/index";
     }
 
-    @RequestMapping("/details/{id}")
+    @GetMapping("/details/{id}")
     public String create(Model model, @PathVariable Long id, Product exam) {
 
         model.addAttribute("exam_details", examRepository.findById(id));
@@ -66,7 +67,7 @@ public class CustomerProductController {
 
     }
 
-    @RequestMapping("/question-by-exam/{examid}")
+    @GetMapping("/question-by-exam/{examid}")
     public String question_by_exam(Model model, @PathVariable Long examid, Product exam) {
 
         exam.setId(examid);

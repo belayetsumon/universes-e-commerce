@@ -4,53 +4,58 @@
 
 This is the parent security workflow for the complete application. It covers anonymous/public traffic, customers, vendor owners and staff, platform administrators, APIs, callbacks, scheduled/background work, authentication, module permissions, resource ownership, repository scope, sessions, credentials, audit, and every Spring MVC endpoint.
 
-The focused vendor plan remains in `docs/vendor-staff-method-security-workflow.md` and is executed as a child of this workflow.
+The focused vendor plan remains in docs/vendor-staff-method-security-workflow.md and is executed as a child of this workflow.
 
 ## Implementation Boundary
 
-Status: `Implementation started - first IAM slice source-verified`
+Status: Phase 1 manual endpoint classification complete; security implementation and deployment verification remain incomplete.
 
-- The platform IAM role/permission/module slice is implemented in source with focused tests; it is not runtime-verified against a deployment database.
-- The PostgreSQL permission seed exists but has not been applied. The temporary legacy `admin`/`ROLE_ADMIN` IAM bridge remains until exact-permission migration and smoke tests pass.
-- All other application-security work remains governed by the phases and decisions below.
+- All 742 current source endpoint rows have a durable decision record.
+- 671 policy decisions are approved for implementation, 67 security rows are source-implemented pending migration/runtime proof, and 4 rows have explicit release-blocking deferrals.
+- The PostgreSQL permission seed has not been applied. The temporary legacy admin/ROLE_ADMIN bridge remains until exact-permission migration and smoke tests pass.
 - Security is not considered complete from controller URL rules, menu visibility, source compilation, or an unauthenticated redirect alone.
 
 ## Audit Artifacts
 
-- `docs/application-security-endpoint-inventory.csv`
+- docs/application-security-endpoint-inventory.csv
   - Source-derived endpoint ledger with one row per expanded route and HTTP-method combination.
-  - Records current URL rule, current method guard, target zone candidate, module candidate, action candidate, named permission/policy candidate, scope requirement, and review status.
-- `docs/application-security-permission-catalogue.csv`
-  - Deduplicated source-derived catalogue candidates grouped from the endpoint ledger.
-  - Records namespace, module/action/zone coverage, endpoint count, assignment policy, step-up candidate, lifecycle, and review status.
-- `docs/security/generate-endpoint-security-inventory.ps1`
-  - Rebuilds both source-derived CSV artifacts from Spring MVC annotations.
-- `docs/vendor-staff-method-security-workflow.md`
+- docs/application-security-permission-catalogue.csv
+  - Deduplicated source-derived permission candidates grouped from the endpoint ledger.
+- docs/application-security-endpoint-decision-ledger.csv
+  - Phase 1 durable per-endpoint decision record containing final zone, method decision, authentication, capability, scope, security controls, tests, evidence, and status.
+- docs/application-security-permission-decision-ledger.csv
+  - Phase 1 durable per-capability decision record containing assignment, step-up, lifecycle, evidence, and status.
+- docs/security/generate-endpoint-security-inventory.ps1
+  - Rebuilds the source-derived inventory and candidate catalogue.
+- docs/security/sync-endpoint-security-decision-ledgers.ps1
+  - Rebuilds and validates the decision ledgers; it rejects duplicate/orphaned decisions, blank mandatory controls, ALL final methods, invalid policy links, and assignable public/webhook/internal policies.
+- docs/application-security-phase-one-classification.md
+  - Phase 1 scope, result, evidence hashes, and documented release blockers.
+- docs/vendor-staff-method-security-workflow.md
   - Detailed vendor membership, invitation, permission, ownership, revocation, and audit workflow.
-- `/admin/system/endpoints`
+- /admin/system/endpoints
   - Existing runtime mapping registry. It is authoritative for mappings registered by the running Spring context and must be reconciled with the source ledger before release.
 
 ## Status Legend
 
-- `Done`: verified planning/audit output or implemented with evidence
-- `Partial`: foundation exists but does not satisfy the complete control
-- `Pending`: not implemented
-- `Blocked`: waiting for a required decision or dependency
-- `Deferred`: explicitly outside the current release
+- Done: verified planning/audit output or implemented with evidence
+- Partial: foundation exists but does not satisfy the complete control
+- Pending: not implemented
+- Blocked: waiting for a required decision or dependency
+- Deferred: explicitly outside the current release
 
 ## Progress Summary
 
 | Measure | Count |
 | --- | ---: |
-| Planning work packages complete | 1 |
-| Implementation work packages complete | 0 |
-| Implementation work packages partial | 3 |
-| Implementation work packages remaining | 14 |
-| Endpoint ledger rows awaiting manual target confirmation | 752 |
-| Endpoint ledger rows source-implemented, awaiting migration/runtime proof | 18 |
-| Endpoint ledger rows with a named permission candidate | 770 |
-| Deduplicated permission catalogue candidates awaiting confirmation | 138 |
-| Permission catalogue candidates source-implemented, awaiting migration/runtime proof | 3 |
+| Source endpoint rows with a Phase 1 decision | 742 |
+| Endpoint policy decisions approved for implementation | 671 |
+| Endpoint decisions source-implemented pending migration/runtime proof | 67 |
+| Endpoint decisions deferred with an explicit blocker | 4 |
+| Permission capability decisions | 132 |
+| Permission decisions approved for implementation | 119 |
+| Permission decisions source-implemented pending migration/runtime proof | 10 |
+| Permission decisions deferred with an explicit blocker | 3 |
 | Security implementation started | Yes |
 
 ## Verified Endpoint Baseline
@@ -59,18 +64,10 @@ Status: `Implementation started - first IAM slice source-verified`
 
 | Measure | Current result |
 | --- | ---: |
-| Controller files named `*Controller.java` | 140 |
-| Additional controller source not using that filename suffix | 1 |
-| Controller files with active handler mappings | 139 |
-| Inactive controller files containing only commented handler methods | 2 |
-| Active mapping annotations, including class-level mappings | 798 |
-| Expanded route/HTTP-method rows | 770 |
-| Expanded endpoint rows inheriting an active method guard | 141 |
-| Service-layer `@PreAuthorize` annotations | 10 |
-| Mappings accepting all HTTP methods | 184 |
-| GET routes that appear to delete/remove/revoke/suspend | 13 |
-
-The two inactive controller files are `CommentController` and `RateController`; their handler methods are commented out and therefore absent from the endpoint ledger.
+| Expanded route/HTTP-method rows | 742 |
+| Mappings accepting all HTTP methods | 2 |
+| GET routes that appear to delete/remove/revoke/suspend | 0 |
+| Source rows with current method guards | 235 |
 
 Existing method guards remain recorded per endpoint as migration evidence, but annotation counts are not permission-catalogue coverage and are not used as a release-completion metric.
 
@@ -78,27 +75,28 @@ Existing method guards remain recorded per endpoint as migration evidence, but a
 
 | Current Spring Security result | Endpoint rows |
 | --- | ---: |
-| `permitAll` | 80 |
+| permitAll | 89 |
+| explicit authority set | 66 |
 | fraud authority set | 24 |
-| any authenticated user | 666 |
+| any authenticated user | 563 |
 
-`any authenticated user` is not the same as customer, vendor, administrator, module, tenant, or ownership authorization.
+Any authenticated user is not the same as customer, vendor, administrator, module, tenant, or ownership authorization.
 
 ### Target-Zone Candidates
 
 | Candidate zone | Endpoint rows | Current rows with a method guard | Principal requirement |
 | --- | ---: | ---: | --- |
-| platform admin | 276 | 86 | active platform account plus module permission |
-| legacy admin route requiring prefix review | 134 | 0 | active platform account plus module permission |
-| customer | 109 | 41 | active customer plus current-user/resource ownership |
-| vendor | 131 | 9 | active vendor membership plus permission and vendor/resource scope |
-| explicitly public candidate | 80 | 0 | explicit allowlist plus abuse and state controls |
-| public candidate requiring reclassification | 4 | 0 | justify public or require authentication |
+| platform admin | 303 | 179 | active platform account plus module permission |
+| legacy admin route requiring prefix review | 115 | 0 | active platform account plus module permission |
+| customer | 110 | 42 | active customer plus current-user/resource ownership |
+| vendor | 117 | 9 | active vendor membership plus permission and vendor/resource scope |
+| explicitly public candidate | 88 | 0 | explicit allowlist plus abuse and state controls |
+| public candidate requiring reclassification | 0 | 0 | justify public or require authentication |
 | API | 1 | 0 | client/user scope and resource scope |
 | callback/webhook | 1 | 0 | signature, replay protection, and idempotency |
-| shared or unclassified | 34 | 5 | explicit owner/module decision |
+| shared or unclassified | 7 | 5 | explicit owner/module decision |
 
-The target-zone and module columns are review candidates, not final policy. The 18 platform IAM rows are `SOURCE_IMPLEMENTED_PENDING_MIGRATION_AND_RUNTIME_PROOF`; every other ledger row stays `PENDING_MANUAL_CONFIRMATION` until an authorized reviewer selects the final zone, permission, ownership rule, and HTTP method.
+The target-zone and module columns are source-review candidates, not the final policy. The Phase 1 decision ledger records every current source row as APPROVED, IMPLEMENTED, or documented DEFERRED. A deferred decision is not release-eligible. The platform IAM, platform vendor-IAM, session-administration, vendor staff-IAM, destructive GET-route containment, explicit mutation-route containment, password-recovery route containment, disabled legacy password route containment, and vendor email verification action-GET containment rows remain source-implemented pending migration and deployment-like runtime proof. Public SEO, maintenance, district-selection, and registration ingress routes are now explicitly public and ledger-approved. Thirty-one sensitive GET rows have been source-reviewed as read-only page, redirect, form, policy, export, or download responses; no sensitive-operation GET deferrals remain.
 
 ## Critical Current Findings
 
@@ -115,27 +113,32 @@ The target-zone and module columns are review candidates, not final policy. The 
    - `/role/**`, `/privilege/**`, and `/module/**` are now source-protected by exact platform-IAM permissions, controller and service `@PreAuthorize` checks, explicit HTTP methods, grant-ceiling validation, protected catalogue slugs, and scoped CSRF. Migration and deployment-like runtime proof remain required.
 
 3. Method authorization coverage is still incomplete outside the first IAM slice.
-   - `IamAdministrationService` now has 10 service-layer `@PreAuthorize` guards, so direct invocation of the implemented role/permission/module use cases is protected.
-   - Other service entry points, scheduled work, consumers, callbacks, and future API reuse can still bypass controller-only checks until their work packages are implemented.
+    - `IamAdministrationService` now has 10 service-layer `@PreAuthorize` guards, so direct invocation of the implemented role/permission/module use cases is protected.
+    - `VendorStaffAdministrationService` now protects the existing vendor staff and custom-role administration paths with service `@PreAuthorize`, vendor-scoped repository lookups, grant-ceiling checks, self-removal/final-owner guards, and CSRF-protected POST mutations.
+    - Other service entry points, scheduled work, consumers, callbacks, and future API reuse can still bypass controller-only checks until their work packages are implemented.
 
 4. Public access is broader than explicit endpoint intent.
    - `PUBLIC_URLS` includes wildcard families such as `/public/**`, `/cart/**`, and `/carts/**` without HTTP-method restrictions.
-   - Of 80 `permitAll` ledger rows, 48 accept all HTTP methods, 19 are POST, and only 13 are explicit GET.
+   - Of 88 `permitAll` ledger rows, 1 still accepts all HTTP methods, 30 are POST, and 57 are explicit GET.
    - New handlers added under a public wildcard may become anonymous automatically.
 
 5. Legacy password handling is inconsistent.
    - Password matching helpers accept plaintext stored-password fallback.
    - Password length requirements vary between forms.
    - The legacy `ChangePasswordController` creates a new transient `Users` instance instead of loading and authorizing the current account.
-   - Password changes do not consistently invalidate sessions and sensitive-action grants.
+   - The self-service, admin, and recovery password paths now advance a credential epoch and expire registered sessions; broader role/membership revocation and sensitive-action grant invalidation remain pending.
 
-6. Password recovery is not a secure reset workflow.
-   - The forgot-password controller queries the account directly and can disclose whether an email exists on one view path.
-   - No expiring, single-use, hashed password-reset token aggregate was found.
+6. Password recovery now has a secure lifecycle foundation, but release gates remain.
+   - Requests are neutral for blank, unknown, and known addresses; explicit GET/POST reset routes are CSRF-covered.
+   - Reset links use random tokens whose SHA-256 digests are persisted with a 30-minute expiry and atomic single-use consumption.
+   - SMTP configuration, migration execution, and deployment-like runtime/browser proof remain outstanding; session-version invalidation is implemented in source and still needs deployment verification.
 
 7. Vendor verification secrets require containment.
-   - Vendor email tokens and mobile OTP values are stored in plaintext.
-   - Vendor mobile OTP values are written to application logs.
+   - Vendor email verification tokens are now generated with 32 random bytes and stored as SHA-256 digests in the legacy `token` column.
+   - Vendor mobile OTP values are now stored as BCrypt hashes in the legacy `otp` column.
+   - Vendor verification logs no longer write raw email verification links, raw tokens, raw OTP values, or communication recipients.
+   - Successful email/mobile verification clears the stored token or OTP hash.
+   - Migration `V202608310002__vendor_verification_secret_hash_transition.sql` clears old pending plaintext vendor verification secrets; migration execution remains a release gate.
    - The more recent guest-checkout OTP flow provides a safer precedent by hashing OTPs, limiting attempts/resends, binding state to a session, and recording expiry/use state.
 
 8. Credentials exist in environment-specific property files.
@@ -157,21 +160,21 @@ The target-zone and module columns are review candidates, not final policy. The 
    - Follow the child vendor workflow for active membership, invitation, permission ceiling, repository scope, step-up authentication, suspension, revocation, and final-owner rules.
 
 4. Admin routes use mixed prefixes.
-   - 130 endpoints look administrative from their controllers/modules but are not under `/admin/**`.
+   - 156 endpoints look administrative from their controllers/modules but are not under `/admin/**`.
    - Examples include catalog, product, shipping, promotion/reward, identity, role, and privilege administration.
    - URL appearance cannot be the security boundary, but consistent prefixes reduce configuration and operational mistakes.
 
-5. State-changing GET and unrestricted `@RequestMapping` remain common.
-   - 13 GET routes appear destructive.
-   - 184 rows still accept every HTTP method. The 18 role/privilege/module rows now use explicit GET/POST methods; users, products, categories, orders, customer data, vendor data, and checkout mutations remain to be converted.
+5. State-changing unrestricted `@RequestMapping` remains common.
+   - 0 GET routes now appear destructive in the regenerated source inventory.
+   - 2 rows still accept every HTTP method: the framework-style `/error` and `/access-denied` handlers, where forwarded requests can originate from non-GET flows. The role/privilege/module rows, destructive deletes, password recovery, selected high-confidence mutations, and 128 additional admin, catalog, public, vendor, customer, order, cart, reward, promotion, and image-fragment page rows now use explicit methods. Thirty-one sensitive GET rows are additionally reviewed as read-only page, redirect, form, policy, export, or download responses.
 
 6. API and callback trust models are undefined.
    - The commission API currently falls through to form-login authentication.
    - The EMI provider callback also falls through to form-login authentication instead of a documented provider-signature policy.
 
-7. Public SEO and utility route intent is inconsistent with configuration.
-   - `/robots.txt`, `/sitemap.xml`, `/llms.txt`, and `/maintenance` currently fall through to authentication in the source rules.
-   - The shipping-location handler uses `/district/select`, while the public allowlist names `/district/select-district`.
+7. Public SEO and utility route intent is now aligned with configuration.
+   - `/robots.txt`, `/sitemap.xml`, `/llms.txt`, `/maintenance`, `/district/select`, `/register`, `/customerregister/register`, and `/users/login` are explicitly permit-all and classified as public ingress.
+   - These rows remain subject to public ingress input policy, CSRF for browser mutations, rate limiting, and runtime/browser proof.
 
 8. Static `/files/**` is public as a complete family.
    - Public product media and private identity, invoice, export, or vendor documents must not share an undifferentiated public download boundary.
@@ -411,6 +414,8 @@ Do not place a route in `permitAll` merely because the UI is public. The handler
 
 Status: `Pending`
 
+Description: Establish the approved security decisions, database/migration baseline, backups, compatibility rules, and rollback plan before further rollout.
+
 - Approve A-D01 through A-D14.
 - Confirm the live database engine and migration mechanism.
 - Back up role, privilege, user-role, session, and vendor-membership data.
@@ -425,19 +430,79 @@ Exit gate:
 
 Status: `Partial`
 
+Description: Remove urgent exposure from unsafe mutations, identity administration, logout/password paths, CSRF coverage, and vendor-IAM entry points.
+
 Implemented in the platform IAM slice:
 
 - role, privilege, and module handlers now use explicit GET/POST mappings
 - their destructive GET routes were removed
 - their unsafe methods require Spring Security CSRF
-- other P0 containment items remain pending
 
-- Restrict user, role, privilege, module, login-history, password-reset, and session-administration use cases immediately.
-- Disable or replace the broken legacy change-password flow.
-- Remove raw OTP/token logging and rotate exposed credentials.
-- Re-enable standard CSRF with documented temporary exceptions only where necessary.
-- Convert destructive GET routes to POST/DELETE with CSRF.
-- Convert mutation-capable `@RequestMapping` handlers to explicit methods.
+Implemented in the user-identity containment slice (`Partial - source verified`):
+
+- user lists, status views, legacy user-details, and arbitrary identity details require named platform identity access
+- `/users/view/{uid}` permits platform identity readers or the authenticated customer owning that exact user ID
+- login-history views require the separate `platform.security.audit.*` capability family at controller and service boundaries, and the admin view no longer exposes or searches raw servlet session identifiers
+- user mutations and another-user password reset use separate manage and password-reset capabilities with a temporary legacy-admin bridge
+- broad read mappings were narrowed to explicit GET mappings, and the combined containment suite passes all 62 focused security/regression tests
+- the broken legacy password mutation is disabled with exact GET/POST mappings and a fail-closed method guard
+- logout is owned by Spring Security as a POST-only, CSRF-protected operation, and all eight template surfaces submit CSRF forms
+
+Implemented in the platform vendor-IAM containment slice (`Partial - source verified`):
+
+- all ten `/adminvendorusers/**` routes require exact approved `platform.vendor.management.*` capabilities at URL and controller boundaries
+- transactional `AdminVendorIamService` methods repeat the permission boundary for direct invocation and keep controller writes out of shared vendor services
+- role and permission saves reject duplicate or invalid slugs, including non-`vendor.*` permission entries, and assigned roles or permissions cannot be deleted
+- both delete routes are POST-only, scoped CSRF applies, and all three affected template surfaces submit explicit CSRF forms
+- the combined containment regression suite passes all 71 focused tests
+
+Implemented in the destructive GET-route containment slice (`Partial - source verified`):
+
+- all 9 Phase 1 destructive delete endpoints were converted from GET to POST
+- affected admin, vendor, advertising, catalog attribute, manufacturer, and UOM templates now submit POST forms with CSRF tokens instead of delete links
+- Spring Security CSRF coverage now includes the affected browser mutation route families
+- source inventory now reports 0 destructive GET routes, and the focused route/CSRF/runtime-inventory suite passes all 87 tests; migration and deployment-like runtime proof remain outstanding
+
+Implemented in the explicit mutation-route containment slice (`Partial - source verified`):
+
+- nine high-confidence product, category, vendor product/profile, payout, customer profile, and public contact mutation handlers now use explicit POST mappings instead of unrestricted `@RequestMapping`
+- affected forms now include CSRF tokens, and category detail delete links were replaced with POST forms
+- source inventory now reports these mutation routes as POST and the focused route/CSRF/runtime-inventory suite passes all 106 tests; migration and deployment-like runtime proof remain outstanding
+
+Implemented in the broader CSRF and page-method containment slice (`Partial - source verified`):
+
+- Spring Security CSRF coverage now includes additional browser mutation families: admin-customer order administration, customer-order mutations, product image fragments, vendor product image fragments, vendor logo changes, customer profile images, vendor order operations, reward/coupon/gift-card/wallet flows, and promotion administration
+- 128 admin, catalog, public, vendor, customer, order, cart, reward, promotion, and image-fragment page rows were converted from unrestricted `@RequestMapping` to explicit GET mappings so POST/DELETE traffic is reserved for intentional mutation handlers
+- refreshed source inventory now reports 2 all-method rows, down from 130, the focused route/CSRF/source-contract suite passes all 176 tests, and the full Maven test suite passes all 407 tests; migration execution and deployment-like browser/runtime proof remain outstanding
+
+Implemented in the password-recovery lifecycle slice (`Partial - source verified`):
+
+- recovery display routes are explicit GET mappings and recovery submissions are explicit POST-only
+- requests return a neutral response for blank, unknown, and known addresses to prevent account enumeration
+- reset capabilities use 32-byte random tokens, SHA-256 digests in `password_reset_tokens`, a configurable 30-minute expiry, and an atomic single-use consume update before the BCrypt password change
+- reset links are sent directly through the configured mail sender so raw tokens are not retained in communication jobs; production should set `app.security.password-reset.base-url` to the trusted public HTTPS origin; both legacy and public forms remain CSRF-covered
+- focused route, lifecycle, CSRF, and runtime-inventory checks pass; production SMTP configuration, migration execution, and deployment-like runtime proof remain outstanding
+
+Implemented in the session and credential versioning slice (`Partial - source verified`):
+
+- `usermodule_users.credential_version` is a separate account epoch from the legacy audit `version` column and is advanced for password changes/resets and account-status changes
+- successful logins bind the current epoch to the HTTP session, active sessions are registered with Spring Security, and password/access changes expire all matching in-process sessions
+- `CredentialVersionFilter` rejects a marked session when the database epoch has changed, providing a cross-node database backstop; focused service/filter/contract tests pass
+- vendor staff assignment removal and vendor role permission changes now advance affected users' credential epochs, forcing stale vendor-authority snapshots to be revalidated; full membership lifecycle, migration execution, and deployment-like runtime/browser proof remain outstanding
+
+Implemented in the baseline headers and secret-log containment slice (`Partial - source verified`):
+
+- Spring Security explicitly migrates the session ID after authentication, emits same-origin frame policy, HSTS with subdomains, and a strict-origin-when-cross-origin referrer policy
+- remote/live profiles already set secure, HTTP-only, SameSite=Lax session cookies and framework forwarded-header handling
+- vendor verification communication logs retain event/vendor context while removing raw verification links, tokens, OTP values, email addresses, mobile numbers, and recipients
+- vendor email verification now stores a SHA-256 token digest, mobile verification stores a BCrypt OTP hash, verified secrets are cleared after successful use, and migration `V202608310002__vendor_verification_secret_hash_transition.sql` clears prior pending raw values
+- global CSRF rollout, credential rotation, migration execution, and deployment-like runtime/browser proof remain outstanding
+
+Other P0 containment items remain pending:
+
+- Rotate exposed credentials and externalize all deployment secrets.
+- Continue the standard CSRF rollout with documented temporary exceptions only where necessary.
+- Convert the remaining mutation-capable and ambiguous `@RequestMapping` handlers to explicit methods.
 
 Exit gate:
 
@@ -445,13 +510,15 @@ Exit gate:
 
 ### S03 - Authentication and Account Recovery Foundation
 
-Status: `Pending`
+Status: `Partial`
+
+Description: Build consistent login, password, lockout, MFA, secure reset, session-version, cookie, and session-fixation controls.
 
 - Implement consistent account loading, password policy, login throttling, lockout, neutral errors, and password migration.
-- Implement hashed, expiring, single-use password reset.
+- Implemented the hashed, expiring, single-use password-reset capability and explicit reset form; SMTP configuration and deployment verification remain pending.
 - Add MFA for platform administrators.
-- Add session/credential versions and complete session invalidation.
-- Configure secure production cookies, lifetimes, session fixation, concurrency, and security headers.
+- Session/credential versioning, password/account-status session invalidation, and vendor staff assignment/role-change authority invalidation are implemented; full membership lifecycle and sensitive-action grant invalidation remain pending.
+- Configure secure production cookie lifetimes, concurrency limits, and remaining deployment checks; secure cookie attributes are present in remote/live profiles and baseline session-fixation/security headers are source-configured.
 
 Exit gate:
 
@@ -460,6 +527,8 @@ Exit gate:
 ### S04 - Protected Module and Permission Catalogue
 
 Status: `Partial`
+
+Description: Define immutable namespaced capabilities, migrate legacy authorities safely, and prevent privilege escalation or protected-permission changes.
 
 Implemented in the platform IAM slice:
 
@@ -484,6 +553,8 @@ Exit gate:
 
 Status: `Pending`
 
+Description: Reconcile source routes with mappings registered by the running application and fail closed on unclassified or unexpectedly public endpoints.
+
 - Extend the existing runtime endpoint metadata with security zone, current URL rule, method guard, candidate and final capability, ownership rule, module, linked service use case, and review status.
 - Reconcile it with the generated source CSV.
 - Exclude framework error mappings only through documented rules.
@@ -496,6 +567,8 @@ Exit gate:
 ### S06 - Method-Level Authorization Foundation
 
 Status: `Partial`
+
+Description: Enforce capability, ownership, tenant/vendor scope, and account-state decisions at controller and service boundaries.
 
 Implemented in the platform IAM slice:
 
@@ -521,6 +594,8 @@ Exit gate:
 
 Status: `Pending`
 
+Description: Secure anonymous ingress, registration, cart, guest checkout, OTP, redirects, throttling, CSRF, and public SEO behavior.
+
 - Manually confirm every public ledger row.
 - Replace broad public wildcards with method-specific rules.
 - Correct SEO, maintenance, district-selection, unsubscribe, registration, and recovery route intent.
@@ -534,6 +609,8 @@ Exit gate:
 ### S08 - Customer Modules and Ownership
 
 Status: `Pending`
+
+Description: Protect customer-owned profiles, addresses, orders, payments, wallets, rewards, reviews, wishlist, and communication data.
 
 Roll out in this order:
 
@@ -559,6 +636,8 @@ Exit gate:
 
 Status: `Pending`
 
+Description: Secure platform users, roles, permissions, sessions, recovery, settings, audit, location data, and break-glass administration.
+
 - Secure users, login history, roles, permissions, modules, password reset, sessions, system endpoint registry, location seeding, global settings, and security audit.
 - Require dedicated high-risk permissions and step-up authentication.
 - Protect final platform administrator/break-glass access.
@@ -571,6 +650,8 @@ Exit gate:
 ### S10 - Platform Commerce Modules
 
 Status: `Pending`
+
+Description: Apply least-privilege permissions and scoped service boundaries across catalog, vendors, inventory, commerce, shipping, finance, content, and fraud.
 
 Roll out module permissions and scoped service boundaries for:
 
@@ -590,6 +671,8 @@ Exit gate:
 
 Status: `Pending`
 
+Description: Complete vendor membership, invitations, roles, branch scope, ownership, suspension, revocation, audit, and session invalidation controls.
+
 - Execute `vendor-staff-method-security-workflow.md` in its documented dependency order.
 - Reconcile its endpoint work with the parent endpoint ledger.
 - Do not activate branch scope until the branch foundation exists.
@@ -601,6 +684,8 @@ Exit gate:
 ### S12 - APIs, Webhooks, Files, Exports, and Background Jobs
 
 Status: `Pending`
+
+Description: Secure non-browser interfaces with API authentication, callback signatures, replay protection, protected files, export controls, and scoped system actors.
 
 - Define API authentication/scopes and JSON 401/403 behavior.
 - Add provider signature, replay, and idempotency protection to callbacks.
@@ -618,6 +703,8 @@ Exit gate:
 
 Status: `Pending`
 
+Description: Add immutable security events, timely revocation, safe metrics and alerts, retention rules, and incident-response procedures.
+
 - Add append-only security events for authentication, IAM, customer override, vendor security, high-risk financial action, access denial, and revocation.
 - Invalidate sessions/tokens/caches on account, password, permission, role, and membership changes.
 - Add safe security metrics and alerts without secrets or sensitive payloads.
@@ -631,9 +718,11 @@ Exit gate:
 
 Status: `Pending`
 
+Description: Complete integration, migration, concurrency, deployment-like, and runtime reconciliation checks before fail-closed production cutover.
+
 - Run unit, repository, method-security, MVC, integration, migration, concurrency, and deployment-like tests.
 - Reconcile the source inventory with runtime endpoints.
-- Confirm all 770 current rows plus any new/runtime rows are approved and verified.
+- Confirm all 742 current source rows plus any new/runtime rows are approved and verified.
 - Confirm every current and new feature, including non-web use cases, resolves to an active final catalogue capability.
 - Change the final unmatched URL rule to deny.
 - Deploy migrations before code that requires them and retain a tested rollback that does not erase audit/history.
@@ -737,3 +826,18 @@ Exit gate:
 | --- | --- | --- | --- | --- |
 | 2026-08-14 | S00 source audit and parent workflow | endpoint CSV, permission catalogue CSV, generator, this workflow | `Done` | S01-S14 implementation |
 | 2026-08-14 | S02/S04/S06 platform IAM foundation | IAM authorization component/service/controllers, PostgreSQL seed, 13 focused tests, regenerated catalogues | `Partial - source verified` | database migration, runtime proof, audit/version/session invalidation, all other security surfaces |
+| 2026-08-28 | S02 user identity containment | ownership-aware authorization component, named identity/audit capabilities, exact read mappings, scoped repository predicate, refreshed decision ledgers, 56 focused tests | `Partial - source verified` | permission seeding/migration, step-up and audit, adjacent vendor IAM, broader CSRF/headers/session/recovery, runtime/browser proof |
+| 2026-08-29 | S02 legacy password and logout containment | disabled legacy password mutation, POST-only Spring Security logout, CSRF matcher, eight template form conversions, route/template tests, refreshed decision ledgers, 62 focused tests passing | `Partial - source verified` | adjacent vendor IAM, broader CSRF/headers/session/recovery, migration and runtime/browser proof |
+| 2026-08-29 | S02 platform vendor-IAM containment | exact `platform.vendor.management.*` URL/controller/service guards, transactional application service, POST-only role/permission deletes, CSRF forms, assignment-safe deletes, refreshed decision ledgers, 71 focused tests passing | `Partial - source verified` | permission migration and step-up/audit, vendor-scoped staff IAM, broader CSRF/headers/session/recovery, runtime/browser proof |
+| 2026-08-30 | S02 session-administration containment | `SessionAdministrationService` audit guard, login-history repository search no longer matches raw session IDs, admin template shows audit reference instead of session ID, refreshed decision ledgers, 74 focused containment tests passing | `Partial - source verified` | permission migration and runtime proof, S03 session revocation/versioning, vendor-scoped staff IAM, broader CSRF/headers/session/recovery |
+| 2026-08-30 | S02 destructive GET-route containment | 9 delete endpoints converted to POST-only, affected templates converted to CSRF POST forms, CSRF matcher expanded, refreshed decision ledgers, 87 focused tests passing | `Partial - source verified` | migration and runtime/browser proof, mutation-capable all-method mappings, broader CSRF/headers/session/recovery |
+| 2026-08-30 | S02 explicit mutation-route containment | 9 high-confidence product, vendor, customer, payout, and public contact mutations converted to explicit POST mappings, CSRF forms/matcher updated, refreshed decision ledgers, 106 focused tests passing | `Partial - source verified` | remaining mutation-capable all-method mappings, migration and runtime/browser proof, broader CSRF/headers/session/recovery |
+| 2026-08-30 | S03 password-recovery lifecycle | explicit GET/POST recovery and reset routes, neutral responses, hashed 30-minute single-use tokens, direct mail delivery, reset form, MySQL migration, refreshed decision ledgers, 114 focused tests passing | `Partial - source verified` | SMTP configuration, migration execution, session-version invalidation, deployment/runtime/browser proof, remaining all-method mappings |
+| 2026-08-31 | S03 session and credential versioning | credential epoch migration/entity, Spring session registry, login-session binding, stale-session filter, password/reset/status-change wiring, 6 focused revocation/filter/contract tests and full Maven suite (334 tests) passing | `Partial - source verified` | vendor membership/role revocation, permission-cache invalidation, migration execution, deployment/runtime/browser proof |
+| 2026-08-31 | S02/S03 Phase 2 closeout containment | vendor staff assignment/role-change credential epoch invalidation, vendor verification secret-log redaction, explicit session-fixation migration, HSTS, same-origin frame policy, referrer policy, 3 new focused contract/method checks | `Partial - source verified` | full invitation lifecycle, broader CSRF rollout, credential rotation, migration execution, deployment/runtime/browser proof |
+| 2026-08-31 | S02 vendor verification hashed-secret containment | vendor email tokens stored as SHA-256 digests, vendor mobile OTP stored as BCrypt hashes, successful verification clears stored secrets, MySQL cleanup migration added, 4 focused service/logging/route tests passing | `Partial - source verified` | migration execution, runtime email/SMS proof, credential rotation, broader invitation lifecycle |
+| 2026-08-31 | S02 broader CSRF and page-method containment | expanded CSRF matcher to admin-customer, customerorder, product/vendor image, vendor logo, customer profile image, vendor-order, reward/coupon/gift-card/wallet, and promotion mutation families; 128 page/display rows converted to GET-only; refreshed inventory and decision ledgers; 176 focused tests and 407 full-suite tests passing | `Partial - source verified` | migration execution, deployment/runtime/browser proof, credential rotation, invitation lifecycle, action-style GET review |
+| 2026-08-31 | S02 sensitive read-only GET review | 30 sensitive GET rows source-reviewed as read-only page, redirect, form, policy, export, or download responses; decision-ledger generator now approves only exact reviewed read-only exceptions; remaining action-style/unclassified GET blockers stayed deferred; refreshed decision ledgers; 3 focused ledger-contract tests and 410 full-suite tests passing | `Partial - source verified` | migration execution, deployment/runtime/browser proof, credential rotation, invitation lifecycle, action-style GET containment |
+| 2026-08-31 | S02 action-style GET containment | vendor email verification now uses a read-only GET confirmation page plus CSRF-covered POST token consumption; `/vendorverifications/**` added to the Spring CSRF matcher; legacy referral verify routes are read-only redirects; disabled `/changepassword` rows map to a named internal disabled capability; refreshed inventory and decision ledgers; 192 focused tests and 422 full-suite tests passing | `Partial - source verified` | migration execution, deployment/runtime/browser proof, credential rotation, invitation lifecycle, remaining public/zone/API/webhook/method deferrals |
+| 2026-08-31 | S02 public ingress classification cleanup | public SEO, maintenance, district-selection, and registration ingress routes explicitly permit-all and classified as public; refreshed inventory and decision ledgers; endpoint deferrals reduced from 19 to 10 | `Partial - source verified` | focused/full test proof, migration execution, deployment/runtime/browser proof, remaining owner-zone/API/webhook/error-method deferrals |
+| 2026-08-31 | S02 remaining owner-zone classification | marketplace-wide `/order` list restricted to the named platform order-read capability; `/users/login` explicitly public; user profile/view routes classified to public, customer, and platform zones; refreshed inventory and decision ledgers; endpoint deferrals reduced from 10 to 4 | `Partial - source verified` | API authentication/resource scope, webhook signature/replay/idempotency, framework error-handler method review, migration and deployment/runtime proof |

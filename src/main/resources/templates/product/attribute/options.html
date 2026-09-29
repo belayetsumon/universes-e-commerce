@@ -16,6 +16,7 @@
                     <div class="card-body">
                         <h6 class="mb-3" th:text="${attributeOption.id == null ? 'Add Option' : 'Edit Option'}">Add Option</h6>
                         <form th:action="@{/catalog-attributes/options/save}" th:object="${attributeOption}" method="post">
+                            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                             <input type="hidden" th:field="*{id}">
                             <input type="hidden" th:field="*{uuid}">
                             <input type="hidden" th:field="*{version}">
@@ -68,8 +69,10 @@
                                     <td class="text-nowrap">
                                         <a class="btn btn-sm btn-outline-primary"
                                            th:href="@{/catalog-attributes/options/{uuid}(uuid=${attribute.uuid}, editUuid=${option.uuid})}">Edit</a>
-                                        <a class="btn btn-sm btn-outline-danger"
-                                           th:href="@{/catalog-attributes/options/delete/{uuid}(uuid=${option.uuid})}">Delete</a>
+                                        <form th:action="@{/catalog-attributes/options/delete/{uuid}(uuid=${option.uuid})}" method="post" class="d-inline">
+                                            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </form>
                                     </td>
                                 </tr>
                                 <tr th:if="${#lists.isEmpty(options)}">

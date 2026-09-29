@@ -54,7 +54,7 @@ public class UnitsController {
         return "product/unit/add";
     }
 
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public String deleteUnit(@PathVariable Long id) {
         service.deleteUnit(id);
         return "redirect:/uom/list";

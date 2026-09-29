@@ -137,7 +137,7 @@
                                            type="search"
                                            class="form-control"
                                            th:value="${loginHistorySearch}"
-                                           placeholder="User, email, mobile, IP, session, device">
+                                           placeholder="User, email, mobile, IP, device">
                                 </div>
                             </div>
                             <div>
@@ -195,7 +195,7 @@
                                         <th>Activity</th>
                                         <th>Logout</th>
                                         <th>IP</th>
-                                        <th>Session</th>
+                                        <th>Audit Ref</th>
                                         <th>Device</th>
                                         <th>Notes</th>
                                     </tr>
@@ -232,8 +232,8 @@
                                         </td>
                                         <td><span class="lh-code" th:text="${entry.ipAddress != null and !#strings.isEmpty(entry.ipAddress) ? entry.ipAddress : '-'}">-</span></td>
                                         <td>
-                                            <span class="lh-code" th:title="${entry.sessionId != null ? entry.sessionId : ''}"
-                                                  th:text="${entry.sessionId != null and !#strings.isEmpty(entry.sessionId) ? (#strings.length(entry.sessionId) > 18 ? #strings.substring(entry.sessionId, 0, 18) + '...' : entry.sessionId) : '-'}">-</span>
+                                            <span class="lh-code"
+                                                  th:text="${entry.uuid != null and !#strings.isEmpty(entry.uuid) ? (#strings.length(entry.uuid) > 12 ? #strings.substring(entry.uuid, 0, 12) : entry.uuid) : '-'}">-</span>
                                         </td>
                                         <td>
                                             <div class="lh-agent" th:title="${entry.userAgent != null ? entry.userAgent : ''}"

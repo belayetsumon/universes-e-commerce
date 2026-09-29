@@ -13,6 +13,8 @@ public class PageSeoMetadata {
     private final String robots;
     private final String sharePageType;
     private final String shareEntityReference;
+    private final String productPriceAmount;
+    private final String productPriceCurrency;
     private final List<Map<String, Object>> jsonLd;
 
     public PageSeoMetadata(
@@ -25,6 +27,21 @@ public class PageSeoMetadata {
             String sharePageType,
             String shareEntityReference,
             List<Map<String, Object>> jsonLd) {
+        this(title, description, canonicalUrl, ogType, ogImageUrl, robots, sharePageType, shareEntityReference, null, null, jsonLd);
+    }
+
+    public PageSeoMetadata(
+            String title,
+            String description,
+            String canonicalUrl,
+            String ogType,
+            String ogImageUrl,
+            String robots,
+            String sharePageType,
+            String shareEntityReference,
+            String productPriceAmount,
+            String productPriceCurrency,
+            List<Map<String, Object>> jsonLd) {
         this.title = title;
         this.description = description;
         this.canonicalUrl = canonicalUrl;
@@ -33,6 +50,8 @@ public class PageSeoMetadata {
         this.robots = robots;
         this.sharePageType = sharePageType;
         this.shareEntityReference = shareEntityReference;
+        this.productPriceAmount = productPriceAmount;
+        this.productPriceCurrency = productPriceCurrency;
         this.jsonLd = jsonLd == null ? List.of() : List.copyOf(jsonLd);
     }
 
@@ -66,6 +85,14 @@ public class PageSeoMetadata {
 
     public String getShareEntityReference() {
         return shareEntityReference;
+    }
+
+    public String getProductPriceAmount() {
+        return productPriceAmount;
+    }
+
+    public String getProductPriceCurrency() {
+        return productPriceCurrency;
     }
 
     public List<Map<String, Object>> getJsonLd() {

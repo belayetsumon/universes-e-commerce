@@ -1,19 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/springframework/Controller.java to edit this template
- */
 package com.ecommerce.app.adminvendor.controller;
 
+import com.ecommerce.app.adminvendor.services.AdminVendorIamService;
+import com.ecommerce.app.security.permission.PlatformVendorManagementPermissions;
 import com.ecommerce.app.vendor.user.model.VendorPrivilege;
 import com.ecommerce.app.vendor.user.model.VendorRole;
-import com.ecommerce.app.vendor.user.repository.VendorPrivilegeRepository;
-import com.ecommerce.app.vendor.user.services.VendorPrivilegeService;
-import com.ecommerce.app.vendor.user.services.VendorRoleService;
 import jakarta.validation.Valid;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -25,112 +18,122 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-/**
- *
- * @author libertyerp_local
- */
 @Controller
 @RequestMapping("/adminvendorusers")
+@PreAuthorize(PlatformVendorManagementPermissions.CAN_ACCESS)
 public class AdminVendorUsersController {
 
-    @Autowired
-    private VendorPrivilegeService vpservice;
+    private final AdminVendorIamService vendorIamService;
 
-    @Autowired
-    private VendorRoleService roleService;
-
-    @Autowired
-    private VendorPrivilegeRepository privilegeRepository; // To list privileges in form
+    public AdminVendorUsersController(AdminVendorIamService vendorIamService) {
+        this.vendorIamService = vendorIamService;
+    }
 
     @GetMapping("/rolelist")
+    @PreAuthorize(PlatformVendorManagementPermissions.CAN_READ)
     public String list(Model model) {
-        model.addAttribute("roles", roleService.findAll());
+        model.addAttribute("roles", vendorIamService.findAllRoles());
         return "vendor/users/vendor_role_list";
     }
 
     @GetMapping("/role_add")
+    @PreAuthorize(PlatformVendorManagementPermissions.CAN_READ)
     public String addForm(Model model) {
         model.addAttribute("vendorRole", new VendorRole());
-        model.addAttribute("allPrivileges", privilegeRepository.findAll());
+        model.addAttribute("allPrivileges", vendorIamService.findAllAssignablePrivileges());
         return "vendor/users/vendor_role_form";
     }
 
     @PostMapping("/role_save")
+    @PreAuthorize(PlatformVendorManagementPermissions.CAN_MANAGE)
     public String save(
-            @Valid VendorRole vendorRole,
+            @Valid @ModelAttribute("vendorRole") VendorRole vendorRole,
             BindingResult result,
-            @RequestParam(value = "vendorPrivilege", required = false) List<Long> privilegeIds,
+            @RequestParam(value = "privilegeIds", required = false) List<Long> privilegeIds,
             Model model) {
-        System.out.println("error here 0#########################################");
         if (result.hasErrors()) {
-            model.addAttribute("allPrivileges", privilegeRepository.findAll());
+            model.addAttribute("allPrivileges", vendorIamService.findAllAssignablePrivileges());
             return "vendor/users/vendor_role_form";
         }
-        System.out.println("error here 1#########################################");
-        if (privilegeIds != null) {
-            Set<VendorPrivilege> privileges = new HashSet<>(privilegeRepository.findAllById(privilegeIds));
-            vendorRole.setVendorPrivilege(privileges);
-        } else {
-            vendorRole.setVendorPrivilege(new HashSet<>());
+        try {
+            vendorIamService.saveRole(vendorRole, privilegeIds);
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            result.reject("vendorRole.save", exception.getMessage());
+            model.addAttribute("allPrivileges", vendorIamService.findAllAssignablePrivileges());
+            return "vendor/users/vendor_role_form";
         }
-        System.out.println("error here 2 #########################################");
-        roleService.save(vendorRole);
-
         return "redirect:/adminvendorusers/rolelist";
     }
 
     @GetMapping("/role_edit/{id}")
+    @PreAuthorize(PlatformVendorManagementPermissions.CAN_READ)
     public String editForm(@PathVariable Long id, Model model) {
-        VendorRole role = roleService.findById(id);
-        model.addAttribute("vendorRole", role);
-        model.addAttribute("allPrivileges", privilegeRepository.findAll());
+        model.addAttribute("vendorRole", vendorIamService.findRole(id));
+        model.addAttribute("allPrivileges", vendorIamService.findAllAssignablePrivileges());
         return "vendor/users/vendor_role_form";
     }
 
-    @GetMapping("/role_delete/{id}")
-    public String delete(@PathVariable Long id) {
-        roleService.deleteById(id);
+    @PostMapping("/role_delete/{id}")
+    @PreAuthorize(PlatformVendorManagementPermissions.CAN_DELETE)
+    public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            vendorIamService.deleteRole(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Vendor role deleted successfully.");
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
         return "redirect:/adminvendorusers/rolelist";
     }
 
-    // ##################################################
-    //// prevelage
     @GetMapping("/privilegeslist")
+    @PreAuthorize(PlatformVendorManagementPermissions.CAN_MANAGE_PRIVILEGES)
     public String privilegeslist(Model model) {
-        model.addAttribute("vendorPrivileges", vpservice.findAll());
+        model.addAttribute("vendorPrivileges", vendorIamService.findAllPrivilegesForAdministration());
         return "vendor/users/privilegelist";
     }
 
     @GetMapping("/privileges_add")
+    @PreAuthorize(PlatformVendorManagementPermissions.CAN_MANAGE_PRIVILEGES)
     public String privilegeslistaddForm(Model model) {
         model.addAttribute("vendorPrivilege", new VendorPrivilege());
         return "vendor/users/vendor_privilege_form";
     }
 
     @PostMapping("/privileges_save")
-    public String save(@Valid @ModelAttribute VendorPrivilege vendorPrivilege, BindingResult result, Model model,
-            RedirectAttributes redirectAttributes
-    ) {
+    @PreAuthorize(PlatformVendorManagementPermissions.CAN_MANAGE_PRIVILEGES)
+    public String save(
+            @Valid @ModelAttribute("vendorPrivilege") VendorPrivilege vendorPrivilege,
+            BindingResult result,
+            RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
             return "vendor/users/vendor_privilege_form";
         }
-        vpservice.save(vendorPrivilege);
+        try {
+            vendorIamService.savePrivilege(vendorPrivilege);
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            result.reject("vendorPrivilege.save", exception.getMessage());
+            return "vendor/users/vendor_privilege_form";
+        }
         redirectAttributes.addFlashAttribute("successMessage", "Saved successfully!");
         return "redirect:/adminvendorusers/privilegeslist";
     }
 
     @GetMapping("/privileges_edit/{id}")
+    @PreAuthorize(PlatformVendorManagementPermissions.CAN_MANAGE_PRIVILEGES)
     public String privilegeslisteditForm(@PathVariable Long id, Model model) {
-        VendorPrivilege vp = vpservice.findById(id);
-        model.addAttribute("vendorPrivilege", vp);
+        model.addAttribute("vendorPrivilege", vendorIamService.findPrivilege(id));
         return "vendor/users/vendor_privilege_form";
     }
 
-    @GetMapping("/privileges_delete/{id}")
+    @PostMapping("/privileges_delete/{id}")
+    @PreAuthorize(PlatformVendorManagementPermissions.CAN_DELETE)
     public String privilegeslistdelete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        vpservice.deleteById(id);
-        redirectAttributes.addFlashAttribute("successMessage", "Deleted successfully!");
+        try {
+            vendorIamService.deletePrivilege(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Deleted successfully!");
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
         return "redirect:/adminvendorusers/privilegeslist";
     }
-
 }

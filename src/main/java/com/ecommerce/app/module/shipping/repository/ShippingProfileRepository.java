@@ -19,6 +19,8 @@ public interface ShippingProfileRepository extends JpaRepository<ShippingProfile
 
     ShippingProfile findByVendorId(Long vendorId);
 
+    List<ShippingProfile> findByVendorIdOrderByIdAsc(Long vendorId);
+
     long countByAllowedCarriers(Carrier carrier);
 
     List<ShippingProfile> findByVendorIdAndActiveTrue(Long vendorId);

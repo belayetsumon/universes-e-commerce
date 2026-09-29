@@ -78,6 +78,15 @@ public class Users implements Serializable {
     @Column(name = "password_configured", nullable = false)
     private boolean passwordConfigured = true;
 
+    /**
+     * Monotonically changing credential/access epoch used to invalidate
+     * sessions after a password or account-access change. This is separate
+     * from the legacy audit version column below.
+     */
+    @Column(name = "credential_version", nullable = false)
+    @JsonIgnore
+    private long credentialVersion = 1L;
+
     @ManyToOne(optional = true)
     @JoinColumn(name = "parent_id")
     //@JsonBackReference // parent is "back" side
@@ -270,6 +279,14 @@ public class Users implements Serializable {
 
     public void setPasswordConfigured(boolean passwordConfigured) {
         this.passwordConfigured = passwordConfigured;
+    }
+
+    public long getCredentialVersion() {
+        return credentialVersion;
+    }
+
+    public void setCredentialVersion(long credentialVersion) {
+        this.credentialVersion = credentialVersion;
     }
 
     public Users getParent() {

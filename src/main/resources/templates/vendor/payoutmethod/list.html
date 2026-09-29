@@ -79,7 +79,10 @@ and open the template in the editor.
                                         <td>
                                             <a th:href="@{/vendor-payout-methods/edit/{id}(id=${m.id})}" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square me-2 text-black"></i>Edit</a>
                                         </td>     <td>
-                                            <a th:href="@{/vendor-payout-methods/delete/{id}(id=${m.id})}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')"><i class="bi bi-trash"></i>Delete</a>
+                                            <form th:action="@{/vendor-payout-methods/delete/{id}(id=${m.id})}" method="post" class="d-inline" onsubmit="return confirm('Are you sure?')">
+                                                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                                <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i>Delete</button>
+                                            </form>
                                         </td>
                                     </tr>
                                 </tbody>

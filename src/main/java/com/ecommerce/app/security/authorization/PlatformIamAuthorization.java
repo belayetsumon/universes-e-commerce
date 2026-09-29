@@ -39,6 +39,11 @@ public class PlatformIamAuthorization {
                 && hasAuthority(authentication, PlatformIamPermissions.PROTECTED_MANAGE);
     }
 
+    public boolean canSeedPermissionCatalogue(Authentication authentication) {
+        return canManageProtected(authentication)
+                || (isAuthenticated(authentication) && isLegacyPlatformAdmin(authentication));
+    }
+
     public boolean isProtectedRole(String roleSlug) {
         String normalizedSlug = normalize(roleSlug);
         return normalizedSlug != null && PROTECTED_ROLE_SLUGS.contains(normalizedSlug);

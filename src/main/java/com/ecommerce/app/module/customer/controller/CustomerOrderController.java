@@ -104,7 +104,7 @@ public class CustomerOrderController {
     @Autowired
     ReturnRefundReportService returnRefundReportService;
 
-    @RequestMapping(value = {"", "/", "/index"})
+    @GetMapping(value = {"", "/", "/index"})
     public String index(Model model, SalesOrder order, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
 
         Users userId = new Users();
@@ -287,7 +287,7 @@ public class CustomerOrderController {
         return ResponseEntity.ok().headers(headers).body(pdfBytes);
     }
 
-    @RequestMapping(value = {"/payment/{orderid}"})
+    @GetMapping(value = {"/payment/{orderid}"})
     public String payment(Model model,
             @PathVariable Long orderid,
             @RequestParam(name = "method", required = false) String method,
@@ -394,7 +394,7 @@ public class CustomerOrderController {
         }
     }
 
-    @RequestMapping(value = {"/payment_success/{orderid}"})
+    @GetMapping(value = {"/payment_success/{orderid}"})
     public String paymentsuccess(Model model, @PathVariable Long orderid, SalesOrder order, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
         SalesOrder orders;
         try {
@@ -411,7 +411,7 @@ public class CustomerOrderController {
         return "customer/order/payment_success";
     }
 
-    @RequestMapping(value = {"/payment_failed/{orderid}"})
+    @GetMapping(value = {"/payment_failed/{orderid}"})
     public String paymentfailed(Model model, @PathVariable Long orderid, SalesOrder order, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
         SalesOrder orders;
         try {
@@ -427,7 +427,7 @@ public class CustomerOrderController {
         return "customer/order/payment_failed";
     }
 
-    @RequestMapping(value = {"/payment_cancelled/{orderid}"})
+    @GetMapping(value = {"/payment_cancelled/{orderid}"})
     public String paymentcancelled(Model model, @PathVariable Long orderid, SalesOrder order, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
         SalesOrder orders;
         try {

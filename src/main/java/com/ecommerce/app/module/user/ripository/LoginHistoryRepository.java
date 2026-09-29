@@ -37,7 +37,6 @@ public interface LoginHistoryRepository extends JpaRepository<LoginHistory, Long
                     :keyword IS NULL
                     OR LOWER(COALESCE(lh.attemptedUsername, '')) LIKE :keyword
                     OR LOWER(COALESCE(lh.ipAddress, '')) LIKE :keyword
-                    OR LOWER(COALESCE(lh.sessionId, '')) LIKE :keyword
                     OR LOWER(COALESCE(lh.userAgent, '')) LIKE :keyword
                     OR LOWER(COALESCE(lh.failureReason, '')) LIKE :keyword
                     OR LOWER(COALESCE(loginUser.firstName, '')) LIKE :keyword

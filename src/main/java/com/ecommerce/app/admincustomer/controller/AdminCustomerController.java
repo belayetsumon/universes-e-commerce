@@ -89,7 +89,7 @@ public class AdminCustomerController {
     @Autowired
     private ShipmentService shipmentService;
 
-    @RequestMapping(value = {"", "/", "/index"})
+    @GetMapping(value = {"", "/", "/index"})
     public String customerlist(Model model) {
 
         Role customer = roleRepository.findBySlug("customer");
@@ -99,7 +99,7 @@ public class AdminCustomerController {
         return "admin/customer/index";
     }
 
-    @RequestMapping("/orderlist")
+    @GetMapping("/orderlist")
     public String orderlist(Model model,
             @RequestParam(name = "q", required = false) String q,
             @RequestParam(name = "status", required = false) OrderStatus status,
@@ -181,7 +181,7 @@ public class AdminCustomerController {
         model.addAttribute("size", result.getSize());
     }
 
-    @RequestMapping("/order-by-customer/{cid}")
+    @GetMapping("/order-by-customer/{cid}")
     public String orderbycustomer(Model model, @PathVariable Long cid) {
         Users customer = new Users();
         customer.setId(cid);
@@ -189,7 +189,7 @@ public class AdminCustomerController {
         return "admin/customer/order-by-customer";
     }
 
-    @RequestMapping("/order-details/{oid}")
+    @GetMapping("/order-details/{oid}")
     public String order_details(Model model, @PathVariable Long oid) {
         SalesOrder salesOrder = salesOrderRepository.getReferenceById(oid);
         Shipment existingShipment = shipmentService.getLatestByOrderId(oid);

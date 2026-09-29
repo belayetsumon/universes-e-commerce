@@ -28,6 +28,7 @@
             <div class="card-body">
 
                 <form th:action="@{/vendor-payout/save}" th:object="${vendorPayout}" method="post">
+                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
                     <div class="mb-3 d-flex justify-content-center">
 

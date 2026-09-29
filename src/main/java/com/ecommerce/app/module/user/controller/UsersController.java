@@ -25,27 +25,24 @@ import com.ecommerce.app.module.user.model.Role;
 import com.ecommerce.app.module.user.model.Status;
 import com.ecommerce.app.module.user.model.UserType;
 import com.ecommerce.app.module.user.model.Users;
-import com.ecommerce.app.module.user.ripository.LoginHistoryRepository;
 import com.ecommerce.app.module.user.ripository.RoleRepository;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.user.services.LoggedUserService;
 import com.ecommerce.app.module.user.services.LoginEventService;
+import com.ecommerce.app.module.user.services.SessionAdministrationService;
+import com.ecommerce.app.module.user.services.SessionCredentialVersionService;
 import com.ecommerce.app.module.user.services.UsersService;
+import com.ecommerce.app.security.permission.PlatformIdentityPermissions;
+import com.ecommerce.app.security.permission.PlatformSecurityAuditPermissions;
 import jakarta.servlet.http.*;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.*;
@@ -71,6 +68,11 @@ public class UsersController {
     private static final Logger LOGGER = LoggerFactory.getLogger(UsersController.class);
     private static final String REGISTRATION_VIEW = "frontview/front-registration";
     private static final String REFERRAL_SESSION_ATTRIBUTE = "productShareReferralCode";
+    private final SessionAdministrationService sessionAdministrationService;
+
+    public UsersController(SessionAdministrationService sessionAdministrationService) {
+        this.sessionAdministrationService = sessionAdministrationService;
+    }
 
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -80,10 +82,6 @@ public class UsersController {
 
     @Autowired
     RoleRepository roleRepository;
-
-    @Autowired
-    LoginHistoryRepository loginHistoryRepository;
-
     @Autowired
     UserValidator userValidator;
 
@@ -108,6 +106,9 @@ public class UsersController {
     @Autowired
     CustomerRegistrationService customerRegistrationService;
 
+    @Autowired(required = false)
+    private SessionCredentialVersionService sessionCredentialVersionService;
+
     @Autowired
     CustomerCodMobileVerificationService customerCodMobileVerificationService;
 
@@ -125,7 +126,8 @@ public class UsersController {
                 "role", "status", "userType", "remarks");
     }
 
-    @RequestMapping(value = {"", "/", "/index"})
+    @GetMapping(value = {"", "/", "/index"})
+    @PreAuthorize(PlatformIdentityPermissions.CAN_READ_USERS)
     public String index(
             Model model,
             @RequestParam(name = "q", required = false) String q,
@@ -144,15 +146,17 @@ public class UsersController {
         return "user/allusers";
     }
 
-    @RequestMapping("/userbystatus")
+    @GetMapping("/userbystatus")
+    @PreAuthorize(PlatformIdentityPermissions.CAN_READ_USERS)
     public String userByStatus(Model model, @RequestParam(value = "status", required = false) Status status) {
         model.addAttribute("status", Status.values());
         // model.addAttribute("alluser", usersRepository.findByStatus(status));
         return "user/allusers_by_status";
     }
 
-    @RequestMapping("/view/{uid}")
-    public String view(Model model, @PathVariable Long uid, RedirectAttributes redirectAttributes) {
+    @GetMapping("/view/{uid}")
+    @PreAuthorize(PlatformIdentityPermissions.CAN_READ_USER)
+    public String view(Model model, @PathVariable("uid") Long uid, RedirectAttributes redirectAttributes) {
         Users user = usersRepository.findById(uid).orElse(null);
         if (user == null) {
             redirectAttributes.addFlashAttribute("error", "User not found.");
@@ -163,13 +167,14 @@ public class UsersController {
     }
 
     @GetMapping("/login-history")
+    @PreAuthorize(PlatformSecurityAuditPermissions.CAN_READ)
     public String loginHistory(
             Model model,
             @RequestParam(name = "q", required = false) String q,
             @RequestParam(name = "loginStatus", required = false) LoginStatus loginStatus,
             @RequestParam(name = "fromDate", required = false) String fromDate,
             @RequestParam(name = "toDate", required = false) String toDate) {
-        List<LoginHistory> historyEntries = findLoginHistoryForAdmin(null, q, loginStatus, fromDate, toDate);
+        List<LoginHistory> historyEntries = sessionAdministrationService.findLoginHistoryForAdmin(null, q, loginStatus, fromDate, toDate);
         model.addAttribute("historyEntries", historyEntries);
         model.addAttribute("historyTitle", "All User Login History");
         model.addAttribute("historySubtitle", "Recent login, logout, failed attempt, and session activity records across all users.");
@@ -182,6 +187,7 @@ public class UsersController {
     }
 
     @GetMapping("/login-history/{uid}")
+    @PreAuthorize(PlatformSecurityAuditPermissions.CAN_READ)
     public String userLoginHistory(
             Model model,
             @PathVariable Long uid,
@@ -196,7 +202,7 @@ public class UsersController {
             return "redirect:/users/index";
         }
 
-        List<LoginHistory> historyEntries = findLoginHistoryForAdmin(uid, q, loginStatus, fromDate, toDate);
+        List<LoginHistory> historyEntries = sessionAdministrationService.findLoginHistoryForAdmin(uid, q, loginStatus, fromDate, toDate);
         model.addAttribute("historyEntries", historyEntries);
         model.addAttribute("historyTitle", "Login History");
         model.addAttribute("historySubtitle", "Detailed login activity for " + buildDisplayName(user) + ".");
@@ -209,7 +215,7 @@ public class UsersController {
     }
 
     @GetMapping("/change-password/{id}")
-    @PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
+    @PreAuthorize(PlatformIdentityPermissions.CAN_RESET_PASSWORDS)
     public String changePasswordForm(Model model, @PathVariable Long id, RedirectAttributes redirectAttributes) {
         Users user = usersRepository.findById(id).orElse(null);
         if (user == null) {
@@ -223,7 +229,7 @@ public class UsersController {
     }
 
     @GetMapping("/change-password")
-    @PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
+    @PreAuthorize(PlatformIdentityPermissions.CAN_RESET_PASSWORDS)
     public String currentUserChangePassword(RedirectAttributes redirectAttributes) {
         Long activeUserId = loggedUserService.activeUserIdOrNull();
         if (activeUserId == null) {
@@ -244,7 +250,7 @@ public class UsersController {
     }
 
     @PostMapping("/change-password/{id}")
-    @PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
+    @PreAuthorize(PlatformIdentityPermissions.CAN_RESET_PASSWORDS)
     public String changePassword(
             Model model,
             @PathVariable Long id,
@@ -274,22 +280,30 @@ public class UsersController {
             return "user/change_password";
         }
 
-        user.setPassword(bCryptPasswordEncoder.encode(passwordForm.getNewPassword()));
-        usersRepository.save(user);
+        boolean passwordUpdated = sessionCredentialVersionService == null
+                ? savePasswordWithoutVersion(user, passwordForm.getNewPassword())
+                : sessionCredentialVersionService.updatePassword(
+                        user.getId(),
+                        bCryptPasswordEncoder.encode(passwordForm.getNewPassword()),
+                        true);
+        if (!passwordUpdated) {
+            redirectAttributes.addFlashAttribute("error", "Unable to update the password. Please try again.");
+            return "redirect:/users/view/" + user.getId();
+        }
 
         redirectAttributes.addFlashAttribute("success", "Password updated successfully for " + user.getFirstName() + ".");
         return "redirect:/users/view/" + user.getId();
     }
 
     @GetMapping("/registrations")
-    @PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
+    @PreAuthorize(PlatformIdentityPermissions.CAN_MANAGE_USERS)
     public String registrations(Model model, @ModelAttribute("users") Users users) {
         addUserFormOptions(model);
         return "user/registrations";
     }
 
     @GetMapping("/edit/{id}")
-    @PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
+    @PreAuthorize(PlatformIdentityPermissions.CAN_MANAGE_USERS)
     public String edit(Model model, @PathVariable Long id) {
         model.addAttribute("users", usersRepository.findById(id).orElse(null));
         addUserFormOptions(model);
@@ -297,7 +311,7 @@ public class UsersController {
     }
 
     @PostMapping("/save")
-    @PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
+    @PreAuthorize(PlatformIdentityPermissions.CAN_MANAGE_USERS)
     public String save(
             Model model,
             @Valid @ModelAttribute("users") Users users,
@@ -338,6 +352,8 @@ public class UsersController {
                 redirectAttributes.addFlashAttribute("error", "User not found.");
                 return "redirect:/users/index";
             }
+            boolean existingTarget = target.getId() != null;
+            Status previousStatus = target.getStatus();
 
             String normalizedEmail = users.getEmail() == null
                     ? null
@@ -383,6 +399,7 @@ public class UsersController {
             target.setStatus(users.getStatus());
             target.setUserType(users.getUserType());
             target.setRemarks(trimToNull(users.getRemarks()));
+            boolean passwordChanged = !passwordBlank;
             if (!passwordBlank) {
                 target.setPassword(bCryptPasswordEncoder.encode(submittedPassword));
             }
@@ -394,6 +411,12 @@ public class UsersController {
             }
 
             usersRepository.save(target);
+            if (existingTarget
+                    && (passwordChanged || !Objects.equals(previousStatus, target.getStatus()))) {
+                if (sessionCredentialVersionService != null) {
+                    sessionCredentialVersionService.bumpCredentialVersion(target.getId());
+                }
+            }
             return "redirect:/users/index";
 
         } catch (Exception e) {
@@ -404,17 +427,32 @@ public class UsersController {
         }
     }
 
+    private boolean savePasswordWithoutVersion(Users user, String rawPassword) {
+        if (user == null || rawPassword == null || rawPassword.isBlank()) {
+            return false;
+        }
+        user.setPassword(bCryptPasswordEncoder.encode(rawPassword));
+        usersRepository.save(user);
+        return true;
+    }
+
     @PostMapping("/delete/{id}")
-    @PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
+    @PreAuthorize(PlatformIdentityPermissions.CAN_MANAGE_USERS)
     public String delete(@PathVariable Long id) {
+        if (sessionCredentialVersionService != null) {
+            sessionCredentialVersionService.invalidateSessionsForUserId(id);
+        }
         usersRepository.deleteById(id);
         return "redirect:/users/index";
     }
 
     @PostMapping("/deletewithexception/{id}")
-    @PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
+    @PreAuthorize(PlatformIdentityPermissions.CAN_MANAGE_USERS)
     public String deletewithexception(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
+            if (sessionCredentialVersionService != null) {
+                sessionCredentialVersionService.invalidateSessionsForUserId(id);
+            }
             usersService.deleteById(id);
             redirectAttributes.addFlashAttribute("success", "User deleted successfully!");
         } catch (ForeignKeyConstraintException ex) {
@@ -425,7 +463,7 @@ public class UsersController {
     }
 
     @PostMapping("/generate-referral-code/{id}")
-    @PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
+    @PreAuthorize(PlatformIdentityPermissions.CAN_MANAGE_USERS)
     public String generateReferralCode(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             Referral referral = referralService.generateMissingReferralCodeForCustomer(id);
@@ -444,23 +482,15 @@ public class UsersController {
         return "redirect:/users/index";
     }
 
-    @RequestMapping("/login")
+    @GetMapping("/login")
     public String login(Model model) {
         model.addAttribute("attribute", "value");
         model.addAttribute("logout", " You are successfully logout");
         return "user/login";
     }
 
-    @RequestMapping("/logout")
-    public String logout(Model model, HttpServletRequest request, HttpServletResponse response) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null) {
-            new SecurityContextLogoutHandler().logout(request, response, authentication);
-        }
-        return "redirect:/";
-    }
-
-    @RequestMapping("/detailsinfo/{id}")
+    @GetMapping("/detailsinfo/{id}")
+    @PreAuthorize(PlatformIdentityPermissions.CAN_READ_USERS)
     public String details(Model model, @PathVariable Long id) {
         model.addAttribute("employee", usersRepository.findById(id));
         return "pims/details/details";
@@ -628,20 +658,6 @@ public class UsersController {
         return "User #" + user.getId();
     }
 
-    private List<LoginHistory> findLoginHistoryForAdmin(
-            Long userId,
-            String q,
-            LoginStatus loginStatus,
-            String fromDate,
-            String toDate) {
-        return loginHistoryRepository.findForAdminListFilters(
-                userId,
-                normalizeKeyword(q),
-                loginStatus,
-                parseLoginHistoryStartDate(fromDate),
-                parseLoginHistoryEndDate(toDate));
-    }
-
     private void addLoginHistoryFilterModel(
             Model model,
             String q,
@@ -650,36 +666,9 @@ public class UsersController {
             String toDate) {
         model.addAttribute("loginHistorySearch", q == null ? "" : q.trim());
         model.addAttribute("selectedLoginStatus", loginStatus);
-        model.addAttribute("selectedFromDate", normalizeDateInput(fromDate));
-        model.addAttribute("selectedToDate", normalizeDateInput(toDate));
+        model.addAttribute("selectedFromDate", sessionAdministrationService.normalizeDateInput(fromDate));
+        model.addAttribute("selectedToDate", sessionAdministrationService.normalizeDateInput(toDate));
         model.addAttribute("loginStatuses", LoginStatus.values());
-    }
-
-    private LocalDateTime parseLoginHistoryStartDate(String value) {
-        LocalDate date = parseDateInput(value);
-        return date == null ? null : date.atStartOfDay();
-    }
-
-    private LocalDateTime parseLoginHistoryEndDate(String value) {
-        LocalDate date = parseDateInput(value);
-        return date == null ? null : date.plusDays(1).atStartOfDay();
-    }
-
-    private String normalizeDateInput(String value) {
-        LocalDate date = parseDateInput(value);
-        return date == null ? "" : date.toString();
-    }
-
-    private LocalDate parseDateInput(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-
-        try {
-            return LocalDate.parse(value.trim());
-        } catch (DateTimeParseException ex) {
-            return null;
-        }
     }
 
     private void addLoginHistorySummary(Model model, List<LoginHistory> historyEntries) {

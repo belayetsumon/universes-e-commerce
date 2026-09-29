@@ -33,6 +33,10 @@
                     <span th:text="${message}"></span>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
 
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover">
@@ -58,11 +62,15 @@
                                     <a th:href="@{/vendor-users/roles/edit/{id}(id=${role.id})}" class="btn btn-warning btn-sm">
                                         <i class="bi bi-pencil-square"></i> Edit
                                     </a>
-                                    <a th:href="@{/vendor-users/roles/delete/{id}(id=${role.id})}"
-                                       class="btn btn-danger btn-sm"
-                                       onclick="return confirm('Delete this custom role?');">
-                                        <i class="bi bi-trash"></i> Delete
-                                    </a>
+                                    <form th:action="@{/vendor-users/roles/delete/{id}(id=${role.id})}"
+                                          method="post"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Delete this custom role?');">
+                                        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         </tbody>

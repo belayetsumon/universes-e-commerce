@@ -14,6 +14,7 @@ and open the template in the editor.
                 <div class="card-body">
                     <div class="card-body">
                         <form th:action="@{/customer/save}" th:object="${vendorprofile}" enctype="multipart/form-data" method="post" >
+                            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
 
                             <div class="alert alert-danger alert-dismissible fade show"

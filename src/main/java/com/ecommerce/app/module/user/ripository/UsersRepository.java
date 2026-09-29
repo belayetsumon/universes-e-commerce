@@ -50,6 +50,13 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
 
     Optional<Users> findByEmail(String email);
 
+    Optional<Users> findByEmailIgnoreCase(String email);
+
+    @Query("select u.credentialVersion from Users u where lower(u.email) = lower(:email)")
+    Optional<Long> findCredentialVersionByEmailIgnoreCase(@Param("email") String email);
+
+    boolean existsByIdAndEmail(Long id, String email);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select u from Users u where u.email = :email")
     Optional<Users> findByEmailForUpdate(@Param("email") String email);

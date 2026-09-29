@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -40,7 +42,7 @@ public class VendorProfileController {
     @Autowired
     private VendorUserContext vendorUserContext;
 
-    @RequestMapping(value = {"", "/", "/index"})
+    @GetMapping(value = {"", "/", "/index"})
     public String index(Model model) {
         Users users = new Users();
         users.setId(loggedUserService.activeUserid());
@@ -54,7 +56,7 @@ public class VendorProfileController {
         return "redirect:/vendorprofile/details";
     }
 
-    @RequestMapping(value = {"/create"})
+    @GetMapping(value = {"/create"})
     public String create(Model model, Vendorprofile vendorprofile) {
 
         Users users = new Users();
@@ -67,7 +69,7 @@ public class VendorProfileController {
         return "vendor/profile/vendor_profile_create";
     }
 
-    @RequestMapping("/save")
+    @PostMapping("/save")
     public String save(Model model, @Valid Vendorprofile vendorprofile, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
         Users users = new Users();
         users.setId(loggedUserService.activeUserid());
@@ -105,7 +107,7 @@ public class VendorProfileController {
         return "redirect:/vendorprofile/details";
     }
 
-    @RequestMapping("/edit")
+    @GetMapping("/edit")
     public String edit(Model model, Vendorprofile vendorprofile) {
 
         vendorprofile = vendorUserContext.getActiveVendor();
@@ -116,7 +118,7 @@ public class VendorProfileController {
         return "vendor/profile/vendor_profile_create";
     }
 
-    @RequestMapping("/details")
+    @GetMapping("/details")
     public String details(Model model, Vendorprofile vendorprofile) {
 
         vendorprofile = vendorUserContext.getActiveVendor();

@@ -7,6 +7,7 @@ package com.ecommerce.app.module.user.ripository;
 
 
 import com.ecommerce.app.module.user.model.Privilege;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -15,4 +16,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface PrivilegeRepository extends JpaRepository<Privilege, Long> {
 
+    Optional<Privilege> findFirstBySlugIgnoreCase(String slug);
 }

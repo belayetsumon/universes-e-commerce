@@ -360,6 +360,7 @@
                 </div>
 
                 <form th:action="@{/vendorprofile/save}" th:object="${vendorprofile}" enctype="multipart/form-data" method="post">
+                    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                     <input type="hidden" th:field="*{id}" />
                     <input type="hidden" th:field="*{userId}" />
                     <input type="hidden" th:field="*{vendorCode}" />

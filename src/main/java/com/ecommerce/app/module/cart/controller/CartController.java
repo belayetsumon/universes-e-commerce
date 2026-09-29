@@ -117,7 +117,7 @@ public class CartController {
 
     private static final Logger log = LoggerFactory.getLogger(CartService.class);
 
-    @RequestMapping(value = {"", "/", "/index"})
+    @GetMapping(value = {"", "/", "/index"})
     public String index(Model model, HttpSession session) {
 
         List<CartItem> sessionCart = (List<CartItem>) session.getAttribute("sessioncart");
@@ -899,12 +899,12 @@ public class CartController {
                 || (!authenticated && availability.isLoginRequired() && !availability.isGuestAllowed());
     }
 
-    @RequestMapping("/shipping")
+    @GetMapping("/shipping")
     public String shipping(Model model) {
         return "cart/shipping";
     }
 
-    @RequestMapping("/payment")
+    @GetMapping("/payment")
     public String payment(Model model) {
         return "cart/payment";
     }

@@ -49,7 +49,7 @@ public class ReferralRewardController {
     @Autowired
     ReferralRewardRepository referralRewardRepository;
 
-    @RequestMapping("/referral-reward-list")
+    @GetMapping("/referral-reward-list")
     public String rewardList(Model model) {
         model.addAttribute("list", referralRewardRepository.findAll());
         return "admin/referral_rewards/referral-reward-list";
@@ -83,7 +83,7 @@ public class ReferralRewardController {
         return "reward-dashboard";
     }
 
-    @RequestMapping("/rewards-history")
+    @GetMapping("/rewards-history")
     public String getRewardHistory(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,

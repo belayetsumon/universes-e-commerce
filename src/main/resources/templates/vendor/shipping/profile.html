@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org" layout:decorate="front-layout-inner-vendor-page">
+    <div layout:fragment="main_content">
+        <style>
+            .shipping-profile-header {
+                background: #ffffff;
+                border: 1px solid #dde5ef;
+                border-left: 4px solid #0d6efd;
+                border-radius: 8px;
+                padding: 18px;
+                box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+            }
+            .shipping-profile-card {
+                border: 1px solid #dde5ef;
+                border-radius: 8px;
+                box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+            }
+            .shipping-profile-scroll {
+                border: 1px solid #e5eaf1;
+                border-radius: 8px;
+                max-height: 360px;
+                overflow: auto;
+                padding: 12px;
+            }
+        </style>
+
+        <div class="shipping-profile-header d-flex justify-content-between align-items-start mb-3 flex-wrap gap-3">
+            <div>
+                <div class="text-primary fw-semibold small text-uppercase mb-1">Vendor shipping setup</div>
+                <h4 class="mb-1">Shipping Profile</h4>
+                <p class="text-muted mb-0">
+                    Manage the single shipping profile used to show delivery options for your products in the cart.
+                </p>
+            </div>
+            <span class="badge text-bg-light border"
+                  th:text="${activeVendor != null ? activeVendor.companyName : 'Active vendor'}">Active vendor</span>
+        </div>
+
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <form th:action="@{/vendor/shipping-profile}" th:object="${profile}" method="post">
+            <div class="card shipping-profile-card">
+                <div class="card-header bg-white">
+                    <strong><i class="bi bi-truck"></i> Profile Details</strong>
+                </div>
+                <div class="card-body">
+                    <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                        <ul class="mb-0">
+                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                        </ul>
+                    </div>
+
+                    <input type="hidden" th:field="*{id}" />
+                    <input type="hidden" th:field="*{vendorId}" />
+
+                    <div class="row g-3">
+                        <div class="col-lg-6">
+                            <label class="form-label">Vendor</label>
+                            <input class="form-control"
+                                   th:value="${activeVendor != null ? activeVendor.companyName : profile.vendorId}"
+                                   readonly />
+                            <div class="form-text">This page always saves to your active vendor only.</div>
+                        </div>
+                        <div class="col-lg-6">
+                            <label class="form-label">Profile Name</label>
+                            <input th:field="*{name}" class="form-control" maxlength="160" required />
+                            <div class="text-danger small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                        </div>
+                        <div class="col-lg-6">
+                            <label class="form-label">Profile Type</label>
+                            <select th:field="*{type}" class="form-select" required>
+                                <option value="">Select type</option>
+                                <option th:each="type : ${types}"
+                                        th:value="${type}"
+                                        th:text="${#strings.replace(type.name(), '_', ' ')}"></option>
+                            </select>
+                        </div>
+                        <div class="col-lg-6">
+                            <label class="form-label d-block">Status</label>
+                            <div class="form-check mt-2">
+                                <input type="checkbox" th:field="*{active}" class="form-check-input" />
+                                <label class="form-check-label">Active for checkout shipping quotes</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="row g-3">
+                        <div class="col-lg-5">
+                            <label class="form-label">Allowed Carriers</label>
+                            <div class="shipping-profile-scroll">
+                                <div th:if="${#lists.isEmpty(carriers)}" class="text-muted">
+                                    No carriers configured yet. Ask admin to add carrier and carrier rates first.
+                                </div>
+                                <div class="form-check" th:each="carrier : ${carriers}">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           name="allowedCarrierIds"
+                                           th:id="${'carrier-' + carrier.id}"
+                                           th:value="${carrier.id}"
+                                           th:checked="${#lists.contains(selectedCarrierIds, carrier.id)}" />
+                                    <label class="form-check-label" th:for="${'carrier-' + carrier.id}">
+                                        <span th:text="${carrier.name}">Carrier</span>
+                                        <span class="badge text-bg-success ms-1" th:if="${carrier.active}">Active</span>
+                                        <span class="badge text-bg-secondary ms-1" th:if="${!carrier.active}">Inactive</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-text">Only selected carriers can appear as shipping options for this vendor.</div>
+                        </div>
+
+                        <div class="col-lg-7">
+                            <label class="form-label">Allowed Locations</label>
+                            <div class="shipping-profile-scroll">
+                                <div th:if="${#lists.isEmpty(allLocations)}" class="text-muted">
+                                    No active shipping locations configured yet.
+                                </div>
+                                <div class="form-check" th:each="location : ${allLocations}">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           name="allowedLocationIds"
+                                           th:id="${'location-' + location.id}"
+                                           th:value="${location.id}"
+                                           th:checked="${#lists.contains(selectedLocationIds, location.id)}" />
+                                    <label class="form-check-label" th:for="${'location-' + location.id}">
+                                        <span class="badge text-bg-light border me-1" th:text="${location.type}">TYPE</span>
+                                        <span th:text="${location.displayLabel}">Location</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-text">A customer location must match one of these areas before shipping options show in cart.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white d-flex justify-content-end gap-2 flex-wrap">
+                    <a th:href="@{/vendor/home}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Save Shipping Profile
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

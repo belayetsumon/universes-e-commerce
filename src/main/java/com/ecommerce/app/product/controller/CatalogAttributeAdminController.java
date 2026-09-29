@@ -131,7 +131,7 @@ public class CatalogAttributeAdminController {
         }
     }
 
-    @GetMapping("/delete/{uuid}")
+    @PostMapping("/delete/{uuid}")
     public String delete(@PathVariable String uuid, RedirectAttributes redirectAttributes) {
         try {
             attributeService.deleteByUuid(uuid);
@@ -189,7 +189,7 @@ public class CatalogAttributeAdminController {
         }
     }
 
-    @GetMapping("/options/delete/{uuid}")
+    @PostMapping("/options/delete/{uuid}")
     public String deleteOption(@PathVariable String uuid, RedirectAttributes redirectAttributes) {
         AttributeOption option = attributeOptionService.findByUuid(uuid);
         String attributeUuid = option.getAttribute().getUuid();
@@ -342,7 +342,7 @@ public class CatalogAttributeAdminController {
         }
     }
 
-    @GetMapping("/category-mappings/delete/{uuid}")
+    @PostMapping("/category-mappings/delete/{uuid}")
     public String deleteMapping(@PathVariable String uuid, RedirectAttributes redirectAttributes) {
         CategoryAttribute mapping = categoryAttributeService.findByUuid(uuid);
         String categoryUuid = mapping.getCategory() != null ? mapping.getCategory().getUuid() : "";

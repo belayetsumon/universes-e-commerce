@@ -50,6 +50,8 @@ public class PublicSeoService {
         model.addAttribute("pageOgTitle", metadata.getTitle());
         model.addAttribute("pageOgDescription", metadata.getDescription());
         model.addAttribute("pageOgImageUrl", metadata.getOgImageUrl());
+        model.addAttribute("pageProductPriceAmount", metadata.getProductPriceAmount());
+        model.addAttribute("pageProductPriceCurrency", metadata.getProductPriceCurrency());
         model.addAttribute("pageRobots", metadata.getRobots());
         if (metadata.getCanonicalUrl() != null && !ROBOTS_NOINDEX_NOFOLLOW.equals(metadata.getRobots()) && !model.containsAttribute("shareUrl")) {
             model.addAttribute("shareUrl", metadata.getCanonicalUrl());
@@ -94,13 +96,16 @@ public class PublicSeoService {
         String description = first(plainText(mapText(details, "metaDescription")), plainText(product.getMetaDescription()),
                 plainText(mapText(details, "shortDescription")), plainText(product.getShortDescription()), "View product details, price, availability, and delivery information.");
         String canonicalUrl = publicUrl(request, "/public/single-product/" + product.getUuid());
-        String imageUrl = imageUrl(settings, first(mapText(details, "imageName"), product.getImageName()));
+        String imageUrl = imageUrl(request, settings, first(mapText(details, "imageName"), product.getImageName()));
         String productCode = product.getSku() > 0 ? "SKU-" + product.getSku() : product.getUuid();
+        BigDecimal price = money(details == null ? null : details.get("afterDiscountRemainingAmount"), product.getSalesPrice());
+        String currency = first(settings.getCurrency(), "BDT");
         List<Map<String, Object>> graph = List.of(
                 productJsonLd(settings, product, details, canonicalUrl, imageUrl, productCode),
                 breadcrumb(List.of(crumb("Home", publicUrl(request, "/")), crumb("Products", publicUrl(request, "/public/product")), crumb(title, canonicalUrl)))
         );
-        return new PageSeoMetadata(title, description, canonicalUrl, "product", imageUrl, ROBOTS_INDEX_FOLLOW, "PRODUCT", productCode, graph);
+        return new PageSeoMetadata(title, description, canonicalUrl, "product", imageUrl, ROBOTS_INDEX_FOLLOW, "PRODUCT", productCode,
+                moneyString(price), currency, graph);
     }
 
     public PageSeoMetadata category(HttpServletRequest request, Productcategory category, int productCount) {
@@ -293,11 +298,15 @@ public class PublicSeoService {
     }
 
     private String imageUrl(GlobalSettings settings, String imageName) {
+        return imageUrl(null, settings, imageName);
+    }
+
+    private String imageUrl(HttpServletRequest request, GlobalSettings settings, String imageName) {
         String image = clean(imageName);
         if (image != null && !image.startsWith("/")) {
             image = "/files/" + image;
         }
-        String imageUrl = absoluteUrl(settings, image);
+        String imageUrl = absoluteUrl(request, settings, image);
         return imageUrl == null ? defaultImage(settings) : imageUrl;
     }
 
@@ -306,6 +315,10 @@ public class PublicSeoService {
     }
 
     private String absoluteUrl(GlobalSettings settings, String value) {
+        return absoluteUrl(null, settings, value);
+    }
+
+    private String absoluteUrl(HttpServletRequest request, GlobalSettings settings, String value) {
         String cleanValue = clean(value);
         String baseUrl = safeBaseUrl(settings == null ? null : settings.getPublicBaseUrl());
         if (cleanValue == null) {
@@ -314,7 +327,10 @@ public class PublicSeoService {
         if (safeBaseUrl(cleanValue) != null) {
             return cleanValue;
         }
-        return cleanValue.startsWith("/") && baseUrl != null ? baseUrl + cleanValue : null;
+        if (cleanValue.startsWith("/") && baseUrl != null) {
+            return baseUrl + cleanValue;
+        }
+        return cleanValue.startsWith("/") ? publicUrl(request, cleanValue) : null;
     }
 
     private String availability(Product product, Map<String, Object> details) {
@@ -352,6 +368,10 @@ public class PublicSeoService {
             }
         }
         return fallback == null ? BigDecimal.ZERO : fallback;
+    }
+
+    private String moneyString(BigDecimal value) {
+        return value == null ? "0" : value.stripTrailingZeros().toPlainString();
     }
 
     private String safeBaseUrl(String value) {

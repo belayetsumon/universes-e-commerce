@@ -17,4 +17,8 @@ public interface LavelRateSettingsRepository extends JpaRepository<MultiLavelRat
 
     Optional<MultiLavelRateSettings> findTopByLevelOrderByIdDesc(LevelEnum level);
 
+    boolean existsByLevel(LevelEnum level);
+
+    boolean existsByLevelAndIdNot(LevelEnum level, Long id);
+
 }

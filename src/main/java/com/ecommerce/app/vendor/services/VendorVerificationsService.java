@@ -12,14 +12,18 @@ import com.ecommerce.app.vendor.model.Vendorprofile;
 import com.ecommerce.app.vendor.repository.VendorVerificationsRepository;
 import com.ecommerce.app.vendor.repository.VendorprofileRepository;
 import com.ecommerce.app.vendor.user.componant.VendorUserContext;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -39,16 +43,19 @@ public class VendorVerificationsService {
     private final VendorprofileRepository vendorprofileRepository;
     private final VendorUserContext vendorUserContext;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     public VendorVerificationsService(
             VendorVerificationsRepository repository,
             VendorprofileRepository vendorprofileRepository,
             VendorUserContext vendorUserContext,
-            org.springframework.context.ApplicationEventPublisher eventPublisher) {
+            org.springframework.context.ApplicationEventPublisher eventPublisher,
+            BCryptPasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.vendorprofileRepository = vendorprofileRepository;
         this.vendorUserContext = vendorUserContext;
         this.eventPublisher = eventPublisher;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public Vendorprofile requireActiveVendorProfile() {
@@ -96,21 +103,23 @@ public class VendorVerificationsService {
             throw new IllegalStateException("Vendor email address is required before verification.");
         }
 
-        verification.setToken(UUID.randomUUID().toString());
+        String rawToken = generateRawToken();
+        verification.setToken(hashToken(rawToken));
         verification.setTokenCreatedAt(LocalDateTime.now());
         verification.setEmailVerified(false);
         VendorVerifications saved = repository.save(verification);
 
-        publishEmailVerification(saved);
+        publishEmailVerification(saved, rawToken);
         return saved;
     }
 
     public EmailVerificationResult verifyEmail(String token) {
-        if (isBlank(token)) {
+        String tokenHash = hashTokenOrNull(token);
+        if (tokenHash == null) {
             return EmailVerificationResult.INVALID;
         }
 
-        Optional<VendorVerifications> optional = repository.findByToken(token.trim());
+        Optional<VendorVerifications> optional = repository.findByToken(tokenHash);
         if (optional.isEmpty()) {
             return EmailVerificationResult.INVALID;
         }
@@ -121,6 +130,8 @@ public class VendorVerificationsService {
         }
 
         verification.setEmailVerified(true);
+        verification.setToken(null);
+        verification.setTokenCreatedAt(null);
         repository.save(verification);
         return EmailVerificationResult.VERIFIED;
     }
@@ -131,13 +142,13 @@ public class VendorVerificationsService {
             throw new IllegalStateException("Vendor mobile number is required before verification.");
         }
 
-        String otp = String.format("%06d", OTP_RANDOM.nextInt(1_000_000));
-        verification.setOtp(otp);
+        String rawOtp = String.format("%06d", OTP_RANDOM.nextInt(1_000_000));
+        verification.setOtp(passwordEncoder.encode(rawOtp));
         verification.setOtpCreatedAt(LocalDateTime.now());
         verification.setMobileVerified(false);
         VendorVerifications saved = repository.save(verification);
 
-        publishMobileOtp(saved);
+        publishMobileOtp(saved, rawOtp);
         return saved;
     }
 
@@ -155,11 +166,13 @@ public class VendorVerificationsService {
         if (isExpired(verification.getOtpCreatedAt(), MOBILE_OTP_VALID_MINUTES)) {
             return MobileVerificationResult.EXPIRED;
         }
-        if (!otp.trim().equals(verification.getOtp())) {
+        if (verification.getOtp() == null || !passwordEncoder.matches(otp.trim(), verification.getOtp())) {
             return MobileVerificationResult.INVALID;
         }
 
         verification.setMobileVerified(true);
+        verification.setOtp(null);
+        verification.setOtpCreatedAt(null);
         repository.save(verification);
         return MobileVerificationResult.VERIFIED;
     }
@@ -172,10 +185,10 @@ public class VendorVerificationsService {
         return MOBILE_OTP_VALID_MINUTES;
     }
 
-    private void publishEmailVerification(VendorVerifications verification) {
+    private void publishEmailVerification(VendorVerifications verification, String rawToken) {
         String verificationLink = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/vendorverifications/verify-email")
-                .queryParam("token", verification.getToken())
+                .queryParam("token", rawToken)
                 .build()
                 .toUriString();
 
@@ -192,14 +205,13 @@ public class VendorVerificationsService {
                 "Verify your vendor email using this link: {{verificationLink}}. This link expires in {{expiresInMinutes}} minutes."
         ));
 
-        LOGGER.info("Vendor email verification link for vendorId=" + vendorId(verification)
-                + " email=" + verification.getEmail()
-                + " link=" + verificationLink);
+        LOGGER.info("Vendor email verification requested. vendorId={} expiresInMinutes={}",
+                vendorId(verification), EMAIL_TOKEN_VALID_MINUTES);
     }
 
-    private void publishMobileOtp(VendorVerifications verification) {
+    private void publishMobileOtp(VendorVerifications verification, String rawOtp) {
         Map<String, Object> variables = baseVariables(verification);
-        variables.put("otp", verification.getOtp());
+        variables.put("otp", rawOtp);
         variables.put("expiresInMinutes", MOBILE_OTP_VALID_MINUTES);
 
         publishSafely(CommunicationRequestedEvent.vendor(
@@ -211,16 +223,15 @@ public class VendorVerificationsService {
                 "Your vendor mobile verification OTP is {{otp}}. It expires in {{expiresInMinutes}} minutes."
         ));
 
-        LOGGER.info("Vendor mobile verification OTP for vendorId=" + vendorId(verification)
-                + " mobile=" + verification.getMobile()
-                + " otp=" + verification.getOtp());
+        LOGGER.info("Vendor mobile verification OTP requested. vendorId={} expiresInMinutes={}",
+                vendorId(verification), MOBILE_OTP_VALID_MINUTES);
     }
 
     private void publishSafely(CommunicationRequestedEvent event) {
         try {
             eventPublisher.publishEvent(event);
         } catch (RuntimeException ex) {
-            LOGGER.warn("Vendor verification communication enqueue failed for recipient={}", event.getRecipient(), ex);
+            LOGGER.warn("Vendor verification communication enqueue failed for eventType={}", event.getEventType(), ex);
         }
     }
 
@@ -262,6 +273,33 @@ public class VendorVerificationsService {
 
     private String nullSafe(String value) {
         return value == null ? "" : value;
+    }
+
+    private String generateRawToken() {
+        byte[] bytes = new byte[32];
+        OTP_RANDOM.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    private String hashTokenOrNull(String rawToken) {
+        if (rawToken == null || rawToken.isBlank() || rawToken.length() > 200) {
+            return null;
+        }
+        return hashToken(rawToken.trim());
+    }
+
+    private String hashToken(String rawToken) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256")
+                    .digest(rawToken.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder(digest.length * 2);
+            for (byte value : digest) {
+                hex.append(String.format(Locale.ROOT, "%02x", value));
+            }
+            return hex.toString();
+        } catch (Exception ex) {
+            throw new IllegalStateException("Unable to hash vendor verification token.", ex);
+        }
     }
 
     public enum EmailVerificationResult {

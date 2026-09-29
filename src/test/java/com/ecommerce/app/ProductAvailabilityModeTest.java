@@ -10,6 +10,7 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.AfterAll;
@@ -68,6 +69,24 @@ class ProductAvailabilityModeTest {
 
         assertFalse(product.isAvailabilityModeValid());
         assertFalse(validator.validateProperty(product, "availabilityModeValid").isEmpty());
+    }
+
+    @Test
+    void purchasePriceCannotExceedSalesPrice() {
+        Product product = new Product();
+        product.setPurchasePrice(new BigDecimal("100.00"));
+        product.setSalesPrice(new BigDecimal("99.99"));
+
+        assertFalse(product.isSalesPriceAtLeastPurchasePrice());
+        assertFalse(validator.validateProperty(product, "salesPriceAtLeastPurchasePrice").isEmpty());
+
+        product.setSalesPrice(new BigDecimal("100.00"));
+        assertTrue(product.isSalesPriceAtLeastPurchasePrice());
+        assertTrue(validator.validateProperty(product, "salesPriceAtLeastPurchasePrice").isEmpty());
+
+        product.setSalesPrice(new BigDecimal("125.00"));
+        assertTrue(product.isSalesPriceAtLeastPurchasePrice());
+        assertTrue(validator.validateProperty(product, "salesPriceAtLeastPurchasePrice").isEmpty());
     }
 
     @Test

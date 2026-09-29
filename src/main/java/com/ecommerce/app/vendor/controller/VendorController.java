@@ -16,6 +16,7 @@ import com.ecommerce.app.vendor.repository.VendorprofileRepository;
 import com.ecommerce.app.vendor.services.VendorDashboardService;
 import com.ecommerce.app.vendor.user.componant.VendorUserContext;
 import java.util.Optional;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 /**
@@ -39,13 +40,13 @@ public class VendorController {
     @Autowired
     private VendorDashboardService vendorDashboardService;
 
-    @RequestMapping(value = {"/home"})
+    @GetMapping(value = {"/home"})
     public String home() {
         Long id = vendorUserContext.getActiveVendor().getId();
         return "redirect:/vendor/index/" + id;
     }
 
-    @RequestMapping(value = {"/{id}", "/{id}", "/index/{id}", "/dashboards/{id}"})
+    @GetMapping(value = {"/{id}", "/{id}", "/index/{id}", "/dashboards/{id}"})
     public String index(Model model, @PathVariable Long id) {
         vendorUserContext.setActiveVendor(null);
         Optional<Vendorprofile> vendorprofile = vendorprofileRepository.findById(id);

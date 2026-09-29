@@ -194,7 +194,7 @@ public class AdminVendorController {
         }
     }
 
-    @GetMapping("/delete/{uuid}")
+    @PostMapping("/delete/{uuid}")
     public String delete(
             @PathVariable("uuid") String uuid,
             RedirectAttributes redirectAttributes
