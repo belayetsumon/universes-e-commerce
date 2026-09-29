@@ -334,9 +334,20 @@
                                     <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                     <div class="upload-zone mb-3">
                                         <label class="form-label fw-semibold" for="logoFile">Choose image file</label>
-                                        <input class="form-control" id="logoFile" name="logoFile" type="file" accept="image/jpeg,image/png" required>
-                                        <div class="form-text mt-2">
-                                            JPG or PNG only, up to 2 MB. It will be resized and stored as WebP.
+                                        <input class="form-control"
+                                               id="logoFile"
+                                               name="logoFile"
+                                               type="file"
+                                               accept="image/jpeg,image/png"
+                                               th:attr="data-max-file-size-bytes=${vendorLogoImageRequirements.vendorLogoMaxFileSizeBytes},
+                                                        data-max-width=${vendorLogoImageRequirements.vendorLogoMaxWidth},
+                                                        data-max-height=${vendorLogoImageRequirements.vendorLogoMaxHeight}"
+                                               aria-describedby="vendorLogoRequirements"
+                                               required>
+                                        <div id="vendorLogoRequirements"
+                                             class="form-text mt-2"
+                                             th:text="${vendorLogoImageRequirements.vendorLogoHelpText}">
+                                            Configured vendor logo requirements.
                                         </div>
                                     </div>
                                     <div class="d-flex gap-2 flex-wrap">

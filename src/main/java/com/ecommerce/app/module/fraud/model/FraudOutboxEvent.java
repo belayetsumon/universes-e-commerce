@@ -13,7 +13,8 @@ import java.time.LocalDateTime;
 @Table(name = "fraud_outbox_events", indexes = {
     @Index(name = "idx_fraud_outbox_status_next", columnList = "status,next_attempt_at"),
     @Index(name = "idx_fraud_outbox_aggregate", columnList = "aggregate_type,aggregate_id"),
-    @Index(name = "idx_fraud_outbox_idempotency", columnList = "idempotency_key")
+    @Index(name = "idx_fraud_outbox_idempotency", columnList = "idempotency_key"),
+    @Index(name = "idx_fraud_outbox_published", columnList = "status,published_at,id")
 })
 public class FraudOutboxEvent extends BaseFraudEntity {
 

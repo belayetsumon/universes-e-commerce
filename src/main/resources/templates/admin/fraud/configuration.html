@@ -51,11 +51,27 @@
                     <input type="hidden" name="id" th:value="${editId}">
                     <div class="mb-2">
                         <label class="form-label">Key</label>
-                        <input class="form-control font-monospace" th:field="*{configKey}" required maxlength="120">
+                        <input class="form-control font-monospace" th:field="*{configKey}"
+                               th:readonly="${editId != null}" required maxlength="120">
                     </div>
-                    <div class="mb-2">
+                    <div class="mb-2" th:if="*{sensitive}">
+                        <label class="form-label">Sensitive value</label>
+                        <input class="form-control" type="password" name="configValue"
+                               maxlength="10000" autocomplete="new-password">
+                        <div class="form-text" th:if="*{valueConfigured}">
+                            A secret value is configured. Leave blank to keep it. The stored value is never displayed.
+                        </div>
+                        <div class="form-check mt-2" th:if="*{valueConfigured}">
+                            <input class="form-check-input" type="checkbox" th:field="*{clearConfigValue}">
+                            <label class="form-check-label" th:for="${#ids.prev('clearConfigValue')}">
+                                Clear and deactivate this secret
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-2" th:unless="*{sensitive}">
                         <label class="form-label">Value</label>
-                        <textarea class="form-control" th:field="*{configValue}" required rows="4"></textarea>
+                        <textarea class="form-control" th:field="*{configValue}"
+                                  required maxlength="10000" rows="4"></textarea>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Description</label>

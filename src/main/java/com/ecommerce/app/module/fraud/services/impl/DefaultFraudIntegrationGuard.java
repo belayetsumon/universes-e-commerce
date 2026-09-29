@@ -7,7 +7,6 @@ import com.ecommerce.app.module.fraud.dto.FraudGuardResult;
 import com.ecommerce.app.module.fraud.model.FraudAssessment;
 import com.ecommerce.app.module.fraud.model.FraudAssessmentStatus;
 import com.ecommerce.app.module.fraud.model.FraudBlockType;
-import com.ecommerce.app.module.fraud.model.FraudBlocklist;
 import com.ecommerce.app.module.fraud.model.FraudDecision;
 import com.ecommerce.app.module.fraud.repository.FraudAssessmentRepository;
 import com.ecommerce.app.module.fraud.repository.FraudBlocklistRepository;
@@ -22,6 +21,7 @@ import com.ecommerce.app.module.fraud.support.FraudHashingSupport;
 import com.ecommerce.app.module.order.model.SalesOrder;
 import java.time.LocalDateTime;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -207,19 +207,19 @@ public class DefaultFraudIntegrationGuard implements FraudPreOrderGuard, FraudOr
     }
 
     private boolean isBlocked(FraudBlockType blockType, String rawValue) {
-        String cleanedValue = rawValue == null ? null : rawValue.trim();
-        String hashedValue = cleanedValue != null && cleanedValue.matches("(?i)[a-f0-9]{64}")
-                ? cleanedValue.toLowerCase()
-                : FraudHashingSupport.sha256(cleanedValue);
-        if (hashedValue == null) {
+        List<String> hashedValues;
+        if (blockType == FraudBlockType.MOBILE_NUMBER) {
+            hashedValues = FraudHashingSupport.bangladeshMobileHashCandidates(rawValue);
+        } else {
+            String hashedValue = blockType == FraudBlockType.DEVICE
+                    ? FraudHashingSupport.canonicalIdentifierHash(rawValue)
+                    : FraudHashingSupport.sha256(rawValue);
+            hashedValues = hashedValue == null ? List.of() : List.of(hashedValue);
+        }
+        if (hashedValues.isEmpty()) {
             return false;
         }
-        Optional<FraudBlocklist> block = fraudBlocklistRepository.findByBlockTypeAndHashedValueAndActiveTrue(blockType, hashedValue);
-        return block.filter(this::isEffectiveBlock).isPresent();
-    }
-
-    private boolean isEffectiveBlock(FraudBlocklist block) {
-        return block != null && (!block.isTemporary() || block.getExpiresAt() == null || block.getExpiresAt().isAfter(LocalDateTime.now()));
+        return fraudBlocklistRepository.existsEffectiveBlock(blockType, hashedValues, LocalDateTime.now());
     }
 
     private String metadataText(FraudContext context, String key) {

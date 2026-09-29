@@ -1,9 +1,24 @@
 package com.ecommerce.app.module.settings.services;
 
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.MAX_CONFIGURABLE_FILE_SIZE_BYTES;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.MAX_CONFIGURABLE_SOURCE_DIMENSION;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.PRODUCT_FEATURED_IMAGE_MAX_FILE_SIZE_BYTES;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.PRODUCT_FEATURED_IMAGE_MAX_HEIGHT;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.PRODUCT_FEATURED_IMAGE_MAX_WIDTH;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.PRODUCT_FEATURED_IMAGE_MIN_FILE_SIZE_BYTES;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.PRODUCT_FEATURED_IMAGE_MIN_HEIGHT;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.PRODUCT_FEATURED_IMAGE_MIN_WIDTH;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.PRODUCT_FEATURED_IMAGE_OUTPUT_MAX_HEIGHT;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.PRODUCT_FEATURED_IMAGE_OUTPUT_MAX_WIDTH;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.VENDOR_LOGO_MAX_FILE_SIZE_BYTES;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.VENDOR_LOGO_MAX_HEIGHT;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.VENDOR_LOGO_MAX_WIDTH;
+
 import com.ecommerce.app.globalServices.ImageService;
 import com.ecommerce.app.globalServices.ImageUploadPolicy;
 import com.ecommerce.app.module.settings.form.BasicSiteSettingsForm;
 import com.ecommerce.app.module.settings.form.DeliverySettingsForm;
+import com.ecommerce.app.module.settings.form.ImageSettingsForm;
 import com.ecommerce.app.module.settings.form.MaintenanceSettingsForm;
 import com.ecommerce.app.module.settings.form.OrderSettingsForm;
 import com.ecommerce.app.module.settings.form.PaymentSettingsForm;
@@ -294,6 +309,18 @@ public class GlobalSettingsService {
         return saveSection(settings, "Order");
     }
 
+    public GlobalSettings updateImageSettings(ImageSettingsForm form) {
+        requireFormData(form, "Image settings form data is required.");
+        GlobalSettings source = toGlobalSettings(form);
+        validateSection(source, SettingsSection.IMAGE);
+
+        GlobalSettings settings = getActiveSettings();
+        assertVersionIsCurrent(form.getVersion(), settings);
+        applyImageSettings(source, settings);
+        prepareForSave(settings);
+        return saveSection(settings, "Image");
+    }
+
     public GlobalSettings updatePolicySettings(PolicySettingsForm form) {
         requireFormData(form, "Policy settings form data is required.");
         GlobalSettings source = toGlobalSettings(form);
@@ -442,6 +469,23 @@ public class GlobalSettingsService {
         return settings;
     }
 
+    private GlobalSettings toGlobalSettings(ImageSettingsForm form) {
+        GlobalSettings settings = new GlobalSettings();
+        settings.setVersion(form.getVersion());
+        settings.setVendorLogoMaxFileSizeBytes(form.getVendorLogoMaxFileSizeBytes());
+        settings.setVendorLogoMaxWidth(form.getVendorLogoMaxWidth());
+        settings.setVendorLogoMaxHeight(form.getVendorLogoMaxHeight());
+        settings.setProductFeaturedImageMinFileSizeBytes(form.getProductFeaturedImageMinFileSizeBytes());
+        settings.setProductFeaturedImageMaxFileSizeBytes(form.getProductFeaturedImageMaxFileSizeBytes());
+        settings.setProductFeaturedImageMinWidth(form.getProductFeaturedImageMinWidth());
+        settings.setProductFeaturedImageMinHeight(form.getProductFeaturedImageMinHeight());
+        settings.setProductFeaturedImageMaxWidth(form.getProductFeaturedImageMaxWidth());
+        settings.setProductFeaturedImageMaxHeight(form.getProductFeaturedImageMaxHeight());
+        settings.setProductFeaturedImageOutputMaxWidth(form.getProductFeaturedImageOutputMaxWidth());
+        settings.setProductFeaturedImageOutputMaxHeight(form.getProductFeaturedImageOutputMaxHeight());
+        return settings;
+    }
+
     private GlobalSettings toGlobalSettings(PolicySettingsForm form) {
         GlobalSettings settings = new GlobalSettings();
         settings.setVersion(form.getVersion());
@@ -579,6 +623,17 @@ public class GlobalSettingsService {
         settings.setCancelOrderAfterMinutes(60);
         settings.setReturnAllowedDays(7);
         settings.setRefundAllowedDays(7);
+        settings.setVendorLogoMaxFileSizeBytes(VENDOR_LOGO_MAX_FILE_SIZE_BYTES);
+        settings.setVendorLogoMaxWidth(VENDOR_LOGO_MAX_WIDTH);
+        settings.setVendorLogoMaxHeight(VENDOR_LOGO_MAX_HEIGHT);
+        settings.setProductFeaturedImageMinFileSizeBytes(PRODUCT_FEATURED_IMAGE_MIN_FILE_SIZE_BYTES);
+        settings.setProductFeaturedImageMaxFileSizeBytes(PRODUCT_FEATURED_IMAGE_MAX_FILE_SIZE_BYTES);
+        settings.setProductFeaturedImageMinWidth(PRODUCT_FEATURED_IMAGE_MIN_WIDTH);
+        settings.setProductFeaturedImageMinHeight(PRODUCT_FEATURED_IMAGE_MIN_HEIGHT);
+        settings.setProductFeaturedImageMaxWidth(PRODUCT_FEATURED_IMAGE_MAX_WIDTH);
+        settings.setProductFeaturedImageMaxHeight(PRODUCT_FEATURED_IMAGE_MAX_HEIGHT);
+        settings.setProductFeaturedImageOutputMaxWidth(PRODUCT_FEATURED_IMAGE_OUTPUT_MAX_WIDTH);
+        settings.setProductFeaturedImageOutputMaxHeight(PRODUCT_FEATURED_IMAGE_OUTPUT_MAX_HEIGHT);
         settings.setMaintenanceMode(false);
         settings.setRegistrationEnabled(true);
         settings.setVendorRegistrationEnabled(true);
@@ -598,6 +653,7 @@ public class GlobalSettingsService {
         validateStore(source, errors);
         validateDelivery(source, errors);
         validateOrder(source, errors);
+        validateImageSettings(source, errors);
         validateSocial(source, errors);
         validateMaintenance(source, errors);
         validateImage(siteLogoFile, "Site logo", errors);
@@ -707,6 +763,59 @@ public class GlobalSettingsService {
         nonNegative(source.getCancelOrderAfterMinutes(), "Cancel order after minutes", errors);
         nonNegative(source.getReturnAllowedDays(), "Return allowed days", errors);
         nonNegative(source.getRefundAllowedDays(), "Refund allowed days", errors);
+    }
+
+    private void validateImageSettings(GlobalSettings source, List<String> errors) {
+        positiveWithin(source.getVendorLogoMaxFileSizeBytes(), MAX_CONFIGURABLE_FILE_SIZE_BYTES,
+                "Vendor logo maximum file size", "10 MB", errors);
+        positiveWithin(source.getVendorLogoMaxWidth(), MAX_CONFIGURABLE_SOURCE_DIMENSION,
+                "Vendor logo maximum width", "8000 pixels", errors);
+        positiveWithin(source.getVendorLogoMaxHeight(), MAX_CONFIGURABLE_SOURCE_DIMENSION,
+                "Vendor logo maximum height", "8000 pixels", errors);
+
+        positiveWithin(source.getProductFeaturedImageMinFileSizeBytes(), MAX_CONFIGURABLE_FILE_SIZE_BYTES,
+                "Product featured image minimum file size", "10 MB", errors);
+        positiveWithin(source.getProductFeaturedImageMaxFileSizeBytes(), MAX_CONFIGURABLE_FILE_SIZE_BYTES,
+                "Product featured image maximum file size", "10 MB", errors);
+        positiveWithin(source.getProductFeaturedImageMinWidth(), MAX_CONFIGURABLE_SOURCE_DIMENSION,
+                "Product featured image minimum width", "8000 pixels", errors);
+        positiveWithin(source.getProductFeaturedImageMinHeight(), MAX_CONFIGURABLE_SOURCE_DIMENSION,
+                "Product featured image minimum height", "8000 pixels", errors);
+        positiveWithin(source.getProductFeaturedImageMaxWidth(), MAX_CONFIGURABLE_SOURCE_DIMENSION,
+                "Product featured image maximum width", "8000 pixels", errors);
+        positiveWithin(source.getProductFeaturedImageMaxHeight(), MAX_CONFIGURABLE_SOURCE_DIMENSION,
+                "Product featured image maximum height", "8000 pixels", errors);
+        positiveWithin(source.getProductFeaturedImageOutputMaxWidth(), MAX_CONFIGURABLE_SOURCE_DIMENSION,
+                "Product featured image output width", "8000 pixels", errors);
+        positiveWithin(source.getProductFeaturedImageOutputMaxHeight(), MAX_CONFIGURABLE_SOURCE_DIMENSION,
+                "Product featured image output height", "8000 pixels", errors);
+
+        if (source.getProductFeaturedImageMinFileSizeBytes() != null
+                && source.getProductFeaturedImageMaxFileSizeBytes() != null
+                && source.getProductFeaturedImageMinFileSizeBytes()
+                        > source.getProductFeaturedImageMaxFileSizeBytes()) {
+            errors.add("Product featured image minimum file size cannot exceed its maximum file size.");
+        }
+        if (source.getProductFeaturedImageMinWidth() != null
+                && source.getProductFeaturedImageMaxWidth() != null
+                && source.getProductFeaturedImageMinWidth() > source.getProductFeaturedImageMaxWidth()) {
+            errors.add("Product featured image minimum width cannot exceed its maximum width.");
+        }
+        if (source.getProductFeaturedImageMinHeight() != null
+                && source.getProductFeaturedImageMaxHeight() != null
+                && source.getProductFeaturedImageMinHeight() > source.getProductFeaturedImageMaxHeight()) {
+            errors.add("Product featured image minimum height cannot exceed its maximum height.");
+        }
+        if (source.getProductFeaturedImageOutputMaxWidth() != null
+                && source.getProductFeaturedImageMaxWidth() != null
+                && source.getProductFeaturedImageOutputMaxWidth() > source.getProductFeaturedImageMaxWidth()) {
+            errors.add("Product featured image output width cannot exceed its accepted maximum width.");
+        }
+        if (source.getProductFeaturedImageOutputMaxHeight() != null
+                && source.getProductFeaturedImageMaxHeight() != null
+                && source.getProductFeaturedImageOutputMaxHeight() > source.getProductFeaturedImageMaxHeight()) {
+            errors.add("Product featured image output height cannot exceed its accepted maximum height.");
+        }
     }
 
     private void validateSocial(GlobalSettings source, List<String> errors) {
@@ -866,6 +975,20 @@ public class GlobalSettingsService {
         target.setCancelOrderAfterMinutes(nonNegativeInteger(source.getCancelOrderAfterMinutes(), 0));
         target.setReturnAllowedDays(nonNegativeInteger(source.getReturnAllowedDays(), 0));
         target.setRefundAllowedDays(nonNegativeInteger(source.getRefundAllowedDays(), 0));
+    }
+
+    private void applyImageSettings(GlobalSettings source, GlobalSettings target) {
+        target.setVendorLogoMaxFileSizeBytes(source.getVendorLogoMaxFileSizeBytes());
+        target.setVendorLogoMaxWidth(source.getVendorLogoMaxWidth());
+        target.setVendorLogoMaxHeight(source.getVendorLogoMaxHeight());
+        target.setProductFeaturedImageMinFileSizeBytes(source.getProductFeaturedImageMinFileSizeBytes());
+        target.setProductFeaturedImageMaxFileSizeBytes(source.getProductFeaturedImageMaxFileSizeBytes());
+        target.setProductFeaturedImageMinWidth(source.getProductFeaturedImageMinWidth());
+        target.setProductFeaturedImageMinHeight(source.getProductFeaturedImageMinHeight());
+        target.setProductFeaturedImageMaxWidth(source.getProductFeaturedImageMaxWidth());
+        target.setProductFeaturedImageMaxHeight(source.getProductFeaturedImageMaxHeight());
+        target.setProductFeaturedImageOutputMaxWidth(source.getProductFeaturedImageOutputMaxWidth());
+        target.setProductFeaturedImageOutputMaxHeight(source.getProductFeaturedImageOutputMaxHeight());
     }
 
     private void applySocial(GlobalSettings source, GlobalSettings target) {
@@ -1078,6 +1201,7 @@ public class GlobalSettingsService {
         settings.setCancelOrderAfterMinutes(nonNegativeInteger(settings.getCancelOrderAfterMinutes(), 0));
         settings.setReturnAllowedDays(nonNegativeInteger(settings.getReturnAllowedDays(), 0));
         settings.setRefundAllowedDays(nonNegativeInteger(settings.getRefundAllowedDays(), 0));
+        normalizeImageUploadSettings(settings);
         enforceSingleVendorAccessRules(settings);
         settings.setActive(true);
     }
@@ -1086,6 +1210,26 @@ public class GlobalSettingsService {
         if (settings != null && settings.getStoreMode() == StoreMode.SINGLE_VENDOR) {
             settings.setVendorRegistrationEnabled(false);
         }
+    }
+
+    private void normalizeImageUploadSettings(GlobalSettings settings) {
+        List<String> errors = new ArrayList<>();
+        validateImageSettings(settings, errors);
+        if (errors.isEmpty()) {
+            return;
+        }
+        LOGGER.error("Invalid persisted image upload settings were replaced with safe defaults: {}", errors);
+        settings.setVendorLogoMaxFileSizeBytes(VENDOR_LOGO_MAX_FILE_SIZE_BYTES);
+        settings.setVendorLogoMaxWidth(VENDOR_LOGO_MAX_WIDTH);
+        settings.setVendorLogoMaxHeight(VENDOR_LOGO_MAX_HEIGHT);
+        settings.setProductFeaturedImageMinFileSizeBytes(PRODUCT_FEATURED_IMAGE_MIN_FILE_SIZE_BYTES);
+        settings.setProductFeaturedImageMaxFileSizeBytes(PRODUCT_FEATURED_IMAGE_MAX_FILE_SIZE_BYTES);
+        settings.setProductFeaturedImageMinWidth(PRODUCT_FEATURED_IMAGE_MIN_WIDTH);
+        settings.setProductFeaturedImageMinHeight(PRODUCT_FEATURED_IMAGE_MIN_HEIGHT);
+        settings.setProductFeaturedImageMaxWidth(PRODUCT_FEATURED_IMAGE_MAX_WIDTH);
+        settings.setProductFeaturedImageMaxHeight(PRODUCT_FEATURED_IMAGE_MAX_HEIGHT);
+        settings.setProductFeaturedImageOutputMaxWidth(PRODUCT_FEATURED_IMAGE_OUTPUT_MAX_WIDTH);
+        settings.setProductFeaturedImageOutputMaxHeight(PRODUCT_FEATURED_IMAGE_OUTPUT_MAX_HEIGHT);
     }
 
     private void copyMediaAndAuditFields(GlobalSettings source, GlobalSettings target) {
@@ -1250,6 +1394,22 @@ public class GlobalSettingsService {
     private void positive(Integer value, String label, List<String> errors) {
         if (value == null || value < 1) {
             errors.add(label + " must be at least 1.");
+        }
+    }
+
+    private void positiveWithin(Long value, long maximum, String label, String maximumLabel, List<String> errors) {
+        if (value == null || value < 1) {
+            errors.add(label + " must be at least 1 byte.");
+        } else if (value > maximum) {
+            errors.add(label + " cannot exceed " + maximumLabel + ".");
+        }
+    }
+
+    private void positiveWithin(Integer value, int maximum, String label, String maximumLabel, List<String> errors) {
+        if (value == null || value < 1) {
+            errors.add(label + " must be at least 1 pixel.");
+        } else if (value > maximum) {
+            errors.add(label + " cannot exceed " + maximumLabel + ".");
         }
     }
 
@@ -1433,6 +1593,17 @@ public class GlobalSettingsService {
             @Override
             void validate(GlobalSettings source, GlobalSettingsService service, List<String> errors) {
                 service.validateOrder(source, errors);
+            }
+        },
+        IMAGE("image", "Image") {
+            @Override
+            void apply(GlobalSettings source, GlobalSettings target, GlobalSettingsService service) {
+                service.applyImageSettings(source, target);
+            }
+
+            @Override
+            void validate(GlobalSettings source, GlobalSettingsService service, List<String> errors) {
+                service.validateImageSettings(source, errors);
             }
         },
         SOCIAL("social", "Social") {

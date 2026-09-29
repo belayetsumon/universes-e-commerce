@@ -7,6 +7,7 @@ import com.ecommerce.app.module.fraud.model.FraudSignalSeverity;
 import com.ecommerce.app.module.fraud.repository.DeviceIdentityRepository;
 import com.ecommerce.app.module.fraud.repository.TrustedDeviceRepository;
 import com.ecommerce.app.module.fraud.services.evaluator.DeviceRiskSignalEvaluator;
+import com.ecommerce.app.module.fraud.support.FraudHashingSupport;
 import com.ecommerce.app.module.order.model.SalesOrder;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,11 @@ public class DefaultDeviceRiskSignalEvaluator extends AbstractFraudSignalEvaluat
     @Override
     public List<FraudSignalResult> evaluate(SalesOrder order, FraudContext context) {
         List<FraudSignalResult> signals = new ArrayList<>();
-        String deviceIdentifier = blankToNull(context.getDeviceIdentifier());
+        FraudContext safeContext = context == null ? new FraudContext() : context;
+        String deviceIdentifier = FraudHashingSupport.canonicalIdentifierHash(safeContext.getDeviceIdentifier());
+        if (deviceIdentifier == null) {
+            deviceIdentifier = FraudHashingSupport.canonicalIdentifierHash(safeContext.getDeviceFingerprint());
+        }
         Long customerId = customerId(order);
 
         boolean unknownDevice = deviceIdentifier != null
@@ -40,7 +45,8 @@ public class DefaultDeviceRiskSignalEvaluator extends AbstractFraudSignalEvaluat
                 FraudReasonCode.DEVICE_BLACKLISTED, String.valueOf(blacklisted), "device-identity", null));
 
         boolean trusted = customerId != null && deviceIdentifier != null
-                && trustedDeviceRepository.existsByCustomerIdAndDeviceIdentifierAndActiveTrue(customerId, deviceIdentifier);
+                && trustedDeviceRepository.existsEffectiveTrustedDevice(
+                        customerId, deviceIdentifier, java.time.LocalDateTime.now());
         signals.add(signal("TRUSTED_DEVICE", category(), trusted, -10, FraudSignalSeverity.LOW,
                 null, String.valueOf(trusted), "trusted-device", null));
 

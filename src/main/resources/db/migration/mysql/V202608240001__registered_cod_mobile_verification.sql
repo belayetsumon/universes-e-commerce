@@ -2,12 +2,50 @@
 -- normalized mobile number that was verified. Existing flags cannot prove
 -- that binding, so they are deliberately invalidated during this upgrade.
 
-ALTER TABLE global_settings
-    ADD COLUMN IF NOT EXISTS registered_customer_cod_mobile_verification_enabled BIT NOT NULL DEFAULT 1;
+SET @registered_cod_setting_exists = (
+    SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'global_settings'
+      AND COLUMN_NAME = 'registered_customer_cod_mobile_verification_enabled'
+);
+SET @registered_cod_setting_sql = IF(
+    @registered_cod_setting_exists = 0,
+    'ALTER TABLE global_settings ADD COLUMN registered_customer_cod_mobile_verification_enabled BIT NOT NULL DEFAULT 1',
+    'SELECT 1'
+);
+PREPARE registered_cod_setting_statement FROM @registered_cod_setting_sql;
+EXECUTE registered_cod_setting_statement;
+DEALLOCATE PREPARE registered_cod_setting_statement;
 
-ALTER TABLE usermodule_users
-    ADD COLUMN IF NOT EXISTS mobile_verified_at DATETIME(6) NULL,
-    ADD COLUMN IF NOT EXISTS mobile_verified_number VARCHAR(20) NULL;
+SET @mobile_verified_at_exists = (
+    SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'usermodule_users'
+      AND COLUMN_NAME = 'mobile_verified_at'
+);
+SET @mobile_verified_at_sql = IF(
+    @mobile_verified_at_exists = 0,
+    'ALTER TABLE usermodule_users ADD COLUMN mobile_verified_at DATETIME(6) NULL',
+    'SELECT 1'
+);
+PREPARE mobile_verified_at_statement FROM @mobile_verified_at_sql;
+EXECUTE mobile_verified_at_statement;
+DEALLOCATE PREPARE mobile_verified_at_statement;
+
+SET @mobile_verified_number_exists = (
+    SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'usermodule_users'
+      AND COLUMN_NAME = 'mobile_verified_number'
+);
+SET @mobile_verified_number_sql = IF(
+    @mobile_verified_number_exists = 0,
+    'ALTER TABLE usermodule_users ADD COLUMN mobile_verified_number VARCHAR(20) NULL',
+    'SELECT 1'
+);
+PREPARE mobile_verified_number_statement FROM @mobile_verified_number_sql;
+EXECUTE mobile_verified_number_statement;
+DEALLOCATE PREPARE mobile_verified_number_statement;
 
 UPDATE usermodule_users
 SET mobile_verified = 0,
@@ -16,8 +54,20 @@ SET mobile_verified = 0,
 WHERE mobile_verified = 1
   AND (mobile_verified_at IS NULL OR mobile_verified_number IS NULL);
 
-ALTER TABLE guest_checkout_otp_verification
-    ADD COLUMN IF NOT EXISTS user_id BIGINT NULL;
+SET @guest_otp_user_column_exists = (
+    SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'guest_checkout_otp_verification'
+      AND COLUMN_NAME = 'user_id'
+);
+SET @guest_otp_user_column_sql = IF(
+    @guest_otp_user_column_exists = 0,
+    'ALTER TABLE guest_checkout_otp_verification ADD COLUMN user_id BIGINT NULL',
+    'SELECT 1'
+);
+PREPARE guest_otp_user_column_statement FROM @guest_otp_user_column_sql;
+EXECUTE guest_otp_user_column_statement;
+DEALLOCATE PREPARE guest_otp_user_column_statement;
 
 SET @guest_otp_user_fk_exists = (
     SELECT COUNT(*)
@@ -45,7 +95,7 @@ SET @guest_otp_user_index_exists = (
 );
 SET @guest_otp_user_index_sql = IF(
     @guest_otp_user_index_exists = 0,
-    'CREATE INDEX idx_guest_otp_user_purpose_status ON guest_checkout_otp_verification (user_id, purpose, status)',
+    'CREATE INDEX idx_guest_otp_user_purpose_status ON guest_checkout_otp_verification (user_id, purpose, status, created_at DESC)',
     'SELECT 1'
 );
 PREPARE guest_otp_user_index_statement FROM @guest_otp_user_index_sql;
@@ -67,19 +117,3 @@ SET @guest_otp_user_created_index_sql = IF(
 PREPARE guest_otp_user_created_index_statement FROM @guest_otp_user_created_index_sql;
 EXECUTE guest_otp_user_created_index_statement;
 DEALLOCATE PREPARE guest_otp_user_created_index_statement;
-
-SET @user_mobile_snapshot_index_exists = (
-    SELECT COUNT(*)
-    FROM information_schema.STATISTICS
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = 'usermodule_users'
-      AND INDEX_NAME = 'idx_users_mobile_verification_snapshot'
-);
-SET @user_mobile_snapshot_index_sql = IF(
-    @user_mobile_snapshot_index_exists = 0,
-    'CREATE INDEX idx_users_mobile_verification_snapshot ON usermodule_users (mobile_verified, mobile_verified_number)',
-    'SELECT 1'
-);
-PREPARE user_mobile_snapshot_index_statement FROM @user_mobile_snapshot_index_sql;
-EXECUTE user_mobile_snapshot_index_statement;
-DEALLOCATE PREPARE user_mobile_snapshot_index_statement;

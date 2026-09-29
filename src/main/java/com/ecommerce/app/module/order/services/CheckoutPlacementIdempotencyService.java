@@ -207,7 +207,7 @@ public class CheckoutPlacementIdempotencyService {
     }
 
     private String requireHash(String value, String message) {
-        String hash = FraudHashingSupport.sha256(value);
+        String hash = FraudHashingSupport.sha256Exact(value);
         if (hash == null) {
             throw new CheckoutPlacementIdempotencyException(message);
         }

@@ -202,7 +202,7 @@ public class PublicSeoService {
     private Map<String, Object> productJsonLd(GlobalSettings settings, Product product, Map<String, Object> details, String canonicalUrl, String imageUrl, String productCode) {
         Map<String, Object> offer = map("@type", "Offer", "url", canonicalUrl, "priceCurrency", first(settings.getCurrency(), "BDT"),
                 "price", money(details == null ? null : details.get("afterDiscountRemainingAmount"), product.getSalesPrice()),
-                "availability", available(product, details) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+                "availability", availability(product, details),
                 "itemCondition", "https://schema.org/NewCondition");
         Map<String, Object> data = map("@context", "https://schema.org", "@type", "Product", "name", first(mapText(details, "title"), product.getTitle()),
                 "description", first(plainText(mapText(details, "shortDescription")), plainText(product.getShortDescription())), "sku", productCode, "url", canonicalUrl, "offers", offer);
@@ -317,12 +317,24 @@ public class PublicSeoService {
         return cleanValue.startsWith("/") && baseUrl != null ? baseUrl + cleanValue : null;
     }
 
-    private boolean available(Product product, Map<String, Object> details) {
+    private String availability(Product product, Map<String, Object> details) {
         String label = mapText(details, "availabilityLabel");
-        if (label != null && label.toLowerCase(Locale.ROOT).contains("out")) {
-            return false;
+        if (label != null) {
+            String normalizedLabel = label.toLowerCase(Locale.ROOT);
+            if (normalizedLabel.contains("preorder")) {
+                return "https://schema.org/PreOrder";
+            }
+            if (normalizedLabel.contains("out")) {
+                return "https://schema.org/OutOfStock";
+            }
         }
-        return !Boolean.TRUE.equals(product.getManageStock()) || product.getStockAvailableQuantity() == null || product.getStockAvailableQuantity().compareTo(BigDecimal.ZERO) > 0;
+        if (product.usesPreorder()) {
+            return "https://schema.org/PreOrder";
+        }
+        return product.getStockAvailableQuantity() != null
+                && product.getStockAvailableQuantity().compareTo(BigDecimal.ZERO) > 0
+                ? "https://schema.org/InStock"
+                : "https://schema.org/OutOfStock";
     }
 
     private BigDecimal money(Object preferred, BigDecimal fallback) {

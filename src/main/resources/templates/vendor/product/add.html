@@ -90,37 +90,37 @@
             #productForm .list-group-item:has(#onlineShow) { border-left: 4px solid var(--vendor-product-blue); }
             #productForm .list-group-item:has(#featuredProduct) { border-left: 4px solid var(--vendor-product-violet); }
             #productForm .list-group-item:has(#newProduct) { border-left: 4px solid var(--vendor-product-cyan); }
-            #productForm .list-group-item:has(#manageStock) { border-left: 4px solid var(--vendor-product-green); }
-            #productForm .list-group-item:has(#allowPreorder) { border-left: 4px solid var(--vendor-product-amber); }
+            #productForm .list-group-item:has(#availabilityModeStock) { border-left: 4px solid var(--vendor-product-green); }
+            #productForm .list-group-item:has(#availabilityModePreorder) { border-left: 4px solid var(--vendor-product-amber); }
             #productForm .list-group-item:has(#manageProductVariants) { border-left: 4px solid #155eef; }
             #productForm .list-group-item:has(#emiavailable) { border-left: 4px solid #c11574; }
             #productForm .form-check-input { background-color: #eef2f6; border-color: #98a2b3; box-shadow: none; }
             #onlineShow[type="checkbox"] { background-color: #eef8ff; border-color: var(--vendor-product-blue); }
             #featuredProduct[type="checkbox"] { background-color: #f4f0ff; border-color: var(--vendor-product-violet); }
             #newProduct[type="checkbox"] { background-color: #ecfdff; border-color: var(--vendor-product-cyan); }
-            #manageStock[type="checkbox"] { background-color: #ecfdf3; border-color: var(--vendor-product-green); }
-            #allowPreorder[type="checkbox"] { background-color: #fffaeb; border-color: var(--vendor-product-amber); }
+            #availabilityModeStock[type="radio"] { background-color: #ecfdf3; border-color: var(--vendor-product-green); }
+            #availabilityModePreorder[type="radio"] { background-color: #fffaeb; border-color: var(--vendor-product-amber); }
             #manageProductVariants[type="checkbox"] { background-color: #eff4ff; border-color: #155eef; }
             #emiavailable[type="checkbox"] { background-color: #fdf2fa; border-color: #c11574; }
             #onlineShow[type="checkbox"]:focus { box-shadow: 0 0 0 .2rem rgba(13,110,253,.18); }
             #featuredProduct[type="checkbox"]:focus { box-shadow: 0 0 0 .2rem rgba(105,65,198,.18); }
             #newProduct[type="checkbox"]:focus { box-shadow: 0 0 0 .2rem rgba(0,166,200,.18); }
-            #manageStock[type="checkbox"]:focus { box-shadow: 0 0 0 .2rem rgba(8,116,67,.18); }
-            #allowPreorder[type="checkbox"]:focus { box-shadow: 0 0 0 .2rem rgba(183,121,31,.18); }
+            #availabilityModeStock[type="radio"]:focus { box-shadow: 0 0 0 .2rem rgba(8,116,67,.18); }
+            #availabilityModePreorder[type="radio"]:focus { box-shadow: 0 0 0 .2rem rgba(183,121,31,.18); }
             #manageProductVariants[type="checkbox"]:focus { box-shadow: 0 0 0 .2rem rgba(21,94,239,.18); }
             #emiavailable[type="checkbox"]:focus { box-shadow: 0 0 0 .2rem rgba(193,21,116,.18); }
             #productForm .list-group-item:has(.form-check-input:checked) { background: #eef8ff; border-color: #9fd8ff; }
             #productForm .list-group-item:has(#featuredProduct:checked) { background: #f4f0ff; border-color: #d9ccff; }
             #productForm .list-group-item:has(#newProduct:checked) { background: #ecfdff; border-color: #a5f0fc; }
-            #productForm .list-group-item:has(#manageStock:checked) { background: #ecfdf3; border-color: #abefc6; }
-            #productForm .list-group-item:has(#allowPreorder:checked) { background: #fffaeb; border-color: #fedf89; }
+            #productForm .list-group-item:has(#availabilityModeStock:checked) { background: #ecfdf3; border-color: #abefc6; }
+            #productForm .list-group-item:has(#availabilityModePreorder:checked) { background: #fffaeb; border-color: #fedf89; }
             #productForm .list-group-item:has(#manageProductVariants:checked) { background: #eff4ff; border-color: #b2ccff; }
             #productForm .list-group-item:has(#emiavailable:checked) { background: #fdf2fa; border-color: #fcceee; }
             #onlineShow:checked { background-color: var(--vendor-product-blue); border-color: var(--vendor-product-blue); }
             #featuredProduct:checked { background-color: var(--vendor-product-violet); border-color: var(--vendor-product-violet); }
             #newProduct:checked { background-color: var(--vendor-product-cyan); border-color: var(--vendor-product-cyan); }
-            #manageStock:checked { background-color: var(--vendor-product-green); border-color: var(--vendor-product-green); }
-            #allowPreorder:checked { background-color: var(--vendor-product-amber); border-color: var(--vendor-product-amber); }
+            #availabilityModeStock:checked { background-color: var(--vendor-product-green); border-color: var(--vendor-product-green); }
+            #availabilityModePreorder:checked { background-color: var(--vendor-product-amber); border-color: var(--vendor-product-amber); }
             #manageProductVariants:checked { background-color: #155eef; border-color: #155eef; }
             #emiavailable:checked { background-color: #c11574; border-color: #c11574; }
 
@@ -191,6 +191,8 @@
                     <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input is incorrect</li>
                 </ul>
             </div>
+
+            <div class="alert alert-danger" th:if="${!#strings.isEmpty(error)}" th:text="${error}" role="alert"></div>
 
             <div class="alert alert-success" th:if="${!#strings.isEmpty(success)}" th:text="${success}"></div>
 
@@ -475,13 +477,25 @@
                                     <div class="invalid-feedback" th:if="${#fields.hasErrors('video')}" th:errors="*{video}">Video error</div>
                                 </div>
                                 <div class="col-12">
-                                    <label for="imagefile" class="form-label">Primary Image</label>
+                                    <label for="imagefile" class="form-label">Featured / Primary Image</label>
                                     <input type="file"
                                            id="imagefile"
                                            name="pic"
                                            accept="image/jpeg,image/png,image/webp"
-                                           class="form-control">
-                                    <div class="form-text">Allowed: JPG, PNG, or WEBP. New uploads are converted to high-quality WEBP.</div>
+                                           class="form-control"
+                                           data-product-featured-image
+                                           data-validation-feedback-id="vendorProductFeaturedImageError"
+                                           th:attr="data-min-file-size-bytes=${productFeaturedImageRequirements.minFileSizeBytes},
+                                                    data-max-file-size-bytes=${productFeaturedImageRequirements.maxFileSizeBytes},
+                                                    data-min-width=${productFeaturedImageRequirements.minWidth},
+                                                    data-min-height=${productFeaturedImageRequirements.minHeight},
+                                                    data-max-width=${productFeaturedImageRequirements.maxWidth},
+                                                    data-max-height=${productFeaturedImageRequirements.maxHeight}"
+                                           aria-describedby="vendorProductFeaturedImageHelp vendorProductFeaturedImageError">
+                                    <div id="vendorProductFeaturedImageHelp"
+                                         class="form-text"
+                                         th:text="${productFeaturedImageRequirements.helpText}">Configured image requirements.</div>
+                                    <div id="vendorProductFeaturedImageError" class="invalid-feedback" aria-live="polite"></div>
                                 </div>
                                 <div class="col-12">
                                     <div class="ratio ratio-1x1 border rounded bg-body-tertiary overflow-hidden">
@@ -659,25 +673,32 @@
                                         </div>
                                     </label>
 
-                                    <label class="list-group-item d-flex justify-content-between align-items-start gap-3">
-                                        <div>
-                                            <div class="fw-semibold">Manage Stock</div>
-                                            <div class="small text-body-secondary">Track inventory and availability for this SKU.</div>
-                                        </div>
-                                        <div class="form-check form-switch m-0">
-                                            <input class="form-check-input" type="checkbox" id="manageStock" th:field="*{manageStock}">
-                                        </div>
-                                    </label>
+                                    <fieldset class="border-0 m-0 p-0" aria-describedby="availabilityModeHelp">
+                                        <legend class="visually-hidden">Product availability mode</legend>
+                                        <div class="list-group list-group-flush">
+                                            <label class="list-group-item d-flex justify-content-between align-items-start gap-3" for="availabilityModeStock">
+                                                <div>
+                                                    <div class="fw-semibold">Manage Stock</div>
+                                                    <div class="small text-body-secondary">Track inventory and stop orders when stock is exhausted. This is the default.</div>
+                                                </div>
+                                                <div class="form-check m-0">
+                                                    <input class="form-check-input" type="radio" id="availabilityModeStock" th:field="*{availabilityMode}" value="STOCK_MANAGED" th:errorclass="is-invalid" required>
+                                                </div>
+                                            </label>
 
-                                    <label class="list-group-item d-flex justify-content-between align-items-start gap-3">
-                                        <div>
-                                            <div class="fw-semibold">Allow Preorder</div>
-                                            <div class="small text-body-secondary">Accept orders before stock is available.</div>
+                                            <label class="list-group-item d-flex justify-content-between align-items-start gap-3" for="availabilityModePreorder">
+                                                <div>
+                                                    <div class="fw-semibold">Preorder</div>
+                                                    <div class="small text-body-secondary">Accept the item as a preorder without enforcing current stock quantity.</div>
+                                                </div>
+                                                <div class="form-check m-0">
+                                                    <input class="form-check-input" type="radio" id="availabilityModePreorder" th:field="*{availabilityMode}" value="PREORDER" th:errorclass="is-invalid" required>
+                                                </div>
+                                            </label>
                                         </div>
-                                        <div class="form-check form-switch m-0">
-                                            <input class="form-check-input" type="checkbox" id="allowPreorder" th:field="*{allowPreorder}">
-                                        </div>
-                                    </label>
+                                        <div id="availabilityModeHelp" class="form-text px-3 pt-2">Choose one availability mode. Manage Stock and Preorder cannot be active together.</div>
+                                        <div class="invalid-feedback d-block px-3" th:if="${#fields.hasErrors('availabilityModeValid')}" th:errors="*{availabilityModeValid}">Availability mode error</div>
+                                    </fieldset>
 
                                     <label class="list-group-item d-flex justify-content-between align-items-start gap-3">
                                         <div>
@@ -702,7 +723,7 @@
                             </div>
                         </div>
 
-                        <div class="card shadow-sm">
+                        <div class="card shadow-sm" id="preorderTiming">
                             <div class="card-header bg-white py-3">
                                 <h2 class="h6 mb-0">Preorder Timing</h2>
                             </div>
@@ -744,6 +765,7 @@
     </div>
 
     <th:block layout:fragment="page_js">
+        <th:block th:replace="~{product/featured-image-validation :: script}"></th:block>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const initializeDatePicker = function (selector) {
@@ -771,6 +793,26 @@
                 const typeField = document.getElementById('productType');
                 const digitalDeliveryHint = document.getElementById('digitalDeliveryHint');
                 const digitalDeliveryFields = document.getElementById('digitalDeliveryFields');
+                const availabilityModeFields = document.querySelectorAll('input[name="availabilityMode"]');
+                const preorderDateField = document.getElementById('preorderAvailableFrom');
+                const preorderTiming = document.getElementById('preorderTiming');
+
+                const togglePreorderTiming = function () {
+                    const selectedMode = document.querySelector('input[name="availabilityMode"]:checked');
+                    const preorderSelected = selectedMode && selectedMode.value === 'PREORDER';
+                    if (preorderDateField) {
+                        preorderDateField.disabled = !preorderSelected;
+                    }
+                    if (preorderTiming) {
+                        preorderTiming.classList.toggle('opacity-50', !preorderSelected);
+                        preorderTiming.setAttribute('aria-disabled', String(!preorderSelected));
+                    }
+                };
+
+                availabilityModeFields.forEach(function (field) {
+                    field.addEventListener('change', togglePreorderTiming);
+                });
+                togglePreorderTiming();
 
                 const toggleDigitalDelivery = function () {
                     if (!typeField || !digitalDeliveryHint || !digitalDeliveryFields) {

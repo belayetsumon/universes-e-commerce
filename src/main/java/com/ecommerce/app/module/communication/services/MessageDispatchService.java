@@ -8,6 +8,7 @@ import com.ecommerce.app.module.communication.model.MessageChannel;
 import com.ecommerce.app.module.communication.model.MessageJob;
 import com.ecommerce.app.module.communication.model.MessageProvider;
 import com.ecommerce.app.module.communication.model.MessageStatus;
+import com.ecommerce.app.module.communication.security.CodOtpMessagePolicy;
 import com.ecommerce.app.module.communication.sender.MessageChannelSender;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -57,10 +58,13 @@ public class MessageDispatchService {
 
         try {
             preferenceService.prepareForSend(request);
-            String idempotencyKey = jobService.normalizeIdempotencyKey(request);
-            Optional<MessageJob> existing = jobService.findByIdempotencyKey(idempotencyKey);
-            if (existing.isPresent()) {
-                return duplicateResult(existing.get());
+            boolean ephemeralCodOtp = CodOtpMessagePolicy.isEphemeral(request.getEventType());
+            if (!ephemeralCodOtp) {
+                String idempotencyKey = jobService.normalizeIdempotencyKey(request);
+                Optional<MessageJob> existing = jobService.findByIdempotencyKey(idempotencyKey);
+                if (existing.isPresent()) {
+                    return duplicateResult(existing.get());
+                }
             }
 
             if (!preferenceService.canSend(request)) {
@@ -78,12 +82,14 @@ public class MessageDispatchService {
 
             if (provider == null && isProviderRequired(request.getChannel())) {
                 CommunicationSendResult failed = CommunicationSendResult.failed("MESSAGE_PROVIDER_MISSING", "No active provider found for " + request.getChannel() + ".");
-                jobService.fail(request, rendered, null, routing.getDeliveryMode(), failed.getFailedReason());
+                if (!ephemeralCodOtp) {
+                    jobService.fail(request, rendered, null, routing.getDeliveryMode(), failed.getFailedReason());
+                }
                 logService.record(request, null, failed);
                 return failed;
             }
 
-            if (routing.getDeliveryMode() != DeliveryMode.DIRECT) {
+            if (!ephemeralCodOtp && routing.getDeliveryMode() != DeliveryMode.DIRECT) {
                 Long jobId = jobService.queue(request, rendered, provider, routing.getDeliveryMode()).getId();
                 return CommunicationSendResult.queued(jobId, "Message queued using " + routing.getDeliveryMode().getDisplayName() + ".");
             }

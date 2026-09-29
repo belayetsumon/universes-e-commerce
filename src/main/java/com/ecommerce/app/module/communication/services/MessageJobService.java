@@ -8,6 +8,7 @@ import com.ecommerce.app.module.communication.model.MessageProvider;
 import com.ecommerce.app.module.communication.model.MessageStatus;
 import com.ecommerce.app.module.communication.model.MessageType;
 import com.ecommerce.app.module.communication.repository.MessageJobRepository;
+import com.ecommerce.app.module.communication.security.CodOtpMessagePolicy;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
@@ -35,6 +36,7 @@ public class MessageJobService {
 
     @Transactional
     public MessageJob enqueueRequest(MessageDispatchRequest request) {
+        CodOtpMessagePolicy.requireQueueSafe(request == null ? null : request.getEventType());
         String idempotencyKey = normalizeIdempotencyKey(request);
         Optional<MessageJob> existing = repository.findByIdempotencyKey(idempotencyKey);
         if (existing.isPresent()) {
@@ -62,6 +64,7 @@ public class MessageJobService {
 
     @Transactional
     public MessageJob queue(MessageDispatchRequest request, RenderedMessage rendered, MessageProvider provider, DeliveryMode deliveryMode) {
+        CodOtpMessagePolicy.requireQueueSafe(request == null ? null : request.getEventType());
         String idempotencyKey = normalizeIdempotencyKey(request);
         Optional<MessageJob> existing = repository.findByIdempotencyKey(idempotencyKey);
         if (existing.isPresent()) {
@@ -144,7 +147,7 @@ public class MessageJobService {
 
     @Transactional
     public MessageJob cancelRetry(MessageJob job, String failedReason) {
-        job.setStatus(MessageStatus.FAILED);
+        job.setStatus(MessageStatus.CANCELLED);
         job.setFailedReason(failedReason);
         return repository.save(job);
     }

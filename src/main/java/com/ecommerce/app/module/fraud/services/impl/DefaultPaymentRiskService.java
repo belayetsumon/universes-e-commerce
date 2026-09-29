@@ -41,7 +41,8 @@ public class DefaultPaymentRiskService implements PaymentRiskService {
     public boolean isPaymentTokenBlocked(String paymentToken) {
         String tokenHash = FraudPrivacySupport.hashIdentifier(paymentToken);
         return tokenHash != null
-                && fraudBlocklistRepository.existsByBlockTypeAndHashedValueAndActiveTrue(FraudBlockType.PAYMENT_TOKEN, tokenHash);
+                && fraudBlocklistRepository.existsEffectiveBlock(
+                        FraudBlockType.PAYMENT_TOKEN, java.util.List.of(tokenHash), LocalDateTime.now());
     }
 
     @Transactional

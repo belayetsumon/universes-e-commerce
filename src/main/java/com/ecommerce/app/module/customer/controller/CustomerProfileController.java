@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -78,13 +79,17 @@ public class CustomerProfileController {
     }
 
     @PostMapping("/update")
+    @Transactional
     public String updateAccount(
             @Valid @ModelAttribute("accountForm") CustomerAccountForm accountForm,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes) {
 
-        Users currentUser = currentUser();
+        // The same row lock is used by registered checkout placement. A
+        // profile mobile change therefore cannot invalidate COD proof between
+        // checkout verification and the order commit.
+        Users currentUser = currentUserForUpdate();
 
         String normalizedMobile = null;
         if (!bindingResult.hasFieldErrors("mobile")) {
@@ -262,6 +267,12 @@ public class CustomerProfileController {
         Long activeUserId = loggedUserService.activeUserid();
         Optional<Users> user = usersRepository.findById(activeUserId);
         return user.orElseThrow(() -> new IllegalStateException("Authenticated customer account was not found."));
+    }
+
+    private Users currentUserForUpdate() {
+        Long activeUserId = loggedUserService.activeUserid();
+        return usersRepository.findByIdForUpdate(activeUserId)
+                .orElseThrow(() -> new IllegalStateException("Authenticated customer account was not found."));
     }
 
     private BillingAddress latestBillingAddress(Users user) {

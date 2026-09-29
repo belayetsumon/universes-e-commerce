@@ -117,10 +117,6 @@ public class CarrierService {
         ));
         payload.put("accountNumber", accountNumber);
 
-        // Simulate API call (actual HTTP call using RestTemplate / WebClient)
-        System.out.println("Calling " + endpoint + " with API Key: " + apiKey);
-        System.out.println("Payload: " + payload);
-
         throw new IllegalStateException("Carrier label API call is not implemented for this carrier.");
     }
 

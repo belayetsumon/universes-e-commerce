@@ -80,13 +80,17 @@ public class DefaultFraudContextRecorderService implements FraudContextRecorderS
     ) {
         LocalDateTime now = LocalDateTime.now();
         DeviceIdentity identity = deviceIdentityRepository.findByIdentityKeyForUpdate(identityKey)
+                .or(() -> deviceIdentityRepository.findFirstByDeviceIdentifierAndCustomerIdOrderByIdAsc(
+                deviceIdentifier,
+                customerId
+        ))
                 .orElseGet(() -> {
                     DeviceIdentity created = new DeviceIdentity();
-                    created.setIdentityKey(identityKey);
                     created.setDeviceIdentifier(deviceIdentifier);
                     created.setFirstSeenAt(now);
                     return created;
                 });
+        identity.setIdentityKey(identityKey);
         identity.setCustomerId(customerId);
         identity.setDeviceFingerprintHash(resolveFingerprintHash(context));
         identity.setUserAgent(trim(context.getUserAgent(), 500));
@@ -102,7 +106,9 @@ public class DefaultFraudContextRecorderService implements FraudContextRecorderS
     }
 
     private String resolveDeviceIdentifier(FraudContext context) {
-        String identifier = trim(context == null ? null : context.getDeviceIdentifier(), 160);
+        String identifier = FraudHashingSupport.canonicalIdentifierHash(
+                context == null ? null : context.getDeviceIdentifier()
+        );
         if (identifier != null) {
             return identifier;
         }
@@ -110,13 +116,9 @@ public class DefaultFraudContextRecorderService implements FraudContextRecorderS
     }
 
     private String resolveFingerprintHash(FraudContext context) {
-        String fingerprint = trim(context == null ? null : context.getDeviceFingerprint(), 128);
-        if (fingerprint == null) {
-            return null;
-        }
-        return fingerprint.matches("(?i)[a-f0-9]{64}")
-                ? fingerprint.toLowerCase()
-                : FraudHashingSupport.sha256(fingerprint);
+        return FraudHashingSupport.canonicalIdentifierHash(
+                context == null ? null : context.getDeviceFingerprint()
+        );
     }
 
     private boolean booleanMetadata(FraudContext context, String key) {

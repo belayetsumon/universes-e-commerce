@@ -28,35 +28,33 @@ public class DefaultDeviceFingerprintService implements DeviceFingerprintService
         if (context == null) {
             return null;
         }
-        if (context.getDeviceIdentifier() != null && !context.getDeviceIdentifier().isBlank()) {
-            return context.getDeviceIdentifier().trim();
+        String identifierHash = FraudHashingSupport.canonicalIdentifierHash(context.getDeviceIdentifier());
+        if (identifierHash != null) {
+            return identifierHash;
         }
         return hashFingerprint(context.getDeviceFingerprint());
     }
 
     @Override
     public String hashFingerprint(String rawFingerprint) {
-        if (rawFingerprint == null || rawFingerprint.isBlank()) {
-            return null;
-        }
-        String clean = rawFingerprint.trim();
-        return clean.matches("(?i)[a-f0-9]{64}")
-                ? clean.toLowerCase()
-                : FraudHashingSupport.sha256(clean);
+        return FraudHashingSupport.canonicalIdentifierHash(rawFingerprint);
     }
 
     @Override
     public boolean isTrustedDevice(Long customerId, String deviceIdentifier) {
-        return customerId != null && deviceIdentifier != null && !deviceIdentifier.isBlank()
-                && trustedDeviceRepository.existsByCustomerIdAndDeviceIdentifierAndActiveTrue(
+        String identifierHash = FraudHashingSupport.canonicalIdentifierHash(deviceIdentifier);
+        return customerId != null && identifierHash != null
+                && trustedDeviceRepository.existsEffectiveTrustedDevice(
                         customerId,
-                        deviceIdentifier.trim()
+                        identifierHash,
+                        java.time.LocalDateTime.now()
                 );
     }
 
     @Override
     public boolean isBlacklistedDevice(String deviceIdentifier) {
-        return deviceIdentifier != null && !deviceIdentifier.isBlank()
-                && deviceIdentityRepository.existsByDeviceIdentifierAndBlacklistedTrue(deviceIdentifier.trim());
+        String identifierHash = FraudHashingSupport.canonicalIdentifierHash(deviceIdentifier);
+        return identifierHash != null
+                && deviceIdentityRepository.existsByDeviceIdentifierAndBlacklistedTrue(identifierHash);
     }
 }

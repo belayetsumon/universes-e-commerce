@@ -23,7 +23,8 @@ import java.time.LocalDateTime;
     )
 }, indexes = {
     @Index(name = "idx_checkout_attempt_status_lock", columnList = "status,locked_until"),
-    @Index(name = "idx_checkout_attempt_order_group", columnList = "order_group_uuid")
+    @Index(name = "idx_checkout_attempt_order_group", columnList = "order_group_uuid"),
+    @Index(name = "idx_checkout_attempt_status_updated", columnList = "status,updated_at")
 })
 public class CheckoutPlacementAttempt {
 

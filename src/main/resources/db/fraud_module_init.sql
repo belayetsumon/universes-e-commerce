@@ -1,8 +1,8 @@
--- Fraud Order Detection And Prevention Module - PostgreSQL schema
+-- Fraud Order Detection And Prevention Module - MySQL 8 schema
 -- Apply after the existing ecommerce schema is available.
 
 CREATE TABLE IF NOT EXISTS fraud_assessments (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(80) NOT NULL UNIQUE,
     version BIGINT,
     order_id BIGINT NOT NULL,
@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS fraud_assessments (
     decision_reason TEXT,
     evaluation_source VARCHAR(60) NOT NULL DEFAULT 'API',
     evaluation_version VARCHAR(40),
-    automatic_decision BOOLEAN NOT NULL DEFAULT TRUE,
-    manual_review_required BOOLEAN NOT NULL DEFAULT FALSE,
+    automatic_decision TINYINT(1) NOT NULL DEFAULT 1,
+    manual_review_required TINYINT(1) NOT NULL DEFAULT 0,
     evaluated_at TIMESTAMP,
     reviewed_by VARCHAR(120),
     reviewed_at TIMESTAMP,
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS fraud_assessments (
 );
 
 CREATE TABLE IF NOT EXISTS fraud_signals (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(80) NOT NULL UNIQUE,
     version BIGINT,
     assessment_id BIGINT NOT NULL REFERENCES fraud_assessments(id),
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS fraud_signals (
     signal_category VARCHAR(40) NOT NULL,
     signal_value VARCHAR(500),
     score_impact INTEGER NOT NULL DEFAULT 0,
-    triggered BOOLEAN NOT NULL DEFAULT FALSE,
+    triggered TINYINT(1) NOT NULL DEFAULT 0,
     severity VARCHAR(30) NOT NULL DEFAULT 'INFO',
     source VARCHAR(100),
     reason_code VARCHAR(80),
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS fraud_signals (
 );
 
 CREATE TABLE IF NOT EXISTS fraud_rules (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(80) NOT NULL UNIQUE,
     version BIGINT,
     rule_code VARCHAR(100) NOT NULL UNIQUE,
@@ -65,8 +65,8 @@ CREATE TABLE IF NOT EXISTS fraud_rules (
     score_impact INTEGER NOT NULL DEFAULT 0,
     priority INTEGER NOT NULL DEFAULT 100,
     action VARCHAR(60),
-    hard_block BOOLEAN NOT NULL DEFAULT FALSE,
-    active BOOLEAN NOT NULL DEFAULT TRUE,
+    hard_block TINYINT(1) NOT NULL DEFAULT 0,
+    active TINYINT(1) NOT NULL DEFAULT 1,
     effective_start_at TIMESTAMP,
     effective_end_at TIMESTAMP,
     vendor_id BIGINT,
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS fraud_rules (
 );
 
 CREATE TABLE IF NOT EXISTS fraud_cases (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(80) NOT NULL UNIQUE,
     version BIGINT,
     case_number VARCHAR(60) NOT NULL UNIQUE,
@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS fraud_cases (
 );
 
 CREATE TABLE IF NOT EXISTS fraud_blocklist (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(80) NOT NULL UNIQUE,
     version BIGINT,
     block_type VARCHAR(50) NOT NULL,
@@ -117,10 +117,10 @@ CREATE TABLE IF NOT EXISTS fraud_blocklist (
     masked_value VARCHAR(160),
     reason VARCHAR(500) NOT NULL,
     scope VARCHAR(40) NOT NULL DEFAULT 'GLOBAL',
-    temporary BOOLEAN NOT NULL DEFAULT FALSE,
+    temporary TINYINT(1) NOT NULL DEFAULT 0,
     expires_at TIMESTAMP,
     created_by_user VARCHAR(120),
-    active BOOLEAN NOT NULL DEFAULT TRUE,
+    active TINYINT(1) NOT NULL DEFAULT 1,
     created_by VARCHAR(120) NOT NULL DEFAULT 'system',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     modified_by VARCHAR(120),
@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS fraud_blocklist (
 );
 
 CREATE TABLE IF NOT EXISTS fraud_device_identities (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(80) NOT NULL UNIQUE,
     version BIGINT,
     customer_id BIGINT,
@@ -139,11 +139,11 @@ CREATE TABLE IF NOT EXISTS fraud_device_identities (
     ip_address VARCHAR(80),
     ip_country VARCHAR(80),
     ip_location VARCHAR(160),
-    vpn_indicator BOOLEAN NOT NULL DEFAULT FALSE,
-    proxy_indicator BOOLEAN NOT NULL DEFAULT FALSE,
-    hosting_indicator BOOLEAN NOT NULL DEFAULT FALSE,
-    trusted BOOLEAN NOT NULL DEFAULT FALSE,
-    blacklisted BOOLEAN NOT NULL DEFAULT FALSE,
+    vpn_indicator TINYINT(1) NOT NULL DEFAULT 0,
+    proxy_indicator TINYINT(1) NOT NULL DEFAULT 0,
+    hosting_indicator TINYINT(1) NOT NULL DEFAULT 0,
+    trusted TINYINT(1) NOT NULL DEFAULT 0,
+    blacklisted TINYINT(1) NOT NULL DEFAULT 0,
     first_seen_at TIMESTAMP,
     last_seen_at TIMESTAMP,
     metadata_json TEXT,
@@ -154,7 +154,7 @@ CREATE TABLE IF NOT EXISTS fraud_device_identities (
 );
 
 CREATE TABLE IF NOT EXISTS fraud_trusted_devices (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(80) NOT NULL UNIQUE,
     version BIGINT,
     customer_id BIGINT NOT NULL,
@@ -162,7 +162,7 @@ CREATE TABLE IF NOT EXISTS fraud_trusted_devices (
     trusted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     trusted_by VARCHAR(120),
     expires_at TIMESTAMP,
-    active BOOLEAN NOT NULL DEFAULT TRUE,
+    active TINYINT(1) NOT NULL DEFAULT 1,
     created_by VARCHAR(120) NOT NULL DEFAULT 'system',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     modified_by VARCHAR(120),
@@ -170,7 +170,7 @@ CREATE TABLE IF NOT EXISTS fraud_trusted_devices (
 );
 
 CREATE TABLE IF NOT EXISTS fraud_customer_risk_profiles (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(80) NOT NULL UNIQUE,
     version BIGINT,
     customer_id BIGINT NOT NULL UNIQUE,
@@ -183,10 +183,10 @@ CREATE TABLE IF NOT EXISTS fraud_customer_risk_profiles (
     cod_rto_count BIGINT NOT NULL DEFAULT 0,
     delivery_refusal_count BIGINT NOT NULL DEFAULT 0,
     chargeback_count BIGINT NOT NULL DEFAULT 0,
-    lifetime_value NUMERIC(19,4) DEFAULT 0,
-    trusted_customer BOOLEAN NOT NULL DEFAULT FALSE,
-    blacklisted BOOLEAN NOT NULL DEFAULT FALSE,
-    cod_disabled BOOLEAN NOT NULL DEFAULT FALSE,
+    lifetime_value DECIMAL(19,4) DEFAULT 0,
+    trusted_customer TINYINT(1) NOT NULL DEFAULT 0,
+    blacklisted TINYINT(1) NOT NULL DEFAULT 0,
+    cod_disabled TINYINT(1) NOT NULL DEFAULT 0,
     last_assessed_at TIMESTAMP,
     created_by VARCHAR(120) NOT NULL DEFAULT 'system',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -195,7 +195,7 @@ CREATE TABLE IF NOT EXISTS fraud_customer_risk_profiles (
 );
 
 CREATE TABLE IF NOT EXISTS fraud_vendor_risk_profiles (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(80) NOT NULL UNIQUE,
     version BIGINT,
     vendor_id BIGINT NOT NULL UNIQUE,
@@ -213,12 +213,12 @@ CREATE TABLE IF NOT EXISTS fraud_vendor_risk_profiles (
     shared_bank_account_count BIGINT NOT NULL DEFAULT 0,
     unverified_delivery_count BIGINT NOT NULL DEFAULT 0,
     sudden_sales_spike_count BIGINT NOT NULL DEFAULT 0,
-    abnormal_refund_rate NUMERIC(7,4) DEFAULT 0,
-    abnormal_cancellation_rate NUMERIC(7,4) DEFAULT 0,
-    chargeback_exposure NUMERIC(19,4) DEFAULT 0,
+    abnormal_refund_rate DECIMAL(7,4) DEFAULT 0,
+    abnormal_cancellation_rate DECIMAL(7,4) DEFAULT 0,
+    chargeback_exposure DECIMAL(19,4) DEFAULT 0,
     last_risk_reason VARCHAR(500),
-    under_review BOOLEAN NOT NULL DEFAULT FALSE,
-    payout_held BOOLEAN NOT NULL DEFAULT FALSE,
+    under_review TINYINT(1) NOT NULL DEFAULT 0,
+    payout_held TINYINT(1) NOT NULL DEFAULT 0,
     last_assessed_at TIMESTAMP,
     created_by VARCHAR(120) NOT NULL DEFAULT 'system',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -227,7 +227,7 @@ CREATE TABLE IF NOT EXISTS fraud_vendor_risk_profiles (
 );
 
 CREATE TABLE IF NOT EXISTS fraud_review_history (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(80) NOT NULL UNIQUE,
     version BIGINT,
     assessment_id BIGINT NOT NULL REFERENCES fraud_assessments(id),
@@ -246,17 +246,17 @@ CREATE TABLE IF NOT EXISTS fraud_review_history (
 );
 
 CREATE TABLE IF NOT EXISTS fraud_rule_executions (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(80) NOT NULL UNIQUE,
     version BIGINT,
     assessment_id BIGINT NOT NULL REFERENCES fraud_assessments(id),
     rule_id BIGINT REFERENCES fraud_rules(id),
     rule_code VARCHAR(100) NOT NULL,
     signal_code VARCHAR(100),
-    matched BOOLEAN NOT NULL DEFAULT FALSE,
+    matched TINYINT(1) NOT NULL DEFAULT 0,
     score_impact INTEGER NOT NULL DEFAULT 0,
     action VARCHAR(60),
-    hard_block BOOLEAN NOT NULL DEFAULT FALSE,
+    hard_block TINYINT(1) NOT NULL DEFAULT 0,
     execution_detail_json TEXT,
     executed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by VARCHAR(120) NOT NULL DEFAULT 'system',
@@ -266,7 +266,7 @@ CREATE TABLE IF NOT EXISTS fraud_rule_executions (
 );
 
 CREATE TABLE IF NOT EXISTS fraud_event_logs (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(80) NOT NULL UNIQUE,
     version BIGINT,
     event_type VARCHAR(80) NOT NULL,
@@ -286,13 +286,13 @@ CREATE TABLE IF NOT EXISTS fraud_event_logs (
 );
 
 CREATE TABLE IF NOT EXISTS fraud_configurations (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(80) NOT NULL UNIQUE,
     version BIGINT,
     config_key VARCHAR(120) NOT NULL UNIQUE,
     config_value TEXT NOT NULL,
     description VARCHAR(500),
-    active BOOLEAN NOT NULL DEFAULT TRUE,
+    active TINYINT(1) NOT NULL DEFAULT 1,
     created_by VARCHAR(120) NOT NULL DEFAULT 'system',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     modified_by VARCHAR(120),
@@ -300,7 +300,7 @@ CREATE TABLE IF NOT EXISTS fraud_configurations (
 );
 
 CREATE TABLE IF NOT EXISTS fraud_velocity_counters (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(80) NOT NULL UNIQUE,
     version BIGINT,
     counter_scope VARCHAR(40) NOT NULL,
@@ -316,7 +316,7 @@ CREATE TABLE IF NOT EXISTS fraud_velocity_counters (
 );
 
 CREATE TABLE IF NOT EXISTS fraud_payment_risk_results (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(80) NOT NULL UNIQUE,
     version BIGINT,
     order_id BIGINT,
@@ -340,7 +340,7 @@ CREATE TABLE IF NOT EXISTS fraud_payment_risk_results (
 );
 
 CREATE TABLE IF NOT EXISTS fraud_cod_risk_profiles (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(80) NOT NULL UNIQUE,
     version BIGINT,
     customer_id BIGINT,
@@ -354,9 +354,9 @@ CREATE TABLE IF NOT EXISTS fraud_cod_risk_profiles (
     successful_prepaid_order_count BIGINT NOT NULL DEFAULT 0,
     cod_rto_count BIGINT NOT NULL DEFAULT 0,
     delivery_refusal_count BIGINT NOT NULL DEFAULT 0,
-    cod_disabled BOOLEAN NOT NULL DEFAULT FALSE,
-    customer_cod_limit NUMERIC(19,4),
-    vendor_cod_limit NUMERIC(19,4),
+    cod_disabled TINYINT(1) NOT NULL DEFAULT 0,
+    customer_cod_limit DECIMAL(19,4),
+    vendor_cod_limit DECIMAL(19,4),
     last_delivery_refusal_reason VARCHAR(500),
     last_updated_at TIMESTAMP,
     created_by VARCHAR(120) NOT NULL DEFAULT 'system',
@@ -366,7 +366,7 @@ CREATE TABLE IF NOT EXISTS fraud_cod_risk_profiles (
 );
 
 CREATE TABLE IF NOT EXISTS fraud_evidence (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(80) NOT NULL UNIQUE,
     version BIGINT,
     case_id BIGINT REFERENCES fraud_cases(id),
@@ -386,7 +386,7 @@ CREATE TABLE IF NOT EXISTS fraud_evidence (
 );
 
 CREATE TABLE IF NOT EXISTS fraud_outbox_events (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(80) NOT NULL UNIQUE,
     version BIGINT,
     event_type VARCHAR(80) NOT NULL,
@@ -407,7 +407,7 @@ CREATE TABLE IF NOT EXISTS fraud_outbox_events (
 );
 
 CREATE TABLE IF NOT EXISTS fraud_idempotency_records (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     uuid VARCHAR(80) NOT NULL UNIQUE,
     version BIGINT,
     idempotency_key VARCHAR(160) NOT NULL UNIQUE,

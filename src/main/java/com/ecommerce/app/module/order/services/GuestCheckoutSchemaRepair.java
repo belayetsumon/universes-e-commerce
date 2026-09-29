@@ -75,11 +75,8 @@ public class GuestCheckoutSchemaRepair {
 
     private String resolveAlterSql(String databaseProduct) {
         String database = databaseProduct == null ? "" : databaseProduct.toLowerCase();
-        if (database.contains("mysql") || database.contains("mariadb")) {
+        if (database.contains("mysql")) {
             return "ALTER TABLE sales_order MODIFY COLUMN customer_id BIGINT NULL";
-        }
-        if (database.contains("postgresql")) {
-            return "ALTER TABLE sales_order ALTER COLUMN customer_id DROP NOT NULL";
         }
         return null;
     }

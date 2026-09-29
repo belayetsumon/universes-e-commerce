@@ -36,7 +36,7 @@ public class Coupon extends BaseEntityPromotions {
     @Enumerated(EnumType.STRING)
     private CouponType type; // FIXED or PERCENT
 
-    @Column(nullable = false, precision = 18, scale = 2)
+    @Column(name = "coupon_value", nullable = false, precision = 18, scale = 2)
     private BigDecimal value;
     @Column(precision = 18, scale = 2)
     private BigDecimal maxDiscount;

@@ -53,6 +53,10 @@ public class ImageService {
         if (file == null || file.isEmpty()) {
             throw new ImageUploadValidationException("Please select an image file to upload.");
         }
+        if (file.getSize() < policy.minFileSizeBytes()) {
+            throw new ImageUploadValidationException("The image must be at least "
+                    + formatFileSize(policy.minFileSizeBytes()) + ".");
+        }
         if (file.getSize() > policy.maxFileSizeBytes()) {
             throw new ImageUploadValidationException("The image exceeds the "
                     + formatFileSize(policy.maxFileSizeBytes()) + " upload limit.");
@@ -163,7 +167,11 @@ public class ImageService {
                 reader.setInput(imageInput, true, true);
                 int width = reader.getWidth(0);
                 int height = reader.getHeight(0);
-                if (width <= 0 || height <= 0 || width > policy.maxWidth() || height > policy.maxHeight()) {
+                if (width < policy.minWidth() || height < policy.minHeight()) {
+                    throw new ImageUploadValidationException("Image dimensions must be at least "
+                            + policy.minWidth() + " x " + policy.minHeight() + " pixels.");
+                }
+                if (width > policy.maxWidth() || height > policy.maxHeight()) {
                     throw new ImageUploadValidationException("Image dimensions must not exceed "
                             + policy.maxWidth() + " x " + policy.maxHeight() + " pixels.");
                 }
@@ -195,7 +203,14 @@ public class ImageService {
     }
 
     private String formatFileSize(long bytes) {
-        long megabytes = bytes / (1024 * 1024);
-        return megabytes > 0 ? megabytes + " MB" : bytes + " bytes";
+        long megabyte = 1024L * 1024L;
+        long kilobyte = 1024L;
+        if (bytes >= megabyte && bytes % megabyte == 0) {
+            return (bytes / megabyte) + " MB";
+        }
+        if (bytes >= kilobyte && bytes % kilobyte == 0) {
+            return (bytes / kilobyte) + " KB";
+        }
+        return bytes + " bytes";
     }
 }

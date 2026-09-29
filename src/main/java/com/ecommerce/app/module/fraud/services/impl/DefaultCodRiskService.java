@@ -39,19 +39,22 @@ public class DefaultCodRiskService implements CodRiskService, CodEligibilityServ
     private final FraudConfigurationService fraudConfigurationService;
     private final FraudEventLogRepository fraudEventLogRepository;
     private final FraudEventPublisher fraudEventPublisher;
+    private final CodRiskProfileDeviceResolver deviceProfileResolver;
 
     public DefaultCodRiskService(CodRiskProfileRepository codRiskProfileRepository,
             CustomerRiskProfileRepository customerRiskProfileRepository,
             SalesOrderRepository salesOrderRepository,
             FraudConfigurationService fraudConfigurationService,
             FraudEventLogRepository fraudEventLogRepository,
-            FraudEventPublisher fraudEventPublisher) {
+            FraudEventPublisher fraudEventPublisher,
+            CodRiskProfileDeviceResolver deviceProfileResolver) {
         this.codRiskProfileRepository = codRiskProfileRepository;
         this.customerRiskProfileRepository = customerRiskProfileRepository;
         this.salesOrderRepository = salesOrderRepository;
         this.fraudConfigurationService = fraudConfigurationService;
         this.fraudEventLogRepository = fraudEventLogRepository;
         this.fraudEventPublisher = fraudEventPublisher;
+        this.deviceProfileResolver = deviceProfileResolver;
     }
 
     @Override
@@ -162,7 +165,8 @@ public class DefaultCodRiskService implements CodRiskService, CodEligibilityServ
             return;
         }
 
-        List<CodRiskProfile> profiles = resolveProfiles(order, context);
+        FraudContext safeContext = buildContext(order, context);
+        List<CodRiskProfile> profiles = resolveProfiles(order, safeContext);
         boolean disabled = false;
         for (CodRiskProfile profile : profiles) {
             if (status == ShipmentStatus.DELIVERED) {
@@ -175,7 +179,7 @@ public class DefaultCodRiskService implements CodRiskService, CodEligibilityServ
                 profile.setLastDeliveryRefusalReason(trimReason(refusalReason));
             }
             profile.setLastUpdatedAt(LocalDateTime.now());
-            if (shouldDisableCod(profile)) {
+            if (status != ShipmentStatus.DELIVERED && shouldDisableCod(profile, safeContext)) {
                 profile.setCodDisabled(true);
                 disabled = true;
             }
@@ -198,10 +202,17 @@ public class DefaultCodRiskService implements CodRiskService, CodEligibilityServ
         }
 
         int restoreThreshold = fraudConfigurationService.getInt("fraud.cod.restore_after_prepaid_success_count", 3);
-        for (CodRiskProfile profile : resolveProfiles(order, context)) {
+        FraudContext safeContext = buildContext(order, context);
+        for (CodRiskProfile profile : resolveProfiles(order, safeContext)) {
             profile.setSuccessfulPrepaidOrderCount(profile.getSuccessfulPrepaidOrderCount() + 1);
-            if (profile.getSuccessfulPrepaidOrderCount() >= restoreThreshold) {
+            boolean restore = profile.getMobileHash() == null
+                    ? profile.getSuccessfulPrepaidOrderCount() >= restoreThreshold
+                    : aggregateSuccessfulPrepaidCount(profile, safeContext) >= restoreThreshold;
+            if (restore) {
                 profile.setCodDisabled(false);
+                if (profile.getMobileHash() != null) {
+                    clearEquivalentMobileDisabledFlags(profile, safeContext);
+                }
             }
             profile.setLastUpdatedAt(LocalDateTime.now());
             codRiskProfileRepository.save(profile);
@@ -213,12 +224,15 @@ public class DefaultCodRiskService implements CodRiskService, CodEligibilityServ
         if (isCodDisabledForCustomer(customerId) || isCodDisabledForVendor(vendorId)) {
             return true;
         }
-        String mobileHash = FraudHashingSupport.sha256(metadataText(context, "mobileNumber"));
-        String addressHash = FraudHashingSupport.sha256(metadataText(context, "addressKey"));
-        return (mobileHash != null && codRiskProfileRepository.existsByMobileHashAndCodDisabledTrue(mobileHash))
+        FraudContext safeContext = context == null ? new FraudContext() : context;
+        List<String> mobileHashes = mobileHashCandidates(safeContext);
+        String addressHash = FraudHashingSupport.sha256(metadataText(safeContext, "addressKey"));
+        String deviceIdentifierHash = deviceIdentifierHash(safeContext);
+        return mobileHashes.stream().anyMatch(codRiskProfileRepository::existsByMobileHashAndCodDisabledTrue)
                 || (addressHash != null && codRiskProfileRepository.existsByAddressHashAndCodDisabledTrue(addressHash))
-                || (context.getDeviceIdentifier() != null && codRiskProfileRepository.existsByDeviceIdentifierAndCodDisabledTrue(context.getDeviceIdentifier()))
-                || (context.getShippingDistrict() != null && codRiskProfileRepository.existsByDistrictIgnoreCaseAndCodDisabledTrue(context.getShippingDistrict()));
+                || (deviceIdentifierHash != null && codRiskProfileRepository.existsByDeviceIdentifierAndCodDisabledTrue(deviceIdentifierHash))
+                || (safeContext.getShippingDistrict() != null
+                    && codRiskProfileRepository.existsByDistrictIgnoreCaseAndCodDisabledTrue(safeContext.getShippingDistrict()));
     }
 
     private boolean requiresPartialPrepayment(Long customerId, Long vendorId, FraudContext context) {
@@ -226,7 +240,7 @@ public class DefaultCodRiskService implements CodRiskService, CodEligibilityServ
         int refusalThreshold = fraudConfigurationService.getInt("fraud.cod.high_risk_partial_prepayment_refusal_count", 1);
         return profileRequiresPartial(codProfileByCustomer(customerId).orElse(null), rtoThreshold, refusalThreshold)
                 || profileRequiresPartial(codProfileByVendor(vendorId).orElse(null), rtoThreshold, refusalThreshold)
-                || profileRequiresPartial(findMobileProfile(context).orElse(null), rtoThreshold, refusalThreshold)
+                || mobileProfilesRequirePartial(findMobileProfiles(context), rtoThreshold, refusalThreshold)
                 || profileRequiresPartial(findAddressProfile(context).orElse(null), rtoThreshold, refusalThreshold)
                 || profileRequiresPartial(findDeviceProfile(context).orElse(null), rtoThreshold, refusalThreshold)
                 || profileRequiresPartial(findDistrictProfile(context).orElse(null), rtoThreshold, refusalThreshold);
@@ -235,6 +249,15 @@ public class DefaultCodRiskService implements CodRiskService, CodEligibilityServ
     private boolean profileRequiresPartial(CodRiskProfile profile, int rtoThreshold, int refusalThreshold) {
         return profile != null && (profile.getCodRtoCount() >= rtoThreshold
                 || profile.getDeliveryRefusalCount() >= refusalThreshold);
+    }
+
+    private boolean mobileProfilesRequirePartial(
+            List<CodRiskProfile> profiles,
+            int rtoThreshold,
+            int refusalThreshold) {
+        long rtoCount = profiles.stream().mapToLong(CodRiskProfile::getCodRtoCount).sum();
+        long refusalCount = profiles.stream().mapToLong(CodRiskProfile::getDeliveryRefusalCount).sum();
+        return rtoCount >= rtoThreshold || refusalCount >= refusalThreshold;
     }
 
     private List<CodRiskProfile> resolveProfiles(SalesOrder order, FraudContext context) {
@@ -248,17 +271,22 @@ public class DefaultCodRiskService implements CodRiskService, CodEligibilityServ
         if (vendorId != null) {
             profiles.add(codProfileByVendor(vendorId).orElseGet(() -> newVendorProfile(vendorId)));
         }
-        String mobileHash = FraudHashingSupport.sha256(metadataText(safeContext, "mobileNumber"));
-        if (mobileHash != null) {
-            profiles.add(codRiskProfileRepository.findByMobileHash(mobileHash).orElseGet(() -> newMobileProfile(mobileHash)));
+        List<String> mobileHashes = mobileHashCandidates(safeContext);
+        if (!mobileHashes.isEmpty()) {
+            List<CodRiskProfile> mobileProfiles = findMobileProfiles(safeContext);
+            String canonicalHash = mobileHashes.get(0);
+            profiles.add(mobileProfiles.stream()
+                    .filter(profile -> canonicalHash.equals(profile.getMobileHash()))
+                    .findFirst()
+                    .orElseGet(() -> newMobileProfile(canonicalHash)));
         }
         String addressHash = FraudHashingSupport.sha256(metadataText(safeContext, "addressKey"));
         if (addressHash != null) {
             profiles.add(codRiskProfileRepository.findByAddressHash(addressHash).orElseGet(() -> newAddressProfile(addressHash)));
         }
-        if (safeContext.getDeviceIdentifier() != null) {
-            profiles.add(codRiskProfileRepository.findByDeviceIdentifier(safeContext.getDeviceIdentifier())
-                    .orElseGet(() -> newDeviceProfile(safeContext.getDeviceIdentifier())));
+        String deviceIdentifierHash = deviceIdentifierHash(safeContext);
+        if (deviceIdentifierHash != null) {
+            profiles.add(deviceProfileResolver.findOrCreate(deviceIdentifierHash));
         }
         if (safeContext.getShippingDistrict() != null && !safeContext.getShippingDistrict().isBlank()) {
             String district = safeContext.getShippingDistrict().trim();
@@ -309,10 +337,43 @@ public class DefaultCodRiskService implements CodRiskService, CodEligibilityServ
         customerRiskProfileRepository.save(profile);
     }
 
-    private boolean shouldDisableCod(CodRiskProfile profile) {
+    private boolean shouldDisableCod(CodRiskProfile profile, FraudContext context) {
         int rtoThreshold = fraudConfigurationService.getInt("fraud.cod.rto_disable_threshold", 2);
         int refusalThreshold = fraudConfigurationService.getInt("fraud.cod.delivery_refusal_disable_threshold", 2);
-        return profile.getCodRtoCount() >= rtoThreshold || profile.getDeliveryRefusalCount() >= refusalThreshold;
+        if (profile.getMobileHash() == null) {
+            return profile.getCodRtoCount() >= rtoThreshold
+                    || profile.getDeliveryRefusalCount() >= refusalThreshold;
+        }
+        List<CodRiskProfile> equivalents = mobileProfilesIncluding(profile, context);
+        long rtoCount = equivalents.stream().mapToLong(CodRiskProfile::getCodRtoCount).sum();
+        long refusalCount = equivalents.stream().mapToLong(CodRiskProfile::getDeliveryRefusalCount).sum();
+        return rtoCount >= rtoThreshold || refusalCount >= refusalThreshold;
+    }
+
+    private long aggregateSuccessfulPrepaidCount(CodRiskProfile current, FraudContext context) {
+        return mobileProfilesIncluding(current, context).stream()
+                .mapToLong(CodRiskProfile::getSuccessfulPrepaidOrderCount)
+                .sum();
+    }
+
+    private void clearEquivalentMobileDisabledFlags(CodRiskProfile current, FraudContext context) {
+        for (CodRiskProfile equivalent : mobileProfilesIncluding(current, context)) {
+            if (equivalent != current && equivalent.isCodDisabled()) {
+                equivalent.setCodDisabled(false);
+                equivalent.setLastUpdatedAt(LocalDateTime.now());
+                codRiskProfileRepository.save(equivalent);
+            }
+        }
+    }
+
+    private List<CodRiskProfile> mobileProfilesIncluding(CodRiskProfile current, FraudContext context) {
+        List<CodRiskProfile> equivalents = new ArrayList<>(findMobileProfiles(context));
+        boolean includesCurrent = equivalents.stream().anyMatch(candidate -> candidate == current
+                || (current.getId() != null && current.getId().equals(candidate.getId())));
+        if (!includesCurrent) {
+            equivalents.add(current);
+        }
+        return equivalents;
     }
 
     private boolean isFirstOrder(Long customerId) {
@@ -335,9 +396,16 @@ public class DefaultCodRiskService implements CodRiskService, CodEligibilityServ
         return vendorId == null ? Optional.empty() : codRiskProfileRepository.findByVendorId(vendorId);
     }
 
-    private Optional<CodRiskProfile> findMobileProfile(FraudContext context) {
-        String mobileHash = FraudHashingSupport.sha256(metadataText(context, "mobileNumber"));
-        return mobileHash == null ? Optional.empty() : codRiskProfileRepository.findByMobileHash(mobileHash);
+    private List<CodRiskProfile> findMobileProfiles(FraudContext context) {
+        List<String> mobileHashes = mobileHashCandidates(context);
+        return mobileHashes.isEmpty()
+                ? List.of()
+                : codRiskProfileRepository.findAllByMobileHashIn(mobileHashes);
+    }
+
+    private List<String> mobileHashCandidates(FraudContext context) {
+        return FraudHashingSupport.bangladeshMobileHashCandidates(
+                metadataText(context, "mobileNumber"));
     }
 
     private Optional<CodRiskProfile> findAddressProfile(FraudContext context) {
@@ -346,9 +414,20 @@ public class DefaultCodRiskService implements CodRiskService, CodEligibilityServ
     }
 
     private Optional<CodRiskProfile> findDeviceProfile(FraudContext context) {
-        return context == null || context.getDeviceIdentifier() == null
+        String deviceIdentifierHash = deviceIdentifierHash(context);
+        return deviceIdentifierHash == null
                 ? Optional.empty()
-                : codRiskProfileRepository.findByDeviceIdentifier(context.getDeviceIdentifier());
+                : codRiskProfileRepository.findByDeviceIdentifier(deviceIdentifierHash);
+    }
+
+    private String deviceIdentifierHash(FraudContext context) {
+        if (context == null) {
+            return null;
+        }
+        String identifierHash = FraudHashingSupport.canonicalIdentifierHash(context.getDeviceIdentifier());
+        return identifierHash == null
+                ? FraudHashingSupport.canonicalIdentifierHash(context.getDeviceFingerprint())
+                : identifierHash;
     }
 
     private Optional<CodRiskProfile> findDistrictProfile(FraudContext context) {
@@ -378,12 +457,6 @@ public class DefaultCodRiskService implements CodRiskService, CodEligibilityServ
     private CodRiskProfile newAddressProfile(String addressHash) {
         CodRiskProfile profile = new CodRiskProfile();
         profile.setAddressHash(addressHash);
-        return profile;
-    }
-
-    private CodRiskProfile newDeviceProfile(String deviceIdentifier) {
-        CodRiskProfile profile = new CodRiskProfile();
-        profile.setDeviceIdentifier(deviceIdentifier);
         return profile;
     }
 

@@ -37,6 +37,7 @@ public class SecurityConfig {
             new AntPathRequestMatcher("/privilege/**"),
             new AntPathRequestMatcher("/module/**"),
             new AntPathRequestMatcher("/admin/settings/**"),
+            new AntPathRequestMatcher("/admin/communication/**"),
             new AntPathRequestMatcher("/users/save"),
             new AntPathRequestMatcher("/users/change-password/**"),
             new AntPathRequestMatcher("/users/generate-referral-code/**"),
@@ -50,7 +51,10 @@ public class SecurityConfig {
             new AntPathRequestMatcher("/customer-profile/**"),
             new AntPathRequestMatcher("/checkout/guest/mobile/**"),
             new AntPathRequestMatcher("/checkout/customer/mobile/**"),
+            new AntPathRequestMatcher("/cart/**"),
+            new AntPathRequestMatcher("/carts/**"),
             new AntPathRequestMatcher("/cart_address/**"),
+            new AntPathRequestMatcher("/district/**"),
             new AntPathRequestMatcher("/order/**")
     );
 
@@ -128,6 +132,7 @@ public class SecurityConfig {
                 .requestMatchers(STATIC_WHITELIST).permitAll()
                 .requestMatchers(PUBLIC_URLS).permitAll()
                 .requestMatchers("/admin/settings/**").hasAnyAuthority("admin", "ROLE_ADMIN")
+                .requestMatchers("/admin/communication/**").hasAnyAuthority("admin", "ROLE_ADMIN")
                 .requestMatchers("/admin/fraud/**").hasAnyAuthority(
                         "admin", "fraud-admin", "fraud-supervisor", "fraud-analyst", "finance",
                         "ROLE_ADMIN", "ROLE_FRAUD_ADMIN", "ROLE_FRAUD_SUPERVISOR", "ROLE_FRAUD_ANALYST", "ROLE_FINANCE")

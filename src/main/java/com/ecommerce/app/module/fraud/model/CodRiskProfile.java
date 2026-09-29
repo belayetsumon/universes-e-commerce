@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
     @Index(name = "idx_fraud_cod_vendor", columnList = "vendor_id"),
     @Index(name = "idx_fraud_cod_mobile", columnList = "mobile_hash"),
     @Index(name = "idx_fraud_cod_address", columnList = "address_hash"),
-    @Index(name = "idx_fraud_cod_device", columnList = "device_identifier"),
+    @Index(name = "uk_fraud_cod_device_identifier", columnList = "device_identifier", unique = true),
     @Index(name = "idx_fraud_cod_district", columnList = "district")
 })
 public class CodRiskProfile extends BaseFraudEntity {

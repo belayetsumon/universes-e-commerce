@@ -30,8 +30,10 @@ public class DefaultFraudIdempotencyService implements FraudIdempotencyService {
         if (isBlank(operationScope) || isBlank(idempotencyKey)) {
             return Optional.empty();
         }
+        LocalDateTime now = LocalDateTime.now();
         return repository.findByIdempotencyKeyAndOperationScope(idempotencyKey.trim(), operationScope.trim())
-                .filter(record -> record.getStatus() == FraudIdempotencyStatus.COMPLETED);
+                .filter(record -> record.getStatus() == FraudIdempotencyStatus.COMPLETED)
+                .filter(record -> record.getExpiresAt() != null && record.getExpiresAt().isAfter(now));
     }
 
     @Override
@@ -46,6 +48,14 @@ public class DefaultFraudIdempotencyService implements FraudIdempotencyService {
         Optional<FraudIdempotencyRecord> existing = repository.findByIdempotencyKeyAndOperationScope(safeKey, safeScope);
         if (existing.isPresent()) {
             FraudIdempotencyRecord record = existing.get();
+            if (record.getExpiresAt() == null || !record.getExpiresAt().isAfter(now)) {
+                record.setRequestHash(trim(requestHash, 128));
+                record.setStatus(FraudIdempotencyStatus.STARTED);
+                record.setLockedUntil(now.plusMinutes(DEFAULT_LOCK_MINUTES));
+                record.setExpiresAt(now.plusHours(DEFAULT_TTL_HOURS));
+                record.setResponseJson(null);
+                return repository.save(record);
+            }
             validateRequestHash(record, requestHash);
             if (record.getStatus() == FraudIdempotencyStatus.COMPLETED) {
                 return record;

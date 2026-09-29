@@ -2,6 +2,7 @@ package com.ecommerce.app.module.communication.controller;
 
 import com.ecommerce.app.module.communication.services.CommunicationNotificationService;
 import com.ecommerce.app.module.communication.services.ManualCommunicationPermissionService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/admin/communication/messages")
+@PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
 public class CommunicationMessageReportController {
 
     private final ManualCommunicationPermissionService permissionService;

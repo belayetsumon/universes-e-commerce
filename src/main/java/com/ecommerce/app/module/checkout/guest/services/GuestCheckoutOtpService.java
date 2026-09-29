@@ -12,6 +12,9 @@ import com.ecommerce.app.module.communication.model.MessageChannel;
 import com.ecommerce.app.module.communication.model.MessageEventType;
 import com.ecommerce.app.module.communication.model.MessageType;
 import com.ecommerce.app.module.communication.services.MessageDispatchService;
+import com.ecommerce.app.module.fraud.model.VelocityCounterScope;
+import com.ecommerce.app.module.fraud.services.OrderVelocityService;
+import com.ecommerce.app.module.fraud.services.VelocityLimitClaim;
 import com.ecommerce.app.module.settings.services.StoreOperationModeService;
 import com.ecommerce.app.module.user.model.Users;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +24,7 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -45,6 +49,7 @@ public class GuestCheckoutOtpService {
     private final GuestCheckoutUserResolver userResolver;
     private final GuestCheckoutSessionService sessionService;
     private final StoreOperationModeService storeOperationModeService;
+    private final OrderVelocityService orderVelocityService;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public GuestCheckoutOtpService(
@@ -54,7 +59,8 @@ public class GuestCheckoutOtpService {
             MessageDispatchService messageDispatchService,
             GuestCheckoutUserResolver userResolver,
             GuestCheckoutSessionService sessionService,
-            StoreOperationModeService storeOperationModeService) {
+            StoreOperationModeService storeOperationModeService,
+            OrderVelocityService orderVelocityService) {
         this.repository = repository;
         this.mobileNumberService = mobileNumberService;
         this.passwordEncoder = passwordEncoder;
@@ -62,6 +68,7 @@ public class GuestCheckoutOtpService {
         this.userResolver = userResolver;
         this.sessionService = sessionService;
         this.storeOperationModeService = storeOperationModeService;
+        this.orderVelocityService = orderVelocityService;
     }
 
     @Transactional
@@ -76,18 +83,30 @@ public class GuestCheckoutOtpService {
         LocalDateTime now = LocalDateTime.now();
         String ipHash = hash(clientIp(request));
         String deviceHash = hash(deviceFingerprint);
-        enforceSendLimits(mobile, ipHash, deviceHash, session.getId(), now);
         int resendCooldownSeconds = storeOperationModeService.guestOtpResendCooldownSeconds();
         int otpTtlMinutes = storeOperationModeService.guestOtpExpiryMinutes();
 
-        int resendCount = repository.findTopByMobileNumberAndPurposeAndStatusOrderByCreatedAtDesc(
+        OtpVerification latestPending = repository.findTopByMobileNumberAndPurposeAndStatusOrderByCreatedAtDesc(
                 mobile,
                 OtpPurpose.GUEST_CHECKOUT,
                 OtpStatus.PENDING
-        ).map(existing -> {
-            ensureResendAllowed(existing, now, resendCooldownSeconds);
-            return existing.getResendCount() + 1;
-        }).orElse(0);
+        ).orElse(null);
+        int resendCount = 0;
+        long chainBaseline = 0L;
+        if (latestPending != null && !latestPending.isExpired(now)) {
+            ensureResendAllowed(latestPending, now, resendCooldownSeconds);
+            resendCount = latestPending.getResendCount() + 1;
+            chainBaseline = latestPending.getResendCount() + 1L;
+        }
+        claimSendLimits(
+                mobile,
+                ipHash,
+                deviceHash,
+                session.getId(),
+                now,
+                resendCooldownSeconds,
+                otpTtlMinutes,
+                chainBaseline);
 
         expirePendingOtps(mobile);
         String otp = String.format("%06d", secureRandom.nextInt(1_000_000));
@@ -140,6 +159,14 @@ public class GuestCheckoutOtpService {
                 || !session.getId().equals(verification.getHttpSessionId())
                 || (verification.getDeviceFingerprintHash() != null
                 && !secureEquals(verification.getDeviceFingerprintHash(), submittedDeviceHash))) {
+            return invalidOtpResponse();
+        }
+        boolean latestVerification = repository
+                .findTopByMobileNumberAndPurposeOrderByIdDesc(
+                        verification.getMobileNumber(), OtpPurpose.GUEST_CHECKOUT)
+                .map(latest -> secureEquals(latest.getSessionToken(), verification.getSessionToken()))
+                .orElse(false);
+        if (!latestVerification) {
             return invalidOtpResponse();
         }
         if (verification.getStatus() != OtpStatus.PENDING || verification.isExpired(now)) {
@@ -270,7 +297,7 @@ public class GuestCheckoutOtpService {
             var result = messageDispatchService.dispatch(request);
             boolean accepted = result != null
                     && result.isSuccess()
-                    && ("SENT".equals(result.getStatus()) || "QUEUED".equals(result.getStatus()));
+                    && "SENT".equals(result.getStatus());
             if (!accepted) {
                 LOGGER.warn("Guest checkout OTP dispatch was not accepted.");
             }
@@ -288,13 +315,65 @@ public class GuestCheckoutOtpService {
         return response;
     }
 
-    private void enforceSendLimits(String mobile, String ipHash, String deviceHash, String httpSessionId, LocalDateTime now) {
+    private void claimSendLimits(
+            String mobile,
+            String ipHash,
+            String deviceHash,
+            String httpSessionId,
+            LocalDateTime now,
+            int resendCooldownSeconds,
+            int otpTtlMinutes,
+            long chainBaseline) {
         LocalDateTime windowStart = now.minusDays(1);
         int mobileSendLimit = storeOperationModeService.guestOtpDailySendLimit();
-        if (repository.countByMobileNumberAndCreatedAtAfter(mobile, windowStart) >= mobileSendLimit
-                || (ipHash != null && repository.countByIpAddressHashAndCreatedAtAfter(ipHash, windowStart) >= IP_DAILY_SEND_LIMIT)
-                || (deviceHash != null && repository.countByDeviceFingerprintHashAndCreatedAtAfter(deviceHash, windowStart) >= DEVICE_DAILY_SEND_LIMIT)
-                || (httpSessionId != null && repository.countByHttpSessionIdAndCreatedAtAfter(httpSessionId, windowStart) >= mobileSendLimit)) {
+        LocalDateTime cooldownStart = now.minusSeconds(Math.max(resendCooldownSeconds, 1));
+        List<VelocityLimitClaim> claims = new ArrayList<>();
+        claims.add(new VelocityLimitClaim(
+                VelocityCounterScope.OTP_GUEST_MOBILE_COOLDOWN,
+                mobile,
+                1,
+                Duration.ofSeconds(Math.max(resendCooldownSeconds, 1)),
+                repository.countByMobileNumberAndPurposeAndCreatedAtAfter(
+                        mobile, OtpPurpose.GUEST_CHECKOUT, cooldownStart)));
+        long purposeDailyCount = repository.countByMobileNumberAndPurposeAndCreatedAtAfter(
+                mobile, OtpPurpose.GUEST_CHECKOUT, windowStart);
+        claims.add(new VelocityLimitClaim(
+                VelocityCounterScope.OTP_GUEST_MOBILE_CHAIN,
+                mobile,
+                MAX_RESENDS + 1,
+                Duration.ofMinutes(Math.max(otpTtlMinutes, 1)),
+                chainBaseline));
+        claims.add(new VelocityLimitClaim(
+                VelocityCounterScope.OTP_GUEST_MOBILE_DAILY,
+                mobile,
+                mobileSendLimit,
+                Duration.ofDays(1),
+                repository.countByMobileNumberAndCreatedAtAfter(mobile, windowStart)));
+        if (ipHash != null) {
+            claims.add(new VelocityLimitClaim(
+                    VelocityCounterScope.OTP_IP_DAILY,
+                    ipHash,
+                    IP_DAILY_SEND_LIMIT,
+                    Duration.ofDays(1),
+                    repository.countByIpAddressHashAndCreatedAtAfter(ipHash, windowStart)));
+        }
+        if (deviceHash != null) {
+            claims.add(new VelocityLimitClaim(
+                    VelocityCounterScope.OTP_DEVICE_DAILY,
+                    deviceHash,
+                    DEVICE_DAILY_SEND_LIMIT,
+                    Duration.ofDays(1),
+                    repository.countByDeviceFingerprintHashAndCreatedAtAfter(deviceHash, windowStart)));
+        }
+        if (httpSessionId != null) {
+            claims.add(new VelocityLimitClaim(
+                    VelocityCounterScope.OTP_SESSION_DAILY,
+                    httpSessionId,
+                    mobileSendLimit,
+                    Duration.ofDays(1),
+                    repository.countByHttpSessionIdAndCreatedAtAfter(httpSessionId, windowStart)));
+        }
+        if (!orderVelocityService.claimAllWithinLimits(claims)) {
             throw new IllegalStateException("Please wait before requesting another verification code.");
         }
     }
@@ -324,14 +403,10 @@ public class GuestCheckoutOtpService {
     }
 
     private String clientIp(HttpServletRequest request) {
-        if (request == null) {
-            return null;
-        }
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
+        // Forwarded headers are interpreted by the servlet container only when
+        // the deployment has explicitly enabled a trusted proxy strategy.
+        // Never trust a raw client-controlled X-Forwarded-For value here.
+        return request == null ? null : clean(request.getRemoteAddr());
     }
 
     private String hash(String value) {
@@ -348,7 +423,7 @@ public class GuestCheckoutOtpService {
             }
             return builder.toString();
         } catch (Exception ex) {
-            return Integer.toHexString(cleaned.hashCode());
+            throw new IllegalStateException("Unable to secure the verification request identifier.", ex);
         }
     }
 

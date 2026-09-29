@@ -17,7 +17,8 @@ import java.time.LocalDateTime;
     )
 }, indexes = {
     @Index(name = "idx_fraud_velocity_scope_value", columnList = "counter_scope,counter_value_hash"),
-    @Index(name = "idx_fraud_velocity_window", columnList = "window_start_at,window_end_at")
+    @Index(name = "idx_fraud_velocity_window", columnList = "window_start_at,window_end_at"),
+    @Index(name = "idx_fraud_velocity_retention", columnList = "window_end_at,id")
 })
 public class VelocityCounter extends BaseFraudEntity {
 

@@ -1,5 +1,6 @@
 package com.ecommerce.app.module.communication.controller;
 
+import com.ecommerce.app.module.communication.dto.MessageProviderForm;
 import com.ecommerce.app.module.communication.model.CommunicationSetting;
 import com.ecommerce.app.module.communication.model.DeliveryMode;
 import com.ecommerce.app.module.communication.model.MessageChannel;
@@ -18,6 +19,7 @@ import com.ecommerce.app.module.communication.services.CommunicationSettingsServ
 import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -31,6 +33,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/admin/communication")
+@PreAuthorize("hasAnyAuthority('admin', 'ROLE_ADMIN')")
 public class CommunicationAdminController {
 
     private final MessageTemplateRepository templateRepository;
@@ -120,7 +123,7 @@ public class CommunicationAdminController {
 
     @GetMapping("/providers/new")
     public String createProvider(Model model) {
-        model.addAttribute("provider", new MessageProvider());
+        model.addAttribute("provider", new MessageProviderForm());
         return "admin/communication/provider-form";
     }
 
@@ -131,15 +134,30 @@ public class CommunicationAdminController {
             redirectAttributes.addFlashAttribute("errorMessage", "Message provider was not found.");
             return "redirect:/admin/communication/providers";
         }
-        model.addAttribute("provider", provider);
+        model.addAttribute("provider", MessageProviderForm.fromProvider(provider));
         return "admin/communication/provider-form";
     }
 
     @PostMapping("/providers/save")
-    public String saveProvider(@Valid @ModelAttribute("provider") MessageProvider provider, BindingResult result, RedirectAttributes redirectAttributes) {
+    public String saveProvider(
+            @Valid @ModelAttribute("provider") MessageProviderForm form,
+            BindingResult result,
+            RedirectAttributes redirectAttributes
+    ) {
         if (result.hasErrors()) {
             return "admin/communication/provider-form";
         }
+        MessageProvider provider;
+        if (form.getId() == null) {
+            provider = new MessageProvider();
+        } else {
+            provider = providerRepository.findById(form.getId()).orElse(null);
+            if (provider == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Message provider was not found.");
+                return "redirect:/admin/communication/providers";
+            }
+        }
+        form.applyTo(provider);
         providerRepository.save(provider);
         redirectAttributes.addFlashAttribute("successMessage", "Message provider saved successfully.");
         return "redirect:/admin/communication/providers";

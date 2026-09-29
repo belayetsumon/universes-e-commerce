@@ -63,7 +63,7 @@ class CustomerProfileControllerMobileSecurityTest {
         BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(form, "accountForm");
 
         when(loggedUserService.activeUserid()).thenReturn(7L);
-        when(usersRepository.findById(7L)).thenReturn(Optional.of(currentUser));
+        when(usersRepository.findByIdForUpdate(7L)).thenReturn(Optional.of(currentUser));
         when(usersRepository.findByMobile("8801812345678")).thenReturn(null);
         org.mockito.Mockito.doAnswer(invocation -> {
             Users user = invocation.getArgument(0);
@@ -85,6 +85,7 @@ class CustomerProfileControllerMobileSecurityTest {
         assertEquals("redirect:/customer-profile/index", view);
         assertEquals("8801812345678", currentUser.getMobile());
         assertFalse(currentUser.isMobileVerified());
+        verify(usersRepository).findByIdForUpdate(7L);
         verify(usersRepository).findByMobile("8801812345678");
         verify(mobileVerificationService)
                 .updateMobileAndInvalidateVerificationIfChanged(currentUser, "8801812345678");

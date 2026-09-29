@@ -6,9 +6,6 @@ package com.ecommerce.app.product.services;
 
 import com.ecommerce.app.product.dto.ProductSearchSuggestion;
 import com.ecommerce.app.product.dto.ProductSearchSuggestionResponse;
-import com.ecommerce.app.product.model.AvailableDeliveryArea;
-import com.ecommerce.app.product.model.DeliveryCharge;
-import com.ecommerce.app.product.model.DeliveryTimeline;
 import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.ProductAttribute;
 import com.ecommerce.app.product.model.ProductDimension;
@@ -112,12 +109,13 @@ public class ProductService {
                     ? variantAvailableStock
                     : (productAvailableStock.compareTo(BigDecimal.ZERO) > 0 ? productAvailableStock : variantAvailableStock);
 
-            boolean soldOut = manageStock && availableStock.compareTo(BigDecimal.ZERO) <= 0;
+            boolean preorderMode = allowPreorder && !manageStock;
+            boolean soldOut = !preorderMode && availableStock.compareTo(BigDecimal.ZERO) <= 0;
 
             product.put("availableStockQuantity", availableStock);
-            product.put("showPreorderBadge", soldOut && allowPreorder);
-            product.put("showOutOfStockBadge", soldOut && !allowPreorder);
-            product.put("availabilityLabel", soldOut ? (allowPreorder ? "Preorder" : "Out of stock") : "In stock");
+            product.put("showPreorderBadge", preorderMode);
+            product.put("showOutOfStockBadge", soldOut);
+            product.put("availabilityLabel", preorderMode ? "Preorder" : (soldOut ? "Out of stock" : "In stock"));
         }
 
         return products;
@@ -227,9 +225,10 @@ public class ProductService {
         String categoryName = category == null ? "Product" : category.getName();
         String imageName = product.getImageName() == null ? "" : product.getImageName().trim();
         String imageUrl = imageName.isEmpty() ? null : "/files/" + imageName;
-        boolean manageStock = Boolean.TRUE.equals(product.getManageStock());
         BigDecimal stockAvailable = product.getStockAvailableQuantity() == null ? BigDecimal.ZERO : product.getStockAvailableQuantity();
-        String badge = manageStock && stockAvailable.compareTo(BigDecimal.ZERO) <= 0 ? "Out of stock" : "In stock";
+        String badge = product.usesPreorder()
+                ? "Preorder"
+                : (stockAvailable.compareTo(BigDecimal.ZERO) <= 0 ? "Out of stock" : "In stock");
 
         return new ProductSearchSuggestion(
                 "product",
@@ -434,9 +433,6 @@ public class ProductService {
             Boolean hasImage,
             Boolean hasCatalogVariants,
             Boolean hasDimensions,
-            Boolean hasDeliveryAreas,
-            Boolean hasDeliveryCharges,
-            Boolean hasDeliveryTimelines,
             Boolean hasWarranty
     ) {
 
@@ -543,9 +539,6 @@ public class ProductService {
         addRelatedEntityPresencePredicate(predicates, cb, cq, productRoot, hasSpecifications, ProductAttribute.class);
         addRelatedEntityPresencePredicate(predicates, cb, cq, productRoot, hasCatalogVariants, ProductVariant.class);
         addRelatedEntityPresencePredicate(predicates, cb, cq, productRoot, hasDimensions, ProductDimension.class);
-        addRelatedEntityPresencePredicate(predicates, cb, cq, productRoot, hasDeliveryAreas, AvailableDeliveryArea.class);
-        addRelatedEntityPresencePredicate(predicates, cb, cq, productRoot, hasDeliveryCharges, DeliveryCharge.class);
-        addRelatedEntityPresencePredicate(predicates, cb, cq, productRoot, hasDeliveryTimelines, DeliveryTimeline.class);
         addRelatedEntityPresencePredicate(predicates, cb, cq, productRoot, hasWarranty, Warranty.class);
 
         if (!predicates.isEmpty()) {

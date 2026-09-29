@@ -363,6 +363,8 @@
                 <hr>
                 <form th:action="@{/order/savebyvendorupdate}" method="post" class="d-grid gap-3">
                     <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <input type="hidden" name="checkoutRequestId" th:value="${checkoutRequestId}" />
+                    <input type="hidden" name="checkoutCartFingerprint" th:value="${checkoutCartFingerprint}" />
 
                     <div class="card border-0 shadow-sm cart-checkout-card">
                         <div class="card-body">

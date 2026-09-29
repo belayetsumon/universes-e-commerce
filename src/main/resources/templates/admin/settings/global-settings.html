@@ -128,6 +128,7 @@
                     <button class="nav-link" id="payment-tab" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#payment" aria-controls="payment" aria-selected="false"><i class="bi bi-credit-card"></i><span>Payment</span></button>
                     <button class="nav-link" id="delivery-tab" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#delivery" aria-controls="delivery" aria-selected="false"><i class="bi bi-truck"></i><span>Delivery</span></button>
                     <button class="nav-link" id="order-tab" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#order" aria-controls="order" aria-selected="false"><i class="bi bi-receipt"></i><span>Order</span></button>
+                    <button class="nav-link" id="image-tab" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#image" aria-controls="image" aria-selected="false"><i class="bi bi-images"></i><span>Image</span></button>
                     <button class="nav-link" id="social-tab" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#social" aria-controls="social" aria-selected="false"><i class="bi bi-share"></i><span>Social</span></button>
                     <button class="nav-link" id="policy-tab" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#policy" aria-controls="policy" aria-selected="false"><i class="bi bi-file-richtext"></i><span>Policy</span></button>
                     <button class="nav-link" id="maintenance-tab" type="button" role="tab" data-bs-toggle="tab" data-bs-target="#maintenance" aria-controls="maintenance" aria-selected="false"><i class="bi bi-shield-check"></i><span>Maintenance</span></button>
@@ -575,6 +576,110 @@
                         </form>
                     </section>
 
+                    <section class="tab-pane fade settings-panel" id="image" role="tabpanel" aria-labelledby="image-tab">
+                        <form th:action="@{/admin/settings/image}"
+                              th:object="${imageSettingsForm}"
+                              method="post"
+                              class="settings-section-form"
+                              data-image-settings-form
+                              novalidate>
+                            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <input type="hidden" th:field="*{version}">
+                            <div class="settings-panel-head">
+                                <div>
+                                    <p>Image Settings</p>
+                                    <h2>Upload Limits and Generated Sizes</h2>
+                                </div>
+                                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i><span>Save Image Settings</span></button>
+                            </div>
+                            <div class="alert alert-info settings-alert" role="note">
+                                <i class="bi bi-info-circle"></i>
+                                <span>These database-backed limits apply immediately to vendor logo uploads and to featured product images uploaded by administrators or vendors. File-size values are stored in bytes.</span>
+                            </div>
+                            <div class="alert alert-danger settings-alert" th:if="${#fields.hasErrors('*')}">
+                                <ul class="mb-0"><li th:each="err : ${#fields.errors('*')}" th:text="${err}">Validation message</li></ul>
+                            </div>
+
+                            <div class="settings-card-stack">
+                                <div class="settings-card-section">
+                                    <h3><i class="bi bi-shop-window me-2"></i>Vendor Logo Policy</h3>
+                                    <p class="text-body-secondary small">Accepted source files are JPG or PNG and are converted to a 300 x 300 pixel WEBP logo.</p>
+                                    <div class="settings-grid settings-grid--compact">
+                                        <div class="settings-field">
+                                            <label class="form-label required" for="vendorLogoMaxFileSizeBytes">Maximum File Size</label>
+                                            <div class="input-group"><input id="vendorLogoMaxFileSizeBytes" type="number" min="1" max="10485760" step="1" required th:field="*{vendorLogoMaxFileSizeBytes}" th:errorclass="is-invalid" class="form-control"><span class="input-group-text">bytes</span></div>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('vendorLogoMaxFileSizeBytes')}" th:errors="*{vendorLogoMaxFileSizeBytes}">File-size error</div>
+                                        </div>
+                                        <div class="settings-field">
+                                            <label class="form-label required" for="vendorLogoMaxWidth">Maximum Width</label>
+                                            <div class="input-group"><input id="vendorLogoMaxWidth" type="number" min="1" max="8000" step="1" required th:field="*{vendorLogoMaxWidth}" th:errorclass="is-invalid" class="form-control"><span class="input-group-text">px</span></div>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('vendorLogoMaxWidth')}" th:errors="*{vendorLogoMaxWidth}">Width error</div>
+                                        </div>
+                                        <div class="settings-field">
+                                            <label class="form-label required" for="vendorLogoMaxHeight">Maximum Height</label>
+                                            <div class="input-group"><input id="vendorLogoMaxHeight" type="number" min="1" max="8000" step="1" required th:field="*{vendorLogoMaxHeight}" th:errorclass="is-invalid" class="form-control"><span class="input-group-text">px</span></div>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('vendorLogoMaxHeight')}" th:errors="*{vendorLogoMaxHeight}">Height error</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="settings-card-section">
+                                    <h3><i class="bi bi-card-image me-2"></i>Product Featured Image Policy</h3>
+                                    <p class="text-body-secondary small">Accepted source files are JPG, PNG, or WEBP. Minimum and maximum rules are enforced on both admin and vendor product forms.</p>
+                                    <div class="settings-grid">
+                                        <div class="settings-field">
+                                            <label class="form-label required" for="productFeaturedImageMinFileSizeBytes">Minimum File Size</label>
+                                            <div class="input-group"><input id="productFeaturedImageMinFileSizeBytes" type="number" min="1" max="10485760" step="1" required th:field="*{productFeaturedImageMinFileSizeBytes}" th:errorclass="is-invalid" class="form-control"><span class="input-group-text">bytes</span></div>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('productFeaturedImageMinFileSizeBytes')}" th:errors="*{productFeaturedImageMinFileSizeBytes}">Minimum file-size error</div>
+                                        </div>
+                                        <div class="settings-field">
+                                            <label class="form-label required" for="productFeaturedImageMaxFileSizeBytes">Maximum File Size</label>
+                                            <div class="input-group"><input id="productFeaturedImageMaxFileSizeBytes" type="number" min="1" max="10485760" step="1" required th:field="*{productFeaturedImageMaxFileSizeBytes}" th:errorclass="is-invalid" class="form-control"><span class="input-group-text">bytes</span></div>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('productFeaturedImageMaxFileSizeBytes')}" th:errors="*{productFeaturedImageMaxFileSizeBytes}">Maximum file-size error</div>
+                                        </div>
+                                        <div class="settings-field">
+                                            <label class="form-label required" for="productFeaturedImageMinWidth">Minimum Width</label>
+                                            <div class="input-group"><input id="productFeaturedImageMinWidth" type="number" min="1" max="8000" step="1" required th:field="*{productFeaturedImageMinWidth}" th:errorclass="is-invalid" class="form-control"><span class="input-group-text">px</span></div>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('productFeaturedImageMinWidth')}" th:errors="*{productFeaturedImageMinWidth}">Minimum width error</div>
+                                        </div>
+                                        <div class="settings-field">
+                                            <label class="form-label required" for="productFeaturedImageMaxWidth">Maximum Width</label>
+                                            <div class="input-group"><input id="productFeaturedImageMaxWidth" type="number" min="1" max="8000" step="1" required th:field="*{productFeaturedImageMaxWidth}" th:errorclass="is-invalid" class="form-control"><span class="input-group-text">px</span></div>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('productFeaturedImageMaxWidth')}" th:errors="*{productFeaturedImageMaxWidth}">Maximum width error</div>
+                                        </div>
+                                        <div class="settings-field">
+                                            <label class="form-label required" for="productFeaturedImageMinHeight">Minimum Height</label>
+                                            <div class="input-group"><input id="productFeaturedImageMinHeight" type="number" min="1" max="8000" step="1" required th:field="*{productFeaturedImageMinHeight}" th:errorclass="is-invalid" class="form-control"><span class="input-group-text">px</span></div>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('productFeaturedImageMinHeight')}" th:errors="*{productFeaturedImageMinHeight}">Minimum height error</div>
+                                        </div>
+                                        <div class="settings-field">
+                                            <label class="form-label required" for="productFeaturedImageMaxHeight">Maximum Height</label>
+                                            <div class="input-group"><input id="productFeaturedImageMaxHeight" type="number" min="1" max="8000" step="1" required th:field="*{productFeaturedImageMaxHeight}" th:errorclass="is-invalid" class="form-control"><span class="input-group-text">px</span></div>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('productFeaturedImageMaxHeight')}" th:errors="*{productFeaturedImageMaxHeight}">Maximum height error</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="settings-card-section">
+                                    <h3><i class="bi bi-arrows-angle-contract me-2"></i>Generated Product Image</h3>
+                                    <p class="text-body-secondary small">The original aspect ratio is retained. These values are maximum output bounds, not a forced crop size.</p>
+                                    <div class="settings-grid">
+                                        <div class="settings-field">
+                                            <label class="form-label required" for="productFeaturedImageOutputMaxWidth">Output Maximum Width</label>
+                                            <div class="input-group"><input id="productFeaturedImageOutputMaxWidth" type="number" min="1" max="8000" step="1" required th:field="*{productFeaturedImageOutputMaxWidth}" th:errorclass="is-invalid" class="form-control"><span class="input-group-text">px</span></div>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('productFeaturedImageOutputMaxWidth')}" th:errors="*{productFeaturedImageOutputMaxWidth}">Output width error</div>
+                                        </div>
+                                        <div class="settings-field">
+                                            <label class="form-label required" for="productFeaturedImageOutputMaxHeight">Output Maximum Height</label>
+                                            <div class="input-group"><input id="productFeaturedImageOutputMaxHeight" type="number" min="1" max="8000" step="1" required th:field="*{productFeaturedImageOutputMaxHeight}" th:errorclass="is-invalid" class="form-control"><span class="input-group-text">px</span></div>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('productFeaturedImageOutputMaxHeight')}" th:errors="*{productFeaturedImageOutputMaxHeight}">Output height error</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </section>
+
                     <section class="tab-pane fade settings-panel" id="social" role="tabpanel" aria-labelledby="social-tab">
                         <form th:action="@{/admin/settings/social}" th:object="${socialSettingsForm}" method="post" class="settings-section-form" novalidate>
                             <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
@@ -634,5 +739,62 @@
     <th:block layout:fragment="page_js">
         <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.js"></script>
         <script th:src="@{/assets/admin/pages/global-settings/global-settings.js}"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const form = document.querySelector('[data-image-settings-form]');
+                if (!form) {
+                    return;
+                }
+
+                const field = function (name) {
+                    return form.querySelector('[name="' + name + '"]');
+                };
+                const value = function (input) {
+                    return input && input.value !== '' ? Number(input.value) : NaN;
+                };
+                const names = [
+                    'productFeaturedImageMinFileSizeBytes',
+                    'productFeaturedImageMaxFileSizeBytes',
+                    'productFeaturedImageMinWidth',
+                    'productFeaturedImageMaxWidth',
+                    'productFeaturedImageMinHeight',
+                    'productFeaturedImageMaxHeight',
+                    'productFeaturedImageOutputMaxWidth',
+                    'productFeaturedImageOutputMaxHeight'
+                ];
+
+                function validateRanges() {
+                    names.forEach(function (name) {
+                        field(name).setCustomValidity('');
+                    });
+
+                    if (value(field(names[0])) > value(field(names[1]))) {
+                        field(names[1]).setCustomValidity('Maximum file size must be greater than or equal to minimum file size.');
+                    }
+                    if (value(field(names[2])) > value(field(names[3]))) {
+                        field(names[3]).setCustomValidity('Maximum width must be greater than or equal to minimum width.');
+                    }
+                    if (value(field(names[4])) > value(field(names[5]))) {
+                        field(names[5]).setCustomValidity('Maximum height must be greater than or equal to minimum height.');
+                    }
+                    if (value(field(names[6])) > value(field(names[3]))) {
+                        field(names[6]).setCustomValidity('Output width cannot exceed the accepted maximum width.');
+                    }
+                    if (value(field(names[7])) > value(field(names[5]))) {
+                        field(names[7]).setCustomValidity('Output height cannot exceed the accepted maximum height.');
+                    }
+                }
+
+                form.addEventListener('input', validateRanges);
+                form.addEventListener('submit', function (event) {
+                    validateRanges();
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopImmediatePropagation();
+                        form.reportValidity();
+                    }
+                });
+            });
+        </script>
     </th:block>
 </div>

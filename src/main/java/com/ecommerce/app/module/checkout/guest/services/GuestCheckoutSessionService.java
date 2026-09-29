@@ -11,6 +11,12 @@ public class GuestCheckoutSessionService {
 
     public static final String SESSION_KEY = "guestCheckoutSession";
 
+    private final MobileNumberNormalizationService mobileNumberService;
+
+    public GuestCheckoutSessionService(MobileNumberNormalizationService mobileNumberService) {
+        this.mobileNumberService = mobileNumberService;
+    }
+
     public Optional<GuestCheckoutSession> current(HttpSession session) {
         if (session == null) {
             return Optional.empty();
@@ -28,6 +34,23 @@ public class GuestCheckoutSessionService {
 
     public boolean isVerified(HttpSession session) {
         return current(session).isPresent();
+    }
+
+    public boolean isVerifiedContactMobile(HttpSession session, String rawContactMobile) {
+        GuestCheckoutSession guestSession = current(session).orElse(null);
+        if (guestSession == null || guestSession.getMobileVerificationStatus()
+                != com.ecommerce.app.module.checkout.guest.model.MobileVerificationStatus.VERIFIED) {
+            return false;
+        }
+        try {
+            String verifiedMobile = mobileNumberService.normalizeBangladeshMobile(
+                    guestSession.getVerifiedMobile()
+            );
+            String contactMobile = mobileNumberService.normalizeBangladeshMobile(rawContactMobile);
+            return verifiedMobile.equals(contactMobile);
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
     }
 
     public void store(HttpSession session, GuestCheckoutSession guestSession) {

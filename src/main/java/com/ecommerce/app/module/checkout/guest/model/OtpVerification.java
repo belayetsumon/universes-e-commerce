@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -14,7 +15,10 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "guest_checkout_otp_verification")
+@Table(name = "guest_checkout_otp_verification", indexes = {
+    @Index(name = "idx_guest_otp_status_created", columnList = "status,created_at"),
+    @Index(name = "idx_guest_otp_status_expiry", columnList = "status,expires_at")
+})
 public class OtpVerification {
 
     @Id

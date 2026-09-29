@@ -58,6 +58,7 @@ class SecurityConfigCsrfCoverageTest {
         @PostMapping({
             "/role/probe",
             "/admin/settings/probe",
+            "/admin/communication/providers/save",
             "/users/save",
             "/users/change-password/7",
             "/users/generate-referral-code/7",
@@ -69,6 +70,9 @@ class SecurityConfigCsrfCoverageTest {
             "/customer-profile/update",
             "/checkout/guest/mobile/send-otp",
             "/checkout/customer/mobile/send-otp",
+            "/cart/updateQuantity",
+            "/carts/updateShippingOption",
+            "/district/save-district",
             "/cart_address/add_billing_address",
             "/order/savebyvendor",
             "/admin/fraud/probe",
@@ -95,6 +99,7 @@ class SecurityConfigCsrfCoverageTest {
     @ValueSource(strings = {
         "/role/probe",
         "/admin/settings/probe",
+        "/admin/communication/providers/save",
         "/users/save",
         "/users/change-password/7",
         "/users/generate-referral-code/7",
@@ -106,6 +111,9 @@ class SecurityConfigCsrfCoverageTest {
         "/customer-profile/update",
         "/checkout/guest/mobile/send-otp",
         "/checkout/customer/mobile/send-otp",
+        "/cart/updateQuantity",
+        "/carts/updateShippingOption",
+        "/district/save-district",
         "/cart_address/add_billing_address",
         "/order/savebyvendor"
     })
@@ -117,9 +125,13 @@ class SecurityConfigCsrfCoverageTest {
     @ParameterizedTest
     @ValueSource(strings = {
         "/admin/settings/probe",
+        "/admin/communication/providers/save",
         "/users/frontRegistrationSave",
         "/checkout/guest/mobile/send-otp",
         "/checkout/customer/mobile/send-otp",
+        "/cart/updateQuantity",
+        "/carts/updateShippingOption",
+        "/district/save-district",
         "/cart_address/add_billing_address",
         "/order/savebyvendor"
     })
@@ -138,6 +150,14 @@ class SecurityConfigCsrfCoverageTest {
     void externalProviderCallbackRemainsOutsideBrowserCsrfMatcher() throws Exception {
         mockMvc.perform(post("/payment/meritten-emi/provider/callback/7").with(adminUser()))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void communicationAdministrationRejectsNonAdminUsers() throws Exception {
+        mockMvc.perform(post("/admin/communication/providers/save")
+                        .with(user("customer"))
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
     }
 
     private org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.UserRequestPostProcessor adminUser() {

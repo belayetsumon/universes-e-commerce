@@ -12,7 +12,7 @@ This is an enterprise-grade Java Spring Boot eCommerce / multi-vendor marketplac
 * Spring Data JPA / Hibernate
 * Thymeleaf
 * Bootstrap 5.3
-* MySQL/PostgreSQL
+* MySQL 8+
 * Maven
 * Linux / Tomcat deployment
 
@@ -43,7 +43,7 @@ This is an enterprise-grade Java Spring Boot eCommerce / multi-vendor marketplac
 
 ## Entity and Database Rules
 
-* PostgreSQL is the target database.
+* MySQL is the target database.
 * Avoid reserved SQL keywords for column names.
 * Use explicit `@Column` names where needed.
 * Use `BigDecimal` for money.

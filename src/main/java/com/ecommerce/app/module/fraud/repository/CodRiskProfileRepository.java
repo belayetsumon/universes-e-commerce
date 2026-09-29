@@ -1,6 +1,8 @@
 package com.ecommerce.app.module.fraud.repository;
 
 import com.ecommerce.app.module.fraud.model.CodRiskProfile;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -11,6 +13,8 @@ public interface CodRiskProfileRepository extends JpaRepository<CodRiskProfile, 
     Optional<CodRiskProfile> findByVendorId(Long vendorId);
 
     Optional<CodRiskProfile> findByMobileHash(String mobileHash);
+
+    List<CodRiskProfile> findAllByMobileHashIn(Collection<String> mobileHashes);
 
     Optional<CodRiskProfile> findByAddressHash(String addressHash);
 

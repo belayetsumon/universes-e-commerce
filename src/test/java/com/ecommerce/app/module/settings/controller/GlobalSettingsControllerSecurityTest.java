@@ -1,6 +1,7 @@
 package com.ecommerce.app.module.settings.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -112,6 +113,35 @@ class GlobalSettingsControllerSecurityTest {
         mockMvc.perform(post("/admin/settings/update").with(adminUser()).with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/settings/index"));
+    }
+
+    @Test
+    void imageSettingsMutationRequiresCsrf() throws Exception {
+        mockMvc.perform(post("/admin/settings/image").with(adminUser()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminCanSaveAValidImagePolicyWithCsrf() throws Exception {
+        mockMvc.perform(post("/admin/settings/image")
+                        .with(adminUser())
+                        .with(csrf())
+                        .param("version", "1")
+                        .param("vendorLogoMaxFileSizeBytes", "1500000")
+                        .param("vendorLogoMaxWidth", "3200")
+                        .param("vendorLogoMaxHeight", "2400")
+                        .param("productFeaturedImageMinFileSizeBytes", "2048")
+                        .param("productFeaturedImageMaxFileSizeBytes", "7000000")
+                        .param("productFeaturedImageMinWidth", "640")
+                        .param("productFeaturedImageMinHeight", "480")
+                        .param("productFeaturedImageMaxWidth", "4096")
+                        .param("productFeaturedImageMaxHeight", "3072")
+                        .param("productFeaturedImageOutputMaxWidth", "1024")
+                        .param("productFeaturedImageOutputMaxHeight", "768"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/settings/index#image"));
+
+        verify(globalSettingsService).updateImageSettings(any());
     }
 
     private org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.UserRequestPostProcessor adminUser() {

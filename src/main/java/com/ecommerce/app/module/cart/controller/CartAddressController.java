@@ -8,6 +8,7 @@ import com.ecommerce.app.module.checkout.availability.CheckoutAvailability;
 import com.ecommerce.app.module.checkout.availability.CheckoutAvailabilityService;
 import com.ecommerce.app.module.checkout.guest.services.GuestCheckoutSessionService;
 import com.ecommerce.app.module.checkout.guest.session.GuestCheckoutSession;
+import com.ecommerce.app.module.cart.services.CheckoutAddressValidationService;
 import com.ecommerce.app.module.shipping.model.ShippingLocation;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.user.services.LoggedUserService;
@@ -18,8 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
@@ -29,6 +32,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/cart_address")
 public class CartAddressController {
+
+    @InitBinder({"billingAddress", "shippingAddress"})
+    void restrictCheckoutAddressBinding(WebDataBinder binder) {
+        binder.setDisallowedFields(
+                "id", "uuid", "userId", "order",
+                "createdBy", "created", "modifiedBy", "modified"
+        );
+    }
 
     @Autowired
     LoggedUserService loggedUserService;
@@ -42,6 +53,9 @@ public class CartAddressController {
     @Autowired
     CheckoutAvailabilityService checkoutAvailabilityService;
 
+    @Autowired
+    CheckoutAddressValidationService checkoutAddressValidationService;
+
     @PostMapping("/add_billing_address")
     public String addBillingAddress(Model model, HttpSession session, BillingAddress billingAddress,
             @RequestParam(name = "sameAddress", required = false) Boolean sameAddress,
@@ -51,28 +65,53 @@ public class CartAddressController {
         if (availabilityRedirect != null) {
             return availabilityRedirect;
         }
-        if (!loggedUserService.isAuthenticatedUser() && guestCheckoutSessionService.isVerified(session)) {
-            applyVerifiedGuestAddress(session, billingAddress, Boolean.TRUE);
+        BillingAddress safeBillingAddress = copySubmittedBillingAddress(billingAddress);
+        boolean verifiedGuest = !loggedUserService.isAuthenticatedUser()
+                && guestCheckoutSessionService.isVerified(session);
+        if (verifiedGuest) {
+            guestCheckoutSessionService.current(session)
+                    .ifPresent(guest -> safeBillingAddress.setMobile(guest.getVerifiedMobile()));
+        }
+        String billingError = checkoutAddressValidationService.validateBillingAddress(safeBillingAddress);
+        if (billingError != null) {
+            clearSubmittedAddresses(session);
+            redirectAttributes.addFlashAttribute("errorMessage", billingError);
+            return "redirect:/order/create";
+        }
+        safeBillingAddress.setMobile(
+                checkoutAddressValidationService.normalizeMobileForStorage(safeBillingAddress.getMobile()));
+        if (verifiedGuest) {
+            applyVerifiedGuestAddress(session, safeBillingAddress, Boolean.TRUE);
             return "redirect:/order/create";
         }
 
-        session.setAttribute("session_Billing_address", billingAddress);
+        session.setAttribute("session_Billing_address", safeBillingAddress);
 
         ShippingAddress shippingAddress = new ShippingAddress();
 
         if (Boolean.TRUE.equals(sameAddress)) {
 
-            shippingAddress.setFirstName(billingAddress.getFirstName());
-            shippingAddress.setLastName(billingAddress.getLastName());
-            shippingAddress.setEmail(billingAddress.getEmail());
-            shippingAddress.setMobile(billingAddress.getMobile());
-            shippingAddress.setCompany(billingAddress.getCompany());
-            shippingAddress.setCountry(billingAddress.getCountry());
-            shippingAddress.setDistrict(billingAddress.getDistrict());
-            shippingAddress.setAddressLineOne(billingAddress.getAddressLineOne());
-            shippingAddress.setAddressLinetwo(billingAddress.getAddressLinetwo());
-            shippingAddress.setCity(billingAddress.getCity());
-            shippingAddress.setPostCode(billingAddress.getPostCode());
+            shippingAddress.setFirstName(safeBillingAddress.getFirstName());
+            shippingAddress.setLastName(safeBillingAddress.getLastName());
+            shippingAddress.setEmail(safeBillingAddress.getEmail());
+            shippingAddress.setMobile(safeBillingAddress.getMobile());
+            shippingAddress.setCompany(safeBillingAddress.getCompany());
+            shippingAddress.setAddressLineOne(safeBillingAddress.getAddressLineOne());
+            shippingAddress.setAddressLinetwo(safeBillingAddress.getAddressLinetwo());
+            shippingAddress.setPostCode(safeBillingAddress.getPostCode());
+            if (!applySelectedLocation(session, shippingAddress)) {
+                session.removeAttribute("session_Shipping_address");
+                return "redirect:/district/select-district";
+            }
+            String shippingError = checkoutAddressValidationService.validateShippingAddress(
+                    shippingAddress,
+                    currentShippingLocation(session)
+            );
+            if (shippingError != null) {
+                session.removeAttribute("session_Shipping_address");
+                redirectAttributes.addFlashAttribute("errorMessage", shippingError);
+                return "redirect:/order/create";
+            }
             session.setAttribute("session_Shipping_address", shippingAddress);
         } else {
             // Avoid reusing an old shipping form when billing is edited independently.
@@ -89,7 +128,27 @@ public class CartAddressController {
             return availabilityRedirect;
         }
 
-        session.setAttribute("session_Shipping_address", shippingAddress);
+        ShippingAddress safeShippingAddress = copySubmittedShippingAddress(shippingAddress);
+        if (!loggedUserService.isAuthenticatedUser()) {
+            guestCheckoutSessionService.current(session)
+                    .ifPresent(guest -> safeShippingAddress.setMobile(guest.getVerifiedMobile()));
+        }
+        if (!applySelectedLocation(session, safeShippingAddress)) {
+            session.removeAttribute("session_Shipping_address");
+            return "redirect:/district/select-district";
+        }
+        String shippingError = checkoutAddressValidationService.validateShippingAddress(
+                safeShippingAddress,
+                currentShippingLocation(session)
+        );
+        if (shippingError != null) {
+            session.removeAttribute("session_Shipping_address");
+            redirectAttributes.addFlashAttribute("errorMessage", shippingError);
+            return "redirect:/order/create";
+        }
+        safeShippingAddress.setMobile(
+                checkoutAddressValidationService.normalizeMobileForStorage(safeShippingAddress.getMobile()));
+        session.setAttribute("session_Shipping_address", safeShippingAddress);
 
         return "redirect:/order/create";
     }
@@ -179,6 +238,60 @@ public class CartAddressController {
         return value instanceof ShippingLocation location ? location : null;
     }
 
+    private boolean applySelectedLocation(HttpSession session, ShippingAddress shippingAddress) {
+        ShippingLocation location = currentShippingLocation(session);
+        if (shippingAddress == null || location == null || !location.isActive()) {
+            return false;
+        }
+        shippingAddress.setCountry("Bangladesh");
+        shippingAddress.setDistrict(location.getDisplayLabel());
+        shippingAddress.setCity(location.getName());
+        return true;
+    }
+
+    private BillingAddress copySubmittedBillingAddress(BillingAddress source) {
+        BillingAddress safe = new BillingAddress();
+        if (source == null) {
+            return safe;
+        }
+        safe.setFirstName(cleanLimited(source.getFirstName(), 120));
+        safe.setLastName(cleanLimited(source.getLastName(), 120));
+        safe.setEmail(cleanLimited(source.getEmail(), 254));
+        safe.setMobile(cleanLimited(source.getMobile(), 20));
+        safe.setCompany(cleanLimited(source.getCompany(), 160));
+        safe.setAddressLineOne(cleanLimited(source.getAddressLineOne(), 255));
+        safe.setAddressLinetwo(cleanLimited(source.getAddressLinetwo(), 255));
+        safe.setCity(cleanLimited(source.getCity(), 120));
+        safe.setPostCode(cleanLimited(source.getPostCode(), 40));
+        safe.setCountry(cleanLimited(source.getCountry(), 80));
+        safe.setDistrict(cleanLimited(source.getDistrict(), 160));
+        return safe;
+    }
+
+    private ShippingAddress copySubmittedShippingAddress(ShippingAddress source) {
+        ShippingAddress safe = new ShippingAddress();
+        if (source == null) {
+            return safe;
+        }
+        safe.setFirstName(cleanLimited(source.getFirstName(), 120));
+        safe.setLastName(cleanLimited(source.getLastName(), 120));
+        safe.setEmail(cleanLimited(source.getEmail(), 254));
+        safe.setMobile(cleanLimited(source.getMobile(), 20));
+        safe.setCompany(cleanLimited(source.getCompany(), 160));
+        safe.setAddressLineOne(cleanLimited(source.getAddressLineOne(), 255));
+        safe.setAddressLinetwo(cleanLimited(source.getAddressLinetwo(), 255));
+        safe.setPostCode(cleanLimited(source.getPostCode(), 40));
+        return safe;
+    }
+
+    private String cleanLimited(String value, int maximumLength) {
+        String cleaned = clean(value);
+        if (cleaned == null || cleaned.length() <= maximumLength) {
+            return cleaned;
+        }
+        return cleaned.substring(0, maximumLength);
+    }
+
     private String checkoutAvailabilityRedirect(RedirectAttributes redirectAttributes) {
         boolean authenticated = loggedUserService.isAuthenticatedUser();
         CheckoutAvailability availability = checkoutAvailabilityService.availability(authenticated);
@@ -191,6 +304,14 @@ public class CartAddressController {
             return "redirect:/public/member-login";
         }
         return null;
+    }
+
+    private void clearSubmittedAddresses(HttpSession session) {
+        if (session == null) {
+            return;
+        }
+        session.removeAttribute("session_Billing_address");
+        session.removeAttribute("session_Shipping_address");
     }
 
     private String[] splitName(String recipientName) {

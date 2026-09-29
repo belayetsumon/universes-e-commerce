@@ -4,6 +4,18 @@
  */
 package com.ecommerce.app.module.settings.model;
 
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.PRODUCT_FEATURED_IMAGE_MAX_FILE_SIZE_BYTES;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.PRODUCT_FEATURED_IMAGE_MAX_HEIGHT;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.PRODUCT_FEATURED_IMAGE_MAX_WIDTH;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.PRODUCT_FEATURED_IMAGE_MIN_FILE_SIZE_BYTES;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.PRODUCT_FEATURED_IMAGE_MIN_HEIGHT;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.PRODUCT_FEATURED_IMAGE_MIN_WIDTH;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.PRODUCT_FEATURED_IMAGE_OUTPUT_MAX_HEIGHT;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.PRODUCT_FEATURED_IMAGE_OUTPUT_MAX_WIDTH;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.VENDOR_LOGO_MAX_FILE_SIZE_BYTES;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.VENDOR_LOGO_MAX_HEIGHT;
+import static com.ecommerce.app.module.settings.ImageUploadSettingsDefaults.VENDOR_LOGO_MAX_WIDTH;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -23,6 +35,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -95,6 +108,62 @@ public class GlobalSettings implements Serializable {
     @Size(max = 500)
     @Column(name = "favicon", length = 500)
     private String favicon;
+
+    // IMAGE UPLOAD SETTINGS
+    @NotNull
+    @Min(1)
+    @Column(name = "vendor_logo_max_file_size_bytes", nullable = false)
+    private Long vendorLogoMaxFileSizeBytes = VENDOR_LOGO_MAX_FILE_SIZE_BYTES;
+
+    @NotNull
+    @Min(1)
+    @Column(name = "vendor_logo_max_width", nullable = false)
+    private Integer vendorLogoMaxWidth = VENDOR_LOGO_MAX_WIDTH;
+
+    @NotNull
+    @Min(1)
+    @Column(name = "vendor_logo_max_height", nullable = false)
+    private Integer vendorLogoMaxHeight = VENDOR_LOGO_MAX_HEIGHT;
+
+    @NotNull
+    @Min(1)
+    @Column(name = "product_featured_image_min_file_size_bytes", nullable = false)
+    private Long productFeaturedImageMinFileSizeBytes = PRODUCT_FEATURED_IMAGE_MIN_FILE_SIZE_BYTES;
+
+    @NotNull
+    @Min(1)
+    @Column(name = "product_featured_image_max_file_size_bytes", nullable = false)
+    private Long productFeaturedImageMaxFileSizeBytes = PRODUCT_FEATURED_IMAGE_MAX_FILE_SIZE_BYTES;
+
+    @NotNull
+    @Min(1)
+    @Column(name = "product_featured_image_min_width", nullable = false)
+    private Integer productFeaturedImageMinWidth = PRODUCT_FEATURED_IMAGE_MIN_WIDTH;
+
+    @NotNull
+    @Min(1)
+    @Column(name = "product_featured_image_min_height", nullable = false)
+    private Integer productFeaturedImageMinHeight = PRODUCT_FEATURED_IMAGE_MIN_HEIGHT;
+
+    @NotNull
+    @Min(1)
+    @Column(name = "product_featured_image_max_width", nullable = false)
+    private Integer productFeaturedImageMaxWidth = PRODUCT_FEATURED_IMAGE_MAX_WIDTH;
+
+    @NotNull
+    @Min(1)
+    @Column(name = "product_featured_image_max_height", nullable = false)
+    private Integer productFeaturedImageMaxHeight = PRODUCT_FEATURED_IMAGE_MAX_HEIGHT;
+
+    @NotNull
+    @Min(1)
+    @Column(name = "product_featured_image_output_max_width", nullable = false)
+    private Integer productFeaturedImageOutputMaxWidth = PRODUCT_FEATURED_IMAGE_OUTPUT_MAX_WIDTH;
+
+    @NotNull
+    @Min(1)
+    @Column(name = "product_featured_image_output_max_height", nullable = false)
+    private Integer productFeaturedImageOutputMaxHeight = PRODUCT_FEATURED_IMAGE_OUTPUT_MAX_HEIGHT;
 
     @Size(max = 300)
     @Column(name = "site_url", length = 300)
@@ -1489,6 +1558,94 @@ public class GlobalSettings implements Serializable {
 
     public void setMaintenanceMessage(String maintenanceMessage) {
         this.maintenanceMessage = maintenanceMessage;
+    }
+
+    public Long getVendorLogoMaxFileSizeBytes() {
+        return vendorLogoMaxFileSizeBytes;
+    }
+
+    public void setVendorLogoMaxFileSizeBytes(Long vendorLogoMaxFileSizeBytes) {
+        this.vendorLogoMaxFileSizeBytes = vendorLogoMaxFileSizeBytes;
+    }
+
+    public Integer getVendorLogoMaxWidth() {
+        return vendorLogoMaxWidth;
+    }
+
+    public void setVendorLogoMaxWidth(Integer vendorLogoMaxWidth) {
+        this.vendorLogoMaxWidth = vendorLogoMaxWidth;
+    }
+
+    public Integer getVendorLogoMaxHeight() {
+        return vendorLogoMaxHeight;
+    }
+
+    public void setVendorLogoMaxHeight(Integer vendorLogoMaxHeight) {
+        this.vendorLogoMaxHeight = vendorLogoMaxHeight;
+    }
+
+    public Long getProductFeaturedImageMinFileSizeBytes() {
+        return productFeaturedImageMinFileSizeBytes;
+    }
+
+    public void setProductFeaturedImageMinFileSizeBytes(Long value) {
+        this.productFeaturedImageMinFileSizeBytes = value;
+    }
+
+    public Long getProductFeaturedImageMaxFileSizeBytes() {
+        return productFeaturedImageMaxFileSizeBytes;
+    }
+
+    public void setProductFeaturedImageMaxFileSizeBytes(Long value) {
+        this.productFeaturedImageMaxFileSizeBytes = value;
+    }
+
+    public Integer getProductFeaturedImageMinWidth() {
+        return productFeaturedImageMinWidth;
+    }
+
+    public void setProductFeaturedImageMinWidth(Integer value) {
+        this.productFeaturedImageMinWidth = value;
+    }
+
+    public Integer getProductFeaturedImageMinHeight() {
+        return productFeaturedImageMinHeight;
+    }
+
+    public void setProductFeaturedImageMinHeight(Integer value) {
+        this.productFeaturedImageMinHeight = value;
+    }
+
+    public Integer getProductFeaturedImageMaxWidth() {
+        return productFeaturedImageMaxWidth;
+    }
+
+    public void setProductFeaturedImageMaxWidth(Integer value) {
+        this.productFeaturedImageMaxWidth = value;
+    }
+
+    public Integer getProductFeaturedImageMaxHeight() {
+        return productFeaturedImageMaxHeight;
+    }
+
+    public void setProductFeaturedImageMaxHeight(Integer value) {
+        this.productFeaturedImageMaxHeight = value;
+    }
+
+    public Integer getProductFeaturedImageOutputMaxWidth() {
+        return productFeaturedImageOutputMaxWidth;
+    }
+
+    public void setProductFeaturedImageOutputMaxWidth(Integer value) {
+        this.productFeaturedImageOutputMaxWidth = value;
+    }
+
+    public Integer getProductFeaturedImageOutputMaxHeight() {
+        return productFeaturedImageOutputMaxHeight;
+    }
+
+    public void setProductFeaturedImageOutputMaxHeight(Integer value) {
+        this.productFeaturedImageOutputMaxHeight = value;
     }
 
     public Boolean getRegistrationEnabled() {

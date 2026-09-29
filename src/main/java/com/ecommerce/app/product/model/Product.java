@@ -16,7 +16,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
@@ -145,8 +149,10 @@ public class Product implements Serializable {
 
     private Boolean featuredProduct;
 
-    private Boolean manageStock;
+    @Column(name = "manage_stock", nullable = false)
+    private Boolean manageStock = Boolean.TRUE;
 
+    @Column(name = "allow_preorder", nullable = false)
     private Boolean allowPreorder = Boolean.FALSE;
 
     @DateTimeFormat(pattern = "dd-MM-yyyy")
@@ -479,6 +485,60 @@ public class Product implements Serializable {
 
     public void setAllowPreorder(Boolean allowPreorder) {
         this.allowPreorder = allowPreorder;
+    }
+
+    @Transient
+    @JsonIgnore
+    public ProductAvailabilityMode getAvailabilityMode() {
+        return Boolean.TRUE.equals(allowPreorder)
+                ? ProductAvailabilityMode.PREORDER
+                : ProductAvailabilityMode.STOCK_MANAGED;
+    }
+
+    public void setAvailabilityMode(ProductAvailabilityMode availabilityMode) {
+        if (ProductAvailabilityMode.PREORDER.equals(availabilityMode)) {
+            manageStock = Boolean.FALSE;
+            allowPreorder = Boolean.TRUE;
+            return;
+        }
+
+        manageStock = Boolean.TRUE;
+        allowPreorder = Boolean.FALSE;
+    }
+
+    @Transient
+    @JsonIgnore
+    public boolean usesManagedStock() {
+        return Boolean.TRUE.equals(manageStock) && !Boolean.TRUE.equals(allowPreorder);
+    }
+
+    @Transient
+    @JsonIgnore
+    public boolean usesPreorder() {
+        return Boolean.TRUE.equals(allowPreorder) && !Boolean.TRUE.equals(manageStock);
+    }
+
+    @AssertTrue(message = "Choose exactly one availability mode: Manage Stock or Preorder.")
+    @Transient
+    @JsonIgnore
+    public boolean isAvailabilityModeValid() {
+        return Boolean.TRUE.equals(manageStock) ^ Boolean.TRUE.equals(allowPreorder);
+    }
+
+    @PrePersist
+    @PreUpdate
+    private void enforceAvailabilityModeInvariant() {
+        if (manageStock == null && allowPreorder == null) {
+            manageStock = Boolean.TRUE;
+            allowPreorder = Boolean.FALSE;
+        } else if (manageStock == null) {
+            manageStock = !Boolean.TRUE.equals(allowPreorder);
+        } else if (allowPreorder == null) {
+            allowPreorder = !Boolean.TRUE.equals(manageStock);
+        }
+        if (!isAvailabilityModeValid()) {
+            throw new IllegalStateException("A product must use exactly one availability mode.");
+        }
     }
 
     public LocalDate getPreorderAvailableFrom() {

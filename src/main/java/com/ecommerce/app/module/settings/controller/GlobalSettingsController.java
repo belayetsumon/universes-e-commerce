@@ -2,6 +2,7 @@ package com.ecommerce.app.module.settings.controller;
 
 import com.ecommerce.app.module.settings.form.BasicSiteSettingsForm;
 import com.ecommerce.app.module.settings.form.DeliverySettingsForm;
+import com.ecommerce.app.module.settings.form.ImageSettingsForm;
 import com.ecommerce.app.module.settings.form.MaintenanceSettingsForm;
 import com.ecommerce.app.module.settings.form.OrderSettingsForm;
 import com.ecommerce.app.module.settings.form.PaymentSettingsForm;
@@ -53,6 +54,7 @@ public class GlobalSettingsController {
     private static final String PAYMENT_FORM_ATTRIBUTE = "paymentSettingsForm";
     private static final String DELIVERY_FORM_ATTRIBUTE = "deliverySettingsForm";
     private static final String ORDER_FORM_ATTRIBUTE = "orderSettingsForm";
+    private static final String IMAGE_FORM_ATTRIBUTE = "imageSettingsForm";
     private static final String SOCIAL_FORM_ATTRIBUTE = "socialSettingsForm";
     private static final String POLICY_FORM_ATTRIBUTE = "policySettingsForm";
     private static final String MAINTENANCE_FORM_ATTRIBUTE = "maintenanceSettingsForm";
@@ -88,7 +90,7 @@ public class GlobalSettingsController {
         return REDIRECT;
     }
 
-    @GetMapping({"/basic", "/seo", "/store", "/payment", "/delivery", "/order", "/social", "/policy", "/maintenance"})
+    @GetMapping({"/basic", "/seo", "/store", "/payment", "/delivery", "/order", "/image", "/social", "/policy", "/maintenance"})
     public String sectionPageFallback(HttpServletRequest request, RedirectAttributes redirectAttributes) {
         String sectionId = resolveSectionId(request);
         redirectAttributes.addFlashAttribute(ACTIVE_SECTION_ATTRIBUTE, sectionId);
@@ -186,6 +188,19 @@ public class GlobalSettingsController {
         }
         return saveSection("Order", "order", ORDER_FORM_ATTRIBUTE, form, redirectAttributes,
                 () -> globalSettingsService.updateOrderSettings(form));
+    }
+
+    @PostMapping("/image")
+    public String updateImage(
+            @Valid @ModelAttribute(IMAGE_FORM_ATTRIBUTE) ImageSettingsForm form,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (bindingResult.hasErrors()) {
+            return validationRedirect("Image", "image", IMAGE_FORM_ATTRIBUTE, form, bindingResult, redirectAttributes);
+        }
+        return saveSection("Image", "image", IMAGE_FORM_ATTRIBUTE, form, redirectAttributes,
+                () -> globalSettingsService.updateImageSettings(form));
     }
 
     @PostMapping("/social")
@@ -346,6 +361,9 @@ public class GlobalSettingsController {
         if (!model.containsAttribute(ORDER_FORM_ATTRIBUTE)) {
             model.addAttribute(ORDER_FORM_ATTRIBUTE, OrderSettingsForm.from(settings));
         }
+        if (!model.containsAttribute(IMAGE_FORM_ATTRIBUTE)) {
+            model.addAttribute(IMAGE_FORM_ATTRIBUTE, ImageSettingsForm.from(settings));
+        }
         if (!model.containsAttribute(SOCIAL_FORM_ATTRIBUTE)) {
             model.addAttribute(SOCIAL_FORM_ATTRIBUTE, SocialSettingsForm.from(settings));
         }
@@ -401,6 +419,9 @@ public class GlobalSettingsController {
         }
         if (uri.endsWith("/order")) {
             return "order";
+        }
+        if (uri.endsWith("/image")) {
+            return "image";
         }
         if (uri.endsWith("/social")) {
             return "social";

@@ -12,7 +12,9 @@ import com.ecommerce.app.module.fraud.exception.FraudValidationException;
 import com.ecommerce.app.module.fraud.model.FraudAction;
 import com.ecommerce.app.module.fraud.model.FraudAssessment;
 import com.ecommerce.app.module.fraud.model.FraudAssessmentStatus;
+import com.ecommerce.app.module.fraud.model.FraudBlockType;
 import com.ecommerce.app.module.fraud.model.FraudBlocklist;
+import com.ecommerce.app.module.fraud.model.FraudBlockScope;
 import com.ecommerce.app.module.fraud.model.FraudCase;
 import com.ecommerce.app.module.fraud.model.FraudCaseStatus;
 import com.ecommerce.app.module.fraud.model.FraudConfiguration;
@@ -324,15 +326,49 @@ public class DefaultFraudAdminViewService implements FraudAdminViewService {
         if (request == null || request.getBlockType() == null || clean(request.getBlockValue()) == null || clean(request.getReason()) == null) {
             throw new FraudValidationException("Block type, value, and reason are required.");
         }
-        String hashedValue = FraudHashingSupport.sha256(request.getBlockValue());
-        FraudBlocklist entry = fraudBlocklistRepository
-                .findByBlockTypeAndHashedValueAndActiveTrue(request.getBlockType(), hashedValue)
-                .orElseGet(FraudBlocklist::new);
+        if (request.getScope() != FraudBlockScope.GLOBAL) {
+            throw new FraudValidationException("Only global blocklist entries are supported until scoped target enforcement is configured.");
+        }
+        LocalDateTime now = LocalDateTime.now();
+        if (request.isTemporary()
+                && (request.getExpiresAt() == null || !request.getExpiresAt().isAfter(now))) {
+            throw new FraudValidationException("Temporary blocklist entries require a future expiry.");
+        }
+        if (!request.isTemporary() && request.getExpiresAt() != null) {
+            throw new FraudValidationException("Permanent blocklist entries cannot have an expiry.");
+        }
+        String hashedValue;
+        try {
+            hashedValue = switch (request.getBlockType()) {
+                case DEVICE -> FraudHashingSupport.canonicalIdentifierHash(request.getBlockValue());
+                case MOBILE_NUMBER -> FraudHashingSupport.canonicalBangladeshMobileHash(request.getBlockValue());
+                default -> FraudHashingSupport.sha256(request.getBlockValue());
+            };
+        } catch (IllegalArgumentException invalidMobile) {
+            throw new FraudValidationException("Enter a valid Bangladesh mobile number.");
+        }
+        List<String> compatibleHashes = request.getBlockType() == FraudBlockType.MOBILE_NUMBER
+                ? FraudHashingSupport.bangladeshMobileHashCandidates(request.getBlockValue())
+                : List.of(hashedValue);
+        List<FraudBlocklist> matchingEntries = fraudBlocklistRepository
+                .findAllByBlockTypeAndHashedValueInAndScopeAndActiveTrue(
+                        request.getBlockType(), compatibleHashes, FraudBlockScope.GLOBAL);
+        FraudBlocklist entry = matchingEntries.stream()
+                .filter(candidate -> hashedValue.equals(candidate.getHashedValue()))
+                .findFirst()
+                .orElseGet(() -> matchingEntries.stream().findFirst().orElseGet(FraudBlocklist::new));
+        List<FraudBlocklist> duplicates = matchingEntries.stream()
+                .filter(candidate -> candidate != entry)
+                .toList();
+        duplicates.forEach(duplicate -> duplicate.setActive(false));
+        if (!duplicates.isEmpty()) {
+            fraudBlocklistRepository.saveAll(duplicates);
+        }
         entry.setBlockType(request.getBlockType());
         entry.setHashedValue(hashedValue);
         entry.setMaskedValue(FraudPrivacySupport.maskIdentifier(request.getBlockValue()));
         entry.setReason(clean(request.getReason()));
-        entry.setScope(request.getScope());
+        entry.setScope(FraudBlockScope.GLOBAL);
         entry.setTemporary(request.isTemporary());
         entry.setExpiresAt(request.getExpiresAt());
         entry.setCreatedByUser(clean(createdBy));
@@ -362,7 +398,10 @@ public class DefaultFraudAdminViewService implements FraudAdminViewService {
             return request;
         }
         request.setConfigKey(configuration.getConfigKey());
-        request.setConfigValue(configuration.getConfigValue());
+        boolean sensitive = isSensitiveConfig(configuration.getConfigKey());
+        request.setSensitive(sensitive);
+        request.setValueConfigured(sensitive && clean(configuration.getConfigValue()) != null);
+        request.setConfigValue(sensitive ? null : configuration.getConfigValue());
         request.setDescription(configuration.getDescription());
         request.setActive(configuration.isActive());
         return request;
@@ -371,16 +410,47 @@ public class DefaultFraudAdminViewService implements FraudAdminViewService {
     @Override
     @Transactional
     public FraudConfiguration saveConfiguration(Long id, FraudConfigurationRequest request) {
-        if (request == null || clean(request.getConfigKey()) == null || clean(request.getConfigValue()) == null) {
-            throw new FraudValidationException("Configuration key and value are required.");
+        String requestedKey = request == null ? null : clean(request.getConfigKey());
+        if (requestedKey == null) {
+            throw new FraudValidationException("Configuration key is required.");
         }
-        FraudConfiguration configuration = id == null
-                ? fraudConfigurationRepository.findByConfigKey(clean(request.getConfigKey())).orElseGet(FraudConfiguration::new)
-                : fraudConfigurationRepository.findById(id).orElseThrow(() -> new FraudNotFoundException("Fraud configuration not found."));
-        configuration.setConfigKey(clean(request.getConfigKey()));
-        configuration.setConfigValue(request.getConfigValue().trim());
+        FraudConfiguration configuration;
+        boolean existing;
+        if (id == null) {
+            var byKey = fraudConfigurationRepository.findByConfigKey(requestedKey);
+            configuration = byKey.orElseGet(FraudConfiguration::new);
+            existing = byKey.isPresent();
+        } else {
+            configuration = fraudConfigurationRepository.findById(id)
+                    .orElseThrow(() -> new FraudNotFoundException("Fraud configuration not found."));
+            existing = true;
+            if (!requestedKey.equals(configuration.getConfigKey())) {
+                throw new FraudValidationException("Configuration keys cannot be renamed. Create a new key instead.");
+            }
+        }
+
+        boolean sensitive = isSensitiveConfig(requestedKey);
+        String submittedValue = clean(request.getConfigValue());
+        if (sensitive && existing) {
+            if (request.isClearConfigValue()) {
+                configuration.setConfigValue("");
+                configuration.setActive(false);
+            } else if (submittedValue != null) {
+                configuration.setConfigValue(submittedValue);
+            } else if (clean(configuration.getConfigValue()) == null) {
+                throw new FraudValidationException("Configuration value is required.");
+            }
+        } else {
+            if (submittedValue == null) {
+                throw new FraudValidationException("Configuration value is required.");
+            }
+            configuration.setConfigValue(submittedValue);
+        }
+        configuration.setConfigKey(requestedKey);
         configuration.setDescription(clean(request.getDescription()));
-        configuration.setActive(request.isActive());
+        if (!(sensitive && existing && request.isClearConfigValue())) {
+            configuration.setActive(request.isActive());
+        }
         FraudConfiguration saved = fraudConfigurationRepository.save(configuration);
         fraudAuditService.record("FRAUD_CONFIGURATION", saved.getId(), FraudAction.MANUAL_REVIEW,
                 "Fraud configuration saved.",

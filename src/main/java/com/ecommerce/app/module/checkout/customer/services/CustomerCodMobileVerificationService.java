@@ -12,6 +12,9 @@ import com.ecommerce.app.module.communication.model.MessageChannel;
 import com.ecommerce.app.module.communication.model.MessageEventType;
 import com.ecommerce.app.module.communication.model.MessageType;
 import com.ecommerce.app.module.communication.services.MessageDispatchService;
+import com.ecommerce.app.module.fraud.model.VelocityCounterScope;
+import com.ecommerce.app.module.fraud.services.OrderVelocityService;
+import com.ecommerce.app.module.fraud.services.VelocityLimitClaim;
 import com.ecommerce.app.module.settings.services.StoreOperationModeService;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
@@ -23,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -57,6 +61,7 @@ public class CustomerCodMobileVerificationService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final MessageDispatchService messageDispatchService;
     private final StoreOperationModeService storeOperationModeService;
+    private final OrderVelocityService orderVelocityService;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public CustomerCodMobileVerificationService(
@@ -65,13 +70,15 @@ public class CustomerCodMobileVerificationService {
             MobileNumberNormalizationService mobileNumberService,
             BCryptPasswordEncoder passwordEncoder,
             MessageDispatchService messageDispatchService,
-            StoreOperationModeService storeOperationModeService) {
+            StoreOperationModeService storeOperationModeService,
+            OrderVelocityService orderVelocityService) {
         this.otpRepository = otpRepository;
         this.usersRepository = usersRepository;
         this.mobileNumberService = mobileNumberService;
         this.passwordEncoder = passwordEncoder;
         this.messageDispatchService = messageDispatchService;
         this.storeOperationModeService = storeOperationModeService;
+        this.orderVelocityService = orderVelocityService;
     }
 
     @Transactional(readOnly = true)
@@ -122,9 +129,10 @@ public class CustomerCodMobileVerificationService {
         clearVerification(user);
         LocalDateTime now = LocalDateTime.now();
         String ipHash = hash(clientIp(request));
-        enforceSendLimits(user.getId(), mobile, ipHash, deviceHash, session.getId(), now);
-
+        int resendCooldownSeconds = storeOperationModeService.guestOtpResendCooldownSeconds();
+        int otpTtlMinutes = storeOperationModeService.guestOtpExpiryMinutes();
         int resendCount = 0;
+        long chainBaseline = 0L;
         OtpVerification latestPending = otpRepository
                 .findTopByUserIdAndPurposeAndStatusOrderByCreatedAtDesc(user.getId(), PURPOSE, OtpStatus.PENDING)
                 .orElse(null);
@@ -133,11 +141,20 @@ public class CustomerCodMobileVerificationService {
                 && !latestPending.isExpired(now)) {
             ensureResendAllowed(latestPending, now);
             resendCount = latestPending.getResendCount() + 1;
+            chainBaseline = latestPending.getResendCount() + 1L;
         }
+        claimSendLimits(
+                user.getId(),
+                mobile,
+                ipHash,
+                deviceHash,
+                session.getId(),
+                now,
+                resendCooldownSeconds,
+                otpTtlMinutes,
+                chainBaseline);
 
         expirePendingOtps(user.getId(), now);
-        int otpTtlMinutes = storeOperationModeService.guestOtpExpiryMinutes();
-        int resendCooldownSeconds = storeOperationModeService.guestOtpResendCooldownSeconds();
         String otp = String.format("%06d", secureRandom.nextInt(1_000_000));
 
         OtpVerification verification = new OtpVerification();
@@ -280,6 +297,26 @@ public class CustomerCodMobileVerificationService {
         }
     }
 
+    /**
+     * Binds a registered-customer COD proof to the actual fulfillment contact
+     * number. Verifying the account number must not authorize an unrelated
+     * delivery number.
+     */
+    public boolean isVerifiedCodContactMobile(Users user, String rawContactMobile) {
+        if (!isCurrentMobileVerified(user)) {
+            return false;
+        }
+        try {
+            String verifiedMobile = mobileNumberService.normalizeBangladeshMobile(
+                    user.getMobileVerifiedNumber()
+            );
+            String contactMobile = mobileNumberService.normalizeBangladeshMobile(rawContactMobile);
+            return verifiedMobile.equals(contactMobile);
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
+    }
+
     public String updateMobileAndInvalidateVerificationIfChanged(Users user, String rawMobile) {
         if (user == null) {
             throw new IllegalArgumentException("User is required.");
@@ -332,7 +369,12 @@ public class CustomerCodMobileVerificationService {
             return false;
         }
         String currentMobile = normalizeOrNull(user.getMobile());
-        return currentMobile != null && currentMobile.equals(verification.getMobileNumber());
+        if (currentMobile == null || !currentMobile.equals(verification.getMobileNumber())) {
+            return false;
+        }
+        return otpRepository.findTopByUserIdAndPurposeOrderByIdDesc(user.getId(), PURPOSE)
+                .map(latest -> secureEquals(latest.getSessionToken(), verification.getSessionToken()))
+                .orElse(false);
     }
 
     private CustomerCodMobileOtpResponse invalidOtpResponse(Users user) {
@@ -343,21 +385,72 @@ public class CustomerCodMobileVerificationService {
         return response;
     }
 
-    private void enforceSendLimits(
+    private void claimSendLimits(
             Long userId,
             String mobile,
             String ipHash,
             String deviceHash,
             String httpSessionId,
-            LocalDateTime now) {
+            LocalDateTime now,
+            int resendCooldownSeconds,
+            int otpTtlMinutes,
+            long chainBaseline) {
         LocalDateTime windowStart = now.minusDays(1);
         int dailyLimit = storeOperationModeService.guestOtpDailySendLimit();
-        boolean limited = otpRepository.countByUserIdAndPurposeAndCreatedAtAfter(userId, PURPOSE, windowStart) >= dailyLimit
-                || otpRepository.countByMobileNumberAndPurposeAndCreatedAtAfter(mobile, PURPOSE, windowStart) >= dailyLimit
-                || (ipHash != null && otpRepository.countByIpAddressHashAndCreatedAtAfter(ipHash, windowStart) >= IP_DAILY_SEND_LIMIT)
-                || otpRepository.countByDeviceFingerprintHashAndCreatedAtAfter(deviceHash, windowStart) >= DEVICE_DAILY_SEND_LIMIT
-                || otpRepository.countByHttpSessionIdAndCreatedAtAfter(httpSessionId, windowStart) >= SESSION_DAILY_SEND_LIMIT;
-        if (limited) {
+        LocalDateTime cooldownStart = now.minusSeconds(Math.max(resendCooldownSeconds, 1));
+        List<VelocityLimitClaim> claims = new ArrayList<>();
+        claims.add(new VelocityLimitClaim(
+                VelocityCounterScope.OTP_CUSTOMER_ACCOUNT_COOLDOWN,
+                String.valueOf(userId),
+                1,
+                Duration.ofSeconds(Math.max(resendCooldownSeconds, 1)),
+                otpRepository.countByUserIdAndPurposeAndCreatedAtAfter(userId, PURPOSE, cooldownStart)));
+        long userDailyCount = otpRepository.countByUserIdAndPurposeAndCreatedAtAfter(
+                userId, PURPOSE, windowStart);
+        claims.add(new VelocityLimitClaim(
+                VelocityCounterScope.OTP_CUSTOMER_ACCOUNT_CHAIN,
+                String.valueOf(userId),
+                MAX_RESENDS + 1,
+                Duration.ofMinutes(Math.max(otpTtlMinutes, 1)),
+                chainBaseline));
+        claims.add(new VelocityLimitClaim(
+                VelocityCounterScope.OTP_CUSTOMER_ACCOUNT_DAILY,
+                String.valueOf(userId),
+                dailyLimit,
+                Duration.ofDays(1),
+                userDailyCount));
+        claims.add(new VelocityLimitClaim(
+                VelocityCounterScope.OTP_CUSTOMER_MOBILE_DAILY,
+                mobile,
+                dailyLimit,
+                Duration.ofDays(1),
+                otpRepository.countByMobileNumberAndPurposeAndCreatedAtAfter(
+                        mobile, PURPOSE, windowStart)));
+        if (ipHash != null) {
+            claims.add(new VelocityLimitClaim(
+                    VelocityCounterScope.OTP_IP_DAILY,
+                    ipHash,
+                    IP_DAILY_SEND_LIMIT,
+                    Duration.ofDays(1),
+                    otpRepository.countByIpAddressHashAndCreatedAtAfter(ipHash, windowStart)));
+        }
+        if (deviceHash != null) {
+            claims.add(new VelocityLimitClaim(
+                    VelocityCounterScope.OTP_DEVICE_DAILY,
+                    deviceHash,
+                    DEVICE_DAILY_SEND_LIMIT,
+                    Duration.ofDays(1),
+                    otpRepository.countByDeviceFingerprintHashAndCreatedAtAfter(deviceHash, windowStart)));
+        }
+        if (httpSessionId != null) {
+            claims.add(new VelocityLimitClaim(
+                    VelocityCounterScope.OTP_SESSION_DAILY,
+                    httpSessionId,
+                    SESSION_DAILY_SEND_LIMIT,
+                    Duration.ofDays(1),
+                    otpRepository.countByHttpSessionIdAndCreatedAtAfter(httpSessionId, windowStart)));
+        }
+        if (!orderVelocityService.claimAllWithinLimits(claims)) {
             throw new OtpRateLimitException("Too many verification requests. Please try again later.");
         }
     }
@@ -405,7 +498,7 @@ public class CustomerCodMobileVerificationService {
             CommunicationSendResult result = messageDispatchService.dispatch(dispatchRequest);
             boolean accepted = result != null
                     && result.isSuccess()
-                    && ("SENT".equals(result.getStatus()) || "QUEUED".equals(result.getStatus()));
+                    && "SENT".equals(result.getStatus());
             if (!accepted) {
                 LOGGER.warn("Customer COD OTP dispatch was not accepted. userId={}", verification.getUserId());
             }

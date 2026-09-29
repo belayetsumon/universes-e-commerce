@@ -8,11 +8,9 @@
         <div class="card"><div class="card-body">
                 <form method="post"
                       th:action="@{/admin/communication/providers/save}"
-                      th:object="${provider}">
+                    th:object="${provider}">
 
                     <input type="hidden" th:field="*{id}">
-                    <input type="hidden" th:field="*{uuid}">
-                    <input type="hidden" th:field="*{version}">
 
                     <div class="row g-3">
 
@@ -76,20 +74,47 @@
 
                         <div class="col-md-6">
                             <label class="form-label">API Key</label>
-                            <input class="form-control" th:field="*{apiKey}" autocomplete="off">
+                            <input class="form-control" type="password" name="apiKey"
+                                   maxlength="500" autocomplete="new-password">
+                            <div class="form-text" th:if="*{apiKeyConfigured}">
+                                An API key is configured. Leave blank to keep it.
+                            </div>
+                            <div class="form-check mt-2" th:if="*{apiKeyConfigured}">
+                                <input class="form-check-input" type="checkbox" th:field="*{clearApiKey}">
+                                <label class="form-check-label" th:for="${#ids.prev('clearApiKey')}">Clear existing API key</label>
+                            </div>
+                            <div class="text-danger small" th:errors="*{apiKey}"></div>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">API Secret</label>
-                            <input class="form-control" th:field="*{apiSecret}" autocomplete="off">
+                            <input class="form-control" type="password" name="apiSecret"
+                                   maxlength="500" autocomplete="new-password">
+                            <div class="form-text" th:if="*{apiSecretConfigured}">
+                                An API secret is configured. Leave blank to keep it.
+                            </div>
+                            <div class="form-check mt-2" th:if="*{apiSecretConfigured}">
+                                <input class="form-check-input" type="checkbox" th:field="*{clearApiSecret}">
+                                <label class="form-check-label" th:for="${#ids.prev('clearApiSecret')}">Clear existing API secret</label>
+                            </div>
+                            <div class="text-danger small" th:errors="*{apiSecret}"></div>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-12">
                             <label class="form-label">Config JSON</label>
                             <textarea class="form-control"
-                                      th:field="*{configJson}"
+                                      name="configJson"
+                                      maxlength="10000"
                                       rows="5"
                                       autocomplete="off"></textarea>
+                            <div class="form-text" th:if="*{configJsonConfigured}">
+                                Provider configuration is stored. Leave blank to keep it; existing content is not displayed because it may contain credentials.
+                            </div>
+                            <div class="form-check mt-2" th:if="*{configJsonConfigured}">
+                                <input class="form-check-input" type="checkbox" th:field="*{clearConfigJson}">
+                                <label class="form-check-label" th:for="${#ids.prev('clearConfigJson')}">Clear existing provider configuration</label>
+                            </div>
+                            <div class="text-danger small" th:errors="*{configJson}"></div>
                         </div>
 
                         <div class="col-12">

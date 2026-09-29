@@ -6,6 +6,7 @@ import com.ecommerce.app.module.communication.model.MessageLog;
 import com.ecommerce.app.module.communication.model.MessageProvider;
 import com.ecommerce.app.module.communication.model.MessageStatus;
 import com.ecommerce.app.module.communication.repository.MessageLogRepository;
+import com.ecommerce.app.module.communication.security.CodOtpMessagePolicy;
 import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,8 +32,13 @@ public class MessageLogService {
         log.setTemplateVersion(request.getTemplateVersion());
         log.setIdempotencyKey(request.getIdempotencyKey());
         log.setStatus(toStatus(result.getStatus()));
-        log.setResponseCode(result.getResponseCode());
-        log.setResponseMessage(result.getResponseMessage() != null ? result.getResponseMessage() : result.getFailedReason());
+        if (CodOtpMessagePolicy.isEphemeral(request.getEventType())) {
+            log.setResponseCode("COD_OTP_DELIVERY_" + toStatus(result.getStatus()).name());
+            log.setResponseMessage("COD OTP delivery result recorded without provider payload.");
+        } else {
+            log.setResponseCode(result.getResponseCode());
+            log.setResponseMessage(result.getResponseMessage() != null ? result.getResponseMessage() : result.getFailedReason());
+        }
         log.setSentAt(LocalDateTime.now());
         return repository.save(log);
     }

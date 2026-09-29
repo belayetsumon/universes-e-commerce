@@ -8,6 +8,7 @@ package com.ecommerce.app.vendor.controller;
 import com.ecommerce.app.commission.service.ProductCommissionApplierService;
 import com.ecommerce.app.globalComponant.SlagGenerator;
 import com.ecommerce.app.globalComponant.UnixTimeComponent;
+import com.ecommerce.app.globalServices.ImageUploadValidationException;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.services.LoggedUserService;
 import com.ecommerce.app.product.model.Product;
@@ -15,9 +16,6 @@ import com.ecommerce.app.product.model.ProductDimension;
 import com.ecommerce.app.product.model.ProductImage;
 import com.ecommerce.app.product.model.ProductStatusEnum;
 import com.ecommerce.app.product.model.ProductTypeEnum;
-import com.ecommerce.app.product.ripository.AvailableDeliveryAreaRepository;
-import com.ecommerce.app.product.ripository.DeliveryChargeRepository;
-import com.ecommerce.app.product.ripository.DeliveryTimelineRepository;
 import com.ecommerce.app.product.ripository.ManufacturerRepository;
 import com.ecommerce.app.product.ripository.ProductImageRepository;
 import com.ecommerce.app.product.ripository.ProductRepository;
@@ -37,11 +35,14 @@ import com.ecommerce.app.vendor.user.componant.VendorUserContext;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -63,6 +64,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/productvendor")
 //@PreAuthorize("hasAuthority('exam')")
 public class VendorProductController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(VendorProductController.class);
 
     @Autowired
     StorageProperties properties;
@@ -99,15 +102,6 @@ public class VendorProductController {
 
     @Autowired
     ProductImageStorageService productImageStorageService;
-
-    @Autowired
-    AvailableDeliveryAreaRepository availableDeliveryAreaRepository;
-
-    @Autowired
-    DeliveryChargeRepository deliveryChargeRepository;
-
-    @Autowired
-    DeliveryTimelineRepository deliveryTimelineRepository;
 
     @Autowired
     WarrantyRepository warrantyRepository;
@@ -167,9 +161,6 @@ public class VendorProductController {
             @RequestParam(value = "hasImage", required = false) Boolean hasImage,
             @RequestParam(value = "hasCatalogVariants", required = false) Boolean hasCatalogVariants,
             @RequestParam(value = "hasDimensions", required = false) Boolean hasDimensions,
-            @RequestParam(value = "hasDeliveryAreas", required = false) Boolean hasDeliveryAreas,
-            @RequestParam(value = "hasDeliveryCharges", required = false) Boolean hasDeliveryCharges,
-            @RequestParam(value = "hasDeliveryTimelines", required = false) Boolean hasDeliveryTimelines,
             @RequestParam(value = "hasWarranty", required = false) Boolean hasWarranty,
             HttpSession session) {
 
@@ -208,9 +199,6 @@ public class VendorProductController {
                 hasImage,
                 hasCatalogVariants,
                 hasDimensions,
-                hasDeliveryAreas,
-                hasDeliveryCharges,
-                hasDeliveryTimelines,
                 hasWarranty
         ));
         loadVendorProductIndexFilterData(model);
@@ -246,9 +234,6 @@ public class VendorProductController {
         model.addAttribute("hasImage", hasImage);
         model.addAttribute("hasCatalogVariants", hasCatalogVariants);
         model.addAttribute("hasDimensions", hasDimensions);
-        model.addAttribute("hasDeliveryAreas", hasDeliveryAreas);
-        model.addAttribute("hasDeliveryCharges", hasDeliveryCharges);
-        model.addAttribute("hasDeliveryTimelines", hasDeliveryTimelines);
         model.addAttribute("hasWarranty", hasWarranty);
         model.addAttribute("advancedFiltersApplied", hasAdvancedProductFilters(
                 featuredProduct,
@@ -275,9 +260,6 @@ public class VendorProductController {
                 hasImage,
                 hasCatalogVariants,
                 hasDimensions,
-                hasDeliveryAreas,
-                hasDeliveryCharges,
-                hasDeliveryTimelines,
                 hasWarranty
         ));
         return "vendor/product/index";
@@ -347,15 +329,13 @@ public class VendorProductController {
                 if (product.getSlug() == null || product.getSlug().isBlank()) {
                     product.setSlug(oldProduct.getSlug());
                 }
-                if (pic == null || pic.isEmpty()) {
-                    product.setImageName(oldProduct.getImageName());
-                }
+                product.setImageName(oldProduct.getImageName());
             }
         }
 
         if (pic != null && !pic.isEmpty()) {
             try {
-                String filename = productImageStorageService.storeProductImage(pic);
+                String filename = productImageStorageService.storeFeaturedProductImage(pic);
 
                 model.addAttribute("message", "You successfully uploaded");
 
@@ -369,11 +349,15 @@ public class VendorProductController {
                 Product savedProduct = productRepository.save(product);
                 redirectAttributes.addFlashAttribute("message", "Basic product information saved. Now add product specifications.");
                 return "redirect:/productvendor/details/" + savedProduct.getId() + "?tab=specifications";
-            } catch (Exception e) {
+            } catch (ImageUploadValidationException e) {
                 loadProductFormData(model);
-
-                redirectAttributes.addFlashAttribute("message", "Image upload failed: " + e.getMessage());
-                return "redirect:/productvendor/index";
+                model.addAttribute("error", e.getMessage());
+                return "vendor/product/add";
+            } catch (IOException e) {
+                LOGGER.error("Vendor product featured image upload failed for vendor {}", vendorprofile.getId(), e);
+                loadProductFormData(model);
+                model.addAttribute("error", "The featured image could not be processed. Please choose a valid image and try again.");
+                return "vendor/product/add";
             }
         } else if ((pic == null || pic.isEmpty()) && product.getId() != null) {
 
@@ -512,6 +496,8 @@ public class VendorProductController {
         model.addAttribute("uoms", unitsOfMeasureService.getAllUnits());
         model.addAttribute("productcategorylist", productcategoryRepository.findByStatus(ProductStatusEnum.Active));
         model.addAttribute("manufacturerlist", manufacturerRepository.findAll());
+        model.addAttribute("productFeaturedImageRequirements",
+                productImageStorageService.getFeaturedImageRequirements());
     }
 
     private void loadVendorProductIndexFilterData(Model model) {
@@ -545,9 +531,6 @@ public class VendorProductController {
             Boolean hasImage,
             Boolean hasCatalogVariants,
             Boolean hasDimensions,
-            Boolean hasDeliveryAreas,
-            Boolean hasDeliveryCharges,
-            Boolean hasDeliveryTimelines,
             Boolean hasWarranty) {
         return featuredProduct != null
                 || newProduct != null
@@ -573,9 +556,6 @@ public class VendorProductController {
                 || hasImage != null
                 || hasCatalogVariants != null
                 || hasDimensions != null
-                || hasDeliveryAreas != null
-                || hasDeliveryCharges != null
-                || hasDeliveryTimelines != null
                 || hasWarranty != null;
     }
 
@@ -589,9 +569,6 @@ public class VendorProductController {
         model.addAttribute("productSpecifications",
                 catalogProductAttributeService.buildSpecificationViews((String) productDetails.get("uuid")));
         model.addAttribute("img_list", productImageRepository.findByProductIdOrderByIdDesc(id));
-        model.addAttribute("d_a_list", availableDeliveryAreaRepository.findByProductIdOrderByIdDesc(id));
-        model.addAttribute("d_c_list", deliveryChargeRepository.findByProductIdOrderByIdDesc(id));
-        model.addAttribute("d_t_list", deliveryTimelineRepository.findByProductIdOrderByIdDesc(id));
         model.addAttribute("w_list", warrantyRepository.findByProductIdOrderByIdDesc(id));
         model.addAttribute("catalogVariantSummaries",
                 productVariantCatalogService.buildVariantSummaries((String) productDetails.get("uuid")));

@@ -5,12 +5,11 @@
 package com.ecommerce.app.vendor.controller;
 
 import com.ecommerce.app.globalServices.ImageService;
-import com.ecommerce.app.globalServices.ImageUploadPolicy;
 import com.ecommerce.app.globalServices.ImageUploadValidationException;
+import com.ecommerce.app.module.settings.services.ImageUploadSettingsService;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.services.LoggedUserService;
 import com.ecommerce.app.services.StorageProperties;
-import com.ecommerce.app.vendor.config.VendorLogoUploadProperties;
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import com.ecommerce.app.vendor.repository.VendorprofileRepository;
 import com.ecommerce.app.vendor.user.componant.VendorUserContext;
@@ -18,7 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,11 +57,12 @@ public class VendorLogoController {
     private StorageProperties storageProperties;
 
     @Autowired
-    private VendorLogoUploadProperties vendorLogoUploadProperties;
+    private ImageUploadSettingsService imageUploadSettingsService;
 
     @RequestMapping(value = {"", "/", "/index"})
     public String index(Model model) {
         model.addAttribute("vendorprofile", resolveVendorProfile());
+        model.addAttribute("vendorLogoImageRequirements", imageUploadSettingsService.getCurrentSettings());
         return "vendor/logo/index";
     }
 
@@ -87,7 +86,7 @@ public class VendorLogoController {
         String storedLogoPath = null;
 
         try {
-            String fileName = imageService.validateAndRename(logoFile, vendorLogoUploadPolicy());
+            String fileName = imageService.validateAndRename(logoFile, imageUploadSettingsService.vendorLogoPolicy());
             storedLogoPath = VENDOR_LOGO_DIRECTORY + "/" + fileName;
             imageService.resizeAndUpload(logoFile, VENDOR_LOGO_WIDTH, VENDOR_LOGO_HEIGHT, VENDOR_LOGO_DIRECTORY, fileName);
 
@@ -192,18 +191,6 @@ public class VendorLogoController {
                 : storedFilePath;
 
         return new File(storageProperties.getRootPath(), normalizedPath.replace("/", File.separator));
-    }
-
-    private ImageUploadPolicy vendorLogoUploadPolicy() {
-        return new ImageUploadPolicy(
-                Set.of("image/jpeg", "image/png"),
-                Set.of("jpg", "jpeg", "png"),
-                Set.of("jpeg", "png"),
-                vendorLogoUploadProperties.getMaxFileSizeBytes(),
-                vendorLogoUploadProperties.getMaxWidth(),
-                vendorLogoUploadProperties.getMaxHeight(),
-                "JPG or PNG images"
-        );
     }
 
 }

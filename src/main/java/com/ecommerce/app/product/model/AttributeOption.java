@@ -73,7 +73,7 @@ public class AttributeOption {
     private String code;
 
     @Size(max = 250, message = "Option value must be within 250 characters.")
-    @Column(name = "value", length = 250)
+    @Column(name = "option_value", length = 250)
     private String value;
 
     @Lob

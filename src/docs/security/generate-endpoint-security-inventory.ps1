@@ -1,5 +1,6 @@
 param(
     [string]$SourceRoot = (Join-Path $PSScriptRoot '..\..\main\java'),
+    [string]$SecurityConfigPath = (Join-Path $PSScriptRoot '..\..\main\java\com\ecommerce\app\SecurityConfig.java'),
     [string]$OutputPath = (Join-Path $PSScriptRoot '..\application-security-endpoint-inventory.csv'),
     [string]$PermissionCatalogueOutputPath = (Join-Path $PSScriptRoot '..\application-security-permission-catalogue.csv')
 )
@@ -118,44 +119,80 @@ function Test-AntLikePath {
     return $Path -eq $Pattern
 }
 
+function Get-JavaStringArrayValues {
+    param(
+        [string]$JavaSource,
+        [string]$VariableName
+    )
+
+    $escapedVariableName = [regex]::Escape($VariableName)
+    $arrayMatch = [regex]::Match(
+        $JavaSource,
+        "(?s)\bString\s*\[\]\s+$escapedVariableName\s*=\s*\{(?<body>.*?)\}\s*;"
+    )
+    if (-not $arrayMatch.Success) {
+        throw "Unable to find Java String[] '$VariableName' in the security configuration."
+    }
+
+    return @([regex]::Matches($arrayMatch.Groups['body'].Value, '"(?<value>[^"\\]*(?:\\.[^"\\]*)*)"') |
+        ForEach-Object { $_.Groups['value'].Value } |
+        Sort-Object -Unique)
+}
+
+function Get-SecurityUrlPolicy {
+    param([string]$Path)
+
+    $resolvedPath = (Resolve-Path -LiteralPath $Path).Path
+    $javaSource = Get-Content -Raw -LiteralPath $resolvedPath
+    $permitAllPatterns = @(
+        Get-JavaStringArrayValues -JavaSource $javaSource -VariableName 'STATIC_WHITELIST'
+        Get-JavaStringArrayValues -JavaSource $javaSource -VariableName 'PUBLIC_URLS'
+    ) | Sort-Object -Unique
+
+    $authorityPatterns = @([regex]::Matches(
+            $javaSource,
+            '(?s)\.requestMatchers\s*\((?<args>.*?)\)\s*\.has(?:Any)?(?:Authority|Role)\s*\('
+        ) |
+        ForEach-Object {
+            [regex]::Matches($_.Groups['args'].Value, '"(?<value>[^"\\]*(?:\\.[^"\\]*)*)"') |
+                ForEach-Object { $_.Groups['value'].Value }
+        } |
+        Sort-Object -Unique)
+
+    if ($permitAllPatterns.Count -eq 0) {
+        throw 'No permit-all URL patterns were read from SecurityConfig.'
+    }
+    if ($authorityPatterns.Count -eq 0) {
+        throw 'No explicit authority URL patterns were read from SecurityConfig.'
+    }
+
+    [PSCustomObject]@{
+        SourcePath = $resolvedPath
+        PermitAllPatterns = @($permitAllPatterns)
+        AuthorityPatterns = @($authorityPatterns)
+    }
+}
+
+$securityUrlPolicy = Get-SecurityUrlPolicy -Path $SecurityConfigPath
+
 function Get-UrlRule {
     param([string]$Path)
 
-    $publicPatterns = @(
-        '/',
-        '/public/**',
-        '/cart/**',
-        '/carts/**',
-        '/cart_address/**',
-        '/checkout/guest/mobile/**',
-        '/order/create',
-        '/order/savebyvendor',
-        '/order/savebyvendorupdate',
-        '/order/placed',
-        '/users/uregistrations',
-        '/users/usave',
-        '/users/frontRegistrationSave',
-        '/customer_registration/registration',
-        '/customer_registration/customer_registration_save',
-        '/users/userforgotpassword',
-        '/forgotpassword/**',
-        '/district/select-district',
-        '/district/save-district',
-        '/district/thanas',
-        '/error'
-    )
-
-    foreach ($pattern in $publicPatterns) {
+    foreach ($pattern in $securityUrlPolicy.PermitAllPatterns) {
         if (Test-AntLikePath -Path $Path -Pattern $pattern) {
             return 'PERMIT_ALL'
         }
     }
-    if (Test-AntLikePath -Path $Path -Pattern '/admin/fraud/**') {
-        return 'FRAUD_AUTHORITY_SET'
+
+    foreach ($pattern in $securityUrlPolicy.AuthorityPatterns) {
+        if (Test-AntLikePath -Path $Path -Pattern $pattern) {
+            if ($Path -match '^/(?:admin|api)/fraud(?:/|$)') {
+                return 'FRAUD_AUTHORITY_SET'
+            }
+            return 'EXPLICIT_AUTHORITY_SET'
+        }
     }
-    if (Test-AntLikePath -Path $Path -Pattern '/api/fraud/**') {
-        return 'FRAUD_AUTHORITY_SET'
-    }
+
     return 'AUTHENTICATED_ONLY'
 }
 
@@ -327,6 +364,73 @@ function Get-PermissionCandidate {
     }
 }
 
+function New-ValidatedCsvExport {
+    param(
+        [object[]]$Rows,
+        [string]$DestinationPath,
+        [string[]]$RequiredHeaders,
+        [string[]]$RequiredValueHeaders,
+        [string]$ArtifactName
+    )
+
+    if ($Rows.Count -eq 0) {
+        throw "$ArtifactName contains no rows. Existing output was not replaced."
+    }
+
+    $fullDestinationPath = [System.IO.Path]::GetFullPath($DestinationPath)
+    $destinationDirectory = [System.IO.Path]::GetDirectoryName($fullDestinationPath)
+    if (-not (Test-Path -LiteralPath $destinationDirectory)) {
+        New-Item -Path $destinationDirectory -ItemType Directory | Out-Null
+    }
+
+    $temporaryPath = Join-Path $destinationDirectory (
+        '.{0}.{1}.tmp' -f [System.IO.Path]::GetFileName($fullDestinationPath), [guid]::NewGuid().ToString('N')
+    )
+
+    try {
+        $Rows | Export-Csv -LiteralPath $temporaryPath -NoTypeInformation -Encoding utf8
+        $bytes = [System.IO.File]::ReadAllBytes($temporaryPath)
+        if ([Array]::IndexOf($bytes, [byte]0) -ge 0) {
+            throw "$ArtifactName contains NUL bytes. Existing output was not replaced."
+        }
+
+        $parsedRows = @(Import-Csv -LiteralPath $temporaryPath)
+        if ($parsedRows.Count -ne $Rows.Count) {
+            throw "$ArtifactName row validation failed: expected $($Rows.Count), parsed $($parsedRows.Count)."
+        }
+
+        $actualHeaders = @($parsedRows[0].PSObject.Properties.Name)
+        if (($actualHeaders -join '|') -ne ($RequiredHeaders -join '|')) {
+            throw "$ArtifactName header validation failed. Existing output was not replaced."
+        }
+
+        foreach ($requiredValueHeader in $RequiredValueHeaders) {
+            $blankCount = @($parsedRows | Where-Object {
+                    [string]::IsNullOrWhiteSpace([string]$_.$requiredValueHeader)
+                }).Count
+            if ($blankCount -gt 0) {
+                throw "$ArtifactName contains $blankCount blank '$requiredValueHeader' values."
+            }
+        }
+
+        return [PSCustomObject]@{
+            TemporaryPath = $temporaryPath
+            DestinationPath = $fullDestinationPath
+        }
+    } catch {
+        if (Test-Path -LiteralPath $temporaryPath) {
+            [System.IO.File]::Delete($temporaryPath)
+        }
+        throw
+    }
+}
+
+function Publish-ValidatedCsvExport {
+    param([PSCustomObject]$Export)
+
+    [System.IO.File]::Move($Export.TemporaryPath, $Export.DestinationPath, $true)
+}
+
 $sourcePath = (Resolve-Path -LiteralPath $SourceRoot).Path
 $rows = [System.Collections.Generic.List[object]]::new()
 
@@ -436,14 +540,9 @@ foreach ($file in Get-ChildItem -LiteralPath $sourcePath -Filter '*.java' -File 
     }
 }
 
-$orderedRows = $rows | Sort-Object Package, Controller, Path, HttpMethod, JavaMethod
-$outputDirectory = Split-Path -Parent $OutputPath
-if (-not (Test-Path -LiteralPath $outputDirectory)) {
-    New-Item -Path $outputDirectory -ItemType Directory | Out-Null
-}
-$orderedRows | Export-Csv -LiteralPath $OutputPath -NoTypeInformation -Encoding utf8
+$orderedRows = @($rows | Sort-Object Package, Controller, Path, HttpMethod, JavaMethod)
 
-$catalogueRows = $orderedRows |
+$catalogueRows = @($orderedRows |
     Group-Object PermissionCandidate |
     ForEach-Object {
         $permissionSlug = $_.Name
@@ -487,19 +586,51 @@ $catalogueRows = $orderedRows |
             }
         }
     } |
-    Sort-Object PermissionCandidate
+    Sort-Object PermissionCandidate)
 
-$catalogueDirectory = Split-Path -Parent $PermissionCatalogueOutputPath
-if (-not (Test-Path -LiteralPath $catalogueDirectory)) {
-    New-Item -Path $catalogueDirectory -ItemType Directory | Out-Null
+$endpointHeaders = @(
+    'SourceFile', 'SourceLine', 'Package', 'Controller', 'JavaMethod', 'HttpMethod', 'Path',
+    'CurrentUrlRule', 'CurrentMethodGuard', 'TargetZoneCandidate', 'ModuleCandidate',
+    'ActionCandidate', 'PermissionCandidate', 'RequiredScopeCandidate', 'ReviewStatus'
+)
+$endpointRequiredValues = @(
+    'SourceFile', 'SourceLine', 'Package', 'Controller', 'JavaMethod', 'HttpMethod', 'Path',
+    'CurrentUrlRule', 'TargetZoneCandidate', 'ModuleCandidate', 'ActionCandidate',
+    'PermissionCandidate', 'RequiredScopeCandidate', 'ReviewStatus'
+)
+$catalogueHeaders = @(
+    'PermissionCandidate', 'Namespace', 'ModuleCandidates', 'ActionCandidates', 'ZoneCandidates',
+    'EndpointCount', 'AssignmentPolicyCandidate', 'StepUpCandidate', 'LifecycleCandidate', 'ReviewStatus'
+)
+
+$endpointExport = $null
+$catalogueExport = $null
+try {
+    $endpointExport = New-ValidatedCsvExport -Rows $orderedRows -DestinationPath $OutputPath `
+        -RequiredHeaders $endpointHeaders -RequiredValueHeaders $endpointRequiredValues `
+        -ArtifactName 'Endpoint security inventory'
+    $catalogueExport = New-ValidatedCsvExport -Rows $catalogueRows `
+        -DestinationPath $PermissionCatalogueOutputPath -RequiredHeaders $catalogueHeaders `
+        -RequiredValueHeaders $catalogueHeaders -ArtifactName 'Permission catalogue'
+
+    Publish-ValidatedCsvExport -Export $endpointExport
+    Publish-ValidatedCsvExport -Export $catalogueExport
+} finally {
+    foreach ($pendingExport in @($endpointExport, $catalogueExport)) {
+        if ($null -ne $pendingExport -and (Test-Path -LiteralPath $pendingExport.TemporaryPath)) {
+            [System.IO.File]::Delete($pendingExport.TemporaryPath)
+        }
+    }
 }
-$catalogueRows | Export-Csv -LiteralPath $PermissionCatalogueOutputPath -NoTypeInformation -Encoding utf8
 
 $summary = $orderedRows | Group-Object TargetZoneCandidate | Sort-Object Name | ForEach-Object {
     [PSCustomObject]@{ Zone = $_.Name; Endpoints = $_.Count }
 }
 $summary | Format-Table -AutoSize
 "inventory_rows=$($orderedRows.Count)"
+"security_config=$($securityUrlPolicy.SourcePath)"
 "output=$((Resolve-Path -LiteralPath $OutputPath).Path)"
+"output_sha256=$((Get-FileHash -Algorithm SHA256 -LiteralPath $OutputPath).Hash)"
 "catalogue_rows=$($catalogueRows.Count)"
 "catalogue_output=$((Resolve-Path -LiteralPath $PermissionCatalogueOutputPath).Path)"
+"catalogue_sha256=$((Get-FileHash -Algorithm SHA256 -LiteralPath $PermissionCatalogueOutputPath).Hash)"

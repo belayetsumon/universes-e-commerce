@@ -19,6 +19,8 @@ import com.ecommerce.app.module.checkout.guest.services.MobileNumberNormalizatio
 import com.ecommerce.app.module.checkout.guest.session.GuestCheckoutSession;
 import com.ecommerce.app.module.cart.model.CartItem;
 import com.ecommerce.app.module.cart.services.CartService;
+import com.ecommerce.app.module.cart.services.CheckoutChargeValidationService;
+import com.ecommerce.app.module.order.services.CheckoutRequestIdentityService;
 import com.ecommerce.app.module.shipping.dto.ShippingOption;
 import com.ecommerce.app.module.shipping.model.ShippingLocation;
 import com.ecommerce.app.module.shipping.model.PackagingRate;
@@ -28,9 +30,7 @@ import com.ecommerce.app.module.settings.services.StoreOperationModeService;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.services.LoggedUserService;
-import com.ecommerce.app.product.model.AvailableDeliveryArea;
 import com.ecommerce.app.product.model.Product;
-import com.ecommerce.app.product.ripository.AvailableDeliveryAreaRepository;
 import com.ecommerce.app.product.ripository.ProductRepository;
 import com.ecommerce.app.vendor.model.Vendorprofile;
 import com.ecommerce.app.vendor.repository.VendorprofileRepository;
@@ -68,8 +68,6 @@ public class CartController {
     @Autowired
     ProductRepository productRepository;
     @Autowired
-    AvailableDeliveryAreaRepository availableDeliveryAreaRepository;
-    @Autowired
     VendorprofileRepository vendorprofileRepository;
 
     @Autowired
@@ -80,6 +78,9 @@ public class CartController {
 
     @Autowired
     CartService cartService;
+
+    @Autowired
+    CheckoutChargeValidationService checkoutChargeValidationService;
 
     @Autowired
     LoggedUserService loggedUserService;
@@ -111,6 +112,9 @@ public class CartController {
     @Autowired
     CustomerCodMobileVerificationService customerCodMobileVerificationService;
 
+    @Autowired
+    CheckoutRequestIdentityService checkoutRequestIdentityService;
+
     private static final Logger log = LoggerFactory.getLogger(CartService.class);
 
     @RequestMapping(value = {"", "/", "/index"})
@@ -119,6 +123,8 @@ public class CartController {
         List<CartItem> sessionCart = (List<CartItem>) session.getAttribute("sessioncart");
         int originalCartSize = sessionCart != null ? sessionCart.size() : 0;
         List<CartItem> cart = cartService.getCartFromSession(session);
+
+        checkoutChargeValidationService.refreshAndValidate(session, cart, false, false);
 
         if (originalCartSize > cart.size()) {
             model.addAttribute("errorMessage", "Some cart items were removed because they are not assigned to a vendor yet.");
@@ -152,13 +158,7 @@ public class CartController {
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
                 vendorSubtotals.put(vendorId, subtotal);
 
-                BigDecimal totalWeight = items.stream()
-                        .map(c -> {
-                            BigDecimal weight = c.getWeight() != null ? c.getWeight() : BigDecimal.ZERO;
-                            BigDecimal qty = c.getQuantity() != null ? c.getQuantity() : BigDecimal.ZERO;
-                            return weight.multiply(qty);
-                        })
-                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal totalWeight = cartService.calculateTotalWeight(items);
 
                 vendorWeights.put(vendorId, totalWeight);
 
@@ -240,6 +240,17 @@ public class CartController {
             return "redirect:/cart/index";
         }
 
+        String chargeValidationError = checkoutChargeValidationService.refreshAndValidate(
+                session,
+                cart,
+                true,
+                false
+        );
+        if (chargeValidationError != null) {
+            redirectAttributes.addFlashAttribute("errorMessage", chargeValidationError);
+            return "redirect:/cart/index";
+        }
+
         Map<Long, List<CartItem>> grouped = new HashMap<>();
         for (CartItem item : cart) {
             if (item == null || item.getProduct() == null || item.getProduct().getVendorprofile() == null
@@ -302,6 +313,8 @@ public class CartController {
         model.addAttribute("vendorShippingCost", vendorShippingCost);
         model.addAttribute("vendorPackagingCost", vendorPackagingCost);
         model.addAttribute("grandTotal", grandTotal);
+        model.addAttribute("checkoutRequestId", checkoutRequestIdentityService.getOrCreateRequestId(session));
+        model.addAttribute("checkoutCartFingerprint", checkoutRequestIdentityService.checkoutFingerprint(session, cart));
         model.addAttribute("guestCheckout", !authenticatedCustomer);
         var guestSession = guestCheckoutSessionService.current(session).orElse(null);
         model.addAttribute("guestCheckoutSession", guestSession);
@@ -630,22 +643,6 @@ public class CartController {
             return "redirect:/public/single-product/" + resolvedProductUuid;
         }
 
-        ShippingLocation customerLocation = currentShippingLocation(session);
-        List<AvailableDeliveryArea> deliveryAreas = availableDeliveryAreaRepository.findByProduct_UuidOrderByIdDesc(resolvedProductUuid);
-
-        if (requiresShipping && deliveryAreas != null && !deliveryAreas.isEmpty()) {
-            boolean locationMatched = deliveryAreas.stream()
-                    .anyMatch(area -> area.matchesLocation(customerLocation));
-
-            if (!locationMatched) {
-                redirectAttributes.addFlashAttribute(
-                        "errorMessage",
-                        "This product is not available for delivery in your selected location: " + customerLocation.getDisplayLabel()
-                );
-                return "redirect:/public/single-product/" + resolvedProductUuid;
-            }
-        }
-
         if (Boolean.TRUE.equals(product.getManageProductVariants())
                 && (catalogVariantUuid == null || catalogVariantUuid.isBlank())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Please select a catalog variant before adding to cart.");
@@ -760,23 +757,31 @@ public class CartController {
             return "cart/vendorSummary :: vendorSummary";
         }
 
-        BigDecimal shippingCost = BigDecimal.ZERO;
         if (shippingOption != null && !shippingOption.isEmpty()) {
-            shippingCost = cartService.calculateShipping(shippingOption, vendorUuid, session);
-            if (shippingCost == null) {
-                shippingCost = BigDecimal.ZERO;
-            }
             session.setAttribute("shippingOption_" + vendorUuid, shippingOption);
         } else {
             session.removeAttribute("shippingOption_" + vendorUuid);
+        }
+
+        String chargeError = checkoutChargeValidationService.refreshAndValidate(
+                session,
+                fullCart,
+                false,
+                false
+        );
+        if (chargeError != null) {
+            model.addAttribute("checkoutUnavailableMessage", chargeError);
+        }
+
+        BigDecimal shippingCost = (BigDecimal) session.getAttribute("shippingCost_" + vendorUuid);
+        if (shippingCost == null) {
+            shippingCost = BigDecimal.ZERO;
         }
 
         BigDecimal packagingCost = (BigDecimal) session.getAttribute("packagingCost_" + vendorUuid);
         if (packagingCost == null) {
             packagingCost = BigDecimal.ZERO;
         }
-
-        session.setAttribute("shippingCost_" + vendorUuid, shippingCost);
 
         BigDecimal total = subtotal.add(shippingCost).add(packagingCost);
 
@@ -813,14 +818,6 @@ public class CartController {
 
         List<CartItem> vendorCart = cartService.getVendorCart(fullCart, vendorUuid);
 
-        BigDecimal totalWeight = vendorCart.stream()
-                .map(c -> {
-                    BigDecimal weight = c.getWeight() != null ? c.getWeight() : BigDecimal.ZERO;
-                    BigDecimal qty = c.getQuantity() != null ? c.getQuantity() : BigDecimal.ZERO;
-                    return weight.multiply(qty);
-                })
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
         BigDecimal subtotal = cartService.calculateSubtotal(vendorCart);
         if (!cartService.vendorCartRequiresShipping(vendorCart)) {
             session.removeAttribute("packagingRate_" + vendorUuid);
@@ -837,27 +834,25 @@ public class CartController {
             shippingCost = BigDecimal.ZERO;
         }
 
-        BigDecimal packagingCost = BigDecimal.ZERO;
         if (packaging != null && !packaging.isBlank()) {
-            double baseWeight = 0.5;
-            try {
-                BigDecimal calculated = packagingRateService.calculateRateOneByUuid(packaging, baseWeight, totalWeight.doubleValue());
-                if (calculated != null) {
-                    packagingCost = calculated;
-                }
-            } catch (RuntimeException ex) {
-                try {
-                    BigDecimal calculated = packagingRateService.calculateRateOne(Long.valueOf(packaging), baseWeight, totalWeight.doubleValue());
-                    if (calculated != null) {
-                        packagingCost = calculated;
-                    }
-                } catch (Exception ignored) {
-                    log.debug("Ignoring legacy packaging value {}", packaging);
-                }
-            }
+            session.setAttribute("packagingRate_" + vendorUuid, packaging);
+        } else {
+            session.removeAttribute("packagingRate_" + vendorUuid);
         }
 
-        session.setAttribute("packagingCost_" + vendorUuid, packagingCost);
+        String chargeError = checkoutChargeValidationService.refreshAndValidate(
+                session,
+                fullCart,
+                false,
+                false
+        );
+        if (chargeError != null) {
+            model.addAttribute("checkoutUnavailableMessage", chargeError);
+        }
+        BigDecimal packagingCost = (BigDecimal) session.getAttribute("packagingCost_" + vendorUuid);
+        if (packagingCost == null) {
+            packagingCost = BigDecimal.ZERO;
+        }
 
         model.addAttribute("vendorKey", vendorUuid);
         model.addAttribute("subtotal", subtotal);

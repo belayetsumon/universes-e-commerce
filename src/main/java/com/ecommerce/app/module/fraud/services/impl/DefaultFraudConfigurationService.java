@@ -6,6 +6,8 @@ import com.ecommerce.app.module.fraud.repository.FraudConfigurationRepository;
 import com.ecommerce.app.module.fraud.services.FraudConfigurationService;
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.Locale;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,9 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class DefaultFraudConfigurationService implements FraudConfigurationService {
 
     private final FraudConfigurationRepository fraudConfigurationRepository;
+    private final Environment environment;
 
-    public DefaultFraudConfigurationService(FraudConfigurationRepository fraudConfigurationRepository) {
+    public DefaultFraudConfigurationService(
+            FraudConfigurationRepository fraudConfigurationRepository,
+            Environment environment) {
         this.fraudConfigurationRepository = fraudConfigurationRepository;
+        this.environment = environment;
     }
 
     @Override
@@ -36,8 +42,18 @@ public class DefaultFraudConfigurationService implements FraudConfigurationServi
         if (key == null || key.isBlank()) {
             return Optional.empty();
         }
-        return fraudConfigurationRepository.findByConfigKeyAndActiveTrue(key.trim())
-                .map(FraudConfiguration::getConfigValue);
+        String cleanedKey = key.trim();
+        String externalValue = clean(environment.getProperty(cleanedKey));
+        if (externalValue == null) {
+            externalValue = clean(environment.getProperty(toEnvironmentName(cleanedKey)));
+        }
+        if (externalValue != null) {
+            return Optional.of(externalValue);
+        }
+        return fraudConfigurationRepository.findByConfigKeyAndActiveTrue(cleanedKey)
+                .map(FraudConfiguration::getConfigValue)
+                .map(this::clean)
+                .filter(value -> value != null);
     }
 
     @Override
@@ -72,5 +88,16 @@ public class DefaultFraudConfigurationService implements FraudConfigurationServi
         } catch (RuntimeException ex) {
             return defaultValue;
         }
+    }
+
+    private String toEnvironmentName(String key) {
+        return key.replaceAll("[^A-Za-z0-9]", "_").toUpperCase(Locale.ROOT);
+    }
+
+    private String clean(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim();
     }
 }

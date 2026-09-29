@@ -14,6 +14,7 @@ import com.ecommerce.app.module.order.repository.SalesOrderRepository;
 import com.ecommerce.app.module.user.model.Users;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -63,10 +64,17 @@ public class DefaultCustomerHistorySignalEvaluator extends AbstractFraudSignalEv
         signals.add(signal("CUSTOMER_BLACKLISTED", category(), blacklistedCustomer, 100, FraudSignalSeverity.CRITICAL,
                 null, String.valueOf(blacklistedCustomer), "customer-risk-profile", null));
 
-        String mobileHash = customer == null ? sha256(order == null ? null : order.getMobileNumber()) : sha256(customer.getMobile());
-        boolean blacklistedMobile = mobileHash != null
-                && fraudBlocklistRepository.existsByBlockTypeAndHashedValueAndActiveTrue(
-                        com.ecommerce.app.module.fraud.model.FraudBlockType.MOBILE_NUMBER, mobileHash);
+        String orderMobile = order == null ? null : order.getMobileNumber();
+        String mobile = orderMobile == null || orderMobile.isBlank()
+                ? (customer == null ? null : customer.getMobile())
+                : orderMobile;
+        List<String> mobileHashes = com.ecommerce.app.module.fraud.support.FraudHashingSupport
+                .bangladeshMobileHashCandidates(mobile);
+        boolean blacklistedMobile = !mobileHashes.isEmpty()
+                && fraudBlocklistRepository.existsEffectiveBlock(
+                        com.ecommerce.app.module.fraud.model.FraudBlockType.MOBILE_NUMBER,
+                        mobileHashes,
+                        LocalDateTime.now());
         signals.add(signal("MOBILE_BLACKLISTED", category(), blacklistedMobile, 100, FraudSignalSeverity.CRITICAL,
                 FraudReasonCode.MOBILE_BLACKLISTED, String.valueOf(blacklistedMobile), "fraud-blocklist", null));
 

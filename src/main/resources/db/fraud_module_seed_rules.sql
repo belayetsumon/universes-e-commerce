@@ -18,7 +18,7 @@ VALUES
 ('fraud-config-0014', 'fraud.vendor.sales_spike.order_count', '20', 'Recent vendor order count treated as a suspicious sales spike.', TRUE),
 ('fraud-config-0015', 'fraud.vendor.abnormal_refund_rate', '0.20', 'Vendor refund rate that contributes payout and collusion risk.', TRUE),
 ('fraud-config-0016', 'fraud.vendor.abnormal_cancel_rate', '0.25', 'Vendor cancellation rate that contributes payout risk.', TRUE)
-ON CONFLICT (config_key) DO NOTHING;
+ON DUPLICATE KEY UPDATE config_key = config_key;
 
 INSERT INTO fraud_rules (
     uuid, rule_code, rule_name, description, rule_type, signal_code, rule_operator,
@@ -53,4 +53,4 @@ VALUES
 ('fraud-rule-0026', 'ABNORMAL_VENDOR_REFUND_RATE_SCORE', 'Abnormal vendor refund rate', 'Adds risk for unusually high vendor refund or return activity.', 'VENDOR_CONTROL', 'ABNORMAL_VENDOR_REFUND_RATE', 'EXISTS', NULL, 25, 190, 'MANUAL_REVIEW', FALSE, TRUE),
 ('fraud-rule-0027', 'ABNORMAL_VENDOR_CANCEL_RATE_SCORE', 'Abnormal vendor cancellation rate', 'Adds risk for unusually high vendor cancellation activity.', 'VENDOR_CONTROL', 'ABNORMAL_VENDOR_CANCEL_RATE', 'EXISTS', NULL, 20, 195, 'MANUAL_REVIEW', FALSE, TRUE),
 ('fraud-rule-0028', 'VENDOR_RISK_SCORE_HOLD_PAYOUT', 'High vendor risk score', 'Holds vendor payout when vendor profile risk reaches high level.', 'VENDOR_CONTROL', 'VENDOR_RISK_SCORE', 'GREATER_THAN_OR_EQUAL', '60', 0, 80, 'HOLD_VENDOR_PAYOUT', TRUE, TRUE)
-ON CONFLICT (rule_code) DO NOTHING;
+ON DUPLICATE KEY UPDATE rule_code = rule_code;

@@ -721,6 +721,8 @@
 
                                 <form th:action="@{/order/savebyvendor}" method="post" class="mt-3">
                                     <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <input type="hidden" name="checkoutRequestId" th:value="${checkoutRequestId}" />
+                                    <input type="hidden" name="checkoutCartFingerprint" th:value="${checkoutCartFingerprint}" />
                                     <div class="checkout-guest-note" th:if="${guestCheckout and codEnabled}">
                                         <i class="bi bi-person-check"></i>
                                         <div>

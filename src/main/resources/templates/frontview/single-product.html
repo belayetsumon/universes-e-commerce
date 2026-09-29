@@ -372,74 +372,16 @@
                                             <script th:inline="javascript">
                                                 window.AppTrackingQueue = window.AppTrackingQueue || [];
                                                 window.AppTrackingQueue.push(["viewProduct", {
-                                                    currency: /*[[${trackingProduct.currency}]]*/ "BDT",
-                                                    value: /*[[${trackingProduct.price}]]*/ 0,
-                                                    ecommerce: {
                                                         currency: /*[[${trackingProduct.currency}]]*/ "BDT",
                                                         value: /*[[${trackingProduct.price}]]*/ 0,
-                                                        items: /*[[${trackingProductItems}]]*/ []
-                                                    }
-                                                }]);
+                                                        ecommerce: {
+                                                            currency: /*[[${trackingProduct.currency}]]*/ "BDT",
+                                                            value: /*[[${trackingProduct.price}]]*/ 0,
+                                                            items: /*[[${trackingProductItems}]]*/ []
+                                                        }
+                                                    }]);
                                             </script>
                                             <div class="col-xl-5 product-info-sidebar">
-                                                <div class="fs-6"> Delivery Options </div>
-                                                <p>Available Delivery Area: </p>
-                                                <ul class="list-unstyled">
-                                                    <li th:if="${d_a_list != null and !#lists.isEmpty(d_a_list)}" th:each="d_a_lists : ${d_a_list}">
-                                                        <span th:text="${d_a_lists.coverageLabel}"> </span>
-                                                    </li>
-                                                    <!-- Fallback message if the product list is empty or null -->
-                                                </ul>
-
-                                                <div th:unless="${d_a_list != null and !#lists.isEmpty(d_a_list)}">
-                                                    No information available.
-                                                </div>
-                                                <hr>
-                                                <div class="textwidget">
-                                                    <div class="fs-6"> Delivery/ Shipping Charge</div>
-
-                                                    <ul class="list-unstyled">
-                                                        <li th:if="${d_c_list != null and !#lists.isEmpty(d_c_list)}" th:each="d_c_lists : ${d_c_list}">
-                                                            <span th:text="${d_c_lists.deliveryArea}"> </span>:
-                                                            <span th:text="${d_c_lists.deliveryCharge == 0 ? 'Free Delivery Available' : d_c_lists.deliveryCharge}"></span>
-
-                                                            <span th:text="${d_c_lists.description}"> </span>
-                                                        </li>
-                                                        <!-- Fallback message if the product list is empty or null -->
-
-                                                    </ul>
-
-                                                    <div th:unless="${d_c_list != null and !#lists.isEmpty(d_c_list)}">
-                                                        No information available.
-                                                    </div>
-                                                    <hr>
-                                                </div>
-
-                                                <div class="textwidget">
-                                                    <div class="fs-6"> Delivery Estimated Timeline </div>
-                                                    <ul class="list-unstyled">
-                                                        <li th:if="${d_t_list != null and !#lists.isEmpty(d_t_list)}" th:each="d_t_lists : ${d_t_list}">
-                                                            <!--                                                            <span th:text="${d_t_lists.deliveryArea}"> </span>:  -->
-                                                            <span th:text="${d_t_lists.estimatedTimeline}"> </span>
-                                                            <!--                                                            <span th:text="${d_c_lists.description}"> </span>-->
-                                                        </li>
-                                                        <!-- Fallback message if the product list is empty or null -->
-
-                                                    </ul>
-
-                                                    <div th:unless="${d_t_list != null and !#lists.isEmpty(d_t_list)}">
-                                                        No information available.
-                                                    </div>
-                                                    <hr>
-                                                </div>
-
-                                                <div class="textwidget">
-                                                    <div class="fs-6"> Cash on Delivery Available </div>
-                                                    <p>
-                                                        Delivery Time : Within 30 Working Days
-                                                    </p>
-                                                    <hr>
-                                                </div>
                                                 <div class="textwidget">
                                                     <div class="fs-6">  Return  </div>
                                                     Cancellation, Return & Refund <br>
@@ -450,9 +392,7 @@
                                                     <div class="fs-6"> Warranty </div>
                                                     <ul class="list-unstyled">
                                                         <li th:if="${w_list != null and !#lists.isEmpty(w_list)}" th:each="w_lists : ${w_list}">
-                                                            <!--                                                            <span th:text="${d_t_lists.deliveryArea}"> </span>:  -->
                                                             <span th:text="${w_lists.description}"> </span>
-                                                            <!--                                                            <span th:text="${d_c_lists.description}"> </span>-->
                                                         </li>
                                                         <!-- Fallback message if the product list is empty or null -->
 
@@ -477,111 +417,111 @@
                                                 <h2>More products you may like</h2>
                                             </div>
                                         </div>
-                                    <div class="row row-cols-1 row-cols-md-5 g-4 product-recommendation-grid">
+                                        <div class="row row-cols-1 row-cols-md-5 g-4 product-recommendation-grid">
 
-                                        <div class="col" th:each="productlists,status:${vProduct}">
-
-
-                                            <div class="card product-card  position-relative mb-4 hvr-bounce-in h-100">
-
-                                                <span th:if="${not #strings.isEmpty(#strings.trim(productlists.imageName))}" class="">
-                                                    <!--                                <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />-->
-                                                    <img class="card-img-top"
-                                                         th:src="@{${productlists.imageUrl}}"
-                                                         th:alt="${productlists.title}"
-                                                         th:attr="onerror=|this.onerror=null;this.src='@{/img/image-not-available.png}';|" />
+                                            <div class="col" th:each="productlists,status:${vProduct}">
 
 
-                                                </span>
-                                                <span th:if="${#strings.isEmpty(#strings.trim(productlists.imageName))}" >
-                                                    <img  class="card-img-top" th:src="@{/img/image-not-available.png}" th:alt="${productlists.title}" />
-                                                </span>
+                                                <div class="card product-card  position-relative mb-4 hvr-bounce-in h-100">
 
-                                                <div class="product-status-badge-stack"
-                                                     th:if="${productlists['showPreorderBadge'] == true or productlists['showOutOfStockBadge'] == true}">
-                                                    <span class="product-status-badge preorder"
-                                                          th:if="${productlists['showPreorderBadge'] == true}">
-                                                        Preorder
+                                                    <span th:if="${not #strings.isEmpty(#strings.trim(productlists.imageName))}" class="">
+                                                        <!--                                <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />-->
+                                                        <img class="card-img-top"
+                                                             th:src="@{${productlists.imageUrl}}"
+                                                             th:alt="${productlists.title}"
+                                                             th:attr="onerror=|this.onerror=null;this.src='@{/img/image-not-available.png}';|" />
+
+
                                                     </span>
-                                                    <span class="product-status-badge out-of-stock badge bg-danger"
-                                                          th:if="${productlists['showOutOfStockBadge'] == true}">
-                                                        Out of stock
+                                                    <span th:if="${#strings.isEmpty(#strings.trim(productlists.imageName))}" >
+                                                        <img  class="card-img-top" th:src="@{/img/image-not-available.png}" th:alt="${productlists.title}" />
                                                     </span>
-                                                </div>
 
-                                                <div class="badge-container">
-                                                    <span th:if="${productlists.totalDiscountPercent != null and productlists.totalDiscountPercent > 0}" class="badge rounded-pill bg-danger badge-custom" >
-                                                        -[[${productlists.totalDiscountPercent}]]%
-                                                    </span>
-                                                    <span  th:if="${productlists.featuredProduct}" class="badge rounded-pill bg-info badge-custom">Featured</span>
-                                                    <!--                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>-->
-                                                </div>
-
-                                                <div class="card-body">
-                                                    <div class="card-title">
-                                                        <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.uuid})}" >
-                                                            <!--                                        <span  th:text="${productlists.title}"></span> -->
-                                                            <p th:text="${productlists.title.length() > 40 ? #strings.substring(productlists.title, 0, 40) + '...' : productlists.title}"></p></a>
-                                                    </div>
-                                                    <div class="product-card-rating" th:if="${productlists.hasReviews}">
-                                                        <span class="review-card-rating">
-                                                            <i class="bi bi-star-fill"></i>
+                                                    <div class="product-status-badge-stack"
+                                                         th:if="${productlists['showPreorderBadge'] == true or productlists['showOutOfStockBadge'] == true}">
+                                                        <span class="product-status-badge preorder"
+                                                              th:if="${productlists['showPreorderBadge'] == true}">
+                                                            Preorder
                                                         </span>
-                                                        <strong th:text="${productlists.averageRating}">0.0</strong>
-                                                        <span th:text="'(' + ${productlists.reviewCount} + ')'">(0)</span>
-                                                    </div>
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <div class="row"  th:if="${productlists.totalDiscountPercent > 0}">
-                                                            <div class=" col-auto text-muted text-decoration-line-through"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
-                                                            <div class=" col-auto  text-success">-[[${productlists.totalDiscountedAmount}]]</div>
-                                                            <div class=" col-auto  text-reds">[[${productlists.afterDiscountRemainingAmount}]]</div>
-                                                        </div>
-
-                                                        <div class="row"  th:unless="${productlists.totalDiscountPercent > 0}">
-                                                            <div class="  text-center"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
-                                                        </div>
+                                                        <span class="product-status-badge out-of-stock badge bg-danger"
+                                                              th:if="${productlists['showOutOfStockBadge'] == true}">
+                                                            Out of stock
+                                                        </span>
                                                     </div>
 
-                                                    <form  class=""
-                                                           th:action="@{/cart/add}"
-                                                           enctype="multipart/form-data"
-                                                           method="post"
-                                                           th:with="inWishlist=${wishlistProductKeys != null and productlists.uuid != null and wishlistProductKeys.contains(productlists.uuid)}" >
+                                                    <div class="badge-container">
+                                                        <span th:if="${productlists.totalDiscountPercent != null and productlists.totalDiscountPercent > 0}" class="badge rounded-pill bg-danger badge-custom" >
+                                                            -[[${productlists.totalDiscountPercent}]]%
+                                                        </span>
+                                                        <span  th:if="${productlists.featuredProduct}" class="badge rounded-pill bg-info badge-custom">Featured</span>
+                                                        <!--                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>-->
+                                                    </div>
 
-                                                        <input type="hidden" class="form-control" th:name ="product_uuid" th:value="${productlists.uuid}" />
-                                                        <input type="hidden"
-                                                               name="redirectUrl"
-                                                               th:value="@{/public/single-product/{prodid}(prodid=${product_details.uuid})}" />
-
-                                                        <!--                                            <label  class="col-auto" for="exampleInputEmail1">Quantity:</label>-->
-
-                                                        <!--                                        <div class="fs-6 text-danger"> <strong> Price: </strong><span  th:text="${productlists.salesPrice}">    </span></div>-->
-                                                        <input  type="hidden" min="1"   class="col-auto form-control mb-3"  size="10" th:name="quantity" value="1" />
-
-                                                        <div class=" form-group text-center ">
-                                                            <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Add to Cart</button>
-                                                            <button type="submit"
-                                                                    class="btn btn-sm mt-1"
-                                                                    th:formaction="${inWishlist} ? @{/wishlist/remove} : @{/wishlist/add}"
-                                                                    th:classappend="${inWishlist} ? ' btn-outline-danger' : ' btn-outline-warning'">
-                                                                <i class="bi"
-                                                                   th:classappend="${inWishlist} ? ' bi-heart-fill' : ' bi-suit-heart'"></i>
-                                                                <span th:text="${inWishlist} ? ' Remove from Wishlist' : ' Add to Wishlist'">Add to Wishlist</span>
-                                                            </button>
+                                                    <div class="card-body">
+                                                        <div class="card-title">
+                                                            <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.uuid})}" >
+                                                                <!--                                        <span  th:text="${productlists.title}"></span> -->
+                                                                <p th:text="${productlists.title.length() > 40 ? #strings.substring(productlists.title, 0, 40) + '...' : productlists.title}"></p></a>
                                                         </div>
-                                                    </form>
+                                                        <div class="product-card-rating" th:if="${productlists.hasReviews}">
+                                                            <span class="review-card-rating">
+                                                                <i class="bi bi-star-fill"></i>
+                                                            </span>
+                                                            <strong th:text="${productlists.averageRating}">0.0</strong>
+                                                            <span th:text="'(' + ${productlists.reviewCount} + ')'">(0)</span>
+                                                        </div>
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <div class="row"  th:if="${productlists.totalDiscountPercent > 0}">
+                                                                <div class=" col-auto text-muted text-decoration-line-through"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
+                                                                <div class=" col-auto  text-success">-[[${productlists.totalDiscountedAmount}]]</div>
+                                                                <div class=" col-auto  text-reds">[[${productlists.afterDiscountRemainingAmount}]]</div>
+                                                            </div>
+
+                                                            <div class="row"  th:unless="${productlists.totalDiscountPercent > 0}">
+                                                                <div class="  text-center"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
+                                                            </div>
+                                                        </div>
+
+                                                        <form  class=""
+                                                               th:action="@{/cart/add}"
+                                                               enctype="multipart/form-data"
+                                                               method="post"
+                                                               th:with="inWishlist=${wishlistProductKeys != null and productlists.uuid != null and wishlistProductKeys.contains(productlists.uuid)}" >
+
+                                                            <input type="hidden" class="form-control" th:name ="product_uuid" th:value="${productlists.uuid}" />
+                                                            <input type="hidden"
+                                                                   name="redirectUrl"
+                                                                   th:value="@{/public/single-product/{prodid}(prodid=${product_details.uuid})}" />
+
+                                                            <!--                                            <label  class="col-auto" for="exampleInputEmail1">Quantity:</label>-->
+
+                                                            <!--                                        <div class="fs-6 text-danger"> <strong> Price: </strong><span  th:text="${productlists.salesPrice}">    </span></div>-->
+                                                            <input  type="hidden" min="1"   class="col-auto form-control mb-3"  size="10" th:name="quantity" value="1" />
+
+                                                            <div class=" form-group text-center ">
+                                                                <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Add to Cart</button>
+                                                                <button type="submit"
+                                                                        class="btn btn-sm mt-1"
+                                                                        th:formaction="${inWishlist} ? @{/wishlist/remove} : @{/wishlist/add}"
+                                                                        th:classappend="${inWishlist} ? ' btn-outline-danger' : ' btn-outline-warning'">
+                                                                    <i class="bi"
+                                                                       th:classappend="${inWishlist} ? ' bi-heart-fill' : ' bi-suit-heart'"></i>
+                                                                    <span th:text="${inWishlist} ? ' Remove from Wishlist' : ' Add to Wishlist'">Add to Wishlist</span>
+                                                                </button>
+                                                            </div>
+                                                        </form>
 
 
-                                                    <!--                                <div class="mt-2">
-                                                                                        <span class="badge bg-warning text-dark">Rating: 4.5 <i class="fas fa-star"></i></span>
-                                                                                        <span class="badge bg-secondary">Top</span>
-                                                                                        <span class="badge bg-primary">Trend</span>
-                                                                                    </div>-->
+                                                        <!--                                <div class="mt-2">
+                                                                                            <span class="badge bg-warning text-dark">Rating: 4.5 <i class="fas fa-star"></i></span>
+                                                                                            <span class="badge bg-secondary">Top</span>
+                                                                                            <span class="badge bg-primary">Trend</span>
+                                                                                        </div>-->
 
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
                                     </section>
 
                                     <section class="col-12 product-tabs-shell">
@@ -822,116 +762,116 @@
                                                 <h2>Explore more products</h2>
                                             </div>
                                         </div>
-                                    <div class="row row-cols-1 row-cols-md-5 g-4 product-recommendation-grid">
+                                        <div class="row row-cols-1 row-cols-md-5 g-4 product-recommendation-grid">
 
-                                        <div class="col" th:each="productlists,status:${allReandomProduct}">
-
-
-                                            <div class="card product-card  position-relative mb-4 hvr-bounce-in h-100">
-
-                                                <span th:if="${not #strings.isEmpty(#strings.trim(productlists.imageName))}" class="">
-                                                    <!--                                <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />-->
-                                                    <img class="card-img-top"
-                                                         th:src="@{${productlists.imageUrl}}"
-                                                         th:alt="${productlists.title}"
-                                                         th:attr="onerror=|this.onerror=null;this.src='@{/img/image-not-available.png}';|" />
+                                            <div class="col" th:each="productlists,status:${allReandomProduct}">
 
 
-                                                </span>
-                                                <span th:if="${#strings.isEmpty(#strings.trim(productlists.imageName))}" >
-                                                    <img  class="card-img-top" th:src="@{/img/image-not-available.png}" th:alt="${productlists.title}" />
-                                                </span>
+                                                <div class="card product-card  position-relative mb-4 hvr-bounce-in h-100">
 
-                                                <div class="product-status-badge-stack"
-                                                     th:if="${productlists['showPreorderBadge'] == true or productlists['showOutOfStockBadge'] == true}">
-                                                    <span class="product-status-badge preorder"
-                                                          th:if="${productlists['showPreorderBadge'] == true}">
-                                                        Preorder
+                                                    <span th:if="${not #strings.isEmpty(#strings.trim(productlists.imageName))}" class="">
+                                                        <!--                                <img  class="card-img-top" th:src="@{/files/}+${productlists.imageName}" />-->
+                                                        <img class="card-img-top"
+                                                             th:src="@{${productlists.imageUrl}}"
+                                                             th:alt="${productlists.title}"
+                                                             th:attr="onerror=|this.onerror=null;this.src='@{/img/image-not-available.png}';|" />
+
+
                                                     </span>
-                                                    <span class="product-status-badge out-of-stock badge bg-danger"
-                                                          th:if="${productlists['showOutOfStockBadge'] == true}">
-                                                        Out of stock
+                                                    <span th:if="${#strings.isEmpty(#strings.trim(productlists.imageName))}" >
+                                                        <img  class="card-img-top" th:src="@{/img/image-not-available.png}" th:alt="${productlists.title}" />
                                                     </span>
-                                                </div>
 
-                                                <div class="badge-container">
-                                                    <span th:if="${productlists.totalDiscountPercent != null and productlists.totalDiscountPercent > 0}" class="badge rounded-pill bg-danger badge-custom" >
-                                                        -[[${productlists.totalDiscountPercent}]]%
-                                                    </span>
-                                                    <span  th:if="${productlists.featuredProduct}" class="badge rounded-pill bg-info badge-custom">Featured</span>
-                                                    <!--                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>-->
-                                                </div>
-
-                                                <div class="card-body">
-                                                    <div class="card-title">
-                                                        <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.uuid})}" >
-                                                            <!--                                        <span  th:text="${productlists.title}"></span> -->
-                                                            <p th:text="${productlists.title.length() > 40 ? #strings.substring(productlists.title, 0, 40) + '...' : productlists.title}"></p></a>
-                                                    </div>
-                                                    <div class="product-card-rating" th:if="${productlists.hasReviews}">
-                                                        <span class="review-card-rating">
-                                                            <i class="bi bi-star-fill"></i>
+                                                    <div class="product-status-badge-stack"
+                                                         th:if="${productlists['showPreorderBadge'] == true or productlists['showOutOfStockBadge'] == true}">
+                                                        <span class="product-status-badge preorder"
+                                                              th:if="${productlists['showPreorderBadge'] == true}">
+                                                            Preorder
                                                         </span>
-                                                        <strong th:text="${productlists.averageRating}">0.0</strong>
-                                                        <span th:text="'(' + ${productlists.reviewCount} + ')'">(0)</span>
+                                                        <span class="product-status-badge out-of-stock badge bg-danger"
+                                                              th:if="${productlists['showOutOfStockBadge'] == true}">
+                                                            Out of stock
+                                                        </span>
                                                     </div>
 
-
-
-
-
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <div class="row"  th:if="${productlists.totalDiscountPercent > 0}">
-                                                            <div class=" col-auto text-muted text-decoration-line-through"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
-                                                            <div class=" col-auto  text-success">-[[${productlists.totalDiscountedAmount}]]</div>
-                                                            <div class=" col-auto  text-reds">[[${productlists.afterDiscountRemainingAmount}]]</div>
-                                                        </div>
-
-                                                        <div class="row"  th:unless="${productlists.totalDiscountPercent > 0}">
-                                                            <div class="  text-center"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
-                                                        </div>
+                                                    <div class="badge-container">
+                                                        <span th:if="${productlists.totalDiscountPercent != null and productlists.totalDiscountPercent > 0}" class="badge rounded-pill bg-danger badge-custom" >
+                                                            -[[${productlists.totalDiscountPercent}]]%
+                                                        </span>
+                                                        <span  th:if="${productlists.featuredProduct}" class="badge rounded-pill bg-info badge-custom">Featured</span>
+                                                        <!--                                <span class="badge rounded-pill bg-warning badge-custom">Hot</span>-->
                                                     </div>
 
-                                                    <form  class=""
-                                                           th:action="@{/cart/add}"
-                                                           enctype="multipart/form-data"
-                                                           method="post"
-                                                           th:with="inWishlist=${wishlistProductKeys != null and productlists.uuid != null and wishlistProductKeys.contains(productlists.uuid)}" >
-
-                                                        <input type="hidden" class="form-control" th:name ="product_uuid" th:value="${productlists.uuid}" />
-                                                        <input type="hidden"
-                                                               name="redirectUrl"
-                                                               th:value="@{/public/single-product/{prodid}(prodid=${product_details.uuid})}" />
-
-                                                        <!--                                            <label  class="col-auto" for="exampleInputEmail1">Quantity:</label>-->
-
-                                                        <!--                                        <div class="fs-6 text-danger"> <strong> Price: </strong><span  th:text="${productlists.salesPrice}">    </span></div>-->
-                                                        <input  type="hidden" min="1"   class="col-auto form-control mb-3"  size="10" th:name="quantity" value="1" />
-
-                                                        <div class=" form-group text-center ">
-                                                            <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Add to Cart</button>
-                                                            <button type="submit"
-                                                                    class="btn btn-sm mt-1"
-                                                                    th:formaction="${inWishlist} ? @{/wishlist/remove} : @{/wishlist/add}"
-                                                                    th:classappend="${inWishlist} ? ' btn-outline-danger' : ' btn-outline-warning'">
-                                                                <i class="bi"
-                                                                   th:classappend="${inWishlist} ? ' bi-heart-fill' : ' bi-suit-heart'"></i>
-                                                                <span th:text="${inWishlist} ? ' Remove from Wishlist' : ' Add to Wishlist'">Add to Wishlist</span>
-                                                            </button>
+                                                    <div class="card-body">
+                                                        <div class="card-title">
+                                                            <a    class="nav-link text-decoration-none text-dark text-reds" th:href="@{/public/single-product/{prodid}(prodid=${productlists.uuid})}" >
+                                                                <!--                                        <span  th:text="${productlists.title}"></span> -->
+                                                                <p th:text="${productlists.title.length() > 40 ? #strings.substring(productlists.title, 0, 40) + '...' : productlists.title}"></p></a>
                                                         </div>
-                                                    </form>
+                                                        <div class="product-card-rating" th:if="${productlists.hasReviews}">
+                                                            <span class="review-card-rating">
+                                                                <i class="bi bi-star-fill"></i>
+                                                            </span>
+                                                            <strong th:text="${productlists.averageRating}">0.0</strong>
+                                                            <span th:text="'(' + ${productlists.reviewCount} + ')'">(0)</span>
+                                                        </div>
 
 
-                                                    <!--                                <div class="mt-2">
-                                                                                        <span class="badge bg-warning text-dark">Rating: 4.5 <i class="fas fa-star"></i></span>
-                                                                                        <span class="badge bg-secondary">Top</span>
-                                                                                        <span class="badge bg-primary">Trend</span>
-                                                                                    </div>-->
 
+
+
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <div class="row"  th:if="${productlists.totalDiscountPercent > 0}">
+                                                                <div class=" col-auto text-muted text-decoration-line-through"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
+                                                                <div class=" col-auto  text-success">-[[${productlists.totalDiscountedAmount}]]</div>
+                                                                <div class=" col-auto  text-reds">[[${productlists.afterDiscountRemainingAmount}]]</div>
+                                                            </div>
+
+                                                            <div class="row"  th:unless="${productlists.totalDiscountPercent > 0}">
+                                                                <div class="  text-center"><span  th:text="${productlists.salesPrice}">    </span> /-</div>
+                                                            </div>
+                                                        </div>
+
+                                                        <form  class=""
+                                                               th:action="@{/cart/add}"
+                                                               enctype="multipart/form-data"
+                                                               method="post"
+                                                               th:with="inWishlist=${wishlistProductKeys != null and productlists.uuid != null and wishlistProductKeys.contains(productlists.uuid)}" >
+
+                                                            <input type="hidden" class="form-control" th:name ="product_uuid" th:value="${productlists.uuid}" />
+                                                            <input type="hidden"
+                                                                   name="redirectUrl"
+                                                                   th:value="@{/public/single-product/{prodid}(prodid=${product_details.uuid})}" />
+
+                                                            <!--                                            <label  class="col-auto" for="exampleInputEmail1">Quantity:</label>-->
+
+                                                            <!--                                        <div class="fs-6 text-danger"> <strong> Price: </strong><span  th:text="${productlists.salesPrice}">    </span></div>-->
+                                                            <input  type="hidden" min="1"   class="col-auto form-control mb-3"  size="10" th:name="quantity" value="1" />
+
+                                                            <div class=" form-group text-center ">
+                                                                <button class="btn btn-sm btn-danger" > <i class="bi bi-cart4 text-warning"></i> Add to Cart</button>
+                                                                <button type="submit"
+                                                                        class="btn btn-sm mt-1"
+                                                                        th:formaction="${inWishlist} ? @{/wishlist/remove} : @{/wishlist/add}"
+                                                                        th:classappend="${inWishlist} ? ' btn-outline-danger' : ' btn-outline-warning'">
+                                                                    <i class="bi"
+                                                                       th:classappend="${inWishlist} ? ' bi-heart-fill' : ' bi-suit-heart'"></i>
+                                                                    <span th:text="${inWishlist} ? ' Remove from Wishlist' : ' Add to Wishlist'">Add to Wishlist</span>
+                                                                </button>
+                                                            </div>
+                                                        </form>
+
+
+                                                        <!--                                <div class="mt-2">
+                                                                                            <span class="badge bg-warning text-dark">Rating: 4.5 <i class="fas fa-star"></i></span>
+                                                                                            <span class="badge bg-secondary">Top</span>
+                                                                                            <span class="badge bg-primary">Trend</span>
+                                                                                        </div>-->
+
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
                                     </section>
 
                                 </div>

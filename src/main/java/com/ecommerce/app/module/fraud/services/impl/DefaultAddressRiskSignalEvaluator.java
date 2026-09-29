@@ -12,6 +12,7 @@ import com.ecommerce.app.module.order.model.SalesOrder;
 import com.ecommerce.app.module.order.model.ShippingAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDateTime;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -31,7 +32,8 @@ public class DefaultAddressRiskSignalEvaluator extends AbstractFraudSignalEvalua
 
         String addressHash = sha256(buildShippingAddressKey(shipping));
         boolean blacklistedAddress = addressHash != null
-                && fraudBlocklistRepository.existsByBlockTypeAndHashedValueAndActiveTrue(FraudBlockType.ADDRESS, addressHash);
+                && fraudBlocklistRepository.existsEffectiveBlock(
+                        FraudBlockType.ADDRESS, List.of(addressHash), LocalDateTime.now());
         signals.add(signal("ADDRESS_BLACKLISTED", category(), blacklistedAddress, 100, FraudSignalSeverity.CRITICAL,
                 FraudReasonCode.ADDRESS_BLACKLISTED, String.valueOf(blacklistedAddress), "fraud-blocklist", null));
 

@@ -1,0 +1,105 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="script">
+    <script>
+        (function () {
+            'use strict';
+
+            function numberAttribute(input, name) {
+                const value = Number(input.dataset[name]);
+                return Number.isFinite(value) ? value : 0;
+            }
+
+            function feedbackElement(input) {
+                const id = input.getAttribute('data-validation-feedback-id');
+                return id ? document.getElementById(id) : null;
+            }
+
+            function setValidation(input, message) {
+                const feedback = feedbackElement(input);
+                input.setCustomValidity(message || '');
+                input.classList.toggle('is-invalid', Boolean(message));
+                if (feedback) {
+                    feedback.textContent = message || '';
+                }
+            }
+
+            function validateDimensions(input, file) {
+                const minimumWidth = numberAttribute(input, 'minWidth');
+                const minimumHeight = numberAttribute(input, 'minHeight');
+                const maximumWidth = numberAttribute(input, 'maxWidth');
+                const maximumHeight = numberAttribute(input, 'maxHeight');
+                const objectUrl = URL.createObjectURL(file);
+                const image = new Image();
+
+                setValidation(input, 'Validating image dimensions...');
+                image.onload = function () {
+                    URL.revokeObjectURL(objectUrl);
+                    if (!input.files || input.files[0] !== file) {
+                        return;
+                    }
+                    if (image.naturalWidth < minimumWidth || image.naturalHeight < minimumHeight) {
+                        setValidation(input, 'Image dimensions must be at least '
+                                + minimumWidth + ' x ' + minimumHeight + ' pixels.');
+                        return;
+                    }
+                    if (image.naturalWidth > maximumWidth || image.naturalHeight > maximumHeight) {
+                        setValidation(input, 'Image dimensions must not exceed '
+                                + maximumWidth + ' x ' + maximumHeight + ' pixels.');
+                        return;
+                    }
+                    setValidation(input, '');
+                };
+                image.onerror = function () {
+                    URL.revokeObjectURL(objectUrl);
+                    if (!input.files || input.files[0] !== file) {
+                        return;
+                    }
+                    setValidation(input, 'The selected file is not a valid image.');
+                };
+                image.src = objectUrl;
+            }
+
+            function validate(input) {
+                const file = input.files && input.files[0];
+                setValidation(input, '');
+                if (!file) {
+                    return;
+                }
+
+                const minimumBytes = numberAttribute(input, 'minFileSizeBytes');
+                const maximumBytes = numberAttribute(input, 'maxFileSizeBytes');
+                if (file.size < minimumBytes) {
+                    setValidation(input, 'The selected image file is smaller than the configured minimum.');
+                    return;
+                }
+                if (file.size > maximumBytes) {
+                    setValidation(input, 'The selected image file exceeds the configured maximum.');
+                    return;
+                }
+                validateDimensions(input, file);
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('input[type="file"][data-product-featured-image]')
+                        .forEach(function (input) {
+                            input.addEventListener('change', function () {
+                                validate(input);
+                            });
+                            const form = input.closest('form');
+                            if (form) {
+                                form.addEventListener('submit', function (event) {
+                                    if (!input.checkValidity()) {
+                                        event.preventDefault();
+                                        input.reportValidity();
+                                    }
+                                });
+                            }
+                        });
+            });
+        })();
+    </script>
+</th:block>
+</body>
+</html>

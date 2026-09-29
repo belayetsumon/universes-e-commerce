@@ -52,7 +52,9 @@ public class DefaultOrderVelocitySignalEvaluator extends AbstractFraudSignalEval
                         String.valueOf(customerId),
                         Duration.ofMinutes(15)
                 );
-        signals.add(signal("ORDER_COUNT_15M", category(), recentCustomerCounters > 3, 25, FraudSignalSeverity.HIGH,
+        // Counters contain previously accepted attempts; the order currently
+        // being evaluated is the next attempt in the window.
+        signals.add(signal("ORDER_COUNT_15M", category(), recentCustomerCounters >= 3, 25, FraudSignalSeverity.HIGH,
                 FraudReasonCode.EXCESSIVE_ORDER_VELOCITY, String.valueOf(recentCustomerCounters), "velocity-counter", "{\"threshold\":3}"));
 
         return signals;

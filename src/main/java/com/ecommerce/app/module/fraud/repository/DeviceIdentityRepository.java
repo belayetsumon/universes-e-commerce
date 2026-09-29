@@ -13,6 +13,12 @@ public interface DeviceIdentityRepository extends JpaRepository<DeviceIdentity, 
 
     Optional<DeviceIdentity> findFirstByDeviceIdentifierOrderByIdAsc(String deviceIdentifier);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<DeviceIdentity> findFirstByDeviceIdentifierAndCustomerIdOrderByIdAsc(
+            String deviceIdentifier,
+            Long customerId
+    );
+
     Optional<DeviceIdentity> findByIdentityKey(String identityKey);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

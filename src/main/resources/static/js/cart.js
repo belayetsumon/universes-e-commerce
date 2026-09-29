@@ -41,13 +41,19 @@ const formatCurrency = num => `৳ ${parseFloat(num || 0).toFixed(2)}`;
 async function postForm(url, bodyObj) {
     const body = new URLSearchParams();
     Object.entries(bodyObj || {}).forEach(([k, v]) => body.append(k, v ?? ""));
+    const headers = {'Content-Type': 'application/x-www-form-urlencoded'};
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+    if (csrfToken && csrfHeader) {
+        headers[csrfHeader] = csrfToken;
+    }
     const res = await fetch(url, {
         method: "POST",
         // Date: 2026-04-20
         // Ensure session cookie (JSESSIONID) is sent so vendor-wise shipping/packaging
         // selections persist in HttpSession.
         credentials: "same-origin",
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        headers,
         body
     });
     if (!res.ok) {

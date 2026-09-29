@@ -10,18 +10,21 @@ public record ImageUploadPolicy(
         Set<String> allowedContentTypes,
         Set<String> allowedExtensions,
         Set<String> allowedImageFormats,
+        long minFileSizeBytes,
         long maxFileSizeBytes,
+        int minWidth,
+        int minHeight,
         int maxWidth,
         int maxHeight,
         String allowedFileDescription
 ) {
 
     public ImageUploadPolicy {
-        if (maxFileSizeBytes <= 0) {
-            throw new IllegalArgumentException("Maximum file size must be greater than zero.");
+        if (minFileSizeBytes <= 0 || maxFileSizeBytes < minFileSizeBytes) {
+            throw new IllegalArgumentException("Image file size range must be valid.");
         }
-        if (maxWidth <= 0 || maxHeight <= 0) {
-            throw new IllegalArgumentException("Maximum image dimensions must be greater than zero.");
+        if (minWidth <= 0 || minHeight <= 0 || maxWidth < minWidth || maxHeight < minHeight) {
+            throw new IllegalArgumentException("Image dimension range must be valid.");
         }
 
         allowedContentTypes = normalize(allowedContentTypes);
@@ -30,6 +33,27 @@ public record ImageUploadPolicy(
         allowedFileDescription = allowedFileDescription == null || allowedFileDescription.isBlank()
                 ? "supported image files"
                 : allowedFileDescription;
+    }
+
+    public ImageUploadPolicy(
+            Set<String> allowedContentTypes,
+            Set<String> allowedExtensions,
+            Set<String> allowedImageFormats,
+            long maxFileSizeBytes,
+            int maxWidth,
+            int maxHeight,
+            String allowedFileDescription) {
+        this(
+                allowedContentTypes,
+                allowedExtensions,
+                allowedImageFormats,
+                1L,
+                maxFileSizeBytes,
+                1,
+                1,
+                maxWidth,
+                maxHeight,
+                allowedFileDescription);
     }
 
     private static Set<String> normalize(Set<String> values) {

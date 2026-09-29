@@ -20,6 +20,7 @@ import com.ecommerce.app.module.checkout.guest.services.MobileNumberNormalizatio
 import com.ecommerce.app.module.communication.dto.CommunicationSendResult;
 import com.ecommerce.app.module.communication.dto.MessageDispatchRequest;
 import com.ecommerce.app.module.communication.services.MessageDispatchService;
+import com.ecommerce.app.module.fraud.services.OrderVelocityService;
 import com.ecommerce.app.module.settings.services.StoreOperationModeService;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.ripository.UsersRepository;
@@ -57,6 +58,9 @@ class CustomerCodMobileVerificationServiceTest {
     @Mock
     private StoreOperationModeService storeOperationModeService;
 
+    @Mock
+    private OrderVelocityService orderVelocityService;
+
     private final MobileNumberNormalizationService mobileNumberService = new MobileNumberNormalizationService();
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(4);
     private CustomerCodMobileVerificationService service;
@@ -69,8 +73,11 @@ class CustomerCodMobileVerificationServiceTest {
                 mobileNumberService,
                 passwordEncoder,
                 messageDispatchService,
-                storeOperationModeService
+                storeOperationModeService,
+                orderVelocityService
         );
+        org.mockito.Mockito.lenient().when(orderVelocityService.claimAllWithinLimits(any()))
+                .thenReturn(true);
     }
 
     @AfterEach
@@ -96,6 +103,19 @@ class CustomerCodMobileVerificationServiceTest {
     }
 
     @Test
+    void codProofAuthorizesOnlyTheSameNormalizedFulfillmentMobile() {
+        Users user = customer();
+        user.setMobile("01712345678");
+        user.setMobileVerified(true);
+        user.setMobileVerifiedAt(LocalDateTime.now());
+        user.setMobileVerifiedNumber("8801712345678");
+
+        assertTrue(service.isVerifiedCodContactMobile(user, "+880 1712-345678"));
+        assertFalse(service.isVerifiedCodContactMobile(user, "01812345678"));
+        assertFalse(service.isVerifiedCodContactMobile(user, null));
+    }
+
+    @Test
     void mobileChangeNormalizesAndInvalidatesExistingProof() {
         Users user = customer();
         user.setMobile("01712345678");
@@ -116,7 +136,7 @@ class CustomerCodMobileVerificationServiceTest {
         Users user = authenticatedCustomer();
         prepareSendDefaults(user);
         when(messageDispatchService.dispatch(any(MessageDispatchRequest.class)))
-                .thenReturn(CommunicationSendResult.queued(41L, "queued"));
+                .thenReturn(CommunicationSendResult.sent("200", "sent"));
         MockHttpSession session = new MockHttpSession();
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRemoteAddr("203.0.113.12");
@@ -142,6 +162,26 @@ class CustomerCodMobileVerificationServiceTest {
         assertTrue(passwordEncoder.matches(otp, verification.getOtpHash()));
         assertNotEquals(otp, verification.getOtpHash());
         assertEquals(user.getId(), verification.getUserId());
+    }
+
+    @Test
+    void queuedDispatchIsRejectedBecauseOtpMustBeDeliveredBeforeItCanBeVerified() {
+        Users user = authenticatedCustomer();
+        prepareSendDefaults(user);
+        when(messageDispatchService.dispatch(any(MessageDispatchRequest.class)))
+                .thenReturn(CommunicationSendResult.queued(41L, "queued"));
+
+        CustomerCodMobileOtpResponse response = service.sendOtp(
+                "browser-device-123",
+                new MockHttpServletRequest(),
+                new MockHttpSession()
+        );
+
+        assertFalse(response.isSuccess());
+        assertNull(response.getSessionToken());
+        ArgumentCaptor<OtpVerification> verificationCaptor = ArgumentCaptor.forClass(OtpVerification.class);
+        verify(otpRepository, org.mockito.Mockito.times(2)).save(verificationCaptor.capture());
+        assertEquals(OtpStatus.FAILED, verificationCaptor.getAllValues().get(1).getStatus());
     }
 
     @Test
@@ -298,6 +338,9 @@ class CustomerCodMobileVerificationServiceTest {
         verification.setHttpSessionId(session.getId());
         verification.setDeviceFingerprintHash(sha256(deviceFingerprint));
         verification.setExpiresAt(LocalDateTime.now().plusMinutes(5));
+        org.mockito.Mockito.lenient().when(
+                otpRepository.findTopByUserIdAndPurposeOrderByIdDesc(user.getId(), OtpPurpose.CUSTOMER_COD)
+        ).thenReturn(Optional.of(verification));
         return verification;
     }
 

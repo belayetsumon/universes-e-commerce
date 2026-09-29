@@ -8,6 +8,7 @@ package com.ecommerce.app.product.controller;
 import com.ecommerce.app.commission.service.ProductCommissionApplierService;
 import com.ecommerce.app.globalComponant.SlagGenerator;
 import com.ecommerce.app.globalComponant.UnixTimeComponent;
+import com.ecommerce.app.globalServices.ImageUploadValidationException;
 import com.ecommerce.app.module.user.model.Users;
 import com.ecommerce.app.module.user.services.LoggedUserService;
 import com.ecommerce.app.module.settings.services.StoreOperationModeService;
@@ -15,9 +16,6 @@ import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.ProductImage;
 import com.ecommerce.app.product.model.ProductStatusEnum;
 import com.ecommerce.app.product.model.ProductTypeEnum;
-import com.ecommerce.app.product.ripository.AvailableDeliveryAreaRepository;
-import com.ecommerce.app.product.ripository.DeliveryChargeRepository;
-import com.ecommerce.app.product.ripository.DeliveryTimelineRepository;
 import com.ecommerce.app.product.ripository.ManufacturerRepository;
 import com.ecommerce.app.product.ripository.ProductImageRepository;
 import com.ecommerce.app.product.ripository.ProductRepository;
@@ -36,6 +34,7 @@ import com.ecommerce.app.vendor.repository.VendorprofileRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -105,15 +104,6 @@ public class ProductController {
     ProductImageStorageService productImageStorageService;
 
     @Autowired
-    AvailableDeliveryAreaRepository availableDeliveryAreaRepository;
-
-    @Autowired
-    DeliveryChargeRepository deliveryChargeRepository;
-
-    @Autowired
-    DeliveryTimelineRepository deliveryTimelineRepository;
-
-    @Autowired
     WarrantyRepository warrantyRepository;
 
     @Autowired
@@ -170,9 +160,6 @@ public class ProductController {
             @RequestParam(value = "hasImage", required = false) Boolean hasImage,
             @RequestParam(value = "hasCatalogVariants", required = false) Boolean hasCatalogVariants,
             @RequestParam(value = "hasDimensions", required = false) Boolean hasDimensions,
-            @RequestParam(value = "hasDeliveryAreas", required = false) Boolean hasDeliveryAreas,
-            @RequestParam(value = "hasDeliveryCharges", required = false) Boolean hasDeliveryCharges,
-            @RequestParam(value = "hasDeliveryTimelines", required = false) Boolean hasDeliveryTimelines,
             @RequestParam(value = "hasWarranty", required = false) Boolean hasWarranty) {
         List<Map<String, Object>> products = productService.all_Product_for_admin(
                 keyword,
@@ -207,9 +194,6 @@ public class ProductController {
                 hasImage,
                 hasCatalogVariants,
                 hasDimensions,
-                hasDeliveryAreas,
-                hasDeliveryCharges,
-                hasDeliveryTimelines,
                 hasWarranty
         );
         model.addAttribute("productlist", products);
@@ -247,9 +231,6 @@ public class ProductController {
         model.addAttribute("hasImage", hasImage);
         model.addAttribute("hasCatalogVariants", hasCatalogVariants);
         model.addAttribute("hasDimensions", hasDimensions);
-        model.addAttribute("hasDeliveryAreas", hasDeliveryAreas);
-        model.addAttribute("hasDeliveryCharges", hasDeliveryCharges);
-        model.addAttribute("hasDeliveryTimelines", hasDeliveryTimelines);
         model.addAttribute("hasWarranty", hasWarranty);
         model.addAttribute("advancedFiltersApplied", hasAdvancedProductFilters(
                 minPrice,
@@ -278,9 +259,6 @@ public class ProductController {
                 hasImage,
                 hasCatalogVariants,
                 hasDimensions,
-                hasDeliveryAreas,
-                hasDeliveryCharges,
-                hasDeliveryTimelines,
                 hasWarranty
         ));
         return "product/index";
@@ -368,9 +346,7 @@ public class ProductController {
                         product.setSlug(oldProduct.getSlug());
                     }
 
-                    if (pic == null || pic.isEmpty()) {
-                        product.setImageName(oldProduct.getImageName());
-                    }
+                    product.setImageName(oldProduct.getImageName());
                 }
             }
 
@@ -381,7 +357,7 @@ public class ProductController {
 
             // Image upload
             if (pic != null && !pic.isEmpty()) {
-                product.setImageName(productImageStorageService.storeProductImage(pic));
+                product.setImageName(productImageStorageService.storeFeaturedProductImage(pic));
             }
 
             productCommissionApplierService.applyCommissionBeforeSave(product);
@@ -389,6 +365,15 @@ public class ProductController {
             redirectAttributes.addFlashAttribute("message", "Basic product information saved. Now add product specifications.");
             return "redirect:/product/details/" + savedProduct.getId() + "?tab=specifications";
 
+        } catch (ImageUploadValidationException e) {
+            loadProductFormData(model);
+            model.addAttribute("error", e.getMessage());
+            return "product/add";
+        } catch (IOException e) {
+            loadProductFormData(model);
+            log.error("Product featured image upload failed.", e);
+            model.addAttribute("error", "The featured image could not be processed. Please choose a valid image and try again.");
+            return "product/add";
         } catch (Exception e) {
             loadProductFormData(model);
             log.error("Save failed: {}", e.getMessage(), e);
@@ -495,6 +480,8 @@ public class ProductController {
         model.addAttribute("singleVendorMode", storeOperationModeService.isSingleVendorMode());
         model.addAttribute("primaryVendor", storeOperationModeService.primaryVendor().orElse(null));
         model.addAttribute("manufacturerlist", manufacturerRepository.findAll());
+        model.addAttribute("productFeaturedImageRequirements",
+                productImageStorageService.getFeaturedImageRequirements());
     }
 
     private void loadProductIndexFilterData(Model model) {
@@ -531,9 +518,6 @@ public class ProductController {
             Boolean hasImage,
             Boolean hasCatalogVariants,
             Boolean hasDimensions,
-            Boolean hasDeliveryAreas,
-            Boolean hasDeliveryCharges,
-            Boolean hasDeliveryTimelines,
             Boolean hasWarranty) {
         return minPrice != null
                 || maxPrice != null
@@ -561,9 +545,6 @@ public class ProductController {
                 || hasImage != null
                 || hasCatalogVariants != null
                 || hasDimensions != null
-                || hasDeliveryAreas != null
-                || hasDeliveryCharges != null
-                || hasDeliveryTimelines != null
                 || hasWarranty != null;
     }
 
@@ -577,9 +558,6 @@ public class ProductController {
         model.addAttribute("productSpecifications",
                 catalogProductAttributeService.buildSpecificationViews((String) productDetails.get("uuid")));
         model.addAttribute("img_list", productImageRepository.findByProductIdOrderByIdDesc(id));
-        model.addAttribute("d_a_list", availableDeliveryAreaRepository.findByProductIdOrderByIdDesc(id));
-        model.addAttribute("d_c_list", deliveryChargeRepository.findByProductIdOrderByIdDesc(id));
-        model.addAttribute("d_t_list", deliveryTimelineRepository.findByProductIdOrderByIdDesc(id));
         model.addAttribute("w_list", warrantyRepository.findByProductIdOrderByIdDesc(id));
         model.addAttribute("catalogVariantSummaries",
                 productVariantCatalogService.buildVariantSummaries((String) productDetails.get("uuid")));

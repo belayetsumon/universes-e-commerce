@@ -26,8 +26,8 @@ public class CommunicationEventListener {
         try {
             jobService.enqueueRequest(event.toDispatchRequest());
         } catch (Exception ex) {
-            LOGGER.warn("Communication outbox enqueue failed for eventType={} channel={} recipient={}",
-                    event.getEventType(), event.getChannel(), event.getRecipient(), ex);
+            LOGGER.warn("Communication outbox enqueue failed for eventType={} channel={}",
+                    event.getEventType(), event.getChannel(), ex);
             throw new IllegalStateException("Communication outbox enqueue failed.", ex);
         }
     }

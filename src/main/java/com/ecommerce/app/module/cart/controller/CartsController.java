@@ -6,6 +6,7 @@ package com.ecommerce.app.module.cart.controller;
 
 import com.ecommerce.app.module.cart.model.CartItem;
 import com.ecommerce.app.module.cart.services.CartService;
+import com.ecommerce.app.module.cart.services.CheckoutChargeValidationService;
 import com.ecommerce.app.module.checkout.availability.CheckoutAvailability;
 import com.ecommerce.app.module.checkout.availability.CheckoutAvailabilityService;
 import com.ecommerce.app.module.shipping.dto.ShippingOption;
@@ -53,6 +54,9 @@ public class CartsController {
     CartService cartService;
 
     @Autowired
+    CheckoutChargeValidationService checkoutChargeValidationService;
+
+    @Autowired
     ProductRepository productRepository;
 
     @Autowired
@@ -90,6 +94,10 @@ public class CartsController {
             return ResponseEntity.ok(response);
         }
 
+        // Purge stale or forged cached totals and refresh selected charges from
+        // the current server-side rate catalog before rendering any total.
+        checkoutChargeValidationService.refreshAndValidate(session, cart, false, false);
+
         Map<String, List<CartItem>> grouped = cart.stream()
                 .filter(c -> c != null && c.getProduct() != null && c.getVendorUuid() != null && !c.getVendorUuid().isBlank())
                 .collect(Collectors.groupingBy(CartItem::getVendorUuid, LinkedHashMap::new, Collectors.toList()));
@@ -117,10 +125,7 @@ public class CartsController {
 
             vendorSubtotals.put(vendorUuid, subtotal);
 
-            BigDecimal totalWeight = items.stream()
-                    .map(c -> (c.getWeight() != null ? c.getWeight() : BigDecimal.ZERO)
-                    .multiply(c.getQuantity() != null ? c.getQuantity() : BigDecimal.ZERO))
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal totalWeight = cartService.calculateTotalWeight(items);
 
             Long vendorId = items.stream()
                     .map(CartItem::getVendorId)
@@ -237,54 +242,6 @@ public class CartsController {
         return getCart(session);
     }
 
-    @PostMapping("/updateShipping")
-    public ResponseEntity<Map<String, Object>> updateShipping(
-            @RequestParam(required = false) String vendorUuid,
-            @RequestParam(required = false) Long vendorId,
-            @RequestParam BigDecimal shippingCost,
-            HttpSession session) {
-        ResponseEntity<Map<String, Object>> unavailable = checkoutUnavailableIfDisabled(session);
-        if (unavailable != null) {
-            return unavailable;
-        }
-        String resolvedVendorUuid = resolveVendorUuid(vendorUuid, vendorId);
-        if (resolvedVendorUuid == null) {
-            return getCart(session);
-        }
-        List<CartItem> cart = cartService.getCartFromSession(session);
-        List<CartItem> vendorCart = cartService.getVendorCart(cart, resolvedVendorUuid);
-        if (!cartService.vendorCartRequiresShipping(vendorCart)) {
-            session.setAttribute("shippingCost_" + resolvedVendorUuid, BigDecimal.ZERO);
-            return getCart(session);
-        }
-        session.setAttribute("shippingCost_" + resolvedVendorUuid, shippingCost);
-        return getCart(session);
-    }
-
-    @PostMapping("/updatePackaging")
-    public ResponseEntity<Map<String, Object>> updatePackaging(
-            @RequestParam(required = false) String vendorUuid,
-            @RequestParam(required = false) Long vendorId,
-            @RequestParam BigDecimal packagingCost,
-            HttpSession session) {
-        ResponseEntity<Map<String, Object>> unavailable = checkoutUnavailableIfDisabled(session);
-        if (unavailable != null) {
-            return unavailable;
-        }
-        String resolvedVendorUuid = resolveVendorUuid(vendorUuid, vendorId);
-        if (resolvedVendorUuid == null) {
-            return getCart(session);
-        }
-        List<CartItem> cart = cartService.getCartFromSession(session);
-        List<CartItem> vendorCart = cartService.getVendorCart(cart, resolvedVendorUuid);
-        if (!cartService.vendorCartRequiresShipping(vendorCart)) {
-            session.setAttribute("packagingCost_" + resolvedVendorUuid, BigDecimal.ZERO);
-            return getCart(session);
-        }
-        session.setAttribute("packagingCost_" + resolvedVendorUuid, packagingCost);
-        return getCart(session);
-    }
-
     @PostMapping("/updateShippingOption")
     public ResponseEntity<Map<String, Object>> updateShippingOption(
             @RequestParam(required = false) String vendorUuid,
@@ -315,13 +272,16 @@ public class CartsController {
             return getCart(session);
         }
 
-        BigDecimal shippingCost = cartService.calculateShipping(shippingOptionCode, resolvedVendorUuid, session);
-        if (shippingCost == null) {
-            shippingCost = BigDecimal.ZERO;
-        }
-
         session.setAttribute("shippingOption_" + resolvedVendorUuid, shippingOptionCode);
-        session.setAttribute("shippingCost_" + resolvedVendorUuid, shippingCost);
+        String validationError = checkoutChargeValidationService.refreshAndValidate(
+                session,
+                cart,
+                false,
+                false
+        );
+        if (validationError != null) {
+            return cartError(validationError, session);
+        }
         return getCart(session);
     }
 
@@ -357,23 +317,16 @@ public class CartsController {
             return getCart(session);
         }
 
-        BigDecimal totalWeight = vendorCart.stream()
-                .map(c -> (c.getWeight() != null ? c.getWeight() : BigDecimal.ZERO)
-                .multiply(c.getQuantity() != null ? c.getQuantity() : BigDecimal.ZERO))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal packagingCost = BigDecimal.ZERO;
-        try {
-            BigDecimal calculated = packagingRateService.calculateRateOneByUuid(resolvedPackagingRateUuid, 0.5, totalWeight.doubleValue());
-            if (calculated != null) {
-                packagingCost = calculated;
-            }
-        } catch (Exception ignored) {
-            packagingCost = BigDecimal.ZERO;
-        }
-
         session.setAttribute("packagingRate_" + resolvedVendorUuid, resolvedPackagingRateUuid);
-        session.setAttribute("packagingCost_" + resolvedVendorUuid, packagingCost);
+        String validationError = checkoutChargeValidationService.refreshAndValidate(
+                session,
+                cartForVendor,
+                false,
+                false
+        );
+        if (validationError != null) {
+            return cartError(validationError, session);
+        }
         return getCart(session);
     }
 

@@ -29,9 +29,6 @@ import com.ecommerce.app.product.model.Product;
 import com.ecommerce.app.product.model.ProductStatusEnum;
 import com.ecommerce.app.product.model.Productcategory;
 import com.ecommerce.app.product.model.SortingType;
-import com.ecommerce.app.product.ripository.AvailableDeliveryAreaRepository;
-import com.ecommerce.app.product.ripository.DeliveryChargeRepository;
-import com.ecommerce.app.product.ripository.DeliveryTimelineRepository;
 import com.ecommerce.app.product.ripository.ProductImageRepository;
 import com.ecommerce.app.product.ripository.ProductRepository;
 import com.ecommerce.app.product.ripository.ProductcategoryRepository;
@@ -155,15 +152,6 @@ public class PublicController {
 
     @Autowired
     ProductImageRepository productImageRepository;
-
-    @Autowired
-    AvailableDeliveryAreaRepository availableDeliveryAreaRepository;
-
-    @Autowired
-    DeliveryChargeRepository deliveryChargeRepository;
-
-    @Autowired
-    DeliveryTimelineRepository deliveryTimelineRepository;
 
     @Autowired
     WarrantyRepository warrantyRepository;
@@ -557,11 +545,12 @@ public class PublicController {
                     ? variantAvailableStock
                     : (productAvailableStock.compareTo(BigDecimal.ZERO) > 0 ? productAvailableStock : variantAvailableStock);
 
-            boolean soldOut = manageStock && availableStock.compareTo(BigDecimal.ZERO) <= 0;
+            boolean preorderMode = allowPreorder && !manageStock;
+            boolean soldOut = !preorderMode && availableStock.compareTo(BigDecimal.ZERO) <= 0;
 
             product.put("availableStockQuantity", availableStock);
-            product.put("showPreorderBadge", soldOut && allowPreorder);
-            product.put("showOutOfStockBadge", soldOut && !allowPreorder);
+            product.put("showPreorderBadge", preorderMode);
+            product.put("showOutOfStockBadge", soldOut);
         });
 
         model.addAttribute("productlist", sortedProducts);
@@ -658,9 +647,6 @@ public class PublicController {
         );
 
         model.addAttribute("img_list", productImageRepository.findByProduct_UuidOrderByIdDesc(activeProduct.getUuid()));
-        model.addAttribute("d_a_list", availableDeliveryAreaRepository.findByProduct_UuidOrderByIdDesc(activeProduct.getUuid()));
-        model.addAttribute("d_c_list", deliveryChargeRepository.findByProduct_UuidOrderByIdDesc(activeProduct.getUuid()));
-        model.addAttribute("d_t_list", deliveryTimelineRepository.findByProduct_UuidOrderByIdDesc(activeProduct.getUuid()));
         model.addAttribute("w_list", warrantyRepository.findByProduct_UuidOrderByIdDesc(activeProduct.getUuid()));
         List<com.ecommerce.app.product.dto.CatalogVariantSummaryView> catalogVariants = productVariantCatalogService
                 .buildVariantSummaries(getString(product_details, "uuid"));
@@ -684,12 +670,13 @@ public class PublicController {
                 ? variantAvailableStock
                 : (productAvailableStock.compareTo(BigDecimal.ZERO) > 0 ? productAvailableStock : variantAvailableStock);
 
-        boolean soldOut = manageStock && availableStock.compareTo(BigDecimal.ZERO) <= 0;
+        boolean preorderMode = allowPreorder && !manageStock;
+        boolean soldOut = !preorderMode && availableStock.compareTo(BigDecimal.ZERO) <= 0;
 
         product_details.put("availableStockQuantity", availableStock);
-        product_details.put("showPreorderBadge", soldOut && allowPreorder);
-        product_details.put("showOutOfStockBadge", soldOut && !allowPreorder);
-        product_details.put("availabilityLabel", soldOut ? (allowPreorder ? "Preorder" : "Out of stock") : "In stock");
+        product_details.put("showPreorderBadge", preorderMode);
+        product_details.put("showOutOfStockBadge", soldOut);
+        product_details.put("availabilityLabel", preorderMode ? "Preorder" : (soldOut ? "Out of stock" : "In stock"));
         model.addAttribute("productReviewSummary", productReviewService.getProductReviewSummary(activeProduct.getUuid()));
         model.addAttribute("productReviews", productReviewService.getPublicReviewsForProduct(activeProduct.getUuid()));
         model.addAttribute(
@@ -1082,7 +1069,7 @@ public class PublicController {
                 "/public/shipping-rates-policies",
                 "Shipping Rates & Policies",
                 "Delivery details",
-                "Understand delivery timelines, location-based charges, and how shipping costs appear during checkout.",
+                "Understand shipping estimates, location-based charges, and how shipping costs appear during checkout.",
                 "Find shipping timing guidance, delivery charge information, and the main shipping rules customers should know before placing an order.",
                 normalizeRichText(settings.getShippingPolicy()),
                 defaultShippingSections(settings)
@@ -1172,7 +1159,7 @@ public class PublicController {
                                 "We focus on accurate product information, consistent communication, and practical support when questions come up before or after an order.",
                                 settings.getDeliveryTimeText() != null && !settings.getDeliveryTimeText().isBlank()
                                 ? "Our current delivery guidance is: " + settings.getDeliveryTimeText().trim() + "."
-                                : "Delivery timelines may vary by location, seller availability, and product type, and the latest estimate is shown during checkout."
+                                : "Shipping estimates may vary by location, seller availability, and product type, and the latest estimate is shown during checkout."
                         ),
                         List.of(
                                 "Order updates from confirmation through fulfillment",
@@ -1421,7 +1408,7 @@ public class PublicController {
                         List.of(
                                 settings.getDeliveryTimeText() != null && !settings.getDeliveryTimeText().isBlank()
                                 ? "Current delivery guidance: " + settings.getDeliveryTimeText().trim() + "."
-                                : "Delivery timelines depend on destination, stock availability, and fulfillment workload.",
+                                : "Shipping estimates depend on destination, stock availability, and fulfillment workload.",
                                 "Unexpected weather, regional restrictions, or courier disruptions can affect delivery timing."
                         ),
                         List.of(
