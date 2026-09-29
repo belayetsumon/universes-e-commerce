@@ -3,10 +3,10 @@ Builds and validates the durable Phase 1 security-decision layer.
 The source inventory and candidate catalogue remain rebuildable facts.
 #>
 param(
-    [string]$InventoryPath = (Join-Path $PSScriptRoot '..\application-security-endpoint-inventory.csv'),
-    [string]$PermissionCataloguePath = (Join-Path $PSScriptRoot '..\application-security-permission-catalogue.csv'),
-    [string]$EndpointDecisionOutputPath = (Join-Path $PSScriptRoot '..\application-security-endpoint-decision-ledger.csv'),
-    [string]$PermissionDecisionOutputPath = (Join-Path $PSScriptRoot '..\application-security-permission-decision-ledger.csv'),
+    [string]$InventoryPath = (Join-Path $PSScriptRoot 'application-security-endpoint-inventory.csv'),
+    [string]$PermissionCataloguePath = (Join-Path $PSScriptRoot 'application-security-permission-catalogue.csv'),
+    [string]$EndpointDecisionOutputPath = (Join-Path $PSScriptRoot 'application-security-endpoint-decision-ledger.csv'),
+    [string]$PermissionDecisionOutputPath = (Join-Path $PSScriptRoot 'application-security-permission-decision-ledger.csv'),
     [string]$Reviewer = 'Security architecture review',
     [datetime]$ReviewedAtUtc = [datetime]::UtcNow
 )
@@ -458,7 +458,7 @@ function Get-TestIds {
 function Get-EvidenceReferences {
     param([object]$Row)
     $references = @(
-        'docs/application-security-endpoint-inventory.csv',
+        'docs/security/application-security-endpoint-inventory.csv',
         'main/java/com/ecommerce/app/SecurityConfig.java',
         ('main/java/' + $Row.SourceFile + ':' + $Row.SourceLine)
     )
@@ -739,7 +739,7 @@ foreach ($catalogueRow in $catalogueRows) {
             DecisionStatus = $permissionDecisionStatus
             ImplementationEvidenceStatus = $implementationEvidenceStatus
             DecisionRationale = Get-PermissionDecisionRationale -DecisionStatus $permissionDecisionStatus -PermissionCandidate $catalogueRow.PermissionCandidate
-            EvidenceReferences = 'docs/application-security-permission-catalogue.csv;docs/application-security-endpoint-decision-ledger.csv;docs/application-security-authentication-authorization-workflow.md'
+            EvidenceReferences = 'docs/security/application-security-permission-catalogue.csv;docs/security/application-security-endpoint-decision-ledger.csv;docs/security/application-security-authentication-authorization-workflow.md'
             DecisionRevision = '1'
             Reviewer = $Reviewer
             ReviewedAtUtc = $reviewedAt

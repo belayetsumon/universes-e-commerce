@@ -1,8 +1,8 @@
 param(
     [string]$SourceRoot = (Join-Path $PSScriptRoot '..\..\main\java'),
     [string]$SecurityConfigPath = (Join-Path $PSScriptRoot '..\..\main\java\com\ecommerce\app\SecurityConfig.java'),
-    [string]$OutputPath = (Join-Path $PSScriptRoot '..\application-security-endpoint-inventory.csv'),
-    [string]$PermissionCatalogueOutputPath = (Join-Path $PSScriptRoot '..\application-security-permission-catalogue.csv')
+    [string]$OutputPath = (Join-Path $PSScriptRoot 'application-security-endpoint-inventory.csv'),
+    [string]$PermissionCatalogueOutputPath = (Join-Path $PSScriptRoot 'application-security-permission-catalogue.csv')
 )
 
 Set-StrictMode -Version Latest
