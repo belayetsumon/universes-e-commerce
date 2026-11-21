@@ -21,6 +21,8 @@ import com.ecommerce.app.module.fraud.repository.FraudAssessmentRepository;
 import com.ecommerce.app.module.fraud.repository.FraudBlocklistRepository;
 import com.ecommerce.app.module.fraud.services.FraudAssessmentService;
 import com.ecommerce.app.module.fraud.services.FraudCaseService;
+import com.ecommerce.app.module.fraud.services.FraudModuleControlService;
+import com.ecommerce.app.module.fraud.model.FraudModuleMode;
 import com.ecommerce.app.module.fraud.support.FraudHashingSupport;
 import com.ecommerce.app.module.order.model.CustomerOrderGroup;
 import com.ecommerce.app.module.order.model.SalesOrder;
@@ -34,17 +36,21 @@ class DefaultFraudIntegrationGuardTest {
     private FraudBlocklistRepository blocklistRepository;
     private FraudAssessmentService assessmentService;
     private DefaultFraudIntegrationGuard guard;
+    private FraudModuleControlService modeControl;
 
     @BeforeEach
     void setUp() {
         assessmentRepository = mock(FraudAssessmentRepository.class);
         blocklistRepository = mock(FraudBlocklistRepository.class);
         assessmentService = mock(FraudAssessmentService.class);
+        modeControl = mock(FraudModuleControlService.class);
+        when(modeControl.currentMode()).thenReturn(FraudModuleMode.ACTIVE);
         guard = new DefaultFraudIntegrationGuard(
                 assessmentRepository,
                 blocklistRepository,
                 assessmentService,
-                mock(FraudCaseService.class)
+                mock(FraudCaseService.class),
+                modeControl
         );
     }
 
@@ -137,6 +143,52 @@ class DefaultFraudIntegrationGuardTest {
         FraudGuardResult result = guard.checkCheckoutEligibility(null, context);
 
         assertFalse(result.isAllowed());
+    }
+
+    @Test
+    void inactiveModeSkipsNewFraudAssessments() {
+        when(modeControl.currentMode()).thenReturn(FraudModuleMode.INACTIVE);
+        when(assessmentRepository.findTopByOrderIdOrderByIdDesc(1L)).thenReturn(Optional.empty());
+
+        assertTrue(guard.checkOrderAllowed(order(1L)).isAllowed());
+        org.mockito.Mockito.verifyNoInteractions(assessmentService);
+    }
+
+    @Test
+    void inactiveModeStillBlocksExistingFraudHolds() {
+        when(modeControl.currentMode()).thenReturn(FraudModuleMode.INACTIVE);
+        FraudAssessment held = new FraudAssessment();
+        held.setId(12L);
+        when(assessmentRepository.findTopByOrderIdOrderByIdDesc(1L)).thenReturn(Optional.of(held));
+        when(assessmentService.findById(12L)).thenReturn(response(12L,
+                FraudAssessmentStatus.FRAUD_HOLD, FraudDecision.HOLD));
+
+        assertFalse(guard.checkOrderAllowed(order(1L)).isAllowed());
+    }
+
+    @Test
+    void monitorOnlyScoresWithoutRestrictingNewOrders() {
+        when(modeControl.currentMode()).thenReturn(FraudModuleMode.MONITOR_ONLY);
+        when(assessmentRepository.findTopByOrderIdOrderByIdDesc(1L)).thenReturn(Optional.empty());
+        FraudAssessmentResponse observed = response(13L, FraudAssessmentStatus.APPROVED, FraudDecision.APPROVE);
+        observed.setDecisionReason("[MONITOR_ONLY] Observed HOLD");
+        when(assessmentService.evaluate(any())).thenReturn(observed);
+
+        assertTrue(guard.checkOrderAllowed(order(1L)).isAllowed());
+        verify(assessmentService).evaluate(any());
+    }
+
+    @Test
+    void returningToActiveRequiresNewAssessmentAfterMonitoring() {
+        FraudAssessment monitored = new FraudAssessment();
+        monitored.setId(14L);
+        monitored.setEvaluationVersion("fraud-v1-monitor");
+        when(assessmentRepository.findTopByOrderIdOrderByIdDesc(1L)).thenReturn(Optional.of(monitored));
+        when(assessmentService.evaluate(any())).thenReturn(response(15L,
+                FraudAssessmentStatus.FRAUD_HOLD, FraudDecision.HOLD));
+
+        assertFalse(guard.checkOrderAllowed(order(1L)).isAllowed());
+        verify(assessmentService).evaluate(any());
     }
 
     private SalesOrder order(Long id) {

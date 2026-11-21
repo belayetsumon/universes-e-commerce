@@ -16,6 +16,8 @@ import com.ecommerce.app.module.fraud.repository.CodRiskProfileRepository;
 import com.ecommerce.app.module.fraud.repository.CustomerRiskProfileRepository;
 import com.ecommerce.app.module.fraud.repository.FraudEventLogRepository;
 import com.ecommerce.app.module.fraud.services.FraudConfigurationService;
+import com.ecommerce.app.module.fraud.services.FraudModuleControlService;
+import com.ecommerce.app.module.fraud.model.FraudModuleMode;
 import com.ecommerce.app.module.fraud.services.FraudEventPublisher;
 import com.ecommerce.app.module.fraud.support.FraudHashingSupport;
 import com.ecommerce.app.module.order.model.OrderPaymentPlan;
@@ -33,6 +35,7 @@ class DefaultCodRiskServiceTest {
     private CodRiskProfileRepository codRiskProfileRepository;
     private SalesOrderRepository salesOrderRepository;
     private FraudConfigurationService configurationService;
+    private FraudModuleControlService modeControl;
     private DefaultCodRiskService service;
 
     @BeforeEach
@@ -41,6 +44,8 @@ class DefaultCodRiskServiceTest {
         CustomerRiskProfileRepository customerRiskProfileRepository = mock(CustomerRiskProfileRepository.class);
         salesOrderRepository = mock(SalesOrderRepository.class);
         configurationService = mock(FraudConfigurationService.class);
+        modeControl = mock(FraudModuleControlService.class);
+        when(modeControl.currentMode()).thenReturn(FraudModuleMode.ACTIVE);
         when(configurationService.getMoney(anyString(), any(BigDecimal.class)))
                 .thenAnswer(invocation -> invocation.getArgument(1));
         when(configurationService.getInt(anyString(), anyInt()))
@@ -52,8 +57,23 @@ class DefaultCodRiskServiceTest {
                 configurationService,
                 mock(FraudEventLogRepository.class),
                 mock(FraudEventPublisher.class),
-                mock(CodRiskProfileDeviceResolver.class)
+                mock(CodRiskProfileDeviceResolver.class),
+                modeControl
         );
+    }
+
+    @Test
+    void inactiveCodStillRequiresMobileOtp() {
+        when(modeControl.currentMode()).thenReturn(FraudModuleMode.INACTIVE);
+        assertFalse(service.checkCodCheckoutEligibility(10L, null, new BigDecimal("100.00"),
+                "FULL_COD", false, new FraudContext()).isAllowed());
+    }
+
+    @Test
+    void monitorCodSkipsNewMonetaryLimits() {
+        when(modeControl.currentMode()).thenReturn(FraudModuleMode.MONITOR_ONLY);
+        assertTrue(service.checkCodCheckoutEligibility(10L, null, new BigDecimal("50000.00"),
+                "FULL_COD", true, new FraudContext()).isAllowed());
     }
 
     @Test

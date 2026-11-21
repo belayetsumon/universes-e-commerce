@@ -1,33 +1,15 @@
-# Fraud Module Mode — Implementation Contract
+# Fraud Module Operational Mode
 
-Status: DESIGN_ONLY — implementation and regression checks pending.
+Fraud administrators can select a global mode at `/admin/fraud/configuration`.
 
-This feature branch is reserved for introducing a platform-controlled fraud mode.
-The module is not yet switched by this document.
+- **ACTIVE**: score and enforce fraud decisions (default when no setting exists).
+- **MONITOR_ONLY**: score new assessments, record signals, and persist observations without adding automatic holds, rejects, or cases.
+- **INACTIVE**: pause new automatic fraud assessments.
 
-## Modes
+Mode is stored as a protected key `fraud.module.mode` in the existing MySQL `fraud_configurations` table. No schema migration is required. Invalid/inactive configuration is fail-closed.
 
-- `ACTIVE` (default): evaluate new events and enforce new automated decisions.
-- `MONITOR_ONLY`: evaluate and record new risk signals, without imposing *new* automated restrictions.
-- `INACTIVE`: do not perform new automatic fraud evaluation.
+Existing blocked orders, open fraud cases, previous holds, vendor payout restrictions, and fraud blocklists remain effective independently of mode. OTP, payment provider, authorization, CSRF and independent checkout safeguards are always enforced. Fraud outbox events are still delivered.
 
-## Non-negotiable safeguards
+Mode updates require fraud admin authority, a reason, CSRF, and an audit entry. Monitoring-only assessments are stamped with `fraud-v1-monitor` and require enforce-mode reassessment before being accepted when ACTIVE resumes.
 
-1. Existing assessment holds, rejected orders, open fraud cases, vendor payout holds, and manual blocklist restrictions must not be released by a mode change.
-2. OTP identity verification, CSRF, payment authorization, order ownership, and other independent business/security controls remain enforced regardless of mode.
-3. Only authorized platform/fraud administrators can change the mode. Protect POST with CSRF and record old/new mode, actor, time, and reason.
-4. Use a centrally managed, strongly typed mode stored in MySQL, defaulting to `ACTIVE` when absent. Reject invalid mode values rather than silently disabling controls.
-5. All synchronous entry points and scheduled/background consumers must follow the same semantics. Do not drop pending outbox or audit records.
-6. A new fraud assessment in monitor mode must not overwrite or downgrade an existing enforce-mode hold. Resuming active mode must not blindly approve pending assessments.
-7. Tests must cover transitions among all three modes, pre-existing restrictions, forged admin requests, missing/invalid settings, concurrent updates, and cross-vendor access.
-
-## Initial integration inventory
-
-- `DefaultFraudIntegrationGuard`: checkout, order, payment capture/refund, fulfillment, and payout.
-- `DefaultFraudAssessmentService`: assessment creation and scoring.
-- `DefaultFraudPostOrderMonitoringService`: post-order signal and case creation.
-- `DefaultFraudOutboxDispatcherService`: preserve queued events and audit delivery.
-- `DefaultCodRiskService`: separate independent COD identity verification from configurable fraud enforcement.
-- `FraudAdminController` and `templates/admin/fraud/configuration.html`: restricted mode selector and confirmation.
-
-This document is the first branch commit used to confirm GitHub write access. It does not imply that the three-mode feature is implemented.
+Local regression recommended: transition among all modes, existing restrictions, monitor-to-active re-evaluation, COD OTP, CSRF/authorization, and valid/invalid configuration.

@@ -27,6 +27,9 @@ public class DefaultFraudConfigurationService implements FraudConfigurationServi
     @Override
     @Transactional
     public void save(FraudConfigurationRequest request) {
+        if (request == null || DefaultFraudModuleControlService.MODE_KEY.equals(request.getConfigKey())) {
+            throw new IllegalArgumentException("Fraud module mode requires the dedicated control.");
+        }
         FraudConfiguration configuration = fraudConfigurationRepository.findByConfigKey(request.getConfigKey())
                 .orElseGet(FraudConfiguration::new);
         configuration.setConfigKey(request.getConfigKey());

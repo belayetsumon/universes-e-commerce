@@ -10,12 +10,14 @@ import com.ecommerce.app.module.fraud.model.FraudEventLog;
 import com.ecommerce.app.module.fraud.model.FraudEventType;
 import com.ecommerce.app.module.fraud.model.FraudPostOrderEventType;
 import com.ecommerce.app.module.fraud.model.FraudRiskLevel;
+import com.ecommerce.app.module.fraud.model.FraudModuleMode;
 import com.ecommerce.app.module.fraud.repository.FraudAssessmentRepository;
 import com.ecommerce.app.module.fraud.repository.FraudCaseRepository;
 import com.ecommerce.app.module.fraud.repository.FraudEventLogRepository;
 import com.ecommerce.app.module.fraud.services.FraudEventPublisher;
 import com.ecommerce.app.module.fraud.services.FraudIdempotencyService;
 import com.ecommerce.app.module.fraud.services.FraudPostOrderMonitoringService;
+import com.ecommerce.app.module.fraud.services.FraudModuleControlService;
 import com.ecommerce.app.module.order.model.SalesOrder;
 import com.ecommerce.app.module.shipping.model.ShipmentStatus;
 import com.ecommerce.app.module.user.model.Users;
@@ -58,17 +60,20 @@ public class DefaultFraudPostOrderMonitoringService implements FraudPostOrderMon
     private final FraudAssessmentRepository fraudAssessmentRepository;
     private final FraudEventPublisher fraudEventPublisher;
     private final FraudIdempotencyService fraudIdempotencyService;
+    private final FraudModuleControlService modeControl;
 
     public DefaultFraudPostOrderMonitoringService(FraudEventLogRepository fraudEventLogRepository,
             FraudCaseRepository fraudCaseRepository,
             FraudAssessmentRepository fraudAssessmentRepository,
             FraudEventPublisher fraudEventPublisher,
-            FraudIdempotencyService fraudIdempotencyService) {
+            FraudIdempotencyService fraudIdempotencyService,
+            FraudModuleControlService modeControl) {
         this.fraudEventLogRepository = fraudEventLogRepository;
         this.fraudCaseRepository = fraudCaseRepository;
         this.fraudAssessmentRepository = fraudAssessmentRepository;
         this.fraudEventPublisher = fraudEventPublisher;
         this.fraudIdempotencyService = fraudIdempotencyService;
+        this.modeControl = modeControl;
     }
 
     @Override
@@ -290,7 +295,7 @@ public class DefaultFraudPostOrderMonitoringService implements FraudPostOrderMon
     }
 
     private void openOrUpdateCaseIfRequired(FraudPostOrderEventRequest request) {
-        if (!shouldOpenOrUpdateCase(request)) {
+        if (modeControl.currentMode() != FraudModuleMode.ACTIVE || !shouldOpenOrUpdateCase(request)) {
             return;
         }
         FraudCase existing = findOpenCase(request);
