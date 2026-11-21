@@ -414,6 +414,9 @@ public class DefaultFraudAdminViewService implements FraudAdminViewService {
         if (requestedKey == null) {
             throw new FraudValidationException("Configuration key is required.");
         }
+        if (DefaultFraudModuleControlService.MODE_KEY.equals(requestedKey)) {
+            throw new FraudValidationException("Use the dedicated Fraud Module Mode control.");
+        }
         FraudConfiguration configuration;
         boolean existing;
         if (id == null) {

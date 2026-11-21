@@ -6,6 +6,7 @@ import com.ecommerce.app.module.fraud.model.CodRiskProfile;
 import com.ecommerce.app.module.fraud.model.CustomerRiskProfile;
 import com.ecommerce.app.module.fraud.model.FraudEventLog;
 import com.ecommerce.app.module.fraud.model.FraudEventType;
+import com.ecommerce.app.module.fraud.model.FraudModuleMode;
 import com.ecommerce.app.module.fraud.repository.CodRiskProfileRepository;
 import com.ecommerce.app.module.fraud.repository.CustomerRiskProfileRepository;
 import com.ecommerce.app.module.fraud.repository.FraudEventLogRepository;
@@ -13,6 +14,7 @@ import com.ecommerce.app.module.fraud.services.CodEligibilityService;
 import com.ecommerce.app.module.fraud.services.CodRiskProfileService;
 import com.ecommerce.app.module.fraud.services.CodRiskService;
 import com.ecommerce.app.module.fraud.services.FraudConfigurationService;
+import com.ecommerce.app.module.fraud.services.FraudModuleControlService;
 import com.ecommerce.app.module.fraud.services.FraudEventPublisher;
 import com.ecommerce.app.module.fraud.support.FraudHashingSupport;
 import com.ecommerce.app.module.order.model.OrderPaymentPlan;
@@ -37,6 +39,7 @@ public class DefaultCodRiskService implements CodRiskService, CodEligibilityServ
     private final CustomerRiskProfileRepository customerRiskProfileRepository;
     private final SalesOrderRepository salesOrderRepository;
     private final FraudConfigurationService fraudConfigurationService;
+    private final FraudModuleControlService modeControl;
     private final FraudEventLogRepository fraudEventLogRepository;
     private final FraudEventPublisher fraudEventPublisher;
     private final CodRiskProfileDeviceResolver deviceProfileResolver;
@@ -47,11 +50,13 @@ public class DefaultCodRiskService implements CodRiskService, CodEligibilityServ
             FraudConfigurationService fraudConfigurationService,
             FraudEventLogRepository fraudEventLogRepository,
             FraudEventPublisher fraudEventPublisher,
-            CodRiskProfileDeviceResolver deviceProfileResolver) {
+            CodRiskProfileDeviceResolver deviceProfileResolver,
+            FraudModuleControlService modeControl) {
         this.codRiskProfileRepository = codRiskProfileRepository;
         this.customerRiskProfileRepository = customerRiskProfileRepository;
         this.salesOrderRepository = salesOrderRepository;
         this.fraudConfigurationService = fraudConfigurationService;
+        this.modeControl = modeControl;
         this.fraudEventLogRepository = fraudEventLogRepository;
         this.fraudEventPublisher = fraudEventPublisher;
         this.deviceProfileResolver = deviceProfileResolver;
@@ -75,6 +80,12 @@ public class DefaultCodRiskService implements CodRiskService, CodEligibilityServ
         }
         if (isAddressChangedAfterConfirmation(safeContext)) {
             return FraudGuardResult.blocked("Delivery address changed after confirmation. Please re-verify the delivery address before COD fulfilment.");
+        }
+
+        // Existing COD disablements, OTP and address verification are independent safeguards.
+        // Only NEW automatic monetary/velocity restrictions are paused outside enforce mode.
+        if (modeControl.currentMode() != FraudModuleMode.ACTIVE) {
+            return FraudGuardResult.allowed();
         }
 
         boolean firstOrder = isFirstOrder(customerId);

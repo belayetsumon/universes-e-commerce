@@ -17,6 +17,7 @@ import com.ecommerce.app.module.fraud.model.FraudEventLog;
 import com.ecommerce.app.module.fraud.model.FraudEventType;
 import com.ecommerce.app.module.fraud.model.FraudReviewHistory;
 import com.ecommerce.app.module.fraud.model.FraudRiskLevel;
+import com.ecommerce.app.module.fraud.model.FraudModuleMode;
 import com.ecommerce.app.module.fraud.model.FraudSignal;
 import com.ecommerce.app.module.fraud.repository.FraudAssessmentRepository;
 import com.ecommerce.app.module.fraud.repository.FraudEventLogRepository;
@@ -30,6 +31,7 @@ import com.ecommerce.app.module.fraud.services.FraudEventPublisher;
 import com.ecommerce.app.module.fraud.services.FraudContextRecorderService;
 import com.ecommerce.app.module.fraud.services.FraudIdempotencyService;
 import com.ecommerce.app.module.fraud.services.FraudRiskScoringService;
+import com.ecommerce.app.module.fraud.services.FraudModuleControlService;
 import com.ecommerce.app.module.fraud.services.FraudRuleEngine;
 import com.ecommerce.app.module.fraud.services.FraudRuleExecutionLogService;
 import com.ecommerce.app.module.fraud.services.FraudSignalCollector;
@@ -62,6 +64,7 @@ public class DefaultFraudAssessmentService implements FraudAssessmentService {
     private final FraudEventPublisher fraudEventPublisher;
     private final FraudIdempotencyService fraudIdempotencyService;
     private final FraudContextRecorderService fraudContextRecorderService;
+    private final FraudModuleControlService modeControl;
 
     public DefaultFraudAssessmentService(FraudAssessmentRepository fraudAssessmentRepository,
             FraudSignalRepository fraudSignalRepository,
@@ -77,7 +80,8 @@ public class DefaultFraudAssessmentService implements FraudAssessmentService {
             FraudAuditService fraudAuditService,
             FraudEventPublisher fraudEventPublisher,
             FraudIdempotencyService fraudIdempotencyService,
-            FraudContextRecorderService fraudContextRecorderService) {
+            FraudContextRecorderService fraudContextRecorderService,
+            FraudModuleControlService modeControl) {
         this.fraudAssessmentRepository = fraudAssessmentRepository;
         this.fraudSignalRepository = fraudSignalRepository;
         this.fraudReviewHistoryRepository = fraudReviewHistoryRepository;
@@ -93,6 +97,7 @@ public class DefaultFraudAssessmentService implements FraudAssessmentService {
         this.fraudEventPublisher = fraudEventPublisher;
         this.fraudIdempotencyService = fraudIdempotencyService;
         this.fraudContextRecorderService = fraudContextRecorderService;
+        this.modeControl = modeControl;
     }
 
     @Override
@@ -100,6 +105,9 @@ public class DefaultFraudAssessmentService implements FraudAssessmentService {
     public FraudAssessmentResponse evaluate(FraudAssessmentCreateRequest request) {
         if (request == null || request.getOrderId() == null) {
             throw new FraudValidationException("Order ID is required for fraud assessment.");
+        }
+        if (modeControl.currentMode() == FraudModuleMode.INACTIVE) {
+            throw new FraudValidationException("New fraud assessments are disabled while Fraud Module is inactive.");
         }
         String idempotencyKey = normalizeIdempotencyKey(request.getIdempotencyKey());
         if (request.getIdempotencyKey() != null && !request.getIdempotencyKey().isBlank()) {
@@ -143,6 +151,10 @@ public class DefaultFraudAssessmentService implements FraudAssessmentService {
             throw new FraudValidationException("Order is required for fraud assessment persistence.");
         }
         FraudDecisionResult safeDecision = normalizeDecision(decision);
+        FraudModuleMode mode = modeControl.currentMode();
+        if (mode == FraudModuleMode.INACTIVE) {
+            throw new FraudValidationException("New fraud assessments are disabled while Fraud Module is inactive.");
+        }
         FraudContext safeContext = context == null ? new FraudContext() : context;
 
         FraudAssessment assessment = new FraudAssessment();
@@ -152,13 +164,16 @@ public class DefaultFraudAssessmentService implements FraudAssessmentService {
         assessment.setVendorId(order.getVendorId());
         assessment.setRiskScore(safeDecision.getRiskScore());
         assessment.setRiskLevel(safeDecision.getRiskLevel());
-        assessment.setDecision(safeDecision.getDecision());
-        assessment.setStatus(safeDecision.getStatus());
-        assessment.setDecisionReason(safeDecision.getDecisionReason());
+        boolean monitor = mode == FraudModuleMode.MONITOR_ONLY;
+        assessment.setDecision(monitor ? FraudDecision.APPROVE : safeDecision.getDecision());
+        assessment.setStatus(monitor ? FraudAssessmentStatus.APPROVED : safeDecision.getStatus());
+        assessment.setDecisionReason(monitor
+                ? "[MONITOR_ONLY] Observed " + safeDecision.getDecision() + ": " + safeDecision.getDecisionReason()
+                : safeDecision.getDecisionReason());
         assessment.setEvaluationSource(com.ecommerce.app.module.fraud.model.FraudEvaluationSource.ORDER_CREATED);
-        assessment.setEvaluationVersion(EVALUATION_VERSION);
-        assessment.setAutomaticDecision(safeDecision.isAutomaticDecision());
-        assessment.setManualReviewRequired(safeDecision.isManualReviewRequired());
+        assessment.setEvaluationVersion(monitor ? EVALUATION_VERSION + "-monitor" : EVALUATION_VERSION);
+        assessment.setAutomaticDecision(!monitor && safeDecision.isAutomaticDecision());
+        assessment.setManualReviewRequired(!monitor && safeDecision.isManualReviewRequired());
         assessment.setEvaluatedAt(LocalDateTime.now());
         assessment.setCorrelationId(safeContext.getMetadata().get("correlationId") == null ? null : String.valueOf(safeContext.getMetadata().get("correlationId")));
         assessment.setIdempotencyKey(safeContext.getMetadata().get("idempotencyKey") == null ? null : String.valueOf(safeContext.getMetadata().get("idempotencyKey")));
@@ -167,8 +182,11 @@ public class DefaultFraudAssessmentService implements FraudAssessmentService {
         saveSignals(saved, signals);
         fraudRuleExecutionLogService.recordExecutions(saved, signals, safeContext);
         recordAssessmentEvent(saved);
-        openCaseIfRequired(saved);
-        fraudAuditService.record("FRAUD_ASSESSMENT", saved.getId(), safeDecision.getAction(), saved.getDecisionReason(), "{}");
+        if (!monitor) {
+            openCaseIfRequired(saved);
+        }
+        fraudAuditService.record("FRAUD_ASSESSMENT", saved.getId(), safeDecision.getAction(), saved.getDecisionReason(),
+                monitor ? "{\"mode\":\"MONITOR_ONLY\"}" : "{}");
         return toResponse(saved);
     }
 
@@ -364,8 +382,11 @@ public class DefaultFraudAssessmentService implements FraudAssessmentService {
 
     private void recordAssessmentEvent(FraudAssessment assessment) {
         FraudEventLog eventLog = baseAssessmentEvent(assessment);
-        eventLog.setEventType(toEventType(assessment));
-        eventLog.setPayloadJson("{\"decision\":\"" + assessment.getDecision() + "\",\"riskScore\":" + assessment.getRiskScore() + "}");
+        boolean monitor = "fraud-v1-monitor".equals(assessment.getEvaluationVersion());
+        eventLog.setEventType(monitor ? FraudEventType.ORDER_FRAUD_ASSESSMENT_COMPLETED : toEventType(assessment));
+        eventLog.setPayloadJson("{\"mode\":\"" + (monitor ? "MONITOR_ONLY" : "ACTIVE")
+                + "\",\"decision\":\"" + assessment.getDecision()
+                + "\",\"riskScore\":" + assessment.getRiskScore() + "}");
         fraudEventLogRepository.save(eventLog);
         publishEvent(eventLog);
     }

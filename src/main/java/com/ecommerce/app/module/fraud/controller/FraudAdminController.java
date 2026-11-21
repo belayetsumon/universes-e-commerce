@@ -15,12 +15,14 @@ import com.ecommerce.app.module.fraud.model.FraudCasePriority;
 import com.ecommerce.app.module.fraud.model.FraudCaseStatus;
 import com.ecommerce.app.module.fraud.model.FraudDecision;
 import com.ecommerce.app.module.fraud.model.FraudRiskLevel;
+import com.ecommerce.app.module.fraud.model.FraudModuleMode;
 import com.ecommerce.app.module.fraud.model.FraudRuleOperator;
 import com.ecommerce.app.module.fraud.model.FraudRuleType;
 import com.ecommerce.app.module.fraud.security.FraudPermissions;
 import com.ecommerce.app.module.fraud.services.FraudAdminViewService;
 import com.ecommerce.app.module.fraud.services.FraudCaseService;
 import com.ecommerce.app.module.fraud.services.FraudReviewService;
+import com.ecommerce.app.module.fraud.services.FraudModuleControlService;
 import java.security.Principal;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,13 +48,16 @@ public class FraudAdminController {
     private final FraudAdminViewService fraudAdminViewService;
     private final FraudReviewService fraudReviewService;
     private final FraudCaseService fraudCaseService;
+    private final FraudModuleControlService modeControl;
 
     public FraudAdminController(FraudAdminViewService fraudAdminViewService,
             FraudReviewService fraudReviewService,
-            FraudCaseService fraudCaseService) {
+            FraudCaseService fraudCaseService,
+            FraudModuleControlService modeControl) {
         this.fraudAdminViewService = fraudAdminViewService;
         this.fraudReviewService = fraudReviewService;
         this.fraudCaseService = fraudCaseService;
+        this.modeControl = modeControl;
     }
 
     @GetMapping({"", "/", "/dashboard"})
@@ -305,12 +310,29 @@ public class FraudAdminController {
             @RequestParam(required = false) Long editId,
             Model model) {
         model.addAttribute("pageTitle", "Fraud Configuration");
+        model.addAttribute("fraudModuleMode", modeControl.currentMode());
+        model.addAttribute("fraudModuleModes", FraudModuleMode.values());
         model.addAttribute("configurations", fraudAdminViewService.searchConfigurations(filter, pageable(page, "configKey")));
         model.addAttribute("editId", editId);
         model.addAttribute("configurationRequest", editId == null
                 ? new FraudConfigurationRequest()
                 : fraudAdminViewService.toConfigurationRequest(fraudAdminViewService.getConfiguration(editId)));
         return "admin/fraud/configuration";
+    }
+
+    @PostMapping("/configuration/mode")
+    @PreAuthorize(FraudPermissions.CAN_ADMIN)
+    public String changeFraudModuleMode(@RequestParam FraudModuleMode mode,
+            @RequestParam String reason,
+            Principal principal,
+            RedirectAttributes redirectAttributes) {
+        try {
+            modeControl.changeMode(mode, principalName(principal), reason);
+            redirectAttributes.addFlashAttribute("successMessage", "Fraud module mode updated to " + mode + ".");
+        } catch (RuntimeException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", cleanMessage(ex));
+        }
+        return "redirect:/admin/fraud/configuration";
     }
 
     @PostMapping("/configuration/save")
