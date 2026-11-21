@@ -10,6 +10,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
@@ -176,12 +177,33 @@ class UsersControllerSecurityTest {
                 .with(user("identity-reader@example.com")
                         .authorities(() -> PlatformIdentityPermissions.USER_READ)))
                 .andExpect(status().isOk())
-                .andExpect(view().name("user/allusers"));
+                .andExpect(view().name("user/allusers"))
+                .andExpect(model().attribute("canManageUsers", false))
+                .andExpect(model().attribute("canResetPasswords", false))
+                .andExpect(model().attribute("canReadLoginHistory", false));
 
         mockMvc.perform(get("/userdetails/index")
                 .with(user("legacy-admin@example.com").authorities(() -> "admin")))
                 .andExpect(status().isOk())
                 .andExpect(view().name("pims/userdetails/index"));
+    }
+
+    @Test
+    void userDirectoryModelsActionPermissionsIndependently() throws Exception {
+        mockMvc.perform(get("/users/index")
+                .with(user("identity-manager@example.com")
+                        .authorities(() -> PlatformIdentityPermissions.USER_MANAGE)))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("canManageUsers", true))
+                .andExpect(model().attribute("canResetPasswords", false))
+                .andExpect(model().attribute("canReadLoginHistory", false));
+
+        mockMvc.perform(get("/users/index")
+                .with(user("legacy-admin@example.com").authorities(() -> "admin")))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("canManageUsers", true))
+                .andExpect(model().attribute("canResetPasswords", true))
+                .andExpect(model().attribute("canReadLoginHistory", true));
     }
 
     @Test

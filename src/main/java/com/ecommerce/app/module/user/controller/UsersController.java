@@ -33,6 +33,7 @@ import com.ecommerce.app.module.user.services.SessionAdministrationService;
 import com.ecommerce.app.module.user.services.SessionCredentialVersionService;
 import com.ecommerce.app.module.user.services.UsersService;
 import com.ecommerce.app.security.permission.PlatformIdentityPermissions;
+import com.ecommerce.app.security.authorization.PlatformIdentityAuthorization;
 import com.ecommerce.app.security.permission.PlatformSecurityAuditPermissions;
 import jakarta.servlet.http.*;
 import jakarta.validation.Valid;
@@ -42,6 +43,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -79,6 +83,9 @@ public class UsersController {
 
     @Autowired
     UsersRepository usersRepository;
+
+    @Autowired
+    private PlatformIdentityAuthorization platformIdentityAuthorization;
 
     @Autowired
     RoleRepository roleRepository;
@@ -143,6 +150,15 @@ public class UsersController {
         addReferralCodeSummary(model, allUsers, referralCodesByUserId);
         addUserListSummary(model, allUsers);
         addUserFilterModel(model, q, status, userType, roleId, referralFilter);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        model.addAttribute("canManageUsers", platformIdentityAuthorization.canManageUsers(authentication));
+        model.addAttribute("canResetPasswords", platformIdentityAuthorization.canResetPasswords(authentication));
+        boolean canReadLoginHistory = authentication != null && authentication.isAuthenticated()
+                && authentication.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .anyMatch(authority -> PlatformSecurityAuditPermissions.READ.equals(authority)
+                                || "admin".equals(authority) || "ROLE_ADMIN".equals(authority));
+        model.addAttribute("canReadLoginHistory", canReadLoginHistory);
         return "user/allusers";
     }
 
