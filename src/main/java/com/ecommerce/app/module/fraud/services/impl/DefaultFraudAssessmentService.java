@@ -41,6 +41,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -225,6 +227,12 @@ public class DefaultFraudAssessmentService implements FraudAssessmentService {
         if (request == null || request.getReason() == null || request.getReason().isBlank()) {
             throw new FraudValidationException("Review reason is required.");
         }
+        if (request.getReason().length() > 500 || (request.getNotes() != null && request.getNotes().length() > 2000)) {
+            throw new FraudValidationException("Review reason or notes exceed the allowed length.");
+        }
+        if (request.getExpectedVersion() == null) {
+            throw new FraudValidationException("Refresh the assessment before submitting a review.");
+        }
         String idempotencyKey = normalizeIdempotencyKey(request.getIdempotencyKey());
         if (idempotencyKey != null) {
             Optional<FraudAssessmentResponse> completed = fraudIdempotencyService
@@ -242,12 +250,27 @@ public class DefaultFraudAssessmentService implements FraudAssessmentService {
                             + "|action=" + request.getAction()));
         }
         FraudAssessment assessment = findAssessment(assessmentId);
+        if (!Objects.equals(assessment.getVersion(), request.getExpectedVersion())) {
+            throw new FraudValidationException("Assessment was changed by another reviewer. Reload and review the latest decision.");
+        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new FraudValidationException("Sign in again before reviewing an assessment.");
+        }
+        String reviewer = authentication.getName();
+        if (reviewer == null || reviewer.isBlank()) {
+            throw new FraudValidationException("Reviewer identity is required.");
+        }
+        if (reviewer.length() > 120) {
+            reviewer = reviewer.substring(0, 120);
+        }
         FraudDecision requestedDecision = request.getDecision() == null ? FraudDecision.MANUAL_REVIEW : request.getDecision();
         FraudAction requestedAction = request.getAction() == null ? toAction(requestedDecision) : request.getAction();
         FraudDecision previousDecision = assessment.getDecision();
         assessment.setDecision(requestedDecision);
         assessment.setStatus(toStatus(requestedDecision));
-        assessment.setReviewedBy("fraud-review");
+        assessment.setReviewedBy(reviewer);
         assessment.setReviewedAt(LocalDateTime.now());
         assessment.setReviewNotes(request.getNotes());
         assessment.setDecisionReason(request.getReason());
@@ -261,7 +284,7 @@ public class DefaultFraudAssessmentService implements FraudAssessmentService {
         history.setAction(requestedAction);
         history.setReason(request.getReason());
         history.setNotes(request.getNotes());
-        history.setReviewedBy("fraud-review");
+        history.setReviewedBy(reviewer);
         history.setReviewedAt(LocalDateTime.now());
         fraudReviewHistoryRepository.save(history);
 

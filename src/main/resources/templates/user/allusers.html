@@ -391,11 +391,11 @@
                             </div>
                         </div>
                         <div class="users-header-actions">
-                            <a th:href="@{/users/login-history}" class="btn btn-light">
+                            <a th:if="${canReadLoginHistory}" th:href="@{/users/login-history}" class="btn btn-light">
                                 <i class="bi bi-clock-history"></i>
                                 <span>Login History</span>
                             </a>
-                            <a th:href="@{/users/registrations}" class="btn btn-warning">
+                            <a th:if="${canManageUsers}" th:href="@{/users/registrations}" class="btn btn-warning">
                                 <i class="bi bi-person-plus"></i>
                                 <span>New Registration</span>
                             </a>
@@ -478,11 +478,11 @@
                         <h2>Accounts and Access</h2>
                     </div>
                     <div class="d-flex flex-wrap gap-2">
-                        <a th:href="@{/users/login-history}" class="btn btn-outline-primary btn-sm">
+                        <a th:if="${canReadLoginHistory}" th:href="@{/users/login-history}" class="btn btn-outline-primary btn-sm">
                             <i class="bi bi-clock-history"></i>
                             <span>Audit Logins</span>
                         </a>
-                        <a th:href="@{/users/registrations}" class="btn btn-primary btn-sm">
+                        <a th:if="${canManageUsers}" th:href="@{/users/registrations}" class="btn btn-primary btn-sm">
                             <i class="bi bi-plus-circle"></i>
                             <span>Add User</span>
                         </a>
@@ -612,16 +612,16 @@
                                         <a class="btn btn-outline-primary btn-sm" th:href="@{/users/view/{uid}(uid=${alluser.id})}" title="View user">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a class="btn btn-outline-success btn-sm" th:href="@{/users/edit/{id}(id=${alluser.id})}" title="Edit user">
+                                        <a th:if="${canManageUsers}" class="btn btn-outline-success btn-sm" th:href="@{/users/edit/{id}(id=${alluser.id})}" title="Edit user">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <a class="btn btn-outline-warning btn-sm" th:href="@{/users/change-password/{id}(id=${alluser.id})}" title="Change password">
+                                        <a th:if="${canResetPasswords}" class="btn btn-outline-warning btn-sm" th:href="@{/users/change-password/{id}(id=${alluser.id})}" title="Change password">
                                             <i class="bi bi-key"></i>
                                         </a>
-                                        <a class="btn btn-outline-info btn-sm" th:href="@{/users/login-history/{uid}(uid=${alluser.id})}" title="Login history">
+                                        <a th:if="${canReadLoginHistory}" class="btn btn-outline-info btn-sm" th:href="@{/users/login-history/{uid}(uid=${alluser.id})}" title="Login history">
                                             <i class="bi bi-clock-history"></i>
                                         </a>
-                                        <form th:if="${alluser.userType != null and alluser.userType.name() == 'customer' and (referralCodesByUserId == null or referralCodesByUserId[alluser.id] == null or #strings.isEmpty(referralCodesByUserId[alluser.id]))}"
+                                        <form th:if="${canManageUsers and alluser.userType != null and alluser.userType.name() == 'customer' and (referralCodesByUserId == null or referralCodesByUserId[alluser.id] == null or #strings.isEmpty(referralCodesByUserId[alluser.id]))}"
                                               th:action="@{/users/generate-referral-code/{id}(id=${alluser.id})}"
                                               method="post"
                                               class="d-inline">
@@ -633,7 +633,7 @@
                                                 <i class="bi bi-ticket-perforated"></i>
                                             </button>
                                         </form>
-                                        <form th:action="@{/users/deletewithexception/{id}(id=${alluser.id})}" method="post" class="d-inline">
+                                        <form th:if="${canManageUsers}" th:action="@{/users/deletewithexception/{id}(id=${alluser.id})}" method="post" class="d-inline">
                                             <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                             <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete user"
                                                     onclick="return confirm('Delete this user? This action cannot be undone.');">
@@ -648,7 +648,7 @@
                     <div class="users-empty" th:if="${#lists.isEmpty(alluser)}">
                         <i class="bi bi-people"></i>
                         <h3 class="h5 mb-2">No users found</h3>
-                        <p class="mb-0">Create a user account to begin managing access.</p>
+                        <p class="mb-0" th:text="${canManageUsers ? 'Create a user account to begin managing access.' : 'No accounts match the selected filters.'}">No users match the selected filters.</p>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mt-3">
                         <div id="example_info" class="dataTables_info" role="status" aria-live="polite"></div>

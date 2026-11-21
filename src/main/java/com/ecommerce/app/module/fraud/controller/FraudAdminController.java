@@ -96,6 +96,7 @@ public class FraudAdminController {
     }
 
     @GetMapping("/assessments/{id}/review")
+    @PreAuthorize(FraudPermissions.CAN_REVIEW)
     public String manualReview(@PathVariable Long id, Model model) {
         var assessment = fraudAdminViewService.getAssessment(id);
         model.addAttribute("pageTitle", "Manual Fraud Review");
