@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 class PublicRouteDecisionContractTest {
 
     private static final Path ENDPOINT_DECISION_LEDGER =
-            Path.of("src/docs/application-security-endpoint-decision-ledger.csv");
+            Path.of("docs/security/application-security-endpoint-decision-ledger.csv");
 
     private static final Set<String> REVIEWED_PUBLIC_ROUTE_KEYS = Set.of(
             "/robots.txt GET",

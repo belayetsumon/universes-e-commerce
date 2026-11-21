@@ -25,7 +25,7 @@ class PermissionCatalogueSeedSystemToolContractTest {
 
     @Test
     void packagedCatalogueMatchesApprovedPermissionCatalogue() throws IOException {
-        String docsCatalogue = Files.readString(Path.of("src/docs/application-security-permission-catalogue.csv"));
+        String docsCatalogue = Files.readString(Path.of("docs/security/application-security-permission-catalogue.csv"));
         String packagedCatalogue = Files.readString(Path.of("src/main/resources/security/application-security-permission-catalogue.csv"));
         long permissionRows = Files.lines(Path.of("src/main/resources/security/application-security-permission-catalogue.csv"))
                 .skip(1)

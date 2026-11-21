@@ -14,7 +14,7 @@ class RemainingOwnerZoneClassificationContractTest {
 
     @Test
     void previouslyUnclassifiedRoutesHaveExplicitZonesAndCapabilities() throws IOException {
-        List<Map<String, String>> rows = Files.readAllLines(Path.of("src/docs/application-security-endpoint-decision-ledger.csv"))
+        List<Map<String, String>> rows = Files.readAllLines(Path.of("docs/security/application-security-endpoint-decision-ledger.csv"))
                 .stream()
                 .skip(1)
                 .map(RemainingOwnerZoneClassificationContractTest::parseCsvRow)
