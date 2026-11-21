@@ -27,6 +27,10 @@ public class FraudAssessmentReviewRequest {
     @Size(max = 160, message = "Idempotency key must be 160 characters or less.")
     private String idempotencyKey;
 
+    // Optimistic concurrency token from the assessment snapshot shown to the reviewer.
+    @NotNull(message = "Refresh the assessment before submitting a review.")
+    private Long expectedVersion;
+
     public FraudDecision getDecision() { return decision; }
     public void setDecision(FraudDecision decision) { this.decision = decision; }
     public FraudAction getAction() { return action; }
@@ -39,4 +43,6 @@ public class FraudAssessmentReviewRequest {
     public void setCorrelationId(String correlationId) { this.correlationId = correlationId; }
     public String getIdempotencyKey() { return idempotencyKey; }
     public void setIdempotencyKey(String idempotencyKey) { this.idempotencyKey = idempotencyKey; }
+    public Long getExpectedVersion() { return expectedVersion; }
+    public void setExpectedVersion(Long expectedVersion) { this.expectedVersion = expectedVersion; }
 }

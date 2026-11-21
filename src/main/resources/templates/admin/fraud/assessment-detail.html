@@ -46,6 +46,7 @@
                 <h2 class="h6 mb-3">Quick Decision</h2>
                 <form method="post" th:action="@{/admin/fraud/assessments/{id}/review(id=${assessment.id})}">
                     <input type="hidden" th:name="${fraudCsrfParameterName}" th:value="${fraudCsrfToken}">
+                    <input type="hidden" name="expectedVersion" th:value="${assessment.version}">
                     <div class="mb-2">
                         <label class="form-label">Reason</label>
                         <input class="form-control" name="reason" required maxlength="500">
