@@ -8,6 +8,7 @@ import com.ecommerce.app.module.fraud.model.FraudAssessment;
 import com.ecommerce.app.module.fraud.model.FraudAssessmentStatus;
 import com.ecommerce.app.module.fraud.model.FraudBlockType;
 import com.ecommerce.app.module.fraud.model.FraudDecision;
+import com.ecommerce.app.module.fraud.model.FraudModuleMode;
 import com.ecommerce.app.module.fraud.repository.FraudAssessmentRepository;
 import com.ecommerce.app.module.fraud.repository.FraudBlocklistRepository;
 import com.ecommerce.app.module.fraud.services.FraudAssessmentService;
@@ -17,6 +18,7 @@ import com.ecommerce.app.module.fraud.services.FraudOrderAssessmentGuard;
 import com.ecommerce.app.module.fraud.services.FraudPaymentCaptureGuard;
 import com.ecommerce.app.module.fraud.services.FraudPayoutGuard;
 import com.ecommerce.app.module.fraud.services.FraudPreOrderGuard;
+import com.ecommerce.app.module.fraud.services.FraudModuleControlService;
 import com.ecommerce.app.module.fraud.support.FraudHashingSupport;
 import com.ecommerce.app.module.order.model.SalesOrder;
 import java.time.LocalDateTime;
@@ -37,15 +39,18 @@ public class DefaultFraudIntegrationGuard implements FraudPreOrderGuard, FraudOr
     private final FraudBlocklistRepository fraudBlocklistRepository;
     private final FraudAssessmentService fraudAssessmentService;
     private final FraudCaseService fraudCaseService;
+    private final FraudModuleControlService modeControl;
 
     public DefaultFraudIntegrationGuard(FraudAssessmentRepository fraudAssessmentRepository,
             FraudBlocklistRepository fraudBlocklistRepository,
             FraudAssessmentService fraudAssessmentService,
-            FraudCaseService fraudCaseService) {
+            FraudCaseService fraudCaseService,
+            FraudModuleControlService modeControl) {
         this.fraudAssessmentRepository = fraudAssessmentRepository;
         this.fraudBlocklistRepository = fraudBlocklistRepository;
         this.fraudAssessmentService = fraudAssessmentService;
         this.fraudCaseService = fraudCaseService;
+        this.modeControl = modeControl;
     }
 
     @Override
@@ -74,7 +79,14 @@ public class DefaultFraudIntegrationGuard implements FraudPreOrderGuard, FraudOr
     @Override
     @Transactional
     public FraudGuardResult checkOrderAllowed(SalesOrder order, FraudContext context) {
-        FraudAssessmentResponse assessment = ensureAssessment(order, context);
+        FraudModuleMode mode = modeControl.currentMode();
+        FraudAssessmentResponse assessment = assessmentForMode(order, context, mode);
+        if (hasOutstandingRestriction(order)) {
+            return withAssessment(FraudGuardResult.blocked(SAFE_BLOCK_MESSAGE), assessment);
+        }
+        if (assessment == null || (isMonitorAssessment(assessment) && mode != FraudModuleMode.ACTIVE)) {
+            return withAssessment(FraudGuardResult.allowed(), assessment);
+        }
         if (isApproved(assessment)) {
             return withAssessment(FraudGuardResult.allowed(), assessment);
         }
@@ -137,9 +149,13 @@ public class DefaultFraudIntegrationGuard implements FraudPreOrderGuard, FraudOr
     }
 
     private FraudGuardResult requireApproved(SalesOrder order, String reason) {
-        FraudAssessmentResponse assessment = ensureAssessment(order, null);
-        if (hasBlockingAssessmentInOrderGroup(order)) {
+        FraudModuleMode mode = modeControl.currentMode();
+        FraudAssessmentResponse assessment = assessmentForMode(order, null, mode);
+        if (hasOutstandingRestriction(order)) {
             return withAssessment(FraudGuardResult.blocked(SAFE_BLOCK_MESSAGE), assessment);
+        }
+        if (assessment == null || (isMonitorAssessment(assessment) && mode != FraudModuleMode.ACTIVE)) {
+            return withAssessment(FraudGuardResult.allowed(), assessment);
         }
         if (assessment.getStatus() == FraudAssessmentStatus.APPROVED && assessment.getDecision() == FraudDecision.APPROVE) {
             return withAssessment(FraudGuardResult.allowed(), assessment);
@@ -148,6 +164,18 @@ public class DefaultFraudIntegrationGuard implements FraudPreOrderGuard, FraudOr
             return withAssessment(FraudGuardResult.blocked(SAFE_REJECT_MESSAGE), assessment);
         }
         return withAssessment(FraudGuardResult.blocked(reason), assessment);
+    }
+
+    private boolean hasOutstandingRestriction(SalesOrder order) {
+        return order != null && order.getId() != null
+                && (fraudCaseService.hasOpenCaseForOrder(order.getId())
+                || fraudAssessmentRepository.existsByOrderIdAndStatusIn(order.getId(),
+                        EnumSet.of(FraudAssessmentStatus.FRAUD_EVALUATION_PENDING,
+                                FraudAssessmentStatus.VERIFICATION_REQUIRED,
+                                FraudAssessmentStatus.MANUAL_REVIEW,
+                                FraudAssessmentStatus.FRAUD_HOLD,
+                                FraudAssessmentStatus.FRAUD_REJECTED))
+                || hasBlockingAssessmentInOrderGroup(order));
     }
 
     private boolean hasBlockingAssessmentInOrderGroup(SalesOrder order) {
@@ -167,21 +195,36 @@ public class DefaultFraudIntegrationGuard implements FraudPreOrderGuard, FraudOr
         ) > 0;
     }
 
-    private FraudAssessmentResponse ensureAssessment(SalesOrder order, FraudContext context) {
+    private FraudAssessmentResponse assessmentForMode(SalesOrder order, FraudContext context, FraudModuleMode mode) {
         if (order == null || order.getId() == null) {
             throw new IllegalArgumentException("Order not found for fraud assessment.");
         }
-        Optional<FraudAssessment> existing = fraudAssessmentRepository.findTopByOrderIdOrderByIdDesc(order.getId());
-        if (existing.isPresent()) {
-            return fraudAssessmentService.findById(existing.get().getId());
+        Optional<FraudAssessment> latest = fraudAssessmentRepository.findTopByOrderIdOrderByIdDesc(order.getId());
+        if (latest.isPresent()) {
+            FraudAssessment existing = latest.get();
+            if (mode != FraudModuleMode.ACTIVE || !isMonitorAssessment(existing)) {
+                return fraudAssessmentService.findById(existing.getId());
+            }
+            // A monitor-only observation is not a clearance when enforcement resumes.
+        } else if (mode == FraudModuleMode.INACTIVE) {
+            return null;
         }
-
         FraudAssessmentCreateRequest request = new FraudAssessmentCreateRequest();
         request.setOrderId(order.getId());
         request.setCorrelationId(order.getUuid());
-        request.setIdempotencyKey("ORDER-" + order.getId() + "-FRAUD-ASSESSMENT");
+        request.setIdempotencyKey("ORDER-" + order.getId() + "-FRAUD-ASSESSMENT"
+                + (mode == FraudModuleMode.ACTIVE && latest.isPresent() ? "-ACTIVE" : ""));
         request.setContext(context == null ? new FraudContext() : context);
         return fraudAssessmentService.evaluate(request);
+    }
+
+    private boolean isMonitorAssessment(FraudAssessment assessment) {
+        return assessment != null && "fraud-v1-monitor".equals(assessment.getEvaluationVersion());
+    }
+
+    private boolean isMonitorAssessment(FraudAssessmentResponse assessment) {
+        return assessment != null && assessment.getDecisionReason() != null
+                && assessment.getDecisionReason().startsWith("[MONITOR_ONLY]");
     }
 
     private boolean isRejected(FraudAssessmentResponse assessment) {
